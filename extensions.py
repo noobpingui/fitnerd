@@ -1,0 +1,12 @@
+#El archivo extensions.py sirve para centralizar la creación de las librerías (extensiones) de Flask y 
+#evitar el problema de importación circular. 
+#(cuando dos archivos intentan importarse entre sí al mismo tiempo, lo que rompe la aplicación)
+
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from utils.jwt_utils import JWTManager
+
+db = SQLAlchemy()
+migrate = Migrate()
+jwt_manager = JWTManager()
+
