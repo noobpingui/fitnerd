@@ -1,18 +1,10 @@
-import { useQuery } from "@tanstack/react-query"
 import { AnimatePresence, motion } from "motion/react"
 import { Button } from "@/components/ui/button"
-import { apiFetch, ApiError } from "@/lib/apiClient"
-
-type ExerciseCategory = {
-  id: string
-  name: string
-}
+import { ApiError } from "@/lib/apiClient"
+import { useExerciseCategories } from "@/features/exercises/hooks"
 
 function App() {
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["exercise-categories"],
-    queryFn: () => apiFetch<ExerciseCategory[]>("/api/exercise-categories"),
-  })
+  const { data, isLoading, isError, error } = useExerciseCategories()
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background text-foreground">

@@ -1,19 +1,13 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { AppProviders } from '@/app/providers'
 import './index.css'
 import App from './App.tsx'
 
-// Una unica instancia para toda la app: guarda la cache de todas las
-// queries (categorias, ejercicios, favoritos, etc.) en memoria.
-const queryClient = new QueryClient()
-
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
+    <AppProviders>
       <App />
-      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
-    </QueryClientProvider>
+    </AppProviders>
   </StrictMode>,
 )
