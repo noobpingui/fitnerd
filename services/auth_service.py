@@ -40,7 +40,7 @@ class AuthService():
             new_user = self.user_repository.create(user)
             self.unit_of_work.commit()
 
-            #The payload for the token when JWT gets implemented
+            #The payload for the token with JWT 
             payload = {
                 "id": str(new_user.id),
                 "user_role": new_user.user_role.value
@@ -64,7 +64,7 @@ class AuthService():
         if not bcrypt.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8')):
             raise AuthenticationError("Wrong Credentials")
 
-        #The payload for the token when JWT gets implemented
+        #The payload for the token with JWT
         payload = {
             "id": str(user.id),
             "user_role": user.user_role.value

@@ -6,3 +6,7 @@ python-dotenv
 bcrypt
 PyJWT
 cryptography
+pgvector
+boto3
+voyageai
+anthropic

@@ -19,7 +19,3 @@ class UserRepository(BaseRepository): #Since BaseRepository already receives ses
 
         return self.session.scalars(stmt).first() #Execute the query and return the first user found or None if it does not exist
     
-
-
-
-    

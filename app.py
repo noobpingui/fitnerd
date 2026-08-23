@@ -3,7 +3,7 @@ import models
 
 from flask import Flask
 from config import config_by_name
-from extensions import db, migrate, jwt_manager
+from extensions import db, migrate, jwt_manager, embedding_client
 from exceptions import error_handlers
 from routes import register_blueprints
 
@@ -23,6 +23,7 @@ def create_app(config_name=None):
     db.init_app(app)
     migrate.init_app(app,db)
     jwt_manager.init_app(app)
+    embedding_client.init_app(app)
     error_handlers.register_error_handlers(app)
     register_blueprints(app)
 
@@ -35,6 +36,7 @@ if __name__ == '__main__':
 
     #To create an instance of the app
     app = create_app(env)
+
 
     #To run the app and start the development server
     app.run()

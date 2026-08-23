@@ -21,3 +21,8 @@ class ResourceNotFoundError(AppError):
 class AuthorizationError(AppError):
     def __init__(self, message: str = "Forbidden"):
         super().__init__(message, status_code=403)
+
+#Exception raised when request data fails basic validation (400), like a missing/empty/too-long field
+class ValidationError(AppError):
+    def __init__(self, message: str = "Invalid request"):
+        super().__init__(message, status_code=400)

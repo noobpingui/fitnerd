@@ -5,8 +5,10 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from utils.jwt_utils import JWTManager
+from utils.embeddings import EmbeddingClient
 
 db = SQLAlchemy()
 migrate = Migrate()
 jwt_manager = JWTManager()
+embedding_client = EmbeddingClient()
 

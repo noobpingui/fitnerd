@@ -1,0 +1,26 @@
+
+# services: #The list of services that I'll run. I can choose whatever name I want, at the end it's just a tag
+#   <service-name>:
+#     image: ...
+#     environment: ...
+#     ports: - ...
+#     volumes: - ...
+
+# volumes: #To declare the volume that I'll use to keep data. It's necessary to reference it in the service.
+#   <volume-name>
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg18
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: Estudiar1234
+      POSTGRES_DB: fitnerd
+    ports: 
+      - "5433:5432"
+    volumes: 
+      - "postgres-volume:/var/lib/postgresql"
+
+volumes:
+  postgres-volume:
+
