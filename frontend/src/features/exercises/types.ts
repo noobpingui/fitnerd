@@ -4,3 +4,12 @@ export type ExerciseCategory = {
   id: string
   name: string
 }
+
+// Refleja _serialize() en routes/exercise_routes.py y
+// routes/exercise_favorite_routes.py (misma forma en ambos lados)
+export type Exercise = {
+  id: string
+  category_id: string
+  name: string
+  video_url: string
+}

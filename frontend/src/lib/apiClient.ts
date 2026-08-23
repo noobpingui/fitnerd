@@ -37,16 +37,18 @@ export async function apiFetch<T>(
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
 
-  // 204 No Content (ej: DELETE) no trae body que parsear
-  if (response.status === 204) {
-    return undefined as T
-  }
-
-  const data = await response.json()
+  // Algunos endpoints devuelven body vacio (ej: "", 201 o "", 204) - leemos
+  // el texto crudo primero y solo intentamos parsear JSON si hay algo,
+  // en vez de asumir "vacio" = un status code puntual como 204.
+  const text = await response.text()
+  const data = text ? JSON.parse(text) : undefined
 
   if (!response.ok) {
-    const errorBody = data as ApiErrorBody
-    throw new ApiError(response.status, errorBody.error ?? "Error desconocido")
+    const errorBody = data as ApiErrorBody | undefined
+    throw new ApiError(
+      response.status,
+      errorBody?.error ?? "Error desconocido"
+    )
   }
 
   return data as T
