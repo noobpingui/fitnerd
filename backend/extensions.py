@@ -4,11 +4,13 @@
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_cors import CORS
 from utils.jwt_utils import JWTManager
 from utils.embeddings import EmbeddingClient
 
 db = SQLAlchemy()
 migrate = Migrate()
+cors = CORS()
 jwt_manager = JWTManager()
 embedding_client = EmbeddingClient()
 

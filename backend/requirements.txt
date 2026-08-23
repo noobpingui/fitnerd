@@ -10,3 +10,4 @@ pgvector
 boto3
 voyageai
 anthropic
+flask-cors

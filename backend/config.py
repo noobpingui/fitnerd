@@ -10,6 +10,10 @@ load_dotenv() #To load the variables from the .env file
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "DEFAULT SECRET")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    #Origenes permitidos para CORS, separados por coma (ej: "http://localhost:5173,https://fitnerd.app")
+    #Default cubre el puerto que usa Vite en desarrollo.
+    CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
     JWT_PRIVATE_KEY_PATH = os.getenv("JWT_PRIVATE_KEY_PATH")
     JWT_PUBLIC_KEY_PATH = os.getenv("JWT_PUBLIC_KEY_PATH")
 

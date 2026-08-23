@@ -3,7 +3,7 @@ import models
 
 from flask import Flask
 from config import config_by_name
-from extensions import db, migrate, jwt_manager, embedding_client
+from extensions import db, migrate, cors, jwt_manager, embedding_client
 from exceptions import error_handlers
 from routes import register_blueprints
 
@@ -22,6 +22,7 @@ def create_app(config_name=None):
     #To initialize extensions here like db, auth, migrate, etc
     db.init_app(app)
     migrate.init_app(app,db)
+    cors.init_app(app, resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}})
     jwt_manager.init_app(app)
     embedding_client.init_app(app)
     error_handlers.register_error_handlers(app)
