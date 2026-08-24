@@ -83,7 +83,7 @@ export function RegisterForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Contraseña</FormLabel>
+              <FormLabel>Password</FormLabel>
               <FormControl>
                 <Input type="password" {...field} />
               </FormControl>
@@ -122,7 +122,7 @@ export function RegisterForm() {
             to="/login"
             className="text-primary underline-offset-4 hover:underline"
           >
-            Entra
+            Ingresa con tus credenciales
           </Link>
         </p>
       </form>

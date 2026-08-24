@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from "react-router"
 import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/layout/ThemeToggle"
 import { cn } from "@/lib/utils"
 import { clearToken } from "@/lib/authToken"
 
@@ -41,9 +42,12 @@ export function Navbar() {
         </div>
       </div>
 
-      <Button variant="outline" size="sm" onClick={handleLogout}>
-        Cerrar sesion
-      </Button>
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+        <Button variant="outline" size="sm" onClick={handleLogout}>
+          Cerrar sesion
+        </Button>
+      </div>
     </nav>
   )
 }

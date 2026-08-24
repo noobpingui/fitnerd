@@ -4,7 +4,20 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <title>fitnerd</title>
+    <script>
+      // Corre antes que React para evitar el "flash" de tema equivocado:
+      // sin esto, la pagina se pintaria primero en claro y recien despues
+      // (cuando React monte) cambiaria a oscuro si correspondia.
+      ;(function () {
+        var stored = localStorage.getItem("fitnerd-theme")
+        var isDark =
+          stored === "dark" ||
+          (!stored &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches)
+        document.documentElement.classList.toggle("dark", isDark)
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

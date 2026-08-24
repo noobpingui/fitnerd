@@ -3,7 +3,7 @@ import { LoginForm } from "@/features/auth/components/LoginForm"
 
 export function LoginPage() {
   return (
-    <AuthLayout title="fitnerd" description="Entra a tu cuenta">
+    <AuthLayout title="fitnerd" description="Entrena de forma segura e inteligente">
       <LoginForm />
     </AuthLayout>
   )
