@@ -36,7 +36,7 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="micorreo@email.com" {...field} />
+                <Input type="email" placeholder="tucorreo@email.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -50,7 +50,7 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password"{...field} />
+                <Input type="password" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -59,7 +59,7 @@ export function LoginForm() {
 
         {error && (
           <p className="text-sm text-destructive">
-            {error instanceof ApiError ? error.message : "Algo salio mal"}
+            {error instanceof ApiError ? error.message : "Algo salió mal"}
           </p>
         )}
 
@@ -68,7 +68,7 @@ export function LoginForm() {
         </Button>
 
         <p className="text-center text-sm text-muted-foreground">
-          No tenes cuenta?{" "}
+          ¿No tenés cuenta?{" "}
           <Link
             to="/register"
             className="text-primary underline-offset-4 hover:underline"

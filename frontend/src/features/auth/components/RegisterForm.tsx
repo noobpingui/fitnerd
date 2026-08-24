@@ -71,7 +71,7 @@ export function RegisterForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="tu@email.com" {...field} />
+                <Input type="email" placeholder="tucorreo@email.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -108,7 +108,7 @@ export function RegisterForm() {
 
         {error && (
           <p className="text-sm text-destructive">
-            {error instanceof ApiError ? error.message : "Algo salio mal"}
+            {error instanceof ApiError ? error.message : "Algo salió mal"}
           </p>
         )}
 
@@ -117,12 +117,12 @@ export function RegisterForm() {
         </Button>
 
         <p className="text-center text-sm text-muted-foreground">
-          Ya tenes cuenta?{" "}
+          ¿Ya tenés cuenta?{" "}
           <Link
             to="/login"
             className="text-primary underline-offset-4 hover:underline"
           >
-            Ingresa con tus credenciales
+            Ingresá con tus credenciales
           </Link>
         </p>
       </form>

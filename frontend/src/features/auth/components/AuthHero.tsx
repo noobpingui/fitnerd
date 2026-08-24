@@ -3,14 +3,14 @@ import { AnimatePresence, motion } from "motion/react"
 import { Dumbbell, Heart, Sparkles } from "lucide-react"
 
 const rotatingWords = [
-  "con criterio.",
-  "sin perder tiempo.",
-  "de forma inteligente.",
+  "con criterio",
+  "sin desperdiciar tiempo",
+  "de forma inteligente",
 ]
 
 const features = [
-  { icon: Dumbbell, label: "Catalogo con tecnica de ejecucion" },
-  { icon: Heart, label: "Guarda tus ejercicios favoritos" },
+  { icon: Dumbbell, label: "Catálogo con técnica de ejecución" },
+  { icon: Heart, label: "Guardá tus ejercicios favoritos" },
   { icon: Sparkles, label: "AI Coach online" },
 ]
 
@@ -34,7 +34,7 @@ export function AuthHero() {
         transition={{ duration: 0.3 }}
         className="text-2xl font-bold sm:text-3xl"
       >
-        Entrena{" "}
+        Entrená{" "}
         <AnimatePresence mode="wait">
           <motion.span
             key={rotatingWords[wordIndex]}
@@ -55,8 +55,8 @@ export function AuthHero() {
         transition={{ duration: 0.3, delay: 0.1 }}
         className="max-w-sm text-sm text-muted-foreground"
       >
-        Resolve tus dudas con un coach de IA online entrenado en contenido real de fitness basado en ciencia - no mas respuestas
-        genericas o mitos de influencers fitness.
+        Resolvé tus dudas con un coach de IA online entrenado en contenido real de fitness basado en ciencia - no más respuestas
+        genéricas o mitos de influencers fitness
       </motion.p>
 
       <div className="flex flex-wrap justify-center gap-2">

@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { ThemeToggle } from "@/components/layout/ThemeToggle"
 import { AuthHero } from "@/features/auth/components/AuthHero"
 
 export function AuthLayout({
@@ -15,7 +14,7 @@ export function AuthLayout({
   description,
   children,
 }: {
-  title: string
+  title: ReactNode
   description: string
   children: ReactNode
 }) {
@@ -30,10 +29,6 @@ export function AuthLayout({
         animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.6, 0.4] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       />
-
-      <div className="absolute right-4 top-4">
-        <ThemeToggle />
-      </div>
 
       <div className="w-full max-w-md">
         <AuthHero />

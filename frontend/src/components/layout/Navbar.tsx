@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from "react-router"
 import { Button } from "@/components/ui/button"
-import { ThemeToggle } from "@/components/layout/ThemeToggle"
+import { Logo } from "@/components/layout/Logo"
 import { cn } from "@/lib/utils"
 import { clearToken } from "@/lib/authToken"
 
@@ -20,9 +20,7 @@ export function Navbar() {
   return (
     <nav className="flex items-center justify-between border-b bg-card px-6 py-3">
       <div className="flex items-center gap-6">
-        <span className="text-lg font-bold">
-          fitnerd <span className="text-primary">.</span>
-        </span>
+        <Logo className="text-lg" />
 
         <div className="flex gap-4">
           {links.map((link) => (
@@ -42,12 +40,9 @@ export function Navbar() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <ThemeToggle />
-        <Button variant="outline" size="sm" onClick={handleLogout}>
-          Cerrar sesion
-        </Button>
-      </div>
+      <Button variant="outline" size="sm" onClick={handleLogout}>
+        Cerrar sesion
+      </Button>
     </nav>
   )
 }

@@ -134,3 +134,27 @@
     @apply select-text cursor-text;
     }
 }
+
+/* Texto "plateado brillante": gradiente de grises usado como color del
+   texto (clip al texto, texto en si transparente), con la posicion del
+   gradiente animada en loop - se lee como un brillo recorriendo la
+   palabra en vez de un gris plano fijo. */
+@keyframes text-shine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+.text-shine {
+  background: linear-gradient(
+    90deg,
+    oklch(0.55 0 0) 0%,
+    oklch(0.97 0 0) 50%,
+    oklch(0.55 0 0) 100%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: text-shine 3.5s linear infinite;
+}
