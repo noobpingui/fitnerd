@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/layout/ThemeToggle"
+import { AuthHero } from "@/features/auth/components/AuthHero"
 
 export function AuthLayout({
   title,
@@ -19,25 +20,38 @@ export function AuthLayout({
   children: ReactNode
 }) {
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-background p-4 py-12">
+      {/* Mancha de fondo decorativa, en loop infinito - le da el toque
+          "vivo" al fondo sin distraer del formulario. aria-hidden porque
+          es puramente visual, no aporta nada a un lector de pantalla. */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-0 -z-10 h-72 w-72 -translate-x-1/2 rounded-full bg-primary/20 blur-3xl"
+        animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.6, 0.4] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+      />
+
       <div className="absolute right-4 top-4">
         <ThemeToggle />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="w-full max-w-sm"
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
-          </CardHeader>
-          <CardContent>{children}</CardContent>
-        </Card>
-      </motion.div>
+      <div className="w-full max-w-md">
+        <AuthHero />
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.3 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">{title}</CardTitle>
+              <CardDescription>{description}</CardDescription>
+            </CardHeader>
+            <CardContent>{children}</CardContent>
+          </Card>
+        </motion.div>
+      </div>
     </div>
   )
 }
