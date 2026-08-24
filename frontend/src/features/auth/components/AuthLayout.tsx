@@ -19,7 +19,44 @@ export function AuthLayout({
   children: ReactNode
 }) {
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-background p-4 py-12">
+    <div className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-background p-4 py-12">
+      {/* isolate en el div de arriba: fuerza a que ESTE div cree su propio
+          "stacking context". Sin esto, position:relative solo (sin
+          z-index) no alcanza para crear uno, y los hijos con z-index
+          negativo (video/overlay/blob) se "escapan" hacia el stacking
+          context del ancestro mas cercano que si lo tiene (el motion.div
+          de PageTransition, por el transform que le aplica Framer Motion) -
+          ahi, el propio fondo opaco de este div se pinta ENCIMA de esos
+          hijos negativos, tapandolos por completo. isolate lo evita.
+
+          Video de fondo: absolute (no fixed) anclado a este mismo div
+          "relative" - igual que la mancha decorativa de abajo. Nota: fixed
+          NO sirve aca porque esta pantalla esta envuelta en PageTransition,
+          y motion.div le aplica un "transform" inline (para animar la
+          entrada/salida) - un ancestro con transform hace que position:fixed
+          deje de posicionarse contra el viewport real y pase a posicionarse
+          contra ese ancestro, rompiendo el efecto de pantalla completa.
+          object-cover llena el rectangulo sin deformar la imagen. autoPlay+
+          loop necesitan muted para que el navegador los permita sin
+          interaccion del usuario; playsInline evita que iOS lo abra a
+          pantalla completa solo. -z-30 lo manda detras de todo. */}
+      <video
+        aria-hidden
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="pointer-events-none absolute inset-0 -z-30 h-full w-full object-cover"
+      >
+        <source src="/videos/auth-bg.mp4" type="video/mp4" />
+      </video>
+      {/* Capa oscura semi-transparente sobre el video, para que el texto del
+          form y del hero mantengan contraste contra un fondo en movimiento. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-20 bg-background/70"
+      />
+
       {/* Mancha de fondo decorativa, en loop infinito - le da el toque
           "vivo" al fondo sin distraer del formulario. aria-hidden porque
           es puramente visual, no aporta nada a un lector de pantalla. */}

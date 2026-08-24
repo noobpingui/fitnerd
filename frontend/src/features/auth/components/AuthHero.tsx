@@ -53,7 +53,7 @@ export function AuthHero() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.1 }}
-        className="max-w-sm text-sm text-muted-foreground"
+        className="max-w-sm text-sm text-white"
       >
         Resolvé tus dudas con un coach de IA online entrenado en contenido real de fitness basado en ciencia - no más respuestas
         genéricas o mitos de influencers fitness
@@ -66,7 +66,7 @@ export function AuthHero() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.2 + index * 0.08 }}
-            className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs text-muted-foreground"
+            className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs text-white"
           >
             <feature.icon className="h-3.5 w-3.5" />
             {feature.label}
