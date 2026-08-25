@@ -8,6 +8,7 @@ import { RegisterPage } from "@/features/auth/pages/RegisterPage"
 import { CategoriesPage } from "@/features/exercises/pages/CategoriesPage"
 import { ExercisesPage } from "@/features/exercises/pages/ExercisesPage"
 import { FavoritesPage } from "@/features/exercises/pages/FavoritesPage"
+import { BodyMetricsPage } from "@/features/body-metrics/pages/BodyMetricsPage"
 
 export function AppRouter() {
   return (
@@ -58,6 +59,7 @@ function AnimatedRoutes() {
               element={<ExercisesPage />}
             />
             <Route path="/favorites" element={<FavoritesPage />} />
+            <Route path="/body-metrics" element={<BodyMetricsPage />} />
           </Route>
         </Route>
 

@@ -9,7 +9,7 @@ const rotatingWords = [
 ]
 
 const features = [
-  { icon: Dumbbell, label: "Catálogo con técnica de ejecución" },
+  { icon: Dumbbell, label: "Catálogo de ejercicios con técnica de ejecución" },
   { icon: Heart, label: "Guardá tus ejercicios favoritos" },
   { icon: Sparkles, label: "AI Coach online" },
 ]
@@ -34,7 +34,7 @@ export function AuthHero() {
         transition={{ duration: 0.3 }}
         className="text-2xl font-bold sm:text-3xl"
       >
-        Entrená{" "}
+        Entrena{" "}
         <AnimatePresence mode="wait">
           <motion.span
             key={rotatingWords[wordIndex]}

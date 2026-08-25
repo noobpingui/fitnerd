@@ -1,4 +1,4 @@
-import { getToken } from "@/lib/authToken"
+import { clearToken, getToken } from "@/lib/authToken"
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -45,6 +45,23 @@ export async function apiFetch<T>(
 
   if (!response.ok) {
     const errorBody = data as ApiErrorBody | undefined
+
+    // Un 401 significa dos cosas distintas segun si la peticion llevaba
+    // token o no: SIN token, es un error de negocio normal (ej. password
+    // incorrecta en login) - lo dejamos pasar como cualquier otro error,
+    // para que la pantalla que llamo lo muestre como quiera. CON token, es
+    // que el backend lo rechazo (vencido o invalido) - ahi la sesion ya no
+    // sirve para nada, la cerramos y mandamos al usuario de vuelta a
+    // login. window.location (no react-router) es deliberado: apiClient
+    // es un modulo plano, no un componente, no tiene acceso a useNavigate();
+    // ademas un reload completo de paso limpia toda cache/estado en
+    // memoria (TanStack Query incluida), que es justo lo que queremos al
+    // cerrar sesion - no dejar datos del usuario anterior dando vueltas.
+    if (response.status === 401 && token) {
+      clearToken()
+      window.location.href = "/login"
+    }
+
     throw new ApiError(
       response.status,
       errorBody?.error ?? "Error desconocido"

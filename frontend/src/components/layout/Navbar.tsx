@@ -7,6 +7,7 @@ import { clearToken } from "@/lib/authToken"
 const links = [
   { to: "/categories", label: "Categorias" },
   { to: "/favorites", label: "Favoritos" },
+  { to: "/body-metrics", label: "Metricas" },
 ]
 
 export function Navbar() {
@@ -18,18 +19,23 @@ export function Navbar() {
   }
 
   return (
-    <nav className="flex items-center justify-between border-b bg-card px-6 py-3">
-      <div className="flex items-center gap-6">
-        <Logo className="text-lg" />
+    <nav className="flex items-center justify-between border-b bg-card px-6 py-5">
+      {/* text-lg (1.125rem) x3 = 3.375rem. Tailwind's arbitrary-value
+          syntax (text-[valor]) permite un tamano exacto que no existe en
+          la escala por defecto (text-4xl/5xl/etc.), en vez de aproximar
+          con el paso mas cercano. */}
+      <div className="flex items-center gap-8">
+        <Logo className="text-[3.375rem]" />
 
-        <div className="flex gap-4">
+        <div className="flex gap-6">
           {links.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
+              // text-sm (0.875rem) x1.5 = 1.3125rem, mismo razonamiento.
               className={({ isActive }) =>
                 cn(
-                  "text-sm text-muted-foreground hover:text-foreground",
+                  "text-[1.3125rem] text-muted-foreground hover:text-foreground",
                   isActive && "font-medium text-foreground"
                 )
               }
