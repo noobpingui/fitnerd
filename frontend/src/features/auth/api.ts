@@ -20,6 +20,16 @@ export function register(payload: RegisterPayload) {
   })
 }
 
+// credential: el ID token que Google Identity Services le entrega al
+// frontend (no es nuestro JWT - eso lo devuelve esta misma request, en
+// la respuesta, igual que login/register).
+export function loginWithGoogle(credential: string) {
+  return apiFetch<AuthResponse>("/api/auth/google", {
+    method: "POST",
+    body: { credential },
+  })
+}
+
 export function getCurrentUser() {
   return apiFetch<CurrentUser>("/api/auth/me")
 }

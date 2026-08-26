@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/form"
 import { registerSchema, type RegisterFormValues } from "@/features/auth/schemas"
 import { useRegister } from "@/features/auth/hooks"
+import { GoogleSignInButton } from "@/features/auth/components/GoogleSignInButton"
 import { ApiError } from "@/lib/apiClient"
 
 export function RegisterForm() {
@@ -115,6 +116,18 @@ export function RegisterForm() {
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending ? "Creando cuenta..." : "Crear cuenta"}
         </Button>
+
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="h-px flex-1 bg-border" />
+          O
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
+        {/* Mismo boton que en LoginForm - si el email de Google ya
+            existe en nuestra base, esto termina siendo un login, no una
+            creacion de cuenta duplicada (AuthService.login_with_google
+            se encarga de esa distincion del lado del backend). */}
+        <GoogleSignInButton />
 
         <p className="text-center text-sm text-muted-foreground">
           ¿Ya tenés cuenta?{" "}

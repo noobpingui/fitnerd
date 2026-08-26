@@ -20,4 +20,5 @@ export type AuthResponse = {
 export type CurrentUser = {
   id: string
   email: string
+  avatar_url: string | null
 }

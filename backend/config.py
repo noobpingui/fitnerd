@@ -23,6 +23,11 @@ class Config:
 
     ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-5")
 
+    #Client ID de la app registrada en Google Cloud Console (OAuth 2.0) -
+    #se usa para verificar que un ID token de Google realmente fue emitido
+    #para NUESTRA app (el "audience" del token) y no para otra.
+    GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+
 class DevelopmentConfig(Config):
     """Configuración exclusiva para mi pc (Desarrollo)"""
     DEBUG = True

@@ -42,13 +42,7 @@ function colorForEmail(email: string) {
   return AVATAR_COLORS[hash]
 }
 
-// avatarUrl no lo llena nadie todavia - no hay Single Sign-On implementado
-// asi que no hay de donde sacar una foto real. Dejamos el prop listo a
-// proposito: el dia que se implemente login con Google, alcanza con
-// pasar la URL de la foto de esa cuenta aca (ej. desde useCurrentUser())
-// y el AvatarFallback (inicial + color) de abajo deja de mostrarse solo,
-// sin tocar el resto de este componente.
-export function UserMenu({ avatarUrl }: { avatarUrl?: string }) {
+export function UserMenu() {
   const navigate = useNavigate()
   const { data: user } = useCurrentUser()
 
@@ -80,7 +74,12 @@ export function UserMenu({ avatarUrl }: { avatarUrl?: string }) {
           {/* size-8 (2rem) es el tamano "default" del Avatar - size-16
               (4rem) es el doble. */}
           <Avatar className="size-16">
-            <AvatarImage src={avatarUrl} alt="" />
+            {/* user?.avatar_url es null hasta que el usuario entra (o se
+                vincula) con Google - ahi el backend empieza a devolver la
+                URL de su foto de perfil de Google. Sin eso, Radix nunca
+                logra montar la imagen y cae directo al AvatarFallback de
+                abajo (inicial + color). */}
+            <AvatarImage src={user?.avatar_url ?? undefined} alt="" />
             <AvatarFallback
               className={cn(
                 "text-2xl",

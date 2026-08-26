@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/form"
 import { loginSchema, type LoginFormValues } from "@/features/auth/schemas"
 import { useLogin } from "@/features/auth/hooks"
+import { GoogleSignInButton } from "@/features/auth/components/GoogleSignInButton"
 import { ApiError } from "@/lib/apiClient"
 
 export function LoginForm() {
@@ -66,6 +67,14 @@ export function LoginForm() {
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending ? "Entrando..." : "Entrar"}
         </Button>
+
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="h-px flex-1 bg-border" />
+          O
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
+        <GoogleSignInButton />
 
         <p className="text-center text-sm text-muted-foreground">
           ¿No tenés cuenta?{" "}

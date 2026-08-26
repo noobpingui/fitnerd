@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useNavigate } from "react-router"
-import { getCurrentUser, login, register } from "@/features/auth/api"
+import { getCurrentUser, login, loginWithGoogle, register } from "@/features/auth/api"
 import { setToken } from "@/lib/authToken"
 
 // useMutation es el otro lado de la moneda de useQuery: se usa para
@@ -21,14 +21,27 @@ export function useLogin() {
   })
 }
 
-// Usado por UserMenu (navbar) para saber que mostrar en el avatar - hoy
-// solo el email, pero /api/auth/me es el lugar natural donde el backend
-// va a devolver mas datos de perfil (nombre, foto de Google, etc.) el dia
-// que exista SSO, sin tener que agregar un endpoint nuevo.
+// Usado por UserMenu (navbar) para saber que mostrar en el avatar: email
+// y, si el usuario entro alguna vez con Google, su foto de perfil.
 export function useCurrentUser() {
   return useQuery({
     queryKey: ["auth", "me"],
     queryFn: getCurrentUser,
+  })
+}
+
+// Mismo patron que useLogin/useRegister (guarda el token, navega a "/")
+// pero mutationFn recibe directamente el credential (string) que entrega
+// el boton de Google, no un objeto de credenciales armado por un form.
+export function useGoogleLogin() {
+  const navigate = useNavigate()
+
+  return useMutation({
+    mutationFn: loginWithGoogle,
+    onSuccess: (data) => {
+      setToken(data.token)
+      navigate("/", { replace: true })
+    },
   })
 }
 
