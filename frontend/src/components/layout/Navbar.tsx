@@ -1,8 +1,7 @@
-import { NavLink, useNavigate } from "react-router"
-import { Button } from "@/components/ui/button"
+import { NavLink } from "react-router"
 import { Logo } from "@/components/layout/Logo"
+import { UserMenu } from "@/components/layout/UserMenu"
 import { cn } from "@/lib/utils"
-import { clearToken } from "@/lib/authToken"
 
 const links = [
   { to: "/categories", label: "Categorias" },
@@ -11,31 +10,33 @@ const links = [
 ]
 
 export function Navbar() {
-  const navigate = useNavigate()
-
-  function handleLogout() {
-    clearToken()
-    navigate("/login", { replace: true })
-  }
-
   return (
     <nav className="flex items-center justify-between border-b bg-card px-6 py-5">
-      {/* text-lg (1.125rem) x3 = 3.375rem. Tailwind's arbitrary-value
-          syntax (text-[valor]) permite un tamano exacto que no existe en
-          la escala por defecto (text-4xl/5xl/etc.), en vez de aproximar
-          con el paso mas cercano. */}
+      {/* text-lg (1.125rem) x2 = 2.25rem, que coincide con la escala
+          estandar de Tailwind (text-4xl), asi que ya no hace falta el
+          valor arbitrario que usabamos para el x3. */}
       <div className="flex items-center gap-8">
-        <Logo className="text-[3.375rem]" />
+        {/* Mismo efecto "vivo" que el avatar del UserMenu, pero sin el
+            anillo de color - solo el crecer/achicarse animado. El anillo
+            de foco (focus-visible) se mantiene: no es decorativo, es
+            accesibilidad - le muestra a quien navega con teclado (Tab)
+            donde esta parado, y solo aparece con teclado, nunca con mouse. */}
+        <NavLink
+          to="/home"
+          className="inline-block rounded-md outline-none transition-transform duration-200 hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        >
+          <Logo className="text-4xl" />
+        </NavLink>
 
         <div className="flex gap-6">
           {links.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
-              // text-sm (0.875rem) x1.5 = 1.3125rem, mismo razonamiento.
+              // Links de vuelta a su tamano original (text-sm, x1).
               className={({ isActive }) =>
                 cn(
-                  "text-[1.3125rem] text-muted-foreground hover:text-foreground",
+                  "text-sm text-muted-foreground hover:text-foreground",
                   isActive && "font-medium text-foreground"
                 )
               }
@@ -46,9 +47,7 @@ export function Navbar() {
         </div>
       </div>
 
-      <Button variant="outline" size="sm" onClick={handleLogout}>
-        Cerrar sesion
-      </Button>
+      <UserMenu />
     </nav>
   )
 }

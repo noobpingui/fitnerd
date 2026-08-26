@@ -2,20 +2,7 @@ import { Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import type { BodyMetric } from "@/features/body-metrics/types"
-
-// new Date("YYYY-MM-DD") lo interpreta como medianoche UTC - en un huso
-// horario negativo (como Costa Rica, UTC-6) eso puede mostrar el dia
-// ANTERIOR al formatear. Partimos el string a mano y construimos la fecha
-// en hora LOCAL para evitar ese corrimiento.
-function formatDate(isoDate: string) {
-  const [year, month, day] = isoDate.split("-").map(Number)
-  const date = new Date(year, month - 1, day)
-  return date.toLocaleDateString("es-CR", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  })
-}
+import { formatDate } from "@/features/body-metrics/dateUtils"
 
 export function BodyMetricRow({
   metric,

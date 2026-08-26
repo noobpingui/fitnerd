@@ -133,6 +133,15 @@
   textarea {
     @apply select-text cursor-text;
     }
+  /* El icono de calendario de <input type="date"> es un elemento nativo
+     del navegador (::-webkit-calendar-picker-indicator), no un SVG
+     nuestro - no se puede recolorear con className/fill como los iconos
+     de lucide-react. invert(1) da vuelta sus colores (negro -> blanco),
+     lo cual funciona sin condicion porque la app es dark-only - si algun
+     dia hubiera modo claro, esto necesitaria un dark:filter-none. */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    }
 }
 
 /* Texto "dorado brillante": gradiente de tonos oro usado como color del

@@ -1,6 +1,6 @@
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { useNavigate } from "react-router"
-import { login, register } from "@/features/auth/api"
+import { getCurrentUser, login, register } from "@/features/auth/api"
 import { setToken } from "@/lib/authToken"
 
 // useMutation es el otro lado de la moneda de useQuery: se usa para
@@ -18,6 +18,17 @@ export function useLogin() {
       setToken(data.token)
       navigate("/", { replace: true })
     },
+  })
+}
+
+// Usado por UserMenu (navbar) para saber que mostrar en el avatar - hoy
+// solo el email, pero /api/auth/me es el lugar natural donde el backend
+// va a devolver mas datos de perfil (nombre, foto de Google, etc.) el dia
+// que exista SSO, sin tener que agregar un endpoint nuevo.
+export function useCurrentUser() {
+  return useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: getCurrentUser,
   })
 }
 

@@ -13,9 +13,9 @@ import {
 } from "@/components/ui/form"
 import {
   bodyMetricSchema,
-  todayIsoDate,
   type BodyMetricFormValues,
 } from "@/features/body-metrics/schemas"
+import { todayIsoDate } from "@/features/body-metrics/dateUtils"
 import { useCreateBodyMetric } from "@/features/body-metrics/hooks"
 import { ApiError } from "@/lib/apiClient"
 

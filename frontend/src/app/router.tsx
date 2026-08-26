@@ -9,6 +9,7 @@ import { CategoriesPage } from "@/features/exercises/pages/CategoriesPage"
 import { ExercisesPage } from "@/features/exercises/pages/ExercisesPage"
 import { FavoritesPage } from "@/features/exercises/pages/FavoritesPage"
 import { BodyMetricsPage } from "@/features/body-metrics/pages/BodyMetricsPage"
+import { HomePage } from "@/features/home/pages/HomePage"
 
 export function AppRouter() {
   return (
@@ -53,6 +54,7 @@ function AnimatedRoutes() {
             navbar alrededor de cualquier pagina que matchee mas adentro */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
+            <Route path="/home" element={<HomePage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route
               path="/categories/:categoryId"
@@ -63,10 +65,8 @@ function AnimatedRoutes() {
           </Route>
         </Route>
 
-        {/* No hay un "home"/dashboard todavia - / manda directo al catalogo.
-            Cuando exista una pantalla de inicio real, este redirect cambia. */}
-        <Route path="/" element={<Navigate to="/categories" replace />} />
-        <Route path="*" element={<Navigate to="/categories" replace />} />
+        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
     </AnimatePresence>
   )

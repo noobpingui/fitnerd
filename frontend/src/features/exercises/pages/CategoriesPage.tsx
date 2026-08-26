@@ -9,7 +9,11 @@ export function CategoriesPage() {
 
   return (
     <div className="mx-auto max-w-2xl p-8">
-      <h1 className="mb-6 text-2xl font-bold">Categorias</h1>
+      <h1 className="mb-2 text-2xl font-bold">Categorias</h1>
+      <p className="mb-6 text-muted-foreground">
+        Revisa el catalogo de ejercicios, su correcta ejecucion y elegi tus
+        favoritos.
+      </p>
 
       {isLoading && <p className="text-muted-foreground">Cargando...</p>}
 

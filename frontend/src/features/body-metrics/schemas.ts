@@ -29,15 +29,3 @@ export const bodyMetricSchema = z.object({
   recorded_at: z.iso.date("Fecha invalida"),
 })
 export type BodyMetricFormValues = z.infer<typeof bodyMetricSchema>
-
-// Fecha de hoy en formato "YYYY-MM-DD", en hora LOCAL - no usar
-// new Date().toISOString() aca, porque esa siempre convierte a UTC
-// primero, y cerca de medianoche eso puede mostrar el dia equivocado
-// segun el huso horario del usuario.
-export function todayIsoDate() {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, "0")
-  const day = String(now.getDate()).padStart(2, "0")
-  return `${year}-${month}-${day}`
-}
