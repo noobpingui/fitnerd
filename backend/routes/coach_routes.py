@@ -15,6 +15,33 @@ coach_bp = Blueprint(
 )
 
 MAX_QUESTION_LENGTH = 500
+#Tope de turnos de historial que se reenvian a Claude por pregunta - una conversacion mas
+#larga que esto simplemente "olvida" los turnos mas viejos, en vez de dejar crecer el
+#contexto (y el costo) sin limite.
+MAX_HISTORY_MESSAGES = 20
+ALLOWED_HISTORY_ROLES = {"user", "assistant"}
+
+
+#El historial viaja desde el frontend en cada request (no se guarda en el backend, ver
+#CoachService.ask) - se sanea antes de reenviarselo a Claude en vez de confiar en la forma
+#exacta que mande el cliente. Entradas con forma invalida se descartan en silencio (no vale
+#la pena rechazar toda la conversacion por un item malformado) en vez de tirar un error.
+def _sanitize_history(history):
+    if not isinstance(history, list):
+        return []
+
+    clean = []
+    for item in history:
+        if not isinstance(item, dict):
+            continue
+
+        role = item.get("role")
+        content = item.get("content")
+
+        if role in ALLOWED_HISTORY_ROLES and isinstance(content, str) and content.strip():
+            clean.append({"role": role, "content": content})
+
+    return clean[-MAX_HISTORY_MESSAGES:]
 
 
 #Factory function - mismo patron que _build_auth_service() en auth_routes.py
@@ -38,7 +65,9 @@ def ask():
     if len(question) > MAX_QUESTION_LENGTH:
         raise ValidationError(f"La pregunta no puede superar los {MAX_QUESTION_LENGTH} caracteres")
 
+    history = _sanitize_history(data.get("history"))
+
     coach_service = _build_coach_service()
-    answer = coach_service.ask(question)
+    answer = coach_service.ask(question, history)
 
     return jsonify(answer=answer), 200

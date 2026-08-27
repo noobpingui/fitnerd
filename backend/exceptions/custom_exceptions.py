@@ -31,3 +31,10 @@ class ValidationError(AppError):
 class RateLimitError(AppError):
     def __init__(self, message: str = "Too many requests"):
         super().__init__(message, status_code=429)
+
+#Exception raised when an external provider we depend on (Voyage, Anthropic) fails - rate
+#limited, timed out, down, etc. (503) - a real infrastructure failure, distinct from a
+#normal "the AI didn't know the answer" business response (which stays a 200)
+class ServiceUnavailableError(AppError):
+    def __init__(self, message: str = "Service temporarily unavailable"):
+        super().__init__(message, status_code=503)

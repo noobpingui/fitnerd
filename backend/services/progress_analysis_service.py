@@ -1,3 +1,4 @@
+import logging
 from datetime import date, timedelta
 
 from repositories.body_metric_repository import BodyMetricRepository
@@ -5,7 +6,9 @@ from repositories.progress_analysis_repository import ProgressAnalysisRepository
 from models.progress_analysis import ProgressAnalysis
 from unit_of_work.unit_of_work import UnitOfWork
 from utils.llm_client import LLMClient
-from exceptions.custom_exceptions import RateLimitError
+from exceptions.custom_exceptions import RateLimitError, ServiceUnavailableError
+
+logger = logging.getLogger(__name__)
 
 #Cuantos analisis puede pedir un mismo usuario en una ventana de 24hs. Existe para que
 #nadie (ni por error, ni con un script) pueda correr cientos de analisis seguidos
@@ -83,7 +86,20 @@ class ProgressAnalysisService:
         self.progress_analysis_repository.create(ProgressAnalysis(user_id=user_id))
         self.unit_of_work.commit()
 
-        answer = self.llm_client.generate(PROGRESS_ANALYSIS_SYSTEM_PROMPT, user_message)
+        try:
+            answer = self.llm_client.generate(
+                PROGRESS_ANALYSIS_SYSTEM_PROMPT,
+                [{"role": "user", "content": user_message}],
+            )
+        except Exception:
+            #Mismo criterio que CoachService.ask(): una falla de Anthropic (rate limit,
+            #timeout, etc.) se traduce a un 503 prolijo en vez de un 500 pelado. El intento
+            #ya quedo logueado arriba (cuenta contra el limite de 2/dia igual, ver el
+            #comentario de mas arriba sobre por que).
+            logger.exception("Fallo Anthropic al generar el analisis de progreso")
+            raise ServiceUnavailableError(
+                "No se pudo generar el analisis en este momento. Intenta de nuevo en unos minutos."
+            )
 
         if answer is None:
             return "No pude generar un analisis en este momento."

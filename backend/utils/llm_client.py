@@ -15,15 +15,19 @@ class LLMClient:
         self.client = anthropic.Anthropic(api_key=api_key)
         self.model = model
 
+    #messages: lista de {"role": "user"|"assistant", "content": str}, en el mismo formato
+    #que espera la API de Anthropic - permite mandar turnos anteriores de una conversacion,
+    #no solo un mensaje suelto (lo usa CoachService para el chat con memoria).
+    #
     #Devuelve el texto generado, o None si Claude rechazo la generacion por seguridad -
     #None (en vez de una string vacia) para que el servicio que llama pueda distinguir
     #"rechazado" de "genero una respuesta corta" y decidir su propio mensaje para ese caso.
-    def generate(self, system_prompt: str, user_message: str, max_tokens: int = 1024) -> str | None:
+    def generate(self, system_prompt: str, messages: list[dict], max_tokens: int = 1024) -> str | None:
         response = self.client.messages.create(
             model=self.model,
             max_tokens=max_tokens,
             system=system_prompt,
-            messages=[{"role": "user", "content": user_message}],
+            messages=messages,
         )
 
         #Un rechazo por seguridad devuelve HTTP 200 igual, pero con content vacio/parcial -

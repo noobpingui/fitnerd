@@ -1,6 +1,6 @@
 import { Link } from "react-router"
 import { motion } from "motion/react"
-import { Dumbbell, Heart, LineChart } from "lucide-react"
+import { Dumbbell, Heart, LineChart, Sparkles } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
 // Por ahora este "home" es solo un punto de entrada con accesos directos a
@@ -25,17 +25,25 @@ const shortcuts = [
     description: "Registra y revisa tu progreso",
     icon: LineChart,
   },
+  {
+    to: "/coach",
+    label: "Coach",
+    description: "Preguntale al AI Coach",
+    icon: Sparkles,
+  },
 ]
 
 export function HomePage() {
   return (
-    <div className="mx-auto max-w-2xl p-8">
+    // max-w-3xl (antes max-w-2xl): con el 4to shortcut (Coach), 3xl da
+    // mas aire a la grilla sin llegar al max-w-4xl que usa Metricas.
+    <div className="mx-auto max-w-3xl p-8">
       <h1 className="mb-2 text-2xl font-bold">Bienvenido de vuelta</h1>
       <p className="mb-6 text-muted-foreground">
         Elegi por donde queres continuar.
       </p>
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {shortcuts.map((shortcut, index) => (
           <motion.div
             key={shortcut.to}

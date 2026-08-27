@@ -10,6 +10,7 @@ import { ExercisesPage } from "@/features/exercises/pages/ExercisesPage"
 import { FavoritesPage } from "@/features/exercises/pages/FavoritesPage"
 import { BodyMetricsPage } from "@/features/body-metrics/pages/BodyMetricsPage"
 import { HomePage } from "@/features/home/pages/HomePage"
+import { CoachPage } from "@/features/coach/pages/CoachPage"
 
 export function AppRouter() {
   return (
@@ -62,6 +63,7 @@ function AnimatedRoutes() {
             />
             <Route path="/favorites" element={<FavoritesPage />} />
             <Route path="/body-metrics" element={<BodyMetricsPage />} />
+            <Route path="/coach" element={<CoachPage />} />
           </Route>
         </Route>
 
