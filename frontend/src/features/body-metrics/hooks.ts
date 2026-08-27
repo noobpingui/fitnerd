@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
+  analyzeBodyMetrics,
   createBodyMetric,
   deleteBodyMetric,
   listBodyMetrics,
@@ -39,5 +40,15 @@ export function useDeleteBodyMetric() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bodyMetricsKeys.list })
     },
+  })
+}
+
+// mutation en vez de query: se dispara con un click de boton, no
+// automaticamente al montar la pantalla - ademas no tendria sentido
+// cachearlo por queryKey, cada click es una lectura nueva (y potencialmente
+// distinta, aunque los datos no hayan cambiado) generada por Claude.
+export function useAnalyzeBodyMetrics() {
+  return useMutation({
+    mutationFn: analyzeBodyMetrics,
   })
 }

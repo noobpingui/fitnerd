@@ -26,3 +26,8 @@ class AuthorizationError(AppError):
 class ValidationError(AppError):
     def __init__(self, message: str = "Invalid request"):
         super().__init__(message, status_code=400)
+
+#Exception raised when a user hits a request-frequency limit (429), like too many AI analyses in 24h
+class RateLimitError(AppError):
+    def __init__(self, message: str = "Too many requests"):
+        super().__init__(message, status_code=429)

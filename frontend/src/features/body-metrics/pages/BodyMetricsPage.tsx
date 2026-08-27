@@ -4,6 +4,7 @@ import { ApiError } from "@/lib/apiClient"
 import { BodyMetricForm } from "@/features/body-metrics/components/BodyMetricForm"
 import { BodyMetricRow } from "@/features/body-metrics/components/BodyMetricRow"
 import { MetricLineChart } from "@/features/body-metrics/components/MetricLineChart"
+import { ProgressAnalysis } from "@/features/body-metrics/components/ProgressAnalysis"
 import { buildMetricSeries } from "@/features/body-metrics/chartData"
 import { useBodyMetrics, useDeleteBodyMetric } from "@/features/body-metrics/hooks"
 
@@ -82,6 +83,12 @@ export function BodyMetricsPage() {
           </div>
         </>
       )}
+
+      {/* Fuera del if de arriba a proposito: el boton tiene que estar
+          visible siempre, incluso sin ningun registro - ahi el backend
+          responde con un mensaje aclarando que no hay datos, en vez de
+          esconder la funcionalidad. */}
+      <ProgressAnalysis />
 
       <h2 className="mb-3 text-lg font-semibold">Historial</h2>
 

@@ -18,3 +18,11 @@ export function createBodyMetric(payload: CreateBodyMetricPayload) {
 export function deleteBodyMetric(id: string) {
   return apiFetch<void>(`/api/body-metrics/${id}`, { method: "DELETE" })
 }
+
+// POST porque dispara una accion real (llama a Claude del lado del
+// backend) - no es un simple GET idempotente/cacheable.
+export function analyzeBodyMetrics() {
+  return apiFetch<{ analysis: string }>("/api/body-metrics/analysis", {
+    method: "POST",
+  })
+}

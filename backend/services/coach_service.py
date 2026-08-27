@@ -1,6 +1,5 @@
-import anthropic
-
 from services.retrieval_service import RetrievalService
+from utils.llm_client import LLMClient
 
 
 #El system prompt es la pieza clave para que el agente NO conteste con conocimiento
@@ -28,10 +27,9 @@ Reglas de estilo:
 
 
 class CoachService:
-    def __init__(self, retrieval_service: RetrievalService, anthropic_client: anthropic.Anthropic, model: str):
+    def __init__(self, retrieval_service: RetrievalService, llm_client: LLMClient):
         self.retrieval_service = retrieval_service
-        self.anthropic_client = anthropic_client
-        self.model = model
+        self.llm_client = llm_client
 
     def ask(self, question: str) -> str:
         relevant_chunks = self.retrieval_service.search(question)
@@ -50,16 +48,9 @@ class CoachService:
 
 Pregunta: {question}"""
 
-        response = self.anthropic_client.messages.create(
-            model=self.model,
-            max_tokens=1024,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_message}],
-        )
+        answer = self.llm_client.generate(SYSTEM_PROMPT, user_message)
 
-        #Chequeamos stop_reason ANTES de leer response.content - un rechazo por
-        #seguridad devuelve HTTP 200 igual, pero con content vacio o parcial.
-        if response.stop_reason == "refusal":
+        if answer is None:
             return "No pude generar una respuesta para esa pregunta."
 
-        return next((block.text for block in response.content if block.type == "text"), "")
+        return answer
