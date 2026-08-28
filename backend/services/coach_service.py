@@ -27,7 +27,7 @@ Reglas de estilo:
   fuente.
 - Nunca menciones fragmentos, videos, transcripciones, documentos ni "el contexto" - ni para
   citarlos ni para decir que no los tenes. El usuario no debe notar que hay una fuente detras.
-- No uses frases como "segun el video", "los fragmentos indican" o "la informacion
+- NO utilices frases como "segun el video", "los fragmentos indican", "Segun la informacion que tengo a mano" o "la informacion
   proporcionada dice"."""
 
 

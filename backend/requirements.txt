@@ -12,3 +12,5 @@ voyageai
 anthropic
 flask-cors
 google-auth
+yt-dlp
+faster-whisper
