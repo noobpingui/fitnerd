@@ -1,12 +1,19 @@
 """
-Descarga el audio de uno o mas videos de YouTube, los transcribe con
-Whisper (corriendo localmente, sin costo por uso) y sube la transcripcion
-a S3 bajo el prefijo "transcripts/" - el mismo lugar de donde
+Descarga el audio de uno o mas videos (YouTube, Instagram, o cualquier
+sitio que yt-dlp soporte), los transcribe con Whisper (corriendo
+localmente, sin costo por uso) y sube la transcripcion a S3 bajo el
+prefijo "transcripts/" - el mismo lugar de donde
 scripts/ingest_transcripts.py despues lee para meterlos en la base de
 conocimiento del coach (pgvector).
 
 Uso:
-    python scripts/download_and_transcribe.py <url_youtube> [<url_youtube> ...]
+    python -m scripts.download_and_transcribe <url> [<url> ...]
+    python -m scripts.download_and_transcribe <url> --title "Titulo manual"
+
+El --title es opcional y solo se puede usar con una unica URL a la vez -
+util para sitios como Instagram/TikTok, que a diferencia de YouTube no
+siempre traen un titulo descriptivo real (yt-dlp cae a un generico tipo
+"Video by <cuenta>", que no sirve para identificar el contenido despues).
 
 Flujo por cada video:
   1. yt-dlp descarga SOLO el audio (no el video completo) a un archivo
@@ -24,8 +31,8 @@ modelo la primera vez que se usa cada tamano (unos cientos de MB), y los
 cachea en disco para las siguientes corridas - la primera va a tardar
 mas por eso, ademas de la transcripcion en si.
 """
+import argparse
 import re
-import sys
 import tempfile
 from pathlib import Path
 
@@ -52,7 +59,7 @@ def slugify(title: str) -> str:
     return slug.strip("-")
 
 
-def download_audio(url: str, output_dir: Path) -> tuple[Path, str]:
+def download_audio(url: str, output_dir: Path, title_override: str | None) -> tuple[Path, str]:
     # Le pedimos a yt-dlp el mejor audio disponible (sin video) y que lo
     # convierta a mp3 con ffmpeg (postprocessor) - asi whisper siempre
     # recibe un formato que puede leer, sin importar el formato nativo
@@ -73,7 +80,10 @@ def download_audio(url: str, output_dir: Path) -> tuple[Path, str]:
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
-        title = info["title"]
+        # El titulo manual (--title) pisa el que trae la plataforma - pensado
+        # para sitios como Instagram/TikTok, donde yt-dlp suele devolver un
+        # generico tipo "Video by <cuenta>" en vez de algo descriptivo.
+        title = title_override or info["title"]
         audio_path = output_dir / f"{info['id']}.mp3"
 
     return audio_path, title
@@ -93,12 +103,14 @@ def upload_transcript(s3_client, bucket: str, slug: str, text: str) -> str:
     return key
 
 
-def process_video(url: str, model: WhisperModel, s3_client, bucket: str) -> None:
+def process_video(
+    url: str, model: WhisperModel, s3_client, bucket: str, title_override: str | None = None
+) -> None:
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir)
 
         print(f"Descargando audio de {url}...")
-        audio_path, title = download_audio(url, tmp_path)
+        audio_path, title = download_audio(url, tmp_path, title_override)
 
         print(f"Transcribiendo '{title}' (puede tardar varios minutos)...")
         text = transcribe(audio_path, model)
@@ -110,11 +122,25 @@ def process_video(url: str, model: WhisperModel, s3_client, bucket: str) -> None
         # ya cumplio su proposito.
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Descarga audio, transcribe con Whisper y sube el resultado a S3."
+    )
+    parser.add_argument("urls", nargs="+", help="Una o mas URLs de video")
+    parser.add_argument(
+        "--title",
+        help="Titulo manual, solo valido si se pasa una unica URL (pisa el que trae la plataforma)",
+    )
+    args = parser.parse_args()
+
+    if args.title and len(args.urls) > 1:
+        parser.error("--title solo se puede usar con una unica URL a la vez.")
+
+    return args
+
+
 def main():
-    urls = sys.argv[1:]
-    if not urls:
-        print("Uso: python scripts/download_and_transcribe.py <url> [<url> ...]")
-        sys.exit(1)
+    args = parse_args()
 
     print(f"Cargando modelo Whisper ({WHISPER_MODEL_SIZE})... esto pasa una sola vez por corrida.")
     model = WhisperModel(WHISPER_MODEL_SIZE, device="cpu", compute_type="int8")
@@ -122,9 +148,9 @@ def main():
     s3_client = boto3.client("s3")
     bucket = Config.S3_BUCKET_NAME
 
-    for url in urls:
+    for url in args.urls:
         try:
-            process_video(url, model, s3_client, bucket)
+            process_video(url, model, s3_client, bucket, title_override=args.title)
         except Exception as error:
             # Un video con problemas (privado, borrado, formato raro) no
             # deberia tirar abajo el resto del lote - mismo criterio que

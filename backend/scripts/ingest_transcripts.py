@@ -10,6 +10,8 @@ from models.video import Video
 from models.transcript import TranscriptChunk
 from utils.chunking import chunk_text
 
+#To run execute python -m scripts.ingest_transcripts
+
 
 def derive_title_from_key(source_key: str) -> str:
     #"transcripts/how-to-squat-properly.txt" -> "How To Squat Properly"
