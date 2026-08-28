@@ -8,10 +8,10 @@ export function CategoriesPage() {
   const { data: categories, isLoading, isError, error } = useExerciseCategories()
 
   return (
-    <div className="mx-auto max-w-2xl p-8">
-      <h1 className="mb-2 text-2xl font-bold">Categorias</h1>
+    <div className="mx-auto max-w-2xl p-4 sm:p-8">
+      <h1 className="mb-2 text-2xl font-bold">Categorías</h1>
       <p className="mb-6 text-muted-foreground">
-        Revisa el catalogo de ejercicios, su correcta ejecucion y elegi tus
+        Revisa el catálogo de ejercicios, su correcta ejecución y elegi tus
         favoritos.
       </p>
 

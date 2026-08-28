@@ -16,10 +16,10 @@ export function BodyMetricsPage() {
     // max-w-4xl (en vez del max-w-2xl que usan Categorias/Favoritos): esta
     // pagina ahora tiene una grilla de 3 charts lado a lado, que quedaria
     // apretada en un contenedor mas angosto.
-    <div className="mx-auto max-w-4xl p-8">
-      <h1 className="mb-2 text-2xl font-bold">Metricas corporales</h1>
+    <div className="mx-auto max-w-4xl p-4 sm:p-8">
+      <h1 className="mb-2 text-2xl font-bold">Métricas corporales</h1>
       <p className="mb-6 text-muted-foreground">
-        Registra tu peso y composicion corporal para seguir tu progreso en el
+        Registra tu peso y composición corporal para seguir tu progreso en el
         tiempo.
       </p>
 
@@ -35,7 +35,7 @@ export function BodyMetricsPage() {
       {!isLoading && !isError && metrics && metrics.length > 0 && (
         <>
           <h2 className="mb-3 text-lg font-semibold">
-            Progreso (ultimos 12 meses)
+            Progreso (últimos 12 meses)
           </h2>
           <div className="mb-8 grid gap-4 sm:grid-cols-3">
             <Card>
@@ -103,7 +103,7 @@ export function BodyMetricsPage() {
 
       {!isLoading && metrics?.length === 0 && (
         <p className="text-muted-foreground">
-          Todavia no hay registros - carga el primero arriba.
+          Todavía no hay registros - carga el primero arriba.
         </p>
       )}
 

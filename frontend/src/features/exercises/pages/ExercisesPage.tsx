@@ -45,7 +45,7 @@ export function ExercisesPage() {
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
-        Categorias
+        Categorías
       </Link>
 
       <h1 className="mb-6 text-2xl font-bold">

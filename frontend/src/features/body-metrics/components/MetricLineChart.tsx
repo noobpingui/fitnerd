@@ -30,7 +30,7 @@ export function MetricLineChart({
   if (data.length === 0) {
     return (
       <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
-        Sin datos de {title.toLowerCase()} en los ultimos 12 meses.
+        Sin datos de {title.toLowerCase()} en los últimos 12 meses.
       </div>
     )
   }

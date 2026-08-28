@@ -130,7 +130,7 @@ export function BodyMetricForm() {
               <FormLabel>Notas (opcional)</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Como te sentiste, condiciones de la medicion, etc."
+                  placeholder="Cómo te sentiste, condiciones de la medición, etc."
                   {...field}
                 />
               </FormControl>

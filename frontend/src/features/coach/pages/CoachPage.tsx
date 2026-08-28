@@ -65,22 +65,28 @@ export function CoachPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl p-8">
+    <div className="mx-auto max-w-2xl p-4 sm:p-8">
       <h1 className="mb-2 text-2xl font-bold">AI Coach</h1>
       <p className="mb-6 text-muted-foreground">
         Preguntale lo que quieras sobre fitness, basado en contenido real
         de entrenadores.
       </p>
 
-      {/* Altura fija (65vh) en vez de calcular "resto de la pantalla
+      {/* Altura fija (65dvh) en vez de calcular "resto de la pantalla
           menos el navbar" - mas simple y no se rompe si el navbar vuelve
-          a cambiar de tamano (ya paso un par de veces en este proyecto). */}
-      <div className="flex h-[65vh] flex-col overflow-hidden rounded-xl border bg-card">
+          a cambiar de tamano (ya paso un par de veces en este proyecto).
+          dvh en vez de vh: en navegadores moviles, vh se calcula sobre el
+          alto de pantalla completo (barra de direcciones incluida), asi
+          que al aparecer el teclado o esconderse esa barra, un 65vh fijo
+          no se recalcula correctamente. dvh (dynamic viewport height) es
+          la unidad pensada para esto - se ajusta al espacio realmente
+          visible en cada momento. */}
+      <div className="flex h-[65dvh] flex-col overflow-hidden rounded-xl border bg-card">
         <div className="flex-1 space-y-3 overflow-y-auto p-4">
           {messages.length === 0 && (
             <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-sm text-muted-foreground">
               <Sparkles className="h-6 w-6" />
-              Empeza la conversacion - preguntale algo al coach.
+              Empeza la conversación - preguntale algo al coach.
             </div>
           )}
 

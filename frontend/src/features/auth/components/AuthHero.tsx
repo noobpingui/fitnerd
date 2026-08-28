@@ -55,7 +55,7 @@ export function AuthHero() {
         transition={{ duration: 0.3, delay: 0.1 }}
         className="max-w-sm text-sm text-white"
       >
-        Resolvé tus dudas con un coach de IA online entrenado con informacion basada en ciencia - no más respuestas
+        Resolvé tus dudas con un coach de IA online entrenado con información basada en ciencia - no más respuestas
         genéricas o mitos de influencers fitness
       </motion.p>
 

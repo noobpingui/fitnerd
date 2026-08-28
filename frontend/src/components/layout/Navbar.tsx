@@ -4,9 +4,9 @@ import { UserMenu } from "@/components/layout/UserMenu"
 import { cn } from "@/lib/utils"
 
 const links = [
-  { to: "/categories", label: "Categorias" },
+  { to: "/categories", label: "Categorías" },
   { to: "/favorites", label: "Favoritos" },
-  { to: "/body-metrics", label: "Metricas" },
+  { to: "/body-metrics", label: "Métricas" },
   { to: "/coach", label: "Coach" },
 ]
 
@@ -29,7 +29,10 @@ export function Navbar() {
           <Logo className="text-4xl" />
         </NavLink>
 
-        <div className="flex gap-6">
+        {/* Escondido en mobile (hidden md:flex): en una pantalla angosta
+            estos 4 links de texto no entran junto al logo y el avatar sin
+            amontonarse - en mobile la navegacion vive en BottomTabBar. */}
+        <div className="hidden gap-6 md:flex">
           {links.map((link) => (
             <NavLink
               key={link.to}

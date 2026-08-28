@@ -19,7 +19,12 @@ export function AuthLayout({
   children: ReactNode
 }) {
   return (
-    <div className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-background p-4 py-12">
+    // min-h-dvh en vez de min-h-screen: mismo motivo que el fix de CoachPage
+    // (dvh se ajusta al espacio realmente visible, sin el salto que da vh
+    // cuando la barra de direcciones del navegador movil aparece/desaparece) -
+    // aca importa mas todavia porque el video de fondo tiene que cubrir
+    // exactamente ese alto sin dejar franjas vacias.
+    <div className="relative isolate flex min-h-dvh items-center justify-center overflow-hidden bg-background p-4 py-12">
       {/* isolate en el div de arriba: fuerza a que ESTE div cree su propio
           "stacking context". Sin esto, position:relative solo (sin
           z-index) no alcanza para crear uno, y los hijos con z-index

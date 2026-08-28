@@ -9,8 +9,8 @@ import { Card, CardContent } from "@/components/ui/card"
 const shortcuts = [
   {
     to: "/categories",
-    label: "Categorias",
-    description: "Explora el catalogo de ejercicios",
+    label: "Categorías",
+    description: "Explora el catálogo de ejercicios",
     icon: Dumbbell,
   },
   {
@@ -21,7 +21,7 @@ const shortcuts = [
   },
   {
     to: "/body-metrics",
-    label: "Metricas",
+    label: "Métricas",
     description: "Registra y revisa tu progreso",
     icon: LineChart,
   },
@@ -37,7 +37,7 @@ export function HomePage() {
   return (
     // max-w-3xl (antes max-w-2xl): con el 4to shortcut (Coach), 3xl da
     // mas aire a la grilla sin llegar al max-w-4xl que usa Metricas.
-    <div className="mx-auto max-w-3xl p-8">
+    <div className="mx-auto max-w-3xl p-4 sm:p-8">
       <h1 className="mb-2 text-2xl font-bold">Bienvenido de vuelta</h1>
       <p className="mb-6 text-muted-foreground">
         Elegi por donde queres continuar.

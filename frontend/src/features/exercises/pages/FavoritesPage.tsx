@@ -7,7 +7,7 @@ export function FavoritesPage() {
   const removeFavorite = useRemoveFavorite()
 
   return (
-    <div className="mx-auto max-w-2xl p-8">
+    <div className="mx-auto max-w-2xl p-4 sm:p-8">
       <h1 className="mb-2 text-2xl font-bold">Mis favoritos</h1>
       <p className="mb-6 text-muted-foreground">
         Arma tu rutina con los ejercicios que guardaste.
@@ -24,7 +24,7 @@ export function FavoritesPage() {
 
       {favorites?.length === 0 && (
         <p className="text-muted-foreground">
-          Todavia no marcaste ningun ejercicio como favorito.
+          Todavía no marcaste ningún ejercicio como favorito.
         </p>
       )}
 
