@@ -1,17 +1,40 @@
-import { Link } from "react-router"
+import { Link, useParams } from "react-router"
 import { motion } from "motion/react"
+import { ArrowLeft } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { ApiError } from "@/lib/apiClient"
-import { useExerciseCategories } from "@/features/exercises/hooks"
+import { useBodyRegions, useExerciseCategories } from "@/features/exercises/hooks"
 
+// Nivel 2 del catalogo: las categorias musculares (Pecho, Espalda, etc.)
+// dentro de la region elegida en RegionsPage (nivel 1).
 export function CategoriesPage() {
-  const { data: categories, isLoading, isError, error } = useExerciseCategories()
+  const { regionId } = useParams<{ regionId: string }>()
+
+  // useBodyRegions() ya esta en cache (RegionsPage la pidio antes) asi que
+  // esto no dispara un nuevo request de red - solo leemos el nombre.
+  const { data: regions } = useBodyRegions()
+  const region = regions?.find((r) => r.id === regionId)
+
+  const {
+    data: categories,
+    isLoading,
+    isError,
+    error,
+  } = useExerciseCategories(regionId!)
 
   return (
     <div className="mx-auto max-w-2xl p-4 sm:p-8">
-      <h1 className="mb-2 text-2xl font-bold">Categorías</h1>
+      <Link
+        to="/categories"
+        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Categorías
+      </Link>
+
+      <h1 className="mb-2 text-2xl font-bold">{region?.name ?? "Categorías"}</h1>
       <p className="mb-6 text-muted-foreground">
-        Revisa el catálogo de ejercicios, su correcta ejecución y elegi tus
+        Revisá el catálogo de ejercicios, su correcta ejecución y elegí tus
         favoritos.
       </p>
 
@@ -32,7 +55,7 @@ export function CategoriesPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, delay: index * 0.04 }}
           >
-            <Link to={`/categories/${category.id}`}>
+            <Link to={`/categories/${regionId}/${category.id}`}>
               <Card className="transition-colors hover:border-primary">
                 <CardContent className="font-medium">
                   {category.name}

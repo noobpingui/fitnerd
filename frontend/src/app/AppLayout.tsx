@@ -1,6 +1,7 @@
 import { Outlet } from "react-router"
 import { Navbar } from "@/components/layout/Navbar"
 import { BottomTabBar } from "@/components/layout/BottomTabBar"
+import { FeedbackButton } from "@/features/feedback/components/FeedbackButton"
 
 // Separado de ProtectedRoute a proposito: ProtectedRoute decide SI podes
 // pasar (logica de auth), AppLayout decide COMO se ve una vez que pasaste
@@ -18,6 +19,7 @@ export function AppLayout() {
         <Outlet />
       </div>
       <BottomTabBar />
+      <FeedbackButton />
     </div>
   )
 }

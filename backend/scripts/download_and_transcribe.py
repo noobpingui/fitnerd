@@ -116,6 +116,15 @@ def process_video(
         text = transcribe(audio_path, model)
 
         slug = slugify(title)
+        if not title_override:
+            # Sin --title (caso de lotes) el titulo que trae la plataforma
+            # puede repetirse entre videos (p.ej. varios reels de la misma
+            # cuenta sin caption caen todos en "Video by <cuenta>") - le
+            # anexamos el id del video (unico por definicion) para
+            # garantizar que cada uno suba a una key distinta en S3, en vez
+            # de pisarse entre si. Se renombra a mano despues, ya revisado
+            # el contenido de cada transcripcion.
+            slug = f"{slug}-{audio_path.stem}"
         key = upload_transcript(s3_client, bucket, slug, text)
         print(f"  -> Subido a s3://{bucket}/{key} ({len(text)} caracteres)\n")
         # El audio temporal se borra solo al salir de este "with" -

@@ -5,6 +5,7 @@ import { AppLayout } from "@/app/AppLayout"
 import { PageTransition } from "@/app/PageTransition"
 import { LoginPage } from "@/features/auth/pages/LoginPage"
 import { RegisterPage } from "@/features/auth/pages/RegisterPage"
+import { RegionsPage } from "@/features/exercises/pages/RegionsPage"
 import { CategoriesPage } from "@/features/exercises/pages/CategoriesPage"
 import { ExercisesPage } from "@/features/exercises/pages/ExercisesPage"
 import { FavoritesPage } from "@/features/exercises/pages/FavoritesPage"
@@ -56,9 +57,13 @@ function AnimatedRoutes() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/home" element={<HomePage />} />
-            <Route path="/categories" element={<CategoriesPage />} />
+            <Route path="/categories" element={<RegionsPage />} />
             <Route
-              path="/categories/:categoryId"
+              path="/categories/:regionId"
+              element={<CategoriesPage />}
+            />
+            <Route
+              path="/categories/:regionId/:categoryId"
               element={<ExercisesPage />}
             />
             <Route path="/favorites" element={<FavoritesPage />} />

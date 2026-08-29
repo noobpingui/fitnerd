@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   addFavorite,
+  listBodyRegions,
   listExerciseCategories,
   listExercisesByCategory,
   listFavorites,
@@ -9,20 +10,30 @@ import {
 
 // "Query key factory": centraliza las keys de cache de esta feature en un
 // solo lugar, para no repetir strings sueltos por distintos archivos.
-// byCategory es una FUNCION porque cada categoria tiene su propia entrada
-// de cache - los ejercicios de "Piernas" y los de "Espalda" no deben
-// pisarse entre si.
+// byRegion/byCategory son FUNCIONES porque cada region/categoria tiene su
+// propia entrada de cache - las categorias de "Tren Superior" y las de
+// "Tren Inferior" no deben pisarse entre si (mismo criterio ya aplicado a
+// byCategory para los ejercicios).
 export const exercisesKeys = {
-  categories: ["exercise-categories"] as const,
+  regions: ["body-regions"] as const,
+  categoriesByRegion: (regionId: string) =>
+    ["exercise-categories", "by-region", regionId] as const,
   byCategory: (categoryId: string) =>
     ["exercises", "by-category", categoryId] as const,
   favorites: ["favorites"] as const,
 }
 
-export function useExerciseCategories() {
+export function useBodyRegions() {
   return useQuery({
-    queryKey: exercisesKeys.categories,
-    queryFn: listExerciseCategories,
+    queryKey: exercisesKeys.regions,
+    queryFn: listBodyRegions,
+  })
+}
+
+export function useExerciseCategories(regionId: string) {
+  return useQuery({
+    queryKey: exercisesKeys.categoriesByRegion(regionId),
+    queryFn: () => listExerciseCategories(regionId),
   })
 }
 

@@ -1,7 +1,10 @@
+import uuid
+
 from flask import Blueprint, request, jsonify
 
 from extensions import db
 from repositories.exercise_category_repository import ExerciseCategoryRepository
+from repositories.body_region_repository import BodyRegionRepository
 from unit_of_work.unit_of_work import UnitOfWork
 from services.exercise_category_service import ExerciseCategoryService
 from decorators import require_auth, require_admin
@@ -16,15 +19,28 @@ exercise_category_bp = Blueprint(
 
 def _build_service():
     exercise_category_repository = ExerciseCategoryRepository(db.session)
+    body_region_repository = BodyRegionRepository(db.session)
     unit_of_work = UnitOfWork(db.session)
-    return ExerciseCategoryService(exercise_category_repository, unit_of_work)
+    return ExerciseCategoryService(exercise_category_repository, body_region_repository, unit_of_work)
 
 
+#Mismo patron que list_exercises() en exercise_routes.py: body_region_id es obligatorio via
+#query param, no un endpoint separado anidado bajo /body-regions/<id>/categories.
 @exercise_category_bp.route("", methods=["GET"])
 @require_auth
 def list_categories():
+    body_region_id_str = request.args.get("body_region_id")
+
+    if not body_region_id_str:
+        raise ValidationError("Debe indicar body_region_id")
+
+    try:
+        body_region_id = uuid.UUID(body_region_id_str)
+    except ValueError:
+        raise ValidationError("body_region_id invalido")
+
     service = _build_service()
-    categories = service.list_categories()
+    categories = service.list_by_region(body_region_id)
 
     return jsonify([{"id": category.id, "name": category.name} for category in categories]), 200
 
@@ -34,13 +50,19 @@ def list_categories():
 @require_admin
 def create_category():
     data = request.get_json()
+    body_region_id_str = data.get("body_region_id")
     name = data.get("name")
 
-    if not name or not name.strip():
-        raise ValidationError("El nombre de la categoria es obligatorio")
+    if not body_region_id_str or not name or not name.strip():
+        raise ValidationError("body_region_id y name son obligatorios")
+
+    try:
+        body_region_id = uuid.UUID(body_region_id_str)
+    except ValueError:
+        raise ValidationError("body_region_id invalido")
 
     service = _build_service()
-    category = service.create_category(name)
+    category = service.create_category(body_region_id, name)
 
     return jsonify(id=category.id, name=category.name), 201
 

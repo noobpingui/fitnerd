@@ -22,7 +22,7 @@ class LLMClient:
     #Devuelve el texto generado, o None si Claude rechazo la generacion por seguridad -
     #None (en vez de una string vacia) para que el servicio que llama pueda distinguir
     #"rechazado" de "genero una respuesta corta" y decidir su propio mensaje para ese caso.
-    def generate(self, system_prompt: str, messages: list[dict], max_tokens: int = 1024) -> str | None:
+    def generate(self, system_prompt: str, messages: list[dict], max_tokens: int = 2048) -> str | None:
         response = self.client.messages.create(
             model=self.model,
             max_tokens=max_tokens,

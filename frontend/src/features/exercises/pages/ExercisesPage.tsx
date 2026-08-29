@@ -11,11 +11,15 @@ import {
 } from "@/features/exercises/hooks"
 
 export function ExercisesPage() {
-  const { categoryId } = useParams<{ categoryId: string }>()
+  const { regionId, categoryId } = useParams<{
+    regionId: string
+    categoryId: string
+  }>()
 
-  // useExerciseCategories() ya esta en cache (la pantalla anterior la pidio)
-  // asi que esto no dispara un nuevo request de red - solo leemos el nombre.
-  const { data: categories } = useExerciseCategories()
+  // useExerciseCategories() ya esta en cache (CategoriesPage la pidio antes
+  // con este mismo regionId) asi que esto no dispara un nuevo request de
+  // red - solo leemos el nombre.
+  const { data: categories } = useExerciseCategories(regionId!)
   const category = categories?.find((c) => c.id === categoryId)
 
   const {
@@ -41,7 +45,7 @@ export function ExercisesPage() {
   return (
     <div className="mx-auto max-w-2xl p-8">
       <Link
-        to="/categories"
+        to={`/categories/${regionId}`}
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
