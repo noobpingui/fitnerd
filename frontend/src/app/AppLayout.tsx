@@ -1,5 +1,6 @@
-import { Outlet } from "react-router"
+import { Outlet, useLocation } from "react-router"
 import { Navbar } from "@/components/layout/Navbar"
+import { Footer } from "@/components/layout/Footer"
 import { BottomTabBar } from "@/components/layout/BottomTabBar"
 import { FeedbackButton } from "@/features/feedback/components/FeedbackButton"
 
@@ -8,6 +9,12 @@ import { FeedbackButton } from "@/features/feedback/components/FeedbackButton"
 // (el chrome visual: navbar + el resto de la pantalla). Cada uno con una
 // sola responsabilidad.
 export function AppLayout() {
+  // AppLayout envuelve TODAS las pantallas protegidas (/home, /categories,
+  // /favorites, /body-metrics, /coach) - el footer solo debe verse en
+  // /home, asi que hay que chequear la ruta actual antes de mostrarlo.
+  const location = useLocation()
+  const showFooter = location.pathname === "/home"
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -17,6 +24,7 @@ export function AppLayout() {
           En desktop (md:pb-0) no hace falta, ahi la barra ni se renderiza. */}
       <div className="pb-16 md:pb-0">
         <Outlet />
+        {showFooter && <Footer />}
       </div>
       <BottomTabBar />
       <FeedbackButton />

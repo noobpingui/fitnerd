@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Footer } from "@/components/layout/Footer"
 import { AuthHero } from "@/features/auth/components/AuthHero"
 
 export function AuthLayout({
@@ -88,6 +89,13 @@ export function AuthLayout({
             <CardContent>{children}</CardContent>
           </Card>
         </motion.div>
+
+        {/* mt-6: separacion respecto de la Card - Footer no trae margen
+            propio (en AppLayout no le hace falta, ahi el border-t contra
+            el borde de la pantalla ya es suficiente separacion visual). */}
+        <div className="mt-6">
+          <Footer />
+        </div>
       </div>
     </div>
   )

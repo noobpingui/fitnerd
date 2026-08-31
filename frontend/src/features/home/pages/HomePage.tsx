@@ -5,6 +5,18 @@ import { useSupportsHover } from "@/features/home/useSupportsHover"
 import { ShortcutCard } from "@/features/home/components/ShortcutCard"
 import { HomeSlideshowBox } from "@/features/home/components/HomeSlideshowBox"
 
+// Fisher-Yates: mezcla el array SIN mutar el original (copia primero con
+// [...array]) - devuelve un array nuevo en un orden aleatorio distinto
+// cada vez que se llama.
+function shuffle<T>(array: T[]): T[] {
+  const result = [...array]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
+
 // Por ahora este "home" es solo un punto de entrada con accesos directos a
 // las secciones existentes. A futuro (resumen de metricas recientes,
 // progreso, etc.) esta pantalla va a crecer, pero arrancamos simple.
@@ -51,11 +63,18 @@ export function HomePage() {
   // En touch (celular/tablet) no existe "pasar el mouse por encima" - ahi
   // el slideshow no puede depender de un hover que nunca va a pasar. Como
   // fallback, se arma una sola lista con las imagenes de TODAS las cards
-  // (en el orden de "shortcuts") y se la dejamos fija a HomeSlideshowBox:
-  // como esa caja ya cicla+crossfadea cualquier array que reciba, esto la
-  // pone en autoplay continuo sin que nadie tenga que tocar nada.
+  // y se la dejamos fija a HomeSlideshowBox: como esa caja ya
+  // cicla+crossfadea cualquier array que reciba, esto la pone en autoplay
+  // continuo sin que nadie tenga que tocar nada. shuffle() al armarla (en
+  // vez de dejarla en el orden fijo de "shortcuts") es lo que hace que en
+  // mobile las imagenes salgan sin un orden predecible - el array queda
+  // mezclado una sola vez por carga de pantalla (deps vacias), no en cada
+  // render.
   const allImages = useMemo(
-    () => shortcuts.flatMap((shortcut) => homeCardImages[shortcut.slug] ?? []),
+    () =>
+      shuffle(
+        shortcuts.flatMap((shortcut) => homeCardImages[shortcut.slug] ?? [])
+      ),
     []
   )
 

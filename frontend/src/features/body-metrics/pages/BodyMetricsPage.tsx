@@ -107,7 +107,7 @@ export function BodyMetricsPage() {
         </p>
       )}
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1.5">
         {metrics?.map((metric, index) => (
           <motion.div
             key={metric.id}
