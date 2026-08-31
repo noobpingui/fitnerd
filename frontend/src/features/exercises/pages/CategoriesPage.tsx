@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router"
 import { motion } from "motion/react"
-import { ArrowLeft } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import { AppBreadcrumbs } from "@/components/layout/AppBreadcrumbs"
 import { ApiError } from "@/lib/apiClient"
 import { useBodyRegions, useExerciseCategories } from "@/features/exercises/hooks"
 
@@ -24,13 +24,12 @@ export function CategoriesPage() {
 
   return (
     <div className="mx-auto max-w-2xl p-4 sm:p-8">
-      <Link
-        to="/categories"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Catálogo
-      </Link>
+      <AppBreadcrumbs
+        items={[
+          { label: "Catálogo", to: "/categories" },
+          { label: region?.name ?? "Categorías" },
+        ]}
+      />
 
       <h1 className="mb-2 text-2xl font-bold">{region?.name ?? "Categorías"}</h1>
       <p className="mb-6 text-muted-foreground">

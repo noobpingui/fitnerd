@@ -1,6 +1,7 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Dumbbell, Heart, LineChart, Sparkles } from "lucide-react"
 import { homeCardImages } from "@/features/home/images"
+import { useSupportsHover } from "@/features/home/useSupportsHover"
 import { ShortcutCard } from "@/features/home/components/ShortcutCard"
 import { HomeSlideshowBox } from "@/features/home/components/HomeSlideshowBox"
 
@@ -46,7 +47,25 @@ export function HomePage() {
   // null si no hay ninguna). HomeSlideshowBox recibe las imagenes de ese
   // slug - asi la caja de abajo "sigue" a la card en hover.
   const [hoveredSlug, setHoveredSlug] = useState<string | null>(null)
-  const activeImages = hoveredSlug ? homeCardImages[hoveredSlug] : undefined
+
+  // En touch (celular/tablet) no existe "pasar el mouse por encima" - ahi
+  // el slideshow no puede depender de un hover que nunca va a pasar. Como
+  // fallback, se arma una sola lista con las imagenes de TODAS las cards
+  // (en el orden de "shortcuts") y se la dejamos fija a HomeSlideshowBox:
+  // como esa caja ya cicla+crossfadea cualquier array que reciba, esto la
+  // pone en autoplay continuo sin que nadie tenga que tocar nada.
+  const allImages = useMemo(
+    () => shortcuts.flatMap((shortcut) => homeCardImages[shortcut.slug] ?? []),
+    []
+  )
+
+  const supportsHover = useSupportsHover()
+
+  const activeImages = supportsHover
+    ? hoveredSlug
+      ? homeCardImages[hoveredSlug]
+      : undefined
+    : allImages
 
   return (
     // max-w-3xl (antes max-w-2xl): con el 4to shortcut (Coach), 3xl da

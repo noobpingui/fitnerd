@@ -1,9 +1,10 @@
-import { Link, useParams } from "react-router"
-import { ArrowLeft } from "lucide-react"
+import { useParams } from "react-router"
+import { AppBreadcrumbs } from "@/components/layout/AppBreadcrumbs"
 import { ApiError } from "@/lib/apiClient"
 import { ExerciseCard } from "@/features/exercises/components/ExerciseCard"
 import {
   useAddFavorite,
+  useBodyRegions,
   useExerciseCategories,
   useExercisesByCategory,
   useFavorites,
@@ -16,9 +17,13 @@ export function ExercisesPage() {
     categoryId: string
   }>()
 
-  // useExerciseCategories() ya esta en cache (CategoriesPage la pidio antes
-  // con este mismo regionId) asi que esto no dispara un nuevo request de
-  // red - solo leemos el nombre.
+  // useBodyRegions()/useExerciseCategories() ya estan en cache (RegionsPage
+  // y CategoriesPage las pidieron antes, con este mismo regionId) asi que
+  // esto no dispara un nuevo request de red - solo leemos los nombres para
+  // el breadcrumb.
+  const { data: regions } = useBodyRegions()
+  const region = regions?.find((r) => r.id === regionId)
+
   const { data: categories } = useExerciseCategories(regionId!)
   const category = categories?.find((c) => c.id === categoryId)
 
@@ -44,13 +49,13 @@ export function ExercisesPage() {
 
   return (
     <div className="mx-auto max-w-2xl p-8">
-      <Link
-        to={`/categories/${regionId}`}
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Categorías
-      </Link>
+      <AppBreadcrumbs
+        items={[
+          { label: "Catálogo", to: "/categories" },
+          { label: region?.name ?? "Categorías", to: `/categories/${regionId}` },
+          { label: category?.name ?? "Ejercicios" },
+        ]}
+      />
 
       <h1 className="mb-6 text-2xl font-bold">
         {category?.name ?? "Ejercicios"}
