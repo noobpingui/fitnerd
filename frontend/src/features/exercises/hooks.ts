@@ -18,6 +18,7 @@ export const exercisesKeys = {
   regions: ["body-regions"] as const,
   categoriesByRegion: (regionId: string) =>
     ["exercise-categories", "by-region", regionId] as const,
+  allCategories: ["exercise-categories", "all"] as const,
   byCategory: (categoryId: string) =>
     ["exercises", "by-category", categoryId] as const,
   favorites: ["favorites"] as const,
@@ -34,6 +35,13 @@ export function useExerciseCategories(regionId: string) {
   return useQuery({
     queryKey: exercisesKeys.categoriesByRegion(regionId),
     queryFn: () => listExerciseCategories(regionId),
+  })
+}
+
+export function useAllExerciseCategories() {
+  return useQuery({
+    queryKey: exercisesKeys.allCategories,
+    queryFn: () => listExerciseCategories(),
   })
 }
 

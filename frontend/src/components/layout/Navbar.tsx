@@ -4,7 +4,7 @@ import { UserMenu } from "@/components/layout/UserMenu"
 import { cn } from "@/lib/utils"
 
 const links = [
-  { to: "/categories", label: "Categorías" },
+  { to: "/categories", label: "Catálogo" },
   { to: "/favorites", label: "Favoritos" },
   { to: "/body-metrics", label: "Métricas" },
   { to: "/coach", label: "Coach" },

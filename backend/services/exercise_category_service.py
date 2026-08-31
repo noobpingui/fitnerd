@@ -42,6 +42,12 @@ class ExerciseCategoryService:
 
         return self.exercise_category_repository.list_by_region(body_region_id)
 
+    def list_all(self):
+        #Sin filtro de region - usado cuando lo que hace falta es resolver
+        #nombre por id (ej: agrupar favoritos por categoria), no navegar
+        #el catalogo nivel por nivel.
+        return self.exercise_category_repository.list_active()
+
     def delete_category(self, category_id):
         category = self.exercise_category_repository.get_by_id(category_id)
 

@@ -68,8 +68,8 @@ export function CoachPage() {
     <div className="mx-auto max-w-2xl p-4 sm:p-8">
       <h1 className="mb-2 text-2xl font-bold">AI Coach</h1>
       <p className="mb-6 text-muted-foreground">
-        Preguntale lo que quieras sobre fitness, basado en contenido real
-        de entrenadores.
+        Pregunta lo que quieras sobre fitness, respuestas basadas en pruebas realizadas con electromiografía (EMG) y medición
+        de glucosa en sangre.
       </p>
 
       {/* Altura fija (65dvh) en vez de calcular "resto de la pantalla
@@ -86,7 +86,7 @@ export function CoachPage() {
           {messages.length === 0 && (
             <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-sm text-muted-foreground">
               <Sparkles className="h-6 w-6" />
-              Empeza la conversación - preguntale algo al coach.
+              Preguntale algo al coach.
             </div>
           )}
 

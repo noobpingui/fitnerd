@@ -11,13 +11,15 @@ export function listBodyRegions() {
   return apiFetch<BodyRegion[]>("/api/body-regions")
 }
 
-// body_region_id es obligatorio del lado del backend (ver
-// exercise_category_routes.py) - refleja que toda categoria vive dentro de
-// una region, no hay forma de listarlas todas "sueltas".
-export function listExerciseCategories(bodyRegionId: string) {
-  return apiFetch<ExerciseCategory[]>(
-    `/api/exercise-categories?body_region_id=${encodeURIComponent(bodyRegionId)}`
-  )
+// bodyRegionId es opcional: con el, filtra por region (nivel 2 del
+// catalogo, ver CategoriesPage). Sin el, el backend devuelve TODAS las
+// categorias activas - lo usa FavoritesPage para agrupar favoritos por
+// categoria sin tener que conocer de antemano la region de cada uno.
+export function listExerciseCategories(bodyRegionId?: string) {
+  const query = bodyRegionId
+    ? `?body_region_id=${encodeURIComponent(bodyRegionId)}`
+    : ""
+  return apiFetch<ExerciseCategory[]>(`/api/exercise-categories${query}`)
 }
 
 export function listExercisesByCategory(categoryId: string) {

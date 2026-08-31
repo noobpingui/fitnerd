@@ -1,39 +1,53 @@
-import { Link } from "react-router"
-import { motion } from "motion/react"
+import { useState } from "react"
 import { Dumbbell, Heart, LineChart, Sparkles } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
+import { homeCardImages } from "@/features/home/images"
+import { ShortcutCard } from "@/features/home/components/ShortcutCard"
+import { HomeSlideshowBox } from "@/features/home/components/HomeSlideshowBox"
 
 // Por ahora este "home" es solo un punto de entrada con accesos directos a
 // las secciones existentes. A futuro (resumen de metricas recientes,
 // progreso, etc.) esta pantalla va a crecer, pero arrancamos simple.
+//
+// "slug" es el nombre de la carpeta en src/assets/home/ de donde salen las
+// imagenes del slideshow compartido (ver images.ts).
 const shortcuts = [
   {
     to: "/categories",
-    label: "Categorías",
+    label: "Catálogo",
     description: "Explora el catálogo de ejercicios",
     icon: Dumbbell,
+    slug: "categories",
   },
   {
     to: "/favorites",
     label: "Favoritos",
     description: "Tus ejercicios guardados",
     icon: Heart,
+    slug: "favorites",
   },
   {
     to: "/body-metrics",
     label: "Métricas",
     description: "Registra y revisa tu progreso",
     icon: LineChart,
+    slug: "body-metrics",
   },
   {
     to: "/coach",
     label: "Coach",
     description: "Preguntale al AI Coach",
     icon: Sparkles,
+    slug: "coach",
   },
 ]
 
 export function HomePage() {
+  // Guarda el slug de la card sobre la que esta el mouse ahora mismo (o
+  // null si no hay ninguna). HomeSlideshowBox recibe las imagenes de ese
+  // slug - asi la caja de abajo "sigue" a la card en hover.
+  const [hoveredSlug, setHoveredSlug] = useState<string | null>(null)
+  const activeImages = hoveredSlug ? homeCardImages[hoveredSlug] : undefined
+
   return (
     // max-w-3xl (antes max-w-2xl): con el 4to shortcut (Coach), 3xl da
     // mas aire a la grilla sin llegar al max-w-4xl que usa Metricas.
@@ -45,26 +59,24 @@ export function HomePage() {
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {shortcuts.map((shortcut, index) => (
-          <motion.div
+          <ShortcutCard
             key={shortcut.to}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, delay: index * 0.06 }}
-          >
-            <Link to={shortcut.to}>
-              <Card className="h-full transition-colors hover:border-primary">
-                <CardContent className="flex flex-col items-start gap-2">
-                  <shortcut.icon className="h-6 w-6 text-primary" />
-                  <span className="font-medium">{shortcut.label}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {shortcut.description}
-                  </span>
-                </CardContent>
-              </Card>
-            </Link>
-          </motion.div>
+            to={shortcut.to}
+            label={shortcut.label}
+            description={shortcut.description}
+            icon={shortcut.icon}
+            index={index}
+            onHoverChange={(isHovered) =>
+              setHoveredSlug(isHovered ? (shortcut.slug ?? null) : null)
+            }
+          />
         ))}
       </div>
+
+      {/* Division visual entre la grilla de cards y el slideshow compartido */}
+      <div className="mt-6 border-t" />
+
+      <HomeSlideshowBox images={activeImages} />
     </div>
   )
 }

@@ -24,22 +24,26 @@ def _build_service():
     return ExerciseCategoryService(exercise_category_repository, body_region_repository, unit_of_work)
 
 
-#Mismo patron que list_exercises() en exercise_routes.py: body_region_id es obligatorio via
-#query param, no un endpoint separado anidado bajo /body-regions/<id>/categories.
+#Mismo patron que list_exercises() en exercise_routes.py: body_region_id via query param
+#filtra por region (navegacion nivel 2 del catalogo). Sin el param, devuelve TODAS las
+#categorias activas - lo usa FavoritesPage para agrupar favoritos por categoria sin
+#tener que conocer de antemano la region de cada uno.
 @exercise_category_bp.route("", methods=["GET"])
 @require_auth
 def list_categories():
     body_region_id_str = request.args.get("body_region_id")
 
+    service = _build_service()
+
     if not body_region_id_str:
-        raise ValidationError("Debe indicar body_region_id")
+        categories = service.list_all()
+        return jsonify([{"id": category.id, "name": category.name} for category in categories]), 200
 
     try:
         body_region_id = uuid.UUID(body_region_id_str)
     except ValueError:
         raise ValidationError("body_region_id invalido")
 
-    service = _build_service()
     categories = service.list_by_region(body_region_id)
 
     return jsonify([{"id": category.id, "name": category.name} for category in categories]), 200

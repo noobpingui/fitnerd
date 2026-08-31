@@ -10,3 +10,4 @@ from models.exercise_category import ExerciseCategory
 from models.exercise import Exercise
 from models.exercise_favorite import ExerciseFavorite
 from models.feedback import Feedback
+from models.weekly_plan_entry import WeeklyPlanEntry

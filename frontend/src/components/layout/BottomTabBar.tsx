@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 // para que la iconografia sea consistente en toda la app.
 const tabs = [
   { to: "/home", label: "Inicio", icon: Home },
-  { to: "/categories", label: "Categorías", icon: Dumbbell },
+  { to: "/categories", label: "Catálogo", icon: Dumbbell },
   { to: "/favorites", label: "Favoritos", icon: Heart },
   { to: "/body-metrics", label: "Métricas", icon: LineChart },
   { to: "/coach", label: "Coach", icon: Sparkles },
