@@ -2,9 +2,17 @@ import logging
 
 from services.retrieval_service import RetrievalService
 from utils.llm_client import LLMClient
-from exceptions.custom_exceptions import ServiceUnavailableError
+from utils.rate_limiter import RateLimiter
+from exceptions.custom_exceptions import ServiceUnavailableError, RateLimitError
 
 logger = logging.getLogger(__name__)
+
+#Cuantas preguntas puede hacer un mismo usuario en una ventana de 1 hora. A diferencia
+#del limite de ProgressAnalysisService (2 CADA 24hs, una accion puntual/rara), el coach
+#es una funcionalidad de chat de uso normal - el numero tiene que ser generoso para no
+#estorbar una conversacion real, solo cortar un abuso claro (un script, un loop por bug).
+MAX_QUESTIONS_PER_WINDOW = 20
+RATE_LIMIT_WINDOW_SECONDS = 60 * 60
 
 
 #El system prompt es la pieza clave para que el agente NO conteste con conocimiento
@@ -32,16 +40,35 @@ Reglas de estilo:
 
 
 class CoachService:
-    def __init__(self, retrieval_service: RetrievalService, llm_client: LLMClient):
+    def __init__(self, retrieval_service: RetrievalService, llm_client: LLMClient, rate_limiter: RateLimiter):
         self.retrieval_service = retrieval_service
         self.llm_client = llm_client
+        self.rate_limiter = rate_limiter
 
     #history: turnos anteriores de ESTA conversacion, en formato [{"role": "user"|"assistant",
     #"content": str}, ...] - tal cual los muestra el frontend, sin la "muleta" de contexto
     #que le agregamos a la pregunta actual mas abajo (esa solo se inyecta en el turno nuevo,
     #no se reinyecta contexto viejo en cada mensaje historico). None/vacio = primera pregunta
     #de la conversacion, se comporta identico a como funcionaba antes de esto.
-    def ask(self, question: str, history: list[dict] | None = None) -> str:
+    #
+    #user_id se usa UNICAMENTE para el rate limit (identificar de quien es cada contador
+    #en Redis) - el resto del metodo no lo necesitaba y sigue sin necesitarlo.
+    def ask(self, question: str, user_id: str, history: list[dict] | None = None) -> str:
+        #Chequeo de limite ANTES de gastar nada (retrieval + Claude) - a diferencia de
+        #ProgressAnalysisService, aca no hay un caso "gratis" que se pueda resolver sin
+        #golpear ningun proveedor externo, asi que el chequeo va primero en el metodo,
+        #no a mitad de camino.
+        allowed = self.rate_limiter.check_and_increment(
+            key=f"ratelimit:coach:ask:{user_id}",
+            limit=MAX_QUESTIONS_PER_WINDOW,
+            window_seconds=RATE_LIMIT_WINDOW_SECONDS,
+        )
+        if not allowed:
+            raise RateLimitError(
+                f"Alcanzaste el limite de {MAX_QUESTIONS_PER_WINDOW} preguntas por hora. "
+                "Volve a intentarlo en un rato."
+            )
+
         try:
             retrieval_query = self._build_retrieval_query(question, history)
             relevant_chunks = self.retrieval_service.search(retrieval_query)

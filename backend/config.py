@@ -28,6 +28,9 @@ class Config:
     #para NUESTRA app (el "audience" del token) y no para otra.
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
+    #URL de conexion a Redis - usado hoy para el rate limiting de /api/coach/ask.
+    REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+
 class DevelopmentConfig(Config):
     """Configuración exclusiva para mi pc (Desarrollo)"""
     DEBUG = True

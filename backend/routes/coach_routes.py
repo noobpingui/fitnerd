@@ -1,6 +1,6 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, g
 
-from extensions import db, embedding_client
+from extensions import db, embedding_client, rate_limiter
 from repositories.transcript_chunk_repository import TranscriptChunkRepository
 from services.retrieval_service import RetrievalService
 from services.coach_service import CoachService
@@ -50,7 +50,7 @@ def _build_coach_service():
     retrieval_service = RetrievalService(transcript_chunk_repository, embedding_client)
     llm_client = LLMClient(model=current_app.config["ANTHROPIC_MODEL"])
 
-    return CoachService(retrieval_service, llm_client)
+    return CoachService(retrieval_service, llm_client, rate_limiter)
 
 
 @coach_bp.route("/ask", methods=["POST"])
@@ -66,8 +66,9 @@ def ask():
         raise ValidationError(f"La pregunta no puede superar los {MAX_QUESTION_LENGTH} caracteres")
 
     history = _sanitize_history(data.get("history"))
+    user_id = g.decoded_token["id"]
 
     coach_service = _build_coach_service()
-    answer = coach_service.ask(question, history)
+    answer = coach_service.ask(question, user_id, history)
 
     return jsonify(answer=answer), 200

@@ -16,3 +16,4 @@ yt-dlp
 faster-whisper
 pytest
 pytest-cov
+redis

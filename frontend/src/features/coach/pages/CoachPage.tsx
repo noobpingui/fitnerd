@@ -102,15 +102,23 @@ export function CoachPage() {
             </div>
           )}
 
-          {askCoach.isError && (
-            <p className="text-sm text-destructive">
-              Error (
-              {askCoach.error instanceof ApiError
-                ? askCoach.error.status
-                : "?"}
-              ): {askCoach.error.message}
-            </p>
-          )}
+          {askCoach.isError &&
+            (askCoach.error instanceof ApiError && askCoach.error.status === 429 ? (
+              // 429 (limite de preguntas por hora) no es una falla real - es una
+              // respuesta esperada del sistema, no un error tecnico. Mismo criterio
+              // que ProgressAnalysis.tsx: tono neutro (muted), sin el rojo de
+              // destructive ni el prefijo "Error (xxx):", que hace que se lea como
+              // que algo se rompio.
+              <p className="text-sm text-muted-foreground">{askCoach.error.message}</p>
+            ) : (
+              <p className="text-sm text-destructive">
+                Error (
+                {askCoach.error instanceof ApiError
+                  ? askCoach.error.status
+                  : "?"}
+                ): {askCoach.error.message}
+              </p>
+            ))}
 
           <div ref={bottomRef} />
         </div>

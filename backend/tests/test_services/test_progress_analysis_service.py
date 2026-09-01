@@ -17,7 +17,7 @@ import pytest
 
 from services.progress_analysis_service import ProgressAnalysisService, MAX_ANALYSES_PER_WINDOW
 from exceptions.custom_exceptions import RateLimitError, ServiceUnavailableError
-from tests.fakes import FakeUnitOfWork
+from tests.fakes import FakeUnitOfWork, FakeLLMClient
 
 
 class FakeBodyMetricRepository:
@@ -38,22 +38,6 @@ class FakeProgressAnalysisRepository:
 
     def create(self, analysis):
         self.created.append(analysis)
-
-
-class FakeLLMClient:
-    """El doble de Anthropic. `raise_error` simula una falla real del
-    proveedor (rate limit, timeout, lo que sea); si es None, generate()
-    simplemente devuelve `answer` como si Claude hubiera respondido bien."""
-    def __init__(self, answer="Analisis de mentira, generado sin tocar Anthropic", raise_error=None):
-        self.answer = answer
-        self.raise_error = raise_error
-        self.calls = []
-
-    def generate(self, system_prompt, messages):
-        self.calls.append((system_prompt, messages))
-        if self.raise_error:
-            raise self.raise_error
-        return self.answer
 
 
 def make_metric(**overrides):

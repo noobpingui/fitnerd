@@ -7,10 +7,12 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from utils.jwt_utils import JWTManager
 from utils.embeddings import EmbeddingClient
+from utils.rate_limiter import RateLimiter
 
 db = SQLAlchemy()
 migrate = Migrate()
 cors = CORS()
 jwt_manager = JWTManager()
 embedding_client = EmbeddingClient()
+rate_limiter = RateLimiter()
 
