@@ -48,7 +48,7 @@ const shortcuts = [
   {
     to: "/coach",
     label: "Coach",
-    description: "Preguntale al AI Coach",
+    description: "Pregúntale al AI Coach",
     icon: Sparkles,
     slug: "coach",
   },
@@ -92,7 +92,7 @@ export function HomePage() {
     <div className="mx-auto max-w-3xl p-4 sm:p-8">
       <h1 className="mb-2 text-2xl font-bold">Bienvenido de vuelta</h1>
       <p className="mb-6 text-muted-foreground">
-        Elegi por donde queres continuar.
+        Elige por donde quieres continuar.
       </p>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

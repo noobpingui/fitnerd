@@ -48,7 +48,7 @@ export function FeedbackButton() {
           <DialogHeader>
             <DialogTitle>¡Gracias por tu feedback!</DialogTitle>
             <DialogDescription>
-              Lo vamos a revisar. Podés cerrar esta ventana cuando quieras.
+              Lo vamos a revisar. Puedes cerrar esta ventana cuando quieras.
             </DialogDescription>
           </DialogHeader>
         ) : (
@@ -56,7 +56,7 @@ export function FeedbackButton() {
             <DialogHeader>
               <DialogTitle>Enviar feedback</DialogTitle>
               <DialogDescription>
-                Contanos qué te parece la app, qué te gustaría que tuviera, o
+                Cuéntanos qué te parece la app, qué te gustaría que tuviera, o
                 si encontraste algún problema.
               </DialogDescription>
             </DialogHeader>

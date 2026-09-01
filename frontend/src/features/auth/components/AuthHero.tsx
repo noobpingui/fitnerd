@@ -10,7 +10,7 @@ const rotatingWords = [
 
 const features = [
   { icon: Dumbbell, label: "Catálogo de ejercicios con técnica de ejecución" },
-  { icon: Heart, label: "Guardá tus ejercicios favoritos" },
+  { icon: Heart, label: "Guarda tus ejercicios favoritos" },
   { icon: Sparkles, label: "AI Coach online" },
 ]
 
@@ -55,7 +55,7 @@ export function AuthHero() {
         transition={{ duration: 0.3, delay: 0.1 }}
         className="max-w-sm text-sm text-white"
       >
-        Resolvé tus dudas con un coach de IA online entrenado con información basada en ciencia - no más respuestas
+        Resuelve tus dudas con un coach de IA online entrenado con información basada en ciencia - no más respuestas
         genéricas o mitos de influencers fitness
       </motion.p>
 

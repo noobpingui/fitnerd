@@ -38,10 +38,19 @@ class ProductionConfig(Config):
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.getenv("PROD_DATABASE_URL")
 
+class TestingConfig(Config):
+    """Configuración exclusiva para correr los tests (pytest) - apunta a
+    fitnerd_test, NUNCA a la base de desarrollo (los tests crean/borran
+    tablas y datos libremente en cada corrida)."""
+    TESTING = True
+    DEBUG = False
+    SQLALCHEMY_DATABASE_URI = os.getenv("TEST_DATABASE_URL")
+
 
 #Dictionary to easily select environments
 config_by_name = {
     'development': DevelopmentConfig,
     'production': ProductionConfig,
-    'default': DevelopmentConfig 
+    'testing': TestingConfig,
+    'default': DevelopmentConfig
 }

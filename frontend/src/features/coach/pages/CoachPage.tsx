@@ -86,7 +86,7 @@ export function CoachPage() {
           {messages.length === 0 && (
             <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-sm text-muted-foreground">
               <Sparkles className="h-6 w-6" />
-              Preguntale algo al coach.
+              Pregúntale algo al coach.
             </div>
           )}
 
@@ -120,7 +120,7 @@ export function CoachPage() {
             value={question}
             onChange={(e) => setQuestion(e.target.value.slice(0, MAX_QUESTION_LENGTH))}
             onKeyDown={handleKeyDown}
-            placeholder="Escribi tu pregunta..."
+            placeholder="Escribe tu pregunta..."
             rows={1}
             className="min-h-9 resize-none"
           />

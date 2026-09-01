@@ -130,12 +130,12 @@ export function RegisterForm() {
         <GoogleSignInButton />
 
         <p className="text-center text-sm text-muted-foreground">
-          ¿Ya tenés cuenta?{" "}
+          ¿Ya tienes cuenta?{" "}
           <Link
             to="/login"
             className="text-primary underline-offset-4 hover:underline"
           >
-            Ingresá con tus credenciales
+            Ingresa con tus credenciales
           </Link>
         </p>
       </form>

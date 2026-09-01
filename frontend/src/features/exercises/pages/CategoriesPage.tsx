@@ -33,7 +33,7 @@ export function CategoriesPage() {
 
       <h1 className="mb-2 text-2xl font-bold">{region?.name ?? "Categorías"}</h1>
       <p className="mb-6 text-muted-foreground">
-        Revisá el catálogo de ejercicios, su correcta ejecución y elegí tus
+        Revisa el catálogo de ejercicios, su correcta ejecución y elige tus
         favoritos.
       </p>
 

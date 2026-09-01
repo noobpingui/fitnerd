@@ -8,16 +8,16 @@ import { z } from "zod"
 // validar longitud) - vale la pena agregarlo alli tambien en algun momento.
 
 export const loginSchema = z.object({
-  email: z.email("Email invalido"),
+  email: z.email("Email inválido"),
   password: z.string().min(1, "La contraseña es obligatoria"),
 })
 export type LoginFormValues = z.infer<typeof loginSchema>
 
 export const registerSchema = z.object({
-  email: z.email("Email invalido"),
-  password: z.string().min(8, "Minimo 8 caracteres"),
+  email: z.email("Email inválido"),
+  password: z.string().min(8, "Mínimo 8 caracteres"),
   first_name: z.string().min(1, "Campo obligatorio"),
   last_name: z.string().min(1, "Campo obligatorio"),
-  date_of_birth: z.iso.date("Fecha invalida"),
+  date_of_birth: z.iso.date("Fecha inválida"),
 })
 export type RegisterFormValues = z.infer<typeof registerSchema>

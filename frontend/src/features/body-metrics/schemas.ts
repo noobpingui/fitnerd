@@ -11,7 +11,7 @@ const optionalPositiveNumber = z
   .string()
   .refine(
     (v) => v === "" || (!Number.isNaN(Number(v)) && Number(v) > 0),
-    "Debe ser un numero mayor a 0"
+    "Debe ser un número mayor a 0"
   )
 
 const optionalPercentage = z
@@ -26,6 +26,6 @@ export const bodyMetricSchema = z.object({
   body_fat_percentage: optionalPercentage,
   muscle_mass_percentage: optionalPercentage,
   notes: z.string().optional(),
-  recorded_at: z.iso.date("Fecha invalida"),
+  recorded_at: z.iso.date("Fecha inválida"),
 })
 export type BodyMetricFormValues = z.infer<typeof bodyMetricSchema>

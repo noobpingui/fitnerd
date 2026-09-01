@@ -6,7 +6,7 @@ export function LoginPage() {
   return (
     <AuthLayout
       title={<Logo />}
-      description="Entrená de forma segura e inteligente"
+      description="Entrena de forma segura e inteligente"
     >
       <LoginForm />
     </AuthLayout>

@@ -60,7 +60,7 @@ export function FeedbackForm({ onSuccess }: { onSuccess: () => void }) {
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Elegí una categoría" />
+                    <SelectValue placeholder="Elige una categoría" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -84,7 +84,7 @@ export function FeedbackForm({ onSuccess }: { onSuccess: () => void }) {
               <FormLabel>Mensaje</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Contanos qué se te ocurre, qué problema encontraste, o qué te gustaría ver..."
+                  placeholder="Cuéntanos qué se te ocurre, qué problema encontraste, o qué te gustaría ver..."
                   rows={5}
                   {...field}
                 />

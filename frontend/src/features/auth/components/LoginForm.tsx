@@ -77,12 +77,12 @@ export function LoginForm() {
         <GoogleSignInButton />
 
         <p className="text-center text-sm text-muted-foreground">
-          ¿No tenés cuenta?{" "}
+          ¿No tienes cuenta?{" "}
           <Link
             to="/register"
             className="text-primary underline-offset-4 hover:underline"
           >
-            Registrate
+            Regístrate
           </Link>
         </p>
       </form>

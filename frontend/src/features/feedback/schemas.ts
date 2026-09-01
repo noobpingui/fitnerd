@@ -7,11 +7,11 @@ import { z } from "zod"
 export const feedbackCategories = ["general", "suggestion", "bug"] as const
 
 export const feedbackSchema = z.object({
-  category: z.enum(feedbackCategories, "Elegi una categoria"),
+  category: z.enum(feedbackCategories, "Elige una categoría"),
   message: z
     .string()
     .trim()
-    .min(1, "El mensaje no puede estar vacio")
+    .min(1, "El mensaje no puede estar vacío")
     .max(2000, "El mensaje no puede superar los 2000 caracteres"),
 })
 export type FeedbackFormValues = z.infer<typeof feedbackSchema>

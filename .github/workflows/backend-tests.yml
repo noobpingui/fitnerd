@@ -1,0 +1,96 @@
+name: Backend tests
+
+  # Cuando corre este workflow: en cada push a main, y en cada Pull Request
+  # hacia main. El filtro "paths" es importante en un monorepo como el
+  # nuestro: sin esto, un cambio SOLO en frontend/ tambien dispararia (e
+  # inutilmente correria) los tests del backend.
+  on:
+    push:
+      branches: [main]
+      paths: ["backend/**"]
+    pull_request:
+      branches: [main]
+      paths: ["backend/**"]
+
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+
+      # "defaults.run.working-directory": en vez de escribir "cd backend &&"
+      # al principio de cada comando de abajo, esto le dice a TODOS los pasos
+      # "run: ..." de este job que arranquen ya parados en backend/.
+      defaults:
+        run:
+          working-directory: backend
+
+      # Un "service container": una segunda maquina (contenedor Docker) que
+      # GitHub levanta AL LADO de la maquina donde corren nuestros pasos,
+      # viven durante todo el job y se destruyen solas al final. Es
+      # exactamente lo mismo que un servicio en docker-compose.yml, pero
+      # gestionado por GitHub Actions en vez de por nosotros.
+      services:
+        postgres:
+          image: pgvector/pgvector:pg16
+          env:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: fitnerd_test
+          ports:
+            - 5432:5432
+          # health check: Actions espera a que Postgres este REALMENTE listo
+          # para aceptar conexiones antes de arrancar los pasos de abajo -
+          # sin esto, el primer paso que se conecte podria arrancar antes de
+          # que Postgres termine de inicializar, y fallar por una carrera
+          # (race condition) que no tiene nada que ver con nuestro codigo.
+          options: >-
+            --health-cmd pg_isready
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 5
+
+      steps:
+        # Trae el codigo del repo a la maquina de Actions - sin este paso no
+        # hay nada que testear, la maquina arranca completamente vacia.
+        - uses: actions/checkout@v4
+
+        - uses: actions/setup-python@v5
+          with:
+            python-version: "3.13"
+            # Cachea las dependencias de pip entre corridas usando
+            # requirements.txt como "huella digital" - si no cambio, la
+            # proxima corrida instala mucho mas rapido.
+            cache: "pip"
+            cache-dependency-path: backend/requirements.txt
+
+        - name: Instalar dependencias
+          run: pip install -r requirements.txt
+
+        # La extension pgvector viene INSTALADA en la imagen (pgvector/pgvector),
+        # pero no habilitada automaticamente en la base "fitnerd_test" - hay
+        # que correr CREATE EXTENSION una vez, mismo paso que hicimos a mano
+        # localmente.
+        - name: Habilitar pgvector
+          run: psql -h localhost -U postgres -d fitnerd_test -c "CREATE EXTENSION IF NOT EXISTS vector"
+          env:
+            PGPASSWORD: postgres
+
+        # Llaves JWT DESCARTABLES, generadas de cero en cada corrida - nunca
+        # las reales de produccion (esas nunca deberian salir de tu maquina/
+        # del gitignore). Los tests solo necesitan ALGUN par de llaves RS256
+        # validas para firmar/verificar los tokens que ellos mismos generan
+        # durante la corrida - no les importa cual.
+        - name: Generar llaves JWT descartables
+          run: python scripts/generate_jwt_keys.py
+
+        - name: Correr tests
+          run: python -m pytest -v
+          env:
+            FLASK_ENV: testing
+            TEST_DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/fitnerd_test
+            JWT_PRIVATE_KEY_PATH: keys/private_key.pem
+            JWT_PUBLIC_KEY_PATH: keys/public_key.pem
+            # No es un secret real - alcanza con que exista un valor para que
+            # voyageai.Client(...) no explote al construirse. Ningun test
+            # actual llega a hacer una llamada de red real con esto.
+            VOYAGE_API_KEY: fake-key-for-ci
+            VOYAGE_EMBEDDING_MODEL: voyage-4

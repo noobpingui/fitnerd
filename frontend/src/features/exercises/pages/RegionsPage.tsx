@@ -35,7 +35,7 @@ export function RegionsPage() {
     <div className="mx-auto max-w-2xl p-4 sm:p-8">
       <h1 className="mb-2 text-2xl font-bold">Catálogo</h1>
       <p className="mb-6 text-muted-foreground">
-        Elegí una zona del cuerpo para ver sus categorías de ejercicios.
+        Elige una zona del cuerpo para ver sus categorías de ejercicios.
       </p>
 
       {isLoading && <p className="text-muted-foreground">Cargando...</p>}

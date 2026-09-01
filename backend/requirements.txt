@@ -14,3 +14,5 @@ flask-cors
 google-auth
 yt-dlp
 faster-whisper
+pytest
+pytest-cov

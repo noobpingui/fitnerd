@@ -55,7 +55,7 @@ export function DayColumn({
 
       {items.length === 0 && (
         <span className="px-1 text-xs text-muted-foreground/60">
-          Soltá acá un ejercicio
+          Suelta acá un ejercicio
         </span>
       )}
 
