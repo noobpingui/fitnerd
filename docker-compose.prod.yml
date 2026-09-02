@@ -1,0 +1,43 @@
+# Version de docker-compose pensada para el servidor real (EC2), separada
+# de docker-compose.yml (esa es para desarrollo local). Diferencias clave:
+#
+# - Sin "postgres": la base de datos real vive en Supabase, no en este
+#   servidor - PROD_DATABASE_URL (en backend/.env, via env_file abajo) ya
+#   apunta ahi.
+# - Sin "frontend": el frontend se despliega en Vercel, no ac.
+# - FLASK_ENV=production: hace que create_app() use PROD_DATABASE_URL en
+#   vez de DEV_DATABASE_URL.
+# - CORS_ORIGINS apunta al dominio real (fitnerd.betofallas.dev), no a
+#   localhost.
+# - El backend publica el puerto SOLO en 127.0.0.1 (no 0.0.0.0) a
+#   proposito - todavia no hay HTTPS ni un proxy reverso (Caddy) delante,
+#   asi que no queremos que el backend "pelado" (HTTP plano, sin cifrar)
+#   quede expuesto directo a internet mientras tanto. Una vez que Caddy
+#   este andando en el mismo servidor, el sigue pudiendo hablarle por
+#   localhost sin problema - solo bloquea el acceso desde AFUERA de esta
+#   maquina. Se prueba con curl DESDE la sesion de SSH, no desde tu PC.
+# - restart: unless-stopped en los dos - si la instancia se reinicia (o
+#   un contenedor se cae), Docker los vuelve a levantar solo, sin que
+#   nadie tenga que entrar a mano.
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+    env_file:
+      - ./backend/.env
+    environment:
+      FLASK_ENV: production
+      REDIS_URL: redis://redis:6379/0
+      CORS_ORIGINS: https://fitnerd.betofallas.dev
+    volumes:
+      - ./backend/keys:/app/keys:ro
+    ports:
+      - "127.0.0.1:5000:5000"
+    depends_on:
+      - redis
+    restart: unless-stopped
