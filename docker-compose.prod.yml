@@ -16,9 +16,20 @@
 #   este andando en el mismo servidor, el sigue pudiendo hablarle por
 #   localhost sin problema - solo bloquea el acceso desde AFUERA de esta
 #   maquina. Se prueba con curl DESDE la sesion de SSH, no desde tu PC.
-# - restart: unless-stopped en los dos - si la instancia se reinicia (o
+# - restart: unless-stopped en los tres - si la instancia se reinicia (o
 #   un contenedor se cae), Docker los vuelve a levantar solo, sin que
 #   nadie tenga que entrar a mano.
+# - caddy: es el unico servicio que publica puertos al mundo (80 y 443).
+#   Le habla al backend por dentro de la red de Docker (por nombre de
+#   servicio, "backend:5000"), asi que el backend ya no necesita estar
+#   expuesto para nada - lo dejamos publicado solo en 127.0.0.1 igual,
+#   por si en algun momento queres hacer un curl de prueba directo desde
+#   la sesion de SSH sin pasar por Caddy. Caddy lee ./Caddyfile, ve que
+#   el sitio es un dominio real (no "localhost") y automaticamente pide,
+#   instala y renueva un certificado HTTPS de Let's Encrypt - no hay que
+#   configurar nada mas. Los volumenes caddy_data/caddy_config son donde
+#   Caddy guarda esos certificados, para no tener que sacar uno nuevo
+#   cada vez que se reinicia el contenedor.
 
 services:
   redis:
@@ -41,3 +52,20 @@ services:
     depends_on:
       - redis
     restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
