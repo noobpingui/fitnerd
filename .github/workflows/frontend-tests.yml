@@ -1,0 +1,42 @@
+name: Frontend tests
+
+  # Mismo filtro que backend-tests.yml, pero apuntando a frontend/ - y
+  # tambien al propio archivo del workflow (la misma leccion que aprendimos
+  # con el de backend: sin esto, un cambio SOLO al .yml no se dispara solo).
+on:
+  push:
+    branches: [main]
+    paths: ["frontend/**", ".github/workflows/frontend-tests.yml"]
+  pull_request:
+    branches: [main]
+    paths: ["frontend/**", ".github/workflows/frontend-tests.yml"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          # Cachea node_modules entre corridas usando package-lock.json como
+          # huella digital - mismo concepto que el cache de pip en el
+          # workflow de backend.
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      # npm ci (no "npm install"): instala EXACTAMENTE lo que dice
+      # package-lock.json, sin recalcular ni actualizar nada - mas rapido y
+      # 100% reproducible, el estandar para CI (a diferencia de "npm install",
+      # pensado para desarrollo local donde SI queres que se actualice el lock).
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Correr tests
+        run: npm test
