@@ -8,6 +8,7 @@ const links = [
   { to: "/favorites", label: "Favoritos" },
   { to: "/body-metrics", label: "Métricas" },
   { to: "/coach", label: "Coach" },
+  { to: "/store", label: "Tienda" },
 ]
 
 export function Navbar() {

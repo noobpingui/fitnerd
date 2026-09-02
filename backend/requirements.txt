@@ -17,3 +17,4 @@ faster-whisper
 pytest
 pytest-cov
 redis
+gunicorn

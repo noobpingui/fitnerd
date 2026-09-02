@@ -26,6 +26,48 @@ services:
     ports:
       - "6379:6379"
 
+  backend:
+      build:
+        context: ./backend
+      env_file:
+        - ./backend/.env
+      environment:
+        # Estas 3 pisan lo que venga de backend/.env - son las unicas que
+        # realmente cambian adentro de la red de Docker (el resto de los
+        # secretos - API keys, SECRET_KEY - se reusan tal cual via env_file).
+        FLASK_ENV: development
+        DEV_DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+        REDIS_URL: redis://redis:6379/0
+        # CORS_ORIGINS ya NO se pisa aca - el default de config.py
+        # ("http://localhost:5173") alcanza, porque tanto el frontend local
+        # (npm run dev) como el containerizado usan ese mismo puerto (nunca
+        # los dos a la vez).
+      volumes:
+        # La llave JWT nunca se hornea en la imagen (quedo afuera en
+        # .dockerignore) - se la damos al contenedor desde el disco real,
+        # de solo lectura (:ro).
+        - ./backend/keys:/app/keys:ro
+      ports:
+        - "5000:5000"
+      depends_on:
+        - postgres
+        - redis
+
+  frontend:
+      build:
+        context: ./frontend
+        args:
+          # El navegador (fuera de la red de Docker) necesita la URL
+          # publicada al host, no el nombre interno "backend".
+          VITE_API_BASE_URL: http://localhost:5000
+          VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      ports:
+        - "5173:80"
+      depends_on:
+        - backend
+
 volumes:
   postgres-volume:
+
+  
 

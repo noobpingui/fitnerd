@@ -4,6 +4,7 @@ import { homeCardImages } from "@/features/home/images"
 import { useSupportsHover } from "@/features/home/useSupportsHover"
 import { ShortcutCard } from "@/features/home/components/ShortcutCard"
 import { HomeSlideshowBox } from "@/features/home/components/HomeSlideshowBox"
+import { AddToHomeScreen } from "@/features/home/components/AddToHomeScreen"
 
 // Fisher-Yates: mezcla el array SIN mutar el original (copia primero con
 // [...array]) - devuelve un array nuevo en un orden aleatorio distinto
@@ -115,6 +116,8 @@ export function HomePage() {
       <div className="mt-6 border-t" />
 
       <HomeSlideshowBox images={activeImages} />
+
+      <AddToHomeScreen />
     </div>
   )
 }

@@ -1,16 +1,17 @@
 import { NavLink } from "react-router"
-import { Dumbbell, Heart, Home, LineChart, Sparkles } from "lucide-react"
+import { Dumbbell, Heart, Home, LineChart, Sparkles, Store } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-// Mismos 5 destinos que la Navbar de escritorio (mas Home, que ahi vive
-// en el logo) - mismos iconos que ya usa HomePage para sus shortcuts,
-// para que la iconografia sea consistente en toda la app.
+// Mismos destinos que la Navbar de escritorio (mas Home, que ahi vive en
+// el logo) - mismos iconos que ya usa HomePage para sus shortcuts, para
+// que la iconografia sea consistente en toda la app.
 const tabs = [
   { to: "/home", label: "Inicio", icon: Home },
   { to: "/categories", label: "Catálogo", icon: Dumbbell },
   { to: "/favorites", label: "Favoritos", icon: Heart },
   { to: "/body-metrics", label: "Métricas", icon: LineChart },
   { to: "/coach", label: "Coach", icon: Sparkles },
+  { to: "/store", label: "Tienda", icon: Store },
 ]
 
 // Barra de navegacion fija abajo, solo visible en mobile (md:hidden) -
