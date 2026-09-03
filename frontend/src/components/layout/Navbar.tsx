@@ -1,7 +1,9 @@
 import { NavLink } from "react-router"
 import { Logo } from "@/components/layout/Logo"
 import { UserMenu } from "@/components/layout/UserMenu"
+import { FeedbackButton } from "@/features/feedback/components/FeedbackButton"
 import { cn } from "@/lib/utils"
+import logo from "@/assets/logo.png"
 
 const links = [
   { to: "/categories", label: "Catálogo" },
@@ -25,9 +27,14 @@ export function Navbar() {
             donde esta parado, y solo aparece con teclado, nunca con mouse. */}
         <NavLink
           to="/home"
-          className="inline-block rounded-md outline-none transition-transform duration-200 hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          // flex+gap en vez de solo el span de Logo: ahora agrupa el
+          // wordmark + la imagen del logo (a la derecha) como una sola
+          // unidad clickeable, que hace hover/scale junta.
+          className="inline-flex items-center gap-2 rounded-md outline-none transition-transform duration-200 hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <Logo className="text-4xl" />
+          {/* h-9 (36px) x1.75 = 63px, el aumento pedido */}
+          <img src={logo} alt="" className="h-[63px] w-[63px] object-contain" />
         </NavLink>
 
         {/* Escondido en mobile (hidden md:flex): en una pantalla angosta
@@ -52,7 +59,10 @@ export function Navbar() {
         </div>
       </div>
 
-      <UserMenu />
+      <div className="flex items-center gap-2">
+        <FeedbackButton />
+        <UserMenu />
+      </div>
     </nav>
   )
 }

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { MessageSquarePlus } from "lucide-react"
+import { Megaphone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -11,9 +11,13 @@ import {
 } from "@/components/ui/dialog"
 import { FeedbackForm } from "@/features/feedback/components/FeedbackForm"
 
-// Boton flotante fijo, montado una sola vez en AppLayout - por eso aparece
-// en TODAS las pantallas protegidas (login/register no lo tienen, porque no
-// usan AppLayout, y tampoco tendria sentido pedir feedback antes de entrar).
+// Vive DENTRO del <nav> (Navbar.tsx), a la izquierda del avatar - montado
+// ahi (no en AppLayout) por eso aparece en TODAS las pantallas protegidas
+// (login/register no tienen Navbar, y tampoco tendria sentido pedir
+// feedback antes de entrar). Antes era un boton flotante fijo abajo a la
+// derecha, pero en mobile se superponia con el boton de enviar mensaje
+// del Coach - vivir en el nav evita ese problema de raiz, ya que el nav
+// nunca se solapa con el contenido de la pantalla.
 export function FeedbackButton() {
   const [open, setOpen] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -29,18 +33,19 @@ export function FeedbackButton() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        {/* right-4 bottom-20 en mobile: 5rem de margen inferior para no
-            quedar tapado por BottomTabBar (fixed, alto ~4rem + safe-area).
-            md:bottom-6: en desktop no existe BottomTabBar, alcanza con
-            separarlo un poco del borde. z-30, un escalon por debajo del
-            z-40 de BottomTabBar, aunque en la practica no llegan a
-            superponerse por la diferencia de bottom. */}
+        {/* variant="ghost": un boton mas de la barra, no uno flotante y
+            "gritado" en color primario como antes - se comporta como
+            cualquier otro icono del nav (transparente hasta el hover).
+            size-16 pisa el "size-9" default de size="icon" - mismo
+            tamano que el Avatar de al lado (tambien size-16), para que
+            los dos queden a la misma escala visual. */}
         <Button
+          variant="ghost"
           size="icon"
-          className="fixed right-4 bottom-20 z-30 h-12 w-12 rounded-full shadow-lg md:bottom-6"
+          className="size-16"
           aria-label="Enviar feedback"
         >
-          <MessageSquarePlus className="h-5 w-5" />
+          <Megaphone className="h-8 w-8" />
         </Button>
       </DialogTrigger>
       <DialogContent>

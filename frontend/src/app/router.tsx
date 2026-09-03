@@ -13,6 +13,8 @@ import { BodyMetricsPage } from "@/features/body-metrics/pages/BodyMetricsPage"
 import { HomePage } from "@/features/home/pages/HomePage"
 import { CoachPage } from "@/features/coach/pages/CoachPage"
 import { StorePage } from "@/features/store/pages/StorePage"
+import { PrivacyPolicyPage } from "@/features/legal/pages/PrivacyPolicyPage"
+import { TermsOfServicePage } from "@/features/legal/pages/TermsOfServicePage"
 
 export function AppRouter() {
   return (
@@ -52,6 +54,10 @@ function AnimatedRoutes() {
             </PageTransition>
           }
         />
+        {/* Sin PageTransition: esa animacion es especifica del "swap" entre
+            login/registro, no hace falta aca. */}
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms" element={<TermsOfServicePage />} />
 
         {/* Rutas protegidas: ProtectedRoute exige token, AppLayout pone el
             navbar alrededor de cualquier pagina que matchee mas adentro */}

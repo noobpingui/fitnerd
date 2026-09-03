@@ -2,7 +2,6 @@ import { Outlet, useLocation } from "react-router"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { BottomTabBar } from "@/components/layout/BottomTabBar"
-import { FeedbackButton } from "@/features/feedback/components/FeedbackButton"
 
 // Separado de ProtectedRoute a proposito: ProtectedRoute decide SI podes
 // pasar (logica de auth), AppLayout decide COMO se ve una vez que pasaste
@@ -27,7 +26,6 @@ export function AppLayout() {
         {showFooter && <Footer />}
       </div>
       <BottomTabBar />
-      <FeedbackButton />
     </div>
   )
 }
