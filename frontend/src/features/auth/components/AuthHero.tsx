@@ -4,8 +4,8 @@ import { Dumbbell, Heart, Sparkles } from "lucide-react"
 
 const rotatingWords = [
   "con criterio",
-  "optimizando tu tiempo",
-  "de forma inteligente",
+  "con eficiencia",
+  "con propósito",
 ]
 
 const features = [
