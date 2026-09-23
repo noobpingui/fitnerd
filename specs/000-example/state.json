@@ -1,0 +1,88 @@
+{
+  "$comment": "Única fuente de verdad del flujo SDD de una feature. Lo escriben solo el orquestador (/sdd-*) y el verifier (secciones red_check y verify). Etapas: spec, plan, tasks, tests, implement, verify, review, docs, close, done.",
+  "schema_version": 1,
+  "feature": "000-example",
+  "title": "Utilidad clamp(value, min, max) en el frontend (prueba en seco del harness)",
+  "type": "feature",
+  "scope": {
+    "backend": false,
+    "frontend": true
+  },
+  "branch": "feat/000-example",
+  "base_branch": "chore/sdd-harness",
+  "created_at": "2026-09-23T21:18:26.435Z",
+  "stage": "plan",
+  "status": "in_progress",
+  "approvals": {
+    "spec": {
+      "at": "2026-09-23T22:08:21.080Z",
+      "note": "1. Aprobado. 2. Aprobado"
+    },
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
+    "verify": null,
+    "review": null,
+    "docs": null,
+    "close": null
+  },
+  "commits": {},
+  "iterations": {
+    "tests": 0,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": null,
+    "at": null
+  },
+  "verify": {
+    "result": null,
+    "at": null
+  },
+  "review": {
+    "verdict": null,
+    "at": null
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-09-23T21:18:26.435Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "Creada con /sdd-new; rama desde chore/sdd-harness (prueba en seco)"
+    },
+    {
+      "at": "2026-09-23T21:21:24.780Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegado en spec-writer (iteración 1)"
+    },
+    {
+      "at": "2026-09-23T21:22:23.408Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "spec-writer: 7 REQ / 18 AC; 4 preguntas abiertas (Q1-Q4)"
+    },
+    {
+      "at": "2026-09-23T21:24:19.826Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Respuestas del usuario a Q1-Q4 copiadas en spec.md: \"Todas las propuestas por defecto\". Re-delegado (no consume iteración)"
+    },
+    {
+      "at": "2026-09-23T21:24:53.771Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec-writer DONE: 7 REQ / 20 AC; Q1-Q4 resueltas"
+    },
+    {
+      "at": "2026-09-23T22:08:21.080Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Etapa y commit aprobados"
+    }
+  ]
+}
