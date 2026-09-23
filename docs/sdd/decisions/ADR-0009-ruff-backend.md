@@ -12,7 +12,7 @@ El backend no tiene ni lint ni typecheck (`00-discovery.md`), así que el `verif
   - Reglas por defecto: `E` y `F`, más `I` para el orden de imports.
   - Longitud de línea: 100.
   - Se excluyen `migrations/` y `.venv/`.
-- El `verifier` ejecuta `ruff check` **solo sobre los archivos .py cambiados en la rama** (`git diff --name-only main...HEAD`). El código existente no se toca ni se reformatea.
+- El `verifier` usa un **ratchet** (`.claude/sdd/scripts/ruff-new.mjs`): para cada .py del backend cambiado en la rama compara las violaciones de ruff entre `main` y el estado actual, y falla **solo si aparecen violaciones nuevas**. *Añadido en la Fase 5:* el código actual ya tiene 145 violaciones (60 I001, 59 E501, 16 F401…), así que un `ruff check` directo sobre un archivo tocado obligaría a corregir líneas ajenas a la feature. El código existente no se toca ni se reformatea.
 - Por ahora no se añade mypy: el tipado actual es parcial y generaría ruido.
 - Momento de implementarlo: en la Fase 5, junto con la configuración del `verifier`, como archivos de configuración estrictamente necesarios para el harness.
 

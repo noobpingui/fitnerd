@@ -78,7 +78,7 @@
 2. Los servicios reciben sus dependencias (repositorios, UnitOfWork, clientes externos) **por constructor**. Las rutas las construyen con una función `_build_*_service()`.
 3. Los errores se expresan con las excepciones de `exceptions/custom_exceptions.py`, y `error_handlers.py` las traduce a `{"error": "mensaje"}` con su código HTTP. **NO DEBE** devolverse un error construido a mano desde una ruta.
 4. Todo cambio de modelo **DEBE** incluir su migración Alembic (`flask db migrate`), revisada a mano. Los tests usan `create_all()` y no detectan migraciones faltantes, así que el `reviewer` **DEBE** comprobarlo.
-5. El código Python nuevo o modificado **DEBE** pasar `ruff check`.
+5. El código Python nuevo o modificado **NO DEBE** introducir violaciones nuevas de ruff (`node .claude/sdd/scripts/ruff-new.mjs`). Las violaciones que ya existían se toleran; si arreglarlas no está en el plan, no se tocan.
 
 ### Frontend
 
@@ -115,7 +115,7 @@ Una feature está **hecha** solo cuando se cumple todo esto:
 - [ ] Todas las tareas de `tasks.md` están marcadas `[x]`.
 - [ ] Cada AC tiene al menos un test con el marcador `SDD:` y todos pasan.
 - [ ] La suite completa del ámbito tocado pasa: `pytest` en el backend y/o `npm test` en el frontend.
-- [ ] Lint (ruff para el backend en los archivos cambiados, oxlint para el frontend), typecheck (`tsc -b`) y build (`npm run build`, si se tocó el frontend) pasan.
+- [ ] Lint (ratchet de ruff en el backend: sin violaciones nuevas; oxlint en el frontend: sin errores), typecheck (`tsc -b`) y build (`npm run build`, si se tocó el frontend) pasan.
 - [ ] `verify-report.md` tiene resultado **PASS**.
 - [ ] `review.md` tiene veredicto **APPROVED**, sin hallazgos bloqueantes abiertos.
 - [ ] El `doc-keeper` actualizó la documentación afectada (README, `.env.example`, docs/) o dejó constancia de que no hacía falta.

@@ -1,0 +1,11 @@
+# Configuracion de herramientas de desarrollo del backend.
+# Por ahora solo ruff (lint), ver docs/sdd/decisions/ADR-0009-ruff-backend.md.
+# El verifier del harness SDD lo ejecuta solo sobre los archivos .py cambiados en la rama.
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["migrations", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]

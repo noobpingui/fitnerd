@@ -2,3 +2,4 @@
 personal_notes.md
 .env
 backend/keys/*.pem
+.claude/settings.local.json

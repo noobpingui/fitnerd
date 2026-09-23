@@ -28,7 +28,7 @@ Ejecuta las comprobaciones del ámbito tocado y anota el resultado de cada una:
 | Ámbito | Comando (cwd) |
 |---|---|
 | backend | `<python> -m pytest -q` (`backend/`) |
-| backend | `<python> -m ruff check <archivos .py cambiados, excluyendo migrations/>` (`backend/`) |
+| backend | `node .claude/sdd/scripts/ruff-new.mjs` (raíz del repo): ratchet que falla solo con violaciones de ruff **nuevas** en los .py cambiados; exit 2 = ruff no instalado → BLOCKED (entorno) |
 | frontend | `npm test` (`frontend/`) |
 | frontend | `npm run lint` (`frontend/`): FAIL solo si hay **errores**; los warnings se listan |
 | frontend | `npx tsc -b` (`frontend/`) |

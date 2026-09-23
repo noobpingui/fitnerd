@@ -28,3 +28,14 @@ Todos los hooks se pueden desactivar temporalmente con `"disableAllHooks": true`
 - (+) Las violaciones de rol se bloquean de forma determinista y no dependen solo de lo que diga el prompt.
 - (−) Un hook mal escrito puede bloquear trabajo legítimo. Cada hook tendrá sus propias pruebas en la prueba en seco (Fase 7) y un mensaje de error que explique cómo proceder.
 - (−) La sesión principal (`agent_type` ausente) queda restringida solo por la guardia de etapa y la de git. Esto es deliberado, para no bloquear el trabajo fuera del flujo SDD, por ejemplo la propia configuración del harness.
+
+## Implementación (Fase 5)
+- **Un solo script:** `.claude/hooks/sdd-guard.mjs`, con los modos `write` y `shell`, más sus tests en `sdd-guard.test.mjs` (`node --test .claude/hooks/`).
+- **Hooks en forma shell:** `node "$CLAUDE_PROJECT_DIR/…"`, que en Windows ejecuta Git Bash. Verificado en vivo.
+- **La guardia de git cubre `Bash` y `PowerShell`**, porque en Windows los dos pueden ejecutar git.
+- **Git de solo lectura para todos los subagentes:** pueden usar `status`, `diff`, `log`, `show`, `rev-parse`, etc., y cualquier otro subcomando se bloquea. Esto amplía el diseño original, que solo bloqueaba commit y push.
+- **Fallo del propio hook:**
+  - si la llamada viene de un agente SDD, se bloquea (*fail-closed*);
+  - si viene de la sesión principal, se permite con un aviso (*fail-open*), para que un bug del hook no inutilice la sesión.
+- **Bypass:** `SDD_BYPASS=1` solo se lee del entorno del proceso de Claude Code. Claude no puede activarlo a mitad de sesión.
+- **Limitación conocida:** las guardias de escritura interceptan `Write`, `Edit` y `NotebookEdit`, pero **no** las escrituras hechas desde la shell (`sed -i`, `>`, `Set-Content`). Hay dos mitigaciones: los prompts de rol lo prohíben, y el `reviewer` compara con git que los tests no cambiaron desde el commit de la etapa `tests`.
