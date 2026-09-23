@@ -8,7 +8,7 @@ El usuario quiere controlar el flujo de cerca, sobre todo mientras aprende a usa
 
 ## Decisión
 - **Cuándo se detiene el orquestador:** tras cada una de estas etapas, espera la aprobación explícita del usuario:
-  `spec → plan → tasks → tests (rojo) → implement → verify → review → close (merge)`.
+  `spec → plan → tasks → tests (rojo) → implement → verify → review → docs → close (merge)` (la etapa `docs` se añadió con la ADR-0011).
 - **Contenido de cada gate:**
   - Qué se produjo, con las rutas de los archivos.
   - Decisiones que tomó el agente.

@@ -16,6 +16,7 @@ Los roles exigen distinto tipo de trabajo. Unos son de razonamiento y juicio (es
 | `test-author` | `sonnet` | escritura de código de test |
 | `implementer` | `sonnet` | implementación guiada por los tests |
 | `verifier` | `haiku` | ejecuta comandos y compara resultados con criterios explícitos |
+| `doc-keeper` | `sonnet` | actualiza documentación a partir del diff (añadido con la ADR-0011) |
 
 Se usan alias (`opus`, `sonnet`, `haiku`) en lugar de IDs fijos para que los agentes tomen automáticamente la versión vigente.
 

@@ -9,7 +9,7 @@
 ## Art. 1 — Ningún cambio funcional sin spec
 
 1. Todo cambio de comportamiento **DEBE** pasar por el flujo SDD:
-   `spec → plan → tasks → tests → implement → verify → review → close`.
+   `spec → plan → tasks → tests → implement → verify → review → docs → close`.
    Los artefactos van en `specs/NNN-slug/`.
 2. Excepciones (sin spec completa, pero con commit aprobado por el usuario):
    - typos;
@@ -118,5 +118,6 @@ Una feature está **hecha** solo cuando se cumple todo esto:
 - [ ] Lint (ruff para el backend en los archivos cambiados, oxlint para el frontend), typecheck (`tsc -b`) y build (`npm run build`, si se tocó el frontend) pasan.
 - [ ] `verify-report.md` tiene resultado **PASS**.
 - [ ] `review.md` tiene veredicto **APPROVED**, sin hallazgos bloqueantes abiertos.
+- [ ] El `doc-keeper` actualizó la documentación afectada (README, `.env.example`, docs/) o dejó constancia de que no hacía falta.
 - [ ] Si hubo cambios de modelo, la migración está incluida. Si hubo variables nuevas, `.env.example` está actualizado.
 - [ ] El usuario aprobó el cierre y cada commit y push.
