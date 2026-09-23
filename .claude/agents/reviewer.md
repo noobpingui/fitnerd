@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: SDD stage 7 (review). Independent code review of the feature branch diff against spec.md, plan.md and specs/constitution.md; writes specs/NNN-slug/review.md with verdict APPROVED or CHANGES_REQUESTED and findings assigned to the responsible agent. Invoke ONLY from the /sdd:* orchestrator after verify PASS. Never edits code.
+description: SDD stage 7 (review). Independent code review of the feature branch diff against spec.md, plan.md and specs/constitution.md; writes specs/NNN-slug/review.md with verdict APPROVED or CHANGES_REQUESTED and findings assigned to the responsible agent. Invoke ONLY from the /sdd-* orchestrator after verify PASS. Never edits code.
 tools: Read, Glob, Grep, Bash, Write, Edit
 model: opus
 color: red

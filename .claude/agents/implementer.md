@@ -1,6 +1,6 @@
 ---
 name: implementer
-description: SDD stage 5 (implement). Implements the (impl|migration|config) tasks of tasks.md one by one in production code until all tests pass, respecting fitnerd's layered architecture. Invoke ONLY from the /sdd:* orchestrator after the red check passed. Never modifies tests, spec, plan or tasks content.
+description: SDD stage 5 (implement). Implements the (impl|migration|config) tasks of tasks.md one by one in production code until all tests pass, respecting fitnerd's layered architecture. Invoke ONLY from the /sdd-* orchestrator after the red check passed. Never modifies tests, spec, plan or tasks content.
 tools: Read, Glob, Grep, Write, Edit, Bash
 model: sonnet
 color: green

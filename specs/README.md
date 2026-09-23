@@ -3,8 +3,8 @@
 Artefactos del flujo SDD de fitnerd. La visión general del harness está en [`docs/sdd/`](../docs/sdd/).
 
 - [`constitution.md`](constitution.md): principios no negociables que todos los agentes respetan.
-- [`_templates/`](_templates/): plantillas que se copian a cada feature nueva (`/sdd:new`).
-- `NNN-slug/`: una carpeta por feature, con `spec.md`, `plan.md`, `tasks.md`, `verify-report.md`, `review.md` y `state.json`.
+- [`_templates/`](_templates/): plantillas que se copian a cada feature nueva (`/sdd-new`).
+- `NNN-slug/`: una carpeta por feature, con `idea.md`, `spec.md`, `plan.md`, `tasks.md`, `verify-report.md`, `review.md`, `docs-report.md` y `state.json`.
 
 ## Trazabilidad
 

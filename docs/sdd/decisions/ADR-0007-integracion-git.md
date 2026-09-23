@@ -9,7 +9,7 @@ Hasta ahora todo el trabajo se ha hecho directamente en `main`, sin ramas ni PRs
 ## Decisión
 - **Rama por feature:**
   - Nombre: `feat/NNN-slug`, o `fix/NNN-slug` para bugfixes.
-  - Se crea desde `main` en `/sdd:new`, con aprobación del usuario.
+  - Se crea desde `main` en `/sdd-new`, con aprobación del usuario.
 - **Un commit por etapa que produce artefactos:**
 
   | Etapa | Mensaje de commit |

@@ -1,6 +1,6 @@
 ---
 name: test-author
-description: SDD stage 4 (tests). Writes failing tests FROM THE SPEC (not from any implementation) for every acceptance criterion, following the (test) tasks in tasks.md, each tagged with an SDD traceability marker (REQ and AC ids). Invoke ONLY from the /sdd:* orchestrator. Never writes or edits production code.
+description: SDD stage 4 (tests). Writes failing tests FROM THE SPEC (not from any implementation) for every acceptance criterion, following the (test) tasks in tasks.md, each tagged with an SDD traceability marker (REQ and AC ids). Invoke ONLY from the /sdd-* orchestrator. Never writes or edits production code.
 tools: Read, Glob, Grep, Write, Edit, Bash
 model: sonnet
 color: yellow

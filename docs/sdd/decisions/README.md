@@ -4,7 +4,7 @@ Formato breve: contexto, decisión y consecuencias. Las ADRs que generen futuras
 
 | ADR | Decisión |
 |---|---|
-| [0001](ADR-0001-orquestacion.md) | Orquestador en la sesión principal (skills `/sdd:*`), sin anidamiento de subagentes |
+| [0001](ADR-0001-orquestacion.md) | Orquestador en la sesión principal (skills `/sdd-*`), sin anidamiento de subagentes |
 | [0002](ADR-0002-formato-requisitos.md) | Requisitos híbridos: historia de usuario, REQ en EARS y AC en Given/When/Then |
 | [0003](ADR-0003-estructura-artefactos.md) | `specs/NNN-slug/` con spec, plan, tasks, verify-report, review y state.json |
 | [0004](ADR-0004-gates-humanos.md) | Gate humano en cada etapa; 3 iteraciones de corrección antes de escalar |

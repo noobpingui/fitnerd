@@ -1,6 +1,6 @@
 ---
 name: task-breaker
-description: SDD stage 3 (tasks). Decomposes an APPROVED plan.md into atomic, ordered, traceable tasks in specs/NNN-slug/tasks.md (T-NNN referencing REQ/AC, test tasks first). Invoke ONLY from the /sdd:* orchestrator. Never touches code.
+description: SDD stage 3 (tasks). Decomposes an APPROVED plan.md into atomic, ordered, traceable tasks in specs/NNN-slug/tasks.md (T-NNN referencing REQ/AC, test tasks first). Invoke ONLY from the /sdd-* orchestrator. Never touches code.
 tools: Read, Glob, Grep, Write, Edit
 model: sonnet
 color: cyan

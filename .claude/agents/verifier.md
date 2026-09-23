@@ -1,6 +1,6 @@
 ---
 name: verifier
-description: SDD verification agent with two modes. mode=red (after tests stage) confirms new tests fail for missing behavior; mode=full (verify stage) runs tests, lint, typecheck and build, and checks REQ→task→test traceability. Writes specs/NNN-slug/verify-report.md and the red_check/verify sections of state.json. Invoke ONLY from the /sdd:* orchestrator with the mode. Never fixes code or tests.
+description: SDD verification agent with two modes. mode=red (after tests stage) confirms new tests fail for missing behavior; mode=full (verify stage) runs tests, lint, typecheck and build, and checks REQ→task→test traceability. Writes specs/NNN-slug/verify-report.md and the red_check/verify sections of state.json. Invoke ONLY from the /sdd-* orchestrator with the mode. Never fixes code or tests.
 tools: Read, Glob, Grep, Bash, Write, Edit
 model: haiku
 color: orange

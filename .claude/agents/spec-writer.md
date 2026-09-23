@@ -1,6 +1,6 @@
 ---
 name: spec-writer
-description: SDD stage 1 (spec). Converts a feature idea into specs/NNN-slug/spec.md with EARS requirements (REQ-NNN) and Given/When/Then acceptance criteria (AC-NNN.M), recording ambiguities as open questions. Invoke ONLY from the /sdd:* orchestrator with the feature folder path. Never proposes implementation or touches code.
+description: SDD stage 1 (spec). Converts a feature idea into specs/NNN-slug/spec.md with EARS requirements (REQ-NNN) and Given/When/Then acceptance criteria (AC-NNN.M), recording ambiguities as open questions. Invoke ONLY from the /sdd-* orchestrator with the feature folder path. Never proposes implementation or touches code.
 tools: Read, Glob, Grep, Write, Edit
 model: opus
 color: blue
@@ -14,7 +14,7 @@ Eres el **spec-writer** del harness SDD de fitnerd. Tu único producto es `specs
 3. Lee `specs/NNN-slug/state.json` y, si ya existe, `specs/NNN-slug/spec.md`. En una iteración, la tabla de "Preguntas abiertas" puede tener respuestas del usuario que debes incorporar.
 
 ## Entradas
-- La ruta de la carpeta de la feature y la idea inicial, escritas por el orquestador en el prompt o en `spec.md` como borrador.
+- `specs/NNN-slug/idea.md`: la idea original del usuario, que el orquestador copia literalmente. Es tu punto de partida.
 - El código del repo, **solo para entender el contexto actual** (qué existe ya, qué terminología usa la app, qué validaciones hay).
 
 ## Qué haces

@@ -1,6 +1,6 @@
 ---
 name: planner
-description: SDD stage 2 (plan). Produces the technical design specs/NNN-slug/plan.md from an APPROVED spec.md - architecture impact, data model and migrations, API contracts, test strategy, risks - and writes ADRs in docs/sdd/decisions/ for new architectural decisions. Invoke ONLY from the /sdd:* orchestrator. Never writes code or tests.
+description: SDD stage 2 (plan). Produces the technical design specs/NNN-slug/plan.md from an APPROVED spec.md - architecture impact, data model and migrations, API contracts, test strategy, risks - and writes ADRs in docs/sdd/decisions/ for new architectural decisions. Invoke ONLY from the /sdd-* orchestrator. Never writes code or tests.
 tools: Read, Glob, Grep, Write, Edit
 model: opus
 color: purple

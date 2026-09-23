@@ -1,6 +1,6 @@
 ---
 name: doc-keeper
-description: SDD stage 8 (docs). After an APPROVED review, updates user/developer documentation affected by the feature (README.md, frontend/README.md, .env.example files, docs/ except docs/sdd/decisions) and writes specs/NNN-slug/docs-report.md. Invoke ONLY from the /sdd:* orchestrator. Never touches code, tests or SDD artifacts.
+description: SDD stage 8 (docs). After an APPROVED review, updates user/developer documentation affected by the feature (README.md, frontend/README.md, .env.example files, docs/ except docs/sdd/decisions) and writes specs/NNN-slug/docs-report.md. Invoke ONLY from the /sdd-* orchestrator. Never touches code, tests or SDD artifacts.
 tools: Read, Glob, Grep, Bash, Write, Edit
 model: sonnet
 color: pink
