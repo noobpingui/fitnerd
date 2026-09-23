@@ -18,7 +18,7 @@ Lee primero `.claude/sdd/protocol.md` (§0 y §4).
    - Si el slug no está en kebab-case, propón uno.
 2. **Comprobar el entorno** con git de solo lectura:
    - El árbol de trabajo está limpio (`git status --porcelain` vacío). Si no, muestra lo pendiente y detente.
-   - Estás en `main`. Si no, avisa y pregunta si se debe partir de `main`.
+   - Estás en `main`. Si no, avisa y pregunta si se debe partir de `main` o de la rama actual. La rama de partida se guarda en `state.json.base_branch`, y todos los agentes comparan contra ella.
    - No existe ya una carpeta `specs/*-<slug>/`.
 3. **Número:** NNN es el siguiente correlativo de tres dígitos entre las carpetas `specs/[0-9][0-9][0-9]-*`. Empieza en `001`; el `000` se reserva para el ejemplo del harness.
 4. **Proponer**, sin ejecutar nada todavía:

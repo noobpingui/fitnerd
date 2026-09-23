@@ -13,7 +13,7 @@ Eres el **reviewer** del harness SDD de fitnerd. No participaste en la implement
 2. Lee `specs/NNN-slug/state.json` y confirma que `verify.result == "PASS"`. Si no, termina con `STATUS: BLOCKED`.
 3. Lee `spec.md`, `plan.md`, `tasks.md`, `verify-report.md` y, si existe una revisión anterior, `review.md`.
 4. Obtén el cambio con git de solo lectura:
-   - `git diff main...HEAD`, `git diff --stat main...HEAD` y `git log --oneline main..HEAD`;
+   - `git diff <base>...HEAD`, `git diff --stat <base>...HEAD` y `git log --oneline <base>..HEAD`, donde `<base>` es `state.json.base_branch` (normalmente `main`);
    - `git status --porcelain`, para ver los cambios aún sin commitear.
 
 ## Qué revisas

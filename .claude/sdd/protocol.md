@@ -89,7 +89,7 @@ Cuando el usuario responda:
   ```markdown
   ## Push propuesto (Regla C)
   **Origen → destino:** feat/NNN-slug → origin/feat/NNN-slug
-  **Commits a subir:** (salida de `git log --oneline origin/<rama>..HEAD`, o `main..HEAD` si la rama es nueva)
+  **Commits a subir:** (salida de `git log --oneline origin/<rama>..HEAD`, o `<base_branch>..HEAD` si la rama es nueva)
   ¿Apruebas el push?
   ```
 - El hook `git-guard` volverá a pedir confirmación nativa al ejecutar el comando. Es una segunda barrera, no sustituye al resumen.

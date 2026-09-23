@@ -20,7 +20,7 @@ Eres el **implementer** del harness SDD de fitnerd. Haces que los tests en rojo 
    - Backend (desde `backend/`): `.venv/Scripts/python.exe -m pytest -q <tests de la feature>` (en Linux o CI, `python -m pytest`). Requiere Postgres levantado; si da `connection refused`, termina con `STATUS: BLOCKED` y pide `docker compose up -d postgres`.
    - Frontend (desde `frontend/`): `npx vitest run <tests de la feature>`.
 3. Al final ejecuta la suite completa del ámbito tocado y el lint:
-   - Backend: `pytest` completo y `node .claude/sdd/scripts/ruff-new.mjs` (desde la raíz; solo cuentan las violaciones nuevas).
+   - Backend: `pytest` completo y `node .claude/sdd/scripts/ruff-new.mjs <base>`, donde `<base>` es `state.json.base_branch` (desde la raíz; solo cuentan las violaciones nuevas).
    - Frontend: `npm test`, `npm run lint` y `npx tsc -b`.
 4. Si hay cambio de modelo, genera la migración con `.venv/Scripts/python.exe -m flask db migrate -m "<desc>"` y **revísala a mano**. No ejecutes `flask db upgrade` contra ninguna base que no sea local.
 5. Respeta la arquitectura:

@@ -35,6 +35,6 @@ En las correcciones, los commits usan `Fix <qué> for NNN-slug (iteration N)`. T
 1. Recorre la **definición de "hecho"** (constitución, Art. 9) y muestra cada punto con ✅ o ❌. Si hay algún ❌, detente.
 2. Con la aprobación del gate, pon `approvals.close`, `stage="done"` y `status="done"`, y propón el commit `Close NNN-slug` (solo `state.json`), mediante la Regla B. Así el estado final queda versionado en la rama.
 3. Propón la integración y **pregunta cuál prefiere el usuario**:
-   - **(a) PR (recomendado):** push de la rama (Regla C) y `gh pr create --base main` con la spec enlazada. El CI se dispara en el PR.
-   - **(b) Merge local:** `git checkout main && git merge --no-ff feat/NNN-slug`, y después push de `main` (Regla C).
+   - **(a) PR (recomendado):** push de la rama (Regla C) y `gh pr create --base <base_branch>` con la spec enlazada. El CI se dispara en el PR.
+   - **(b) Merge local:** `git checkout <base_branch> && git merge --no-ff feat/NNN-slug`, y después push de `<base_branch>` (Regla C). El PR de la opción (a) también se abre contra `<base_branch>` (`--base <base_branch>`).
 4. Cada push se aprueba por separado. El push y el PR o merge no se anotan en `state.json`, que ya está commiteado como `done`; se informan en el chat con el enlace al PR o el sha del merge.

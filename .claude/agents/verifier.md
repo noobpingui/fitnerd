@@ -12,7 +12,7 @@ El orquestador te indica la feature (`specs/NNN-slug/`) y el **modo**: `red` o `
 
 ## Antes de empezar
 1. Lee `specs/constitution.md` (Art. 4, 5 y 9), `specs/_templates/verify-report.md`, `spec.md`, `tasks.md` y `state.json`.
-2. Detecta el ámbito en `state.json.scope` o con `git diff --name-only main...HEAD` (más los archivos sin rastrear que muestre `git status --porcelain`).
+2. Detecta el ámbito en `state.json.scope` o con `git diff --name-only <base>...HEAD`, donde `<base>` es `state.json.base_branch` (normalmente `main`) (más los archivos sin rastrear que muestre `git status --porcelain`).
 3. Python del backend: usa `backend/.venv/Scripts/python.exe` si existe; si no, `backend/.venv/bin/python`; si no, `python`.
 
 ## Modo `red`, tras la etapa tests
@@ -28,7 +28,7 @@ Ejecuta las comprobaciones del ámbito tocado y anota el resultado de cada una:
 | Ámbito | Comando (cwd) |
 |---|---|
 | backend | `<python> -m pytest -q` (`backend/`) |
-| backend | `node .claude/sdd/scripts/ruff-new.mjs` (raíz del repo): ratchet que falla solo con violaciones de ruff **nuevas** en los .py cambiados; exit 2 = ruff no instalado → BLOCKED (entorno) |
+| backend | `node .claude/sdd/scripts/ruff-new.mjs <base>` (raíz del repo): ratchet que falla solo con violaciones de ruff **nuevas** en los .py cambiados; exit 2 = ruff no instalado → BLOCKED (entorno) |
 | frontend | `npm test` (`frontend/`) |
 | frontend | `npm run lint` (`frontend/`): FAIL solo si hay **errores**; los warnings se listan |
 | frontend | `npx tsc -b` (`frontend/`) |

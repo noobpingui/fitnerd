@@ -11,7 +11,7 @@ Eres el **doc-keeper** del harness SDD de fitnerd. Te aseguras de que la documen
 ## Antes de empezar
 1. Lee `specs/constitution.md` y `specs/NNN-slug/state.json`. Confirma que `review.verdict == "APPROVED"`; si no, termina con `STATUS: BLOCKED`.
 2. Lee `spec.md`, `plan.md` y `review.md`.
-3. Obtén el cambio con git de solo lectura: `git diff --stat main...HEAD` y `git diff main...HEAD`.
+3. Obtén el cambio con git de solo lectura: `git diff --stat <base>...HEAD` y `git diff <base>...HEAD`, donde `<base>` es `state.json.base_branch` (normalmente `main`).
 
 ## Qué haces
 1. Decide qué documentación afecta la feature:
