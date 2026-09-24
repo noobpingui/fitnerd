@@ -56,7 +56,7 @@ test('test-author escribe tests pero no producción', () => {
   assert.equal(write('test-author', 'backend/services/x_service.py', c).decision, 'deny');
 });
 
-test('implementer escribe producción pero nunca tests, y solo en la etapa implement', () => {
+test('implementer escribe producción pero nunca tests, y solo en las etapas tests (scaffold) e implement', () => {
   const c = ctx({ stage: 'implement', approvals: APPROVED });
   assert.equal(write('implementer', 'backend/services/x_service.py', c), null);
   assert.equal(write('implementer', 'backend/.env.example', c), null);
@@ -64,7 +64,10 @@ test('implementer escribe producción pero nunca tests, y solo en la etapa imple
   assert.equal(write('implementer', 'frontend/src/features/a/B.test.tsx', c).decision, 'deny');
   assert.equal(write('implementer', `${FEATURE}/spec.md`, c).decision, 'deny');
   assert.equal(write('implementer', 'backend/.env', c).decision, 'deny');
-  assert.equal(write('implementer', 'backend/services/x.py', ctx({ stage: 'tests', approvals: APPROVED })).decision, 'deny');
+  assert.equal(write('implementer', 'frontend/src/lib/x.ts', ctx({ stage: 'tests', approvals: APPROVED })), null);
+  assert.equal(write('implementer', 'frontend/src/lib/x.test.ts', ctx({ stage: 'tests', approvals: APPROVED })).decision, 'deny');
+  assert.equal(write('implementer', 'backend/services/x.py', ctx({ stage: 'tasks', approvals: APPROVED })).decision, 'deny');
+  assert.equal(write('implementer', 'backend/services/x.py', ctx({ stage: 'review', approvals: APPROVED })).decision, 'deny');
 });
 
 test('verifier, reviewer y doc-keeper solo escriben sus artefactos', () => {

@@ -31,7 +31,7 @@ Después de cada gate **termina tu turno**. Cuando el usuario apruebe, registra 
 
 ## Notas por etapa
 - **spec:** si el `spec-writer` devuelve `NEEDS_INPUT`, muestra las preguntas con su respuesta propuesta. Copia las respuestas literalmente en la tabla de `spec.md` y vuelve a delegar. La spec no se aprueba con preguntas abiertas.
-- **tests:** primero `test-author`, después `verifier` en modo `red`. El gate se presenta solo con el red check en `PASS` o, si se alcanza el límite de iteraciones, escalando.
+- **tests:** si `tasks.md` tiene tareas `(scaffold)`, primero `implementer` en modo `scaffold` (ADR-0012); después `test-author`; después `verifier` en modo `red`. El gate se presenta solo con el red check en `PASS` o, si se alcanza el límite de iteraciones, escalando.
 - **implement:** la precondición es `red_check.result == "PASS"`.
 - **verify:** si el resultado es `FAIL`, decide el responsable a partir de `verify-report.md`. Si es `BLOCKED (entorno)`, pide al usuario que resuelva el entorno (por ejemplo `docker compose up -d postgres`) y no lo hagas tú.
 - **review:** si el veredicto es `CHANGES_REQUESTED`, reparte los hallazgos por responsable. Después, `verify full` y `review` de nuevo.
