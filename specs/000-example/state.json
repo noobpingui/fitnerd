@@ -11,8 +11,8 @@
   "branch": "feat/000-example",
   "base_branch": "chore/sdd-harness",
   "created_at": "2026-09-23T21:18:26.435Z",
-  "stage": "tasks",
-  "status": "blocked",
+  "stage": "tests",
+  "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-09-23T22:08:21.080Z",
@@ -22,7 +22,10 @@
       "at": "2026-09-24T04:12:46.314Z",
       "note": "1. Aprobado. 2. Si. 3. B"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-09-24T04:27:21.185Z",
+      "note": "1.Si. 2. Si"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -31,7 +34,8 @@
     "close": null
   },
   "commits": {
-    "spec": "18c19c6"
+    "spec": "18c19c6",
+    "plan": "56cc4bb"
   },
   "iterations": {
     "tests": 0,
@@ -118,6 +122,36 @@
       "stage": "tasks",
       "event": "blocked",
       "note": "Pausa: se aplica arreglo F5 en chore/sdd-harness antes de tasks"
+    },
+    {
+      "at": "2026-09-24T04:21:16.536Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "56cc4bb"
+    },
+    {
+      "at": "2026-09-24T04:21:16.536Z",
+      "stage": "tasks",
+      "event": "unblocked",
+      "note": "Arreglo F5 (ADR-0012, 6e5f8aa) integrado con merge 78a303d"
+    },
+    {
+      "at": "2026-09-24T04:21:16.536Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegado en task-breaker (iteración 1)"
+    },
+    {
+      "at": "2026-09-24T04:22:27.134Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "task-breaker DONE: 1 scaffold, 20 test, 1 impl"
+    },
+    {
+      "at": "2026-09-24T04:27:21.185Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "Etapa y commit aprobados"
     }
   ]
 }
