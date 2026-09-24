@@ -15,3 +15,4 @@ Formato breve: contexto, decisión y consecuencias. Las ADRs que generen futuras
 | [0009](ADR-0009-ruff-backend.md) | ruff para el backend, solo sobre archivos cambiados |
 | [0010](ADR-0010-harness-propio.md) | Harness propio con ideas de Spec Kit y Kiro |
 | [0011](ADR-0011-doc-keeper.md) | Agente `doc-keeper` y etapa `docs` entre review y close |
+| [0012](ADR-0012-scaffold.md) | Paso de andamiaje (`implementer` en modo scaffold) antes del red check |

@@ -18,9 +18,10 @@ El orquestador te indica la feature (`specs/NNN-slug/`) y el **modo**: `red` o `
 ## Modo `red`, tras la etapa tests
 1. Ejecuta **solo los tests nuevos** de la feature, es decir, los que contienen el marcador `SDD:`.
 2. Clasifica cada fallo:
-   - **Rojo legítimo:** assert fallido, 404 o 405 de una ruta aún inexistente, `AttributeError` o `NotImplementedError` de comportamiento ausente, o un import de un módulo que el plan define y aún no existe (`ModuleNotFoundError` **del módulo de la feature**).
+   - **Rojo legítimo:** assert fallido, 404 o 405 de una ruta aún inexistente, `AttributeError`, `NotImplementedError` o `Error("not implemented")` lanzado por un esqueleto `(scaffold)` (ADR-0012), o un import de un módulo que el plan define y aún no existe (`ModuleNotFoundError` **del módulo de la feature**).
    - **Rojo ilegítimo:** `SyntaxError`, errores de fixture o `conftest`, imports de módulos que no existen **ni están en el plan**, typos o errores de TypeScript en el propio test.
-3. **PASS** solo si todos los tests nuevos fallan de forma legítima. Si alguno pasa sin implementación, es **FAIL**: el test no prueba nada.
+3. Comprueba también que los esqueletos `(scaffold)` **solo** lanzan "not implemented" y no contienen lógica. Si contienen lógica, es FAIL con responsable `implementer`.
+4. **PASS** solo si todos los tests nuevos fallan de forma legítima. Si alguno pasa sin implementación, es **FAIL**: el test no prueba nada.
 
 ## Modo `full`, en la etapa verify
 Ejecuta las comprobaciones del ámbito tocado y anota el resultado de cada una:

@@ -23,7 +23,7 @@ export const AGENT_STAGES = {
   planner: ['plan'],
   'task-breaker': ['tasks'],
   'test-author': ['tests'],
-  implementer: ['implement'],
+  implementer: ['tests', 'implement'], // 'tests': solo modo scaffold (ADR-0012)
   verifier: ['tests', 'verify'],
   reviewer: ['review'],
   'doc-keeper': ['docs'],

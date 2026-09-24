@@ -8,7 +8,7 @@ Todos los hooks son `PreToolUse`: se ejecutan **antes** de que Claude use la her
 - **Se activa con:** `Write`, `Edit`, `MultiEdit` y `NotebookEdit` hechos por un subagente SDD. Lo identifica por el campo `agent_type` que Claude Code pasa al hook.
 - **Qué comprueba:**
   1. Estás en una rama `feat/NNN-slug` o `fix/NNN-slug`, y existe `specs/NNN-slug/state.json`.
-  2. La etapa de `state.json` es la del agente. Por ejemplo, el `implementer` solo puede escribir en `implement`.
+  2. La etapa de `state.json` es la del agente. Por ejemplo, el `implementer` solo puede escribir en `tests` (modo scaffold, ADR-0012) e `implement`.
   3. La ruta pertenece a su rol:
 
 | Agente | Puede escribir en |

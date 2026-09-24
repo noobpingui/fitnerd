@@ -18,7 +18,7 @@ flowchart LR
     plan --> G2{{gate}}
     G2 --> tasks["tasks<br/>task-breaker"]
     tasks --> G3{{gate}}
-    G3 --> tests["tests<br/>test-author<br/>+ verifier (red)"]
+    G3 --> tests["tests<br/>implementer (scaffold)<br/>+ test-author<br/>+ verifier (red)"]
     tests --> G4{{gate}}
     G4 --> impl["implement<br/>implementer"]
     impl --> G5{{gate}}
