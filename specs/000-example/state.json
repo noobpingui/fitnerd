@@ -11,14 +11,17 @@
   "branch": "feat/000-example",
   "base_branch": "chore/sdd-harness",
   "created_at": "2026-09-23T21:18:26.435Z",
-  "stage": "plan",
-  "status": "in_progress",
+  "stage": "tasks",
+  "status": "blocked",
   "approvals": {
     "spec": {
       "at": "2026-09-23T22:08:21.080Z",
       "note": "1. Aprobado. 2. Aprobado"
     },
-    "plan": null,
+    "plan": {
+      "at": "2026-09-24T04:12:46.314Z",
+      "note": "1. Aprobado. 2. Si. 3. B"
+    },
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -27,7 +30,9 @@
     "docs": null,
     "close": null
   },
-  "commits": {},
+  "commits": {
+    "spec": "18c19c6"
+  },
   "iterations": {
     "tests": 0,
     "implement": 0,
@@ -83,6 +88,36 @@
       "stage": "spec",
       "event": "approved",
       "note": "Etapa y commit aprobados"
+    },
+    {
+      "at": "2026-09-23T22:08:21.209Z",
+      "stage": "spec",
+      "event": "commit",
+      "note": "18c19c6"
+    },
+    {
+      "at": "2026-09-23T22:08:21.209Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegado en planner (iteración 1)"
+    },
+    {
+      "at": "2026-09-24T04:12:46.314Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "planner DONE: clamp.ts + clamp.test.ts; riesgo F5 (rojo legitimo en TS)"
+    },
+    {
+      "at": "2026-09-24T04:12:46.314Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "Etapa y commit aprobados; F5 opcion (b): paso scaffold en el harness"
+    },
+    {
+      "at": "2026-09-24T04:12:46.314Z",
+      "stage": "tasks",
+      "event": "blocked",
+      "note": "Pausa: se aplica arreglo F5 en chore/sdd-harness antes de tasks"
     }
   ]
 }
