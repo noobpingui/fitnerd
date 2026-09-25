@@ -1,9 +1,9 @@
 """Test UNITARIO de HealthService: no toca Postgres, usa el fake
 FakeHealthRepository inyectado por constructor. Los errores de SQLAlchemy
 se construyen como instancias REALES (OperationalError, ProgrammingError)
-para simular un fallo de conexion o de consulta sin depender de una base
-real caida - la clase de la excepcion es lo unico que le importa al
-servicio (SQLAlchemyError), no de donde viene.
+para simular un fallo de conexión o de consulta sin depender de una base
+real caída - la clase de la excepción es lo único que le importa al
+servicio (SQLAlchemyError), no de dónde viene.
 """
 
 import pytest
@@ -30,8 +30,8 @@ class FakeHealthRepository:
 
 # SDD: REQ-001 AC-001.2
 def test_check_returns_exact_success_body_when_repository_succeeds():
-    """Cuando el repositorio no lanza ningun error, el servicio devuelve
-    exactamente el cuerpo de exito, sin campos adicionales."""
+    """Cuando el repositorio no lanza ningún error, el servicio devuelve
+    exactamente el cuerpo de éxito, sin campos adicionales."""
     service = HealthService(FakeHealthRepository())
 
     assert service.check() == {"status": "ok", "database": "ok"}
@@ -39,8 +39,8 @@ def test_check_returns_exact_success_body_when_repository_succeeds():
 
 # SDD: REQ-002 AC-002.1
 def test_check_raises_service_unavailable_when_connection_fails():
-    """Un fallo de conexion (OperationalError) se traduce a
-    ServiceUnavailableError con el mensaje fijo en espanol y codigo 503."""
+    """Un fallo de conexión (OperationalError) se traduce a
+    ServiceUnavailableError con el mensaje fijo en español y código 503."""
     error = OperationalError(
         "SELECT 1",
         {},
@@ -60,9 +60,9 @@ def test_check_raises_service_unavailable_when_connection_fails():
 
 # SDD: REQ-002 AC-002.2
 def test_check_raises_service_unavailable_when_query_fails():
-    """Un fallo al ejecutar la consulta de comprobacion (ProgrammingError)
-    tambien se traduce a ServiceUnavailableError, igual que un fallo de
-    conexion."""
+    """Un fallo al ejecutar la consulta de comprobación (ProgrammingError)
+    también se traduce a ServiceUnavailableError, igual que un fallo de
+    conexión."""
     error = ProgrammingError("SELECT 1", {}, Exception("fallo simulado de consulta"))
     service = HealthService(FakeHealthRepository(raise_error=error))
 
@@ -76,7 +76,7 @@ def test_check_raises_service_unavailable_when_query_fails():
 # SDD: REQ-002 AC-002.3
 def test_check_does_not_cache_a_previous_failure():
     """Tras un primer fallo, si la base de datos vuelve a responder, la
-    siguiente llamada devuelve exito: el resultado no queda cacheado."""
+    siguiente llamada devuelve éxito: el resultado no queda cacheado."""
     error = OperationalError("SELECT 1", {}, Exception("fallo simulado"))
     fake_repository = FakeHealthRepository(raise_error=error)
     service = HealthService(fake_repository)

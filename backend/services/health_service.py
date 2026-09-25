@@ -20,7 +20,7 @@ class HealthService:
         except SQLAlchemyError as exc:
             #El mensaje es fijo y nunca interpola str(exc) para no filtrar detalles (NFR-001).
             #El detalle solo queda en el log del servidor, nunca en la respuesta.
-            logger.warning("Health check: base de datos no disponible", exc_info=True)
+            logger.warning("Chequeo de salud: base de datos no disponible", exc_info=True)
             raise ServiceUnavailableError(DATABASE_UNAVAILABLE_MESSAGE) from exc
 
         return {"status": "ok", "database": "ok"}

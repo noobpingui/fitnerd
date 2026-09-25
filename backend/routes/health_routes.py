@@ -16,7 +16,7 @@ def _build_health_service():
     return HealthService(health_repository)
 
 
-#Publico y de solo lectura: sin decoradores de auth (REQ-003).
+#Público y de solo lectura: sin decoradores de auth (REQ-003).
 @health_bp.route("", methods=["GET"])
 def health():
     service = _build_health_service()

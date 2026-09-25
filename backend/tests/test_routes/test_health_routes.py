@@ -1,12 +1,12 @@
-"""Tests de integracion de GET /api/health: ejercitan el flujo completo
+"""Tests de integración de GET /api/health: ejercitan el flujo completo
 route -> service -> repository -> Postgres real. Los casos de fallo de
 base de datos enganchan listeners de sqlalchemy.event sobre db.engine (API
-publica y documentada, no un mock) para forzar un fallo real de conexion o
+pública y documentada, no un mock) para forzar un fallo real de conexión o
 de consulta sin necesitar apagar Postgres de verdad.
 
-Hasta que la ruta no este registrada (Fase B), TODAS estas peticiones,
-incluido el POST, devuelven 404 - rojo legitimo segun ADR-0012 y el plan
-(seccion 5): la ruta no se andamia, solo el servicio y el repositorio.
+Hasta que la ruta no esté registrada (Fase B), TODAS estas peticiones,
+incluido el POST, devuelven 404 - rojo legítimo según ADR-0012 y el plan
+(sección 5): la ruta no se andamia, solo el servicio y el repositorio.
 """
 
 import pytest
@@ -16,25 +16,22 @@ from sqlalchemy.exc import OperationalError, ProgrammingError
 from extensions import db as _db
 from models import BodyRegion
 
-FAKE_CONNECTION_ERROR_TEXT = (
-    'connection to server at "db.interno.secreto" failed: '
-    'password for user "usuario_secreto"'
-)
+FAKE_CONNECTION_ERROR_TEXT = "postgresql://usuario_secreto:clave_secreta@db.interno.secreto:5432/fitnerd"
 
 
 @pytest.fixture
 def break_database(app):
-    """Simula una base de datos caida enganchando listeners de eventos de
+    """Simula una base de datos caída enganchando listeners de eventos de
     SQLAlchemy sobre `db.engine`. Devuelve un par (activate, heal):
     `activate(modo)` registra el listener correspondiente ("connection" o
     "query"), y `heal()` lo retira y libera el pool - el propio test la usa
-    para probar la recuperacion (AC-002.3).
+    para probar la recuperación (AC-002.3).
 
     El teardown de esta fixture SIEMPRE llama a `heal()`, y como se pide
-    DESPUES que las fixtures autouse en la resolucion de dependencias de
+    DESPUÉS que las fixtures autouse en la resolución de dependencias de
     pytest, su teardown corre ANTES que el de `_clean_database`
     (conftest.py) - si quedara un listener activo, la limpieza de tablas
-    del siguiente test rompiria contra una base "caida".
+    del siguiente test rompería contra una base "caída".
     """
     with app.app_context():
         engine = _db.engine
@@ -49,7 +46,7 @@ def break_database(app):
 
     def activate(mode):
         if mode == "connection":
-            engine.dispose()  # vacia el pool para forzar una conexion nueva
+            engine.dispose()  # vacía el pool para forzar una conexión nueva
             event.listen(engine, "do_connect", _fail_connect)
             registered["event"] = "do_connect"
             registered["listener"] = _fail_connect
@@ -85,7 +82,7 @@ def test_health_returns_200_with_json_content_type_when_database_is_up(client):
 
 # SDD: REQ-001 AC-001.2
 def test_health_returns_exact_success_body_when_database_is_up(client):
-    """El cuerpo de exito contiene exactamente las claves status y
+    """El cuerpo de éxito contiene exactamente las claves status y
     database, ambas en "ok", sin campos adicionales."""
     response = client.get("/api/health")
 
@@ -94,7 +91,7 @@ def test_health_returns_exact_success_body_when_database_is_up(client):
 
 # SDD: REQ-003 AC-003.1
 def test_health_is_reachable_without_an_authorization_header(client):
-    """El endpoint es publico: no exige la cabecera Authorization."""
+    """El endpoint es público: no exige la cabecera Authorization."""
     response = client.get("/api/health")
 
     assert response.status_code == 200
@@ -102,7 +99,7 @@ def test_health_is_reachable_without_an_authorization_header(client):
 
 # SDD: REQ-003 AC-003.2
 def test_health_ignores_an_invalid_authorization_token(client):
-    """Un token invalido no bloquea la peticion: el endpoint no lo evalua."""
+    """Un token inválido no bloquea la petición: el endpoint no lo evalúa."""
     response = client.get("/api/health", headers={"Authorization": "Bearer token-invalido"})
 
     assert response.status_code == 200
@@ -110,8 +107,8 @@ def test_health_ignores_an_invalid_authorization_token(client):
 
 # SDD: REQ-004 AC-004.1
 def test_health_rejects_post_with_405_and_standard_error_body(client):
-    """Un metodo distinto de GET/HEAD responde 405 con el formato estandar
-    de error del backend: un objeto JSON cuya unica clave es "error"."""
+    """Un método distinto de GET/HEAD responde 405 con el formato estándar
+    de error del backend: un objeto JSON cuya única clave es "error"."""
     response = client.post("/api/health")
 
     assert response.status_code == 405
@@ -123,8 +120,8 @@ def test_health_rejects_post_with_405_and_standard_error_body(client):
 # SDD: NFR-002 AC-N002.1
 def test_health_check_does_not_change_row_counts(client, db_session):
     """El chequeo de salud es de solo lectura: contar filas de todas las
-    tablas antes y despues de GET /api/health debe dar el mismo resultado."""
-    region = BodyRegion(name="Region de prueba para health check")
+    tablas antes y después de GET /api/health debe dar el mismo resultado."""
+    region = BodyRegion(name="Región de prueba para el chequeo de salud")
     db_session.add(region)
     db_session.commit()
 
@@ -147,8 +144,8 @@ def test_health_check_does_not_change_row_counts(client, db_session):
 
 # SDD: REQ-002 AC-002.1
 def test_health_returns_503_when_database_connection_fails(client, break_database):
-    """Un fallo al abrir la conexion (do_connect) se traduce a 503 con el
-    cuerpo de error estandar, y no filtra la cadena de conexion ficticia."""
+    """Un fallo al abrir la conexión (do_connect) se traduce a 503 con el
+    cuerpo de error estándar, y no filtra la cadena de conexión ficticia."""
     activate, _heal = break_database
 
     activate("connection")
@@ -159,13 +156,14 @@ def test_health_returns_503_when_database_connection_fails(client, break_databas
     assert response.get_json() == {"error": "Base de datos no disponible"}
     body_text = response.get_data(as_text=True)
     assert "usuario_secreto" not in body_text
+    assert "clave_secreta" not in body_text
     assert "db.interno.secreto" not in body_text
 
 
 # SDD: REQ-002 AC-002.2
 def test_health_returns_503_when_database_query_fails(client, break_database):
     """Un fallo al ejecutar la consulta (before_cursor_execute), con la
-    conexion abierta con exito, tambien responde 503 con el cuerpo exacto."""
+    conexión abierta con éxito, también responde 503 con el cuerpo exacto."""
     activate, _heal = break_database
 
     activate("query")
@@ -178,8 +176,8 @@ def test_health_returns_503_when_database_query_fails(client, break_database):
 
 # SDD: REQ-002 AC-002.3
 def test_health_recovers_after_the_connection_listener_is_removed(client, break_database):
-    """Tras un primer 503 por fallo de conexion, quitar el listener con
-    event.remove hace que la siguiente peticion vuelva a responder 200 -
+    """Tras un primer 503 por fallo de conexión, quitar el listener con
+    event.remove hace que la siguiente petición vuelva a responder 200 -
     el resultado no queda cacheado."""
     activate, heal = break_database
 

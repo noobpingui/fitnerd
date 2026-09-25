@@ -11,7 +11,7 @@
   "branch": "feat/001-health-endpoint",
   "base_branch": "chore/sdd-harness",
   "created_at": "2026-09-25T05:55:48.364Z",
-  "stage": "review",
+  "stage": "docs",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -35,20 +35,24 @@
       "note": "auto: modo sin pausas plan→verify autorizado por el usuario (gate_mode)"
     },
     "verify": {
-      "at": "2026-09-25T06:39:35.256Z",
+      "at": "2026-09-25T06:55:08.093Z",
+      "note": "Si (iteración 2)"
+    },
+    "review": {
+      "at": "2026-09-25T06:57:00.429Z",
       "note": "1. Si. 2. Si"
     },
-    "review": null,
     "docs": null,
     "close": null
   },
   "commits": {
-    "spec": "c1e7629"
+    "spec": "c1e7629",
+    "batch_plan_to_verify": "b6e7110"
   },
   "iterations": {
     "tests": 0,
     "implement": 0,
-    "review": 0
+    "review": 1
   },
   "max_iterations": 3,
   "red_check": {
@@ -57,11 +61,11 @@
   },
   "verify": {
     "result": "PASS",
-    "at": "2026-09-25T06:36:02.871Z"
+    "at": "2026-09-25T06:53:32.654Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-09-25T06:56:06.847Z"
   },
   "bypass": false,
   "history": [
@@ -220,6 +224,90 @@
       "stage": "verify",
       "event": "approved",
       "note": "Cierre del tramo sin pausas; commit único aprobado"
+    },
+    {
+      "at": "2026-09-25T06:39:35.446Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "b6e7110 (commit único plan→verify)"
+    },
+    {
+      "at": "2026-09-25T06:39:35.446Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado en reviewer (iteración 1)"
+    },
+    {
+      "at": "2026-09-25T06:41:11.223Z",
+      "stage": "review",
+      "event": "done",
+      "note": "reviewer APPROVED: 0 bloq/0 mayor/2 menor/2 NIT; veredicto copiado por el orquestador"
+    },
+    {
+      "at": "2026-09-25T06:48:03.410Z",
+      "stage": "review",
+      "event": "changes_requested",
+      "note": "Usuario elige ciclo de corrección para MENOR F1,F2 y NIT F3; F4 aceptado"
+    },
+    {
+      "at": "2026-09-25T06:48:03.410Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Iteración review 1/3: test-author corrige F2 (review.md). Tras implement, sin red check (F16)"
+    },
+    {
+      "at": "2026-09-25T06:51:28.701Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "test-author corrigió F2; 42/42; tests_snapshot actualizado"
+    },
+    {
+      "at": "2026-09-25T06:51:28.701Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "implementer corrige F1 y F3 (review.md)"
+    },
+    {
+      "at": "2026-09-25T06:52:21.127Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "implementer corrigió F1 y F3; tests intactos por hash"
+    },
+    {
+      "at": "2026-09-25T06:52:21.127Z",
+      "stage": "verify",
+      "event": "rework",
+      "note": "verify full iteración 2"
+    },
+    {
+      "at": "2026-09-25T06:54:11.078Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify full iteración 2 PASS (confirmado 42/42)"
+    },
+    {
+      "at": "2026-09-25T06:55:08.093Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "iteración 2"
+    },
+    {
+      "at": "2026-09-25T06:55:08.093Z",
+      "stage": "review",
+      "event": "started",
+      "note": "reviewer iteración 2"
+    },
+    {
+      "at": "2026-09-25T06:56:06.847Z",
+      "stage": "review",
+      "event": "done",
+      "note": "reviewer iteración 2 APPROVED: F1-F3 resueltos, 0 hallazgos nuevos"
+    },
+    {
+      "at": "2026-09-25T06:57:00.429Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Etapa y commit aprobados (iteración 2)"
     }
   ],
   "gate_mode": {
@@ -230,11 +318,11 @@
     "note": "Usuario, 2026-09-25, solo para 001: tras el commit de spec, plan→verify sin gates intermedios; un único commit al final de verify; review/docs/close con gates normales; sin push. Se para igual ante NEEDS_INPUT, 3 fallos o bloqueo de entorno."
   },
   "tests_snapshot": {
-    "at": "2026-09-25T06:33:15.785Z",
-    "reason": "gate_mode batch: no existe commits.tests; el reviewer compara estos hashes",
+    "at": "2026-09-25T06:51:28.701Z",
+    "reason": "gate_mode batch: no existe commits.tests; el reviewer compara estos hashes · actualizado tras la corrección autorizada de F2 (iteración review 2)",
     "sha256": {
-      "backend/tests/test_services/test_health_service.py": "a45a0adedf60e5900c8900aa68380bbd11526f519f17d719685290a5b76c4e80",
-      "backend/tests/test_routes/test_health_routes.py": "1fd67d52d525e6dc3883d7829d6ec1bcde803c92b90c984238e9f9fc05e9fcdf",
+      "backend/tests/test_services/test_health_service.py": "88fcc745296397a31b082befa89318f1325e73fc189bb9d8313255101130517b",
+      "backend/tests/test_routes/test_health_routes.py": "9d7dc9798bc443c4043fda6989d714acf75e32516d27e571a567a93cf360d425",
       "backend/tests/conftest.py": "7beda174275dd0aaf9c1d4244f94d5ffd202a12e0ba5fc710475b228b2c38ab1",
       "backend/tests/fakes.py": "2187bb6c4aa675e12f4ad0e933c6e149e4bd65835a45e56596599f049c133190"
     }
