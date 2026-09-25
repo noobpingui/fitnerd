@@ -11,7 +11,7 @@
   "branch": "feat/000-example",
   "base_branch": "chore/sdd-harness",
   "created_at": "2026-09-23T21:18:26.435Z",
-  "stage": "verify",
+  "stage": "docs",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -34,8 +34,14 @@
       "at": "2026-09-25T04:53:33.161Z",
       "note": "1. Si. 2. Si"
     },
-    "verify": null,
-    "review": null,
+    "verify": {
+      "at": "2026-09-25T05:02:38.631Z",
+      "note": "Si"
+    },
+    "review": {
+      "at": "2026-09-25T05:18:35.229Z",
+      "note": "1. Si. Acepto ambas propuestas para las 2 sugerencias. 2. Si"
+    },
     "docs": null,
     "close": null
   },
@@ -43,7 +49,8 @@
     "spec": "18c19c6",
     "plan": "56cc4bb",
     "tasks": "4bab84a",
-    "tests": "255de3c"
+    "tests": "255de3c",
+    "implement": "17592a3"
   },
   "iterations": {
     "tests": 0,
@@ -56,12 +63,12 @@
     "at": "2026-09-24T04:35:00Z"
   },
   "verify": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-09-25T22:54:00Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-09-25T05:03:52.883Z"
   },
   "bypass": false,
   "history": [
@@ -220,6 +227,54 @@
       "stage": "implement",
       "event": "approved",
       "note": "Etapa y commit aprobados"
+    },
+    {
+      "at": "2026-09-25T04:53:33.356Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "17592a3"
+    },
+    {
+      "at": "2026-09-25T04:53:33.356Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado en verifier modo full (iteración 1)"
+    },
+    {
+      "at": "2026-09-25T04:56:34.026Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verifier full PASS"
+    },
+    {
+      "at": "2026-09-25T05:02:38.631Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "Etapa aprobada (sin commit por diseño)"
+    },
+    {
+      "at": "2026-09-25T05:02:38.631Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado en reviewer (iteración 1)"
+    },
+    {
+      "at": "2026-09-25T05:03:45.922Z",
+      "stage": "review",
+      "event": "done",
+      "note": "reviewer APPROVED; 0 bloq/0 mayor/0 menor/2 NIT"
+    },
+    {
+      "at": "2026-09-25T05:03:52.883Z",
+      "stage": "review",
+      "event": "done",
+      "note": "Orquestador copia el veredicto de review.md a state.review (hueco F11)"
+    },
+    {
+      "at": "2026-09-25T05:18:35.229Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "NIT F1 y F2 aceptados sin cambios"
     }
   ]
 }

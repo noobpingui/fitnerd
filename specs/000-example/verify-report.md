@@ -1,64 +1,66 @@
 # Verify report 000 — Utilidad clamp(value, min, max) en el frontend (prueba en seco del harness)
 
-- **Modo:** red (tras la etapa tests)
-- **Fecha:** 2026-09-24T04:35:00Z · **Rama:** `feat/000-example` @ `4bab84a`
+- **Modo:** full (tras la etapa implement)
+- **Fecha:** 2026-09-25T22:54:00Z · **Rama:** `feat/000-example` @ `17592a3`
 - **Resultado:** PASS
 
 ## 1. Comandos ejecutados
 
 | Ámbito | Comando | Resultado | Resumen de la salida |
 |---|---|---|---|
-| frontend | `npm test` (nuevos SDD:) | ✅ Rojo legítimo | 20 tests fallidos con Error("clamp: no implementado") del scaffold; 9 tests preexistentes aún pasan |
+| frontend | `npm test` | ✅ | 3 test files, 29 passed (20 nuevos + 9 preexistentes) |
+| frontend | `npm run lint` | ✅ | 0 errores; 3 warnings preexistentes (HomeSlideshowBox, button.tsx, form.tsx) |
+| frontend | `npx tsc -b` | ✅ | Sin errores de tipos |
+| frontend | `npm run build` | ✅ | Build exitoso; 1 advertencia de chunk size preexistente |
 
 ## 2. Trazabilidad
 
-| REQ / NFR | AC | Tareas | Tests con `SDD:` | Estado del test |
+| REQ | AC | Tests con `SDD:` | Tareas | Estado |
 |---|---|---|---|---|
-| REQ-001 | AC-001.1 | T-001 | `clamp.test.ts::T-001` | Falla (Error scaffold) |
-| REQ-001 | AC-001.2 | T-002 | `clamp.test.ts::T-002` | Falla (Error scaffold) |
-| REQ-001 | AC-001.3 | T-003 | `clamp.test.ts::T-003` | Falla (Error scaffold) |
-| REQ-001 | AC-001.4 | T-004 | `clamp.test.ts::T-004` | Falla (Error scaffold) |
-| REQ-002 | AC-002.1 | T-005 | `clamp.test.ts::T-005` | Falla (Error scaffold) |
-| REQ-002 | AC-002.2 | T-006 | `clamp.test.ts::T-006` | Falla (Error scaffold) |
-| REQ-003 | AC-003.1 | T-007 | `clamp.test.ts::T-007` | Falla (Error scaffold) |
-| REQ-003 | AC-003.2 | T-008 | `clamp.test.ts::T-008` | Falla (Error scaffold) |
-| REQ-004 | AC-004.1 | T-009 | `clamp.test.ts::T-009` | Falla (Error scaffold) |
-| REQ-004 | AC-004.2 | T-010 | `clamp.test.ts::T-010` | Falla (Error scaffold) |
-| REQ-005 | AC-005.1 | T-011 | `clamp.test.ts::T-011` | Falla (Error scaffold) |
-| REQ-005 | AC-005.2 | T-012 | `clamp.test.ts::T-012` | Falla (Error scaffold) |
-| REQ-005 | AC-005.3 | T-013 | `clamp.test.ts::T-013` | Falla (Error scaffold) |
-| REQ-006 | AC-006.1 | T-014 | `clamp.test.ts::T-014` | Falla (Error scaffold) |
-| REQ-006 | AC-006.2 | T-015 | `clamp.test.ts::T-015` | Falla (Error scaffold) |
-| REQ-006 | AC-006.3 | T-016 | `clamp.test.ts::T-016` | Falla (Error scaffold) |
-| REQ-006 | AC-006.4 | T-017 | `clamp.test.ts::T-017` | Falla (Error scaffold) |
-| REQ-006 | AC-006.5 | T-018 | `clamp.test.ts::T-018` | Falla (Error scaffold) |
-| REQ-007 | AC-007.1 | T-019 | `clamp.test.ts::T-019` | Falla (Error scaffold) |
-| REQ-007 | AC-007.2 | T-020 | `clamp.test.ts::T-020` | Falla (Error scaffold) |
+| REQ-001 | AC-001.1 | clamp.test.ts (value dentro del rango) | T-001, T-021 | ✅ |
+| REQ-001 | AC-001.2 | clamp.test.ts (límite inferior inclusivo) | T-002, T-021 | ✅ |
+| REQ-001 | AC-001.3 | clamp.test.ts (límite superior inclusivo) | T-003, T-021 | ✅ |
+| REQ-001 | AC-001.4 | clamp.test.ts (decimales y negativos) | T-004, T-021 | ✅ |
+| REQ-002 | AC-002.1 | clamp.test.ts (valor por debajo) | T-005, T-021 | ✅ |
+| REQ-002 | AC-002.2 | clamp.test.ts (-Infinity) | T-006, T-021 | ✅ |
+| REQ-003 | AC-003.1 | clamp.test.ts (valor por encima) | T-007, T-021 | ✅ |
+| REQ-003 | AC-003.2 | clamp.test.ts (Infinity) | T-008, T-021 | ✅ |
+| REQ-004 | AC-004.1 | clamp.test.ts (rango degenerado, value bajo) | T-009, T-021 | ✅ |
+| REQ-004 | AC-004.2 | clamp.test.ts (rango degenerado, value alto) | T-010, T-021 | ✅ |
+| REQ-005 | AC-005.1 | clamp.test.ts (RangeError min > max) | T-011, T-021 | ✅ |
+| REQ-005 | AC-005.2 | clamp.test.ts (mensaje exacto RangeError) | T-012, T-021 | ✅ |
+| REQ-005 | AC-005.3 | clamp.test.ts (RangeError prevalece) | T-013, T-021 | ✅ |
+| REQ-006 | AC-006.1 | clamp.test.ts (NaN value) | T-014, T-021 | ✅ |
+| REQ-006 | AC-006.2 | clamp.test.ts (RangeError min NaN) | T-015, T-021 | ✅ |
+| REQ-006 | AC-006.3 | clamp.test.ts (RangeError max NaN) | T-016, T-021 | ✅ |
+| REQ-006 | AC-006.4 | clamp.test.ts (mensaje NaN) | T-017, T-021 | ✅ |
+| REQ-006 | AC-006.5 | clamp.test.ts (NaN con rango degenerado) | T-018, T-021 | ✅ |
+| REQ-007 | AC-007.1 | clamp.test.ts (-Infinity límite) | T-019, T-021 | ✅ |
+| REQ-007 | AC-007.2 | clamp.test.ts (Infinity límite) | T-020, T-021 | ✅ |
 
-- ACs sin test: —
-- REQs sin tarea: —
-- Tareas sin marcar `[x]`: —
+- **ACs sin test:** —
+- **REQs sin tarea:** —
+- **Tareas sin marcar [x]:** —
+- **skip, xfail, .only, .skip nuevos:** —
 
 ## 3. Criterios de aceptación
 
-Todos los AC cubiertos; clasificación de fallos en sección 4.
+Todos los 20 ACs (REQ-001 a REQ-007) están cubiertos por tests que pasan. No hay ACs sin cobertura automática.
 
-## 4. Fallos (todos legítimos)
+## 4. Fallos
 
-| # | Test | Salida relevante | Clasificación | Responsable |
-|---|---|---|---|---|
-| 1-20 | T-001 a T-020 | `Error: clamp: no implementado` lanzado desde `clamp.ts:2` (scaffold) | Rojo legítimo (Art. 5, conf.): Error("not implemented") desde scaffolding | Ninguno (red esperado) |
+Ninguno. Todos los comandos ejecutados exitosamente.
 
-### Validaciones de scaffolding (Art. 5.2):
-- ✅ Scaffold `frontend/src/lib/clamp.ts` solo contiene `throw new Error("clamp: no implementado")` sin lógica.
-- ✅ No hay `SyntaxError`, `import` errors ni problemas de fixture.
-- ✅ TypeScript compila con warnings no bloqueantes (TS6133: parámetros sin usar en scaffolding).
-
-### Validaciones de no regresión:
-- ✅ 9 tests preexistentes aún pasan.
-- ✅ No hay markers `skip`, `only` ni `xfail` nuevos.
+### Validaciones post-implementación:
+- ✅ 20 tests nuevos pasan (comportamiento implementado).
+- ✅ 9 tests preexistentes aún pasan (sin regresiones).
+- ✅ Lint sin errores nuevos (3 warnings preexistentes tolerados).
+- ✅ TypeScript compila sin errores.
+- ✅ Build exitoso.
+- ✅ Trazabilidad completa: cada AC en al menos un test que pasa.
+- ✅ Todas las tareas (T-000 a T-021) marcadas [x].
+- ✅ Sin skip, only ni xfail nuevos.
 
 ## 5. Conclusión
 
-**PASS:** Todos los 20 tests nuevos (SDD: REQ-001..REQ-007, AC-001.1..AC-007.2) fallan por comportamiento ausente (Error del scaffold), lo que es rojo legítimo y esperado en esta etapa. La trazabilidad es completa, las tareas están hechas ([x]), y no hay regresiones. Listo para implementación.
-
+**PASS:** Todos los requisitos de la etapa verify están satisfechos. La implementación es completa, correcta y verificada. Listo para review.
