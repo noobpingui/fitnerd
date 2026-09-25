@@ -11,7 +11,7 @@
   "branch": "feat/000-example",
   "base_branch": "chore/sdd-harness",
   "created_at": "2026-09-23T21:18:26.435Z",
-  "stage": "docs",
+  "stage": "close",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -42,7 +42,10 @@
       "at": "2026-09-25T05:18:35.229Z",
       "note": "1. Si. Acepto ambas propuestas para las 2 sugerencias. 2. Si"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-09-25T05:28:03.893Z",
+      "note": "1. Si. 2. Si."
+    },
     "close": null
   },
   "commits": {
@@ -50,7 +53,8 @@
     "plan": "56cc4bb",
     "tasks": "4bab84a",
     "tests": "255de3c",
-    "implement": "17592a3"
+    "implement": "17592a3",
+    "review": "243a636"
   },
   "iterations": {
     "tests": 0,
@@ -275,6 +279,30 @@
       "stage": "review",
       "event": "approved",
       "note": "NIT F1 y F2 aceptados sin cambios"
+    },
+    {
+      "at": "2026-09-25T05:18:35.399Z",
+      "stage": "review",
+      "event": "commit",
+      "note": "243a636"
+    },
+    {
+      "at": "2026-09-25T05:18:35.399Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegado en doc-keeper (iteración 1)"
+    },
+    {
+      "at": "2026-09-25T05:19:14.804Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "doc-keeper DONE: sin cambios necesarios"
+    },
+    {
+      "at": "2026-09-25T05:28:03.893Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "Etapa y commit aprobados"
     }
   ]
 }
