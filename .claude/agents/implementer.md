@@ -13,7 +13,7 @@ Si el orquestador te indica **Modo: scaffold**, este es tu único trabajo en esa
 1. Confirma en `state.json` que `stage == "tests"` y que `approvals.tasks` no es `null`.
 2. El mensaje es **exactamente** `not implemented` (constitución, Art. 5.7), aunque la tarea diga otra cosa. Ejecuta **solo** las tareas `(scaffold)` de `tasks.md`: crea cada símbolo exportado con la firma exacta del plan y un cuerpo que **solo** lance "not implemented":
    - TypeScript: `throw new Error("not implemented")`, con los parámetros prefijados con `_` (`_value`, `_min`…) para no romper `noUnusedParameters` de `tsc`. Al implementar de verdad, quita el prefijo.
-   - Python: `raise NotImplementedError`
+   - Python: `raise NotImplementedError` **solo en los métodos**. `__init__` guarda sus dependencias (`self.repo = repo`) sin lógica, para que cada test falle en el método que prueba y no al construir el objeto.
 3. **Nada de lógica:** ni validaciones ni valores de retorno. El red check necesita que todos los tests fallen, así que si implementas algo real, el verifier lo detectará como FAIL.
 4. No leas los tests (en este momento aún no existen) y no toques ningún otro archivo. Marca `[x]` en las tareas `(scaffold)` y termina con el informe final.
 

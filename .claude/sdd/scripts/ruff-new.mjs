@@ -4,18 +4,27 @@
 // entre la base (main) y el estado actual (disco). Falla SOLO si aparecen violaciones nuevas,
 // asi el codigo existente (con ~145 violaciones previas) no bloquea features que lo tocan.
 //
-// Uso (desde la raiz del repo):  node .claude/sdd/scripts/ruff-new.mjs [base=main]
+// Uso (desde la raiz del repo):  node .claude/sdd/scripts/ruff-new.mjs [base]   (por defecto: state.json.base_branch o main)
 // Salida: 0 = sin violaciones nuevas · 1 = hay violaciones nuevas · 2 = error de entorno (ruff no instalado)
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
-const base = process.argv[2] || 'main';
+// Base: argumento explícito; si no, state.json.base_branch de la feature de la rama actual; si no, main.
+function defaultBase() {
+  try {
+    const branch = execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
+    const m = /^(?:feat|fix)\/(\d{3}-[a-z0-9-]+)$/.exec(branch);
+    if (m) return JSON.parse(readFileSync(path.join(root, 'specs', m[1], 'state.json'), 'utf8')).base_branch || 'main';
+  } catch { /* sin feature activa */ }
+  return 'main';
+}
+const base = process.argv[2] || defaultBase();
 const backend = path.join(root, 'backend');
 
 function git(args) {
-  return execFileSync('git', args, { cwd: root, encoding: 'utf8' });
+  return execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
 }
 
 function pythonBin() {

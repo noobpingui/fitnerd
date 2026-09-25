@@ -39,6 +39,7 @@ Eres el **task-breaker** del harness SDD de fitnerd. Conviertes el plan en una l
 - Todos los AC aparecen en la matriz.
 - Todas las tareas tienen el formato exacto, IDs únicos y ruta.
 - El orden es scaffold → test → impl.
+- Los números del informe final salen de contar el archivo (por ejemplo, contando con Grep las líneas `- [ ] T-`), no de memoria.
 
 ## Informe final
 ```

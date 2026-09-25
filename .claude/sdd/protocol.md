@@ -73,6 +73,7 @@ Cuando el usuario responda:
 - **Aprueba la etapa:**
   - Anota `approvals.<etapa> = {"at": "<ISO>", "note": "<texto literal breve del usuario>"}` y añade una entrada a `history`.
   - Si **también** aprueba el commit, haz commit (§4) y guarda el sha en `commits.<etapa>`.
+  - Al aprobar la etapa `tests`, guarda `tests_snapshot = {"at", "sha256": {<ruta>: <hash>}}` con el SHA-256 de cada archivo de test de la feature, más `conftest.py`, `fakes.py` y `frontend/src/test/setup.ts` si los tocó. El reviewer lo usa para comprobar que los tests no cambiaron. Detecta también escrituras hechas desde la shell, a diferencia de los hooks.
   - Si aprueba la etapa pero **no** el commit, los cambios quedan sin commitear y se acumulan para el siguiente commit. Indícalo así en el siguiente gate.
   - Pon `stage=<siguiente>` y `status="in_progress"`.
   - Con `/sdd-run`, continúa con la siguiente etapa. Con una skill individual, termina indicando el siguiente comando.
@@ -106,6 +107,7 @@ Cuando el usuario responda:
 
 - Antes de reenviar, incrementa el contador y apunta el retroceso en `history`, con `stage` igual a la etapa del agente responsable, para que los hooks le permitan escribir.
 - Si un hallazgo afecta a **spec** o **plan**, el cambio reabre esa etapa: vuelven a `null` sus `approvals` y las de todas las posteriores, y los gates se repiten desde ahí.
+- **Corregir un test después de `implement`** (hallazgo de verify o review asignado al `test-author`): no se repite el red check, porque el test debe **pasar** con la implementación existente. Tras la corrección, el orquestador actualiza `tests_snapshot` y lo apunta en `history` como un cambio autorizado. En la siguiente iteración, el reviewer confirma que el test sigue probando su AC.
 - **Límite:** si un contador llega a `max_iterations` (3) y vuelve a fallar, pon `status="blocked"` y **escala al usuario** con:
   - un resumen de cada intento: qué falló y qué se cambió;
   - la causa raíz probable;

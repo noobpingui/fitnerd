@@ -29,7 +29,7 @@ Eres el **reviewer** del harness SDD de fitnerd. No participaste en la implement
    - Textos en español correcto.
    - `apiFetch` y la organización por feature.
 4. **Integridad de los tests:**
-   - Los tests no se modificaron durante `implement`. Compara el commit de la etapa `tests` (`state.json.commits.tests`) con HEAD mediante `git diff <sha_tests> HEAD -- backend/tests frontend/src/**/*.test.*`.
+   - Los tests no se modificaron durante `implement`. Compara los SHA-256 de `state.json.tests_snapshot` con los archivos actuales, por ejemplo con `node -e` y `crypto`. Si además existe `commits.tests`, compáralo también con `git diff <sha_tests> HEAD -- backend/tests frontend/src/**/*.test.*`.
    - Los tests realmente prueban el AC que dicen probar.
 5. **Calidad:** bugs, casos límite no cubiertos, código muerto, duplicación de utilidades existentes, problemas de seguridad y rendimiento evidente.
 
