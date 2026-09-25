@@ -1,0 +1,101 @@
+{
+  "$comment": "Única fuente de verdad del flujo SDD de una feature. Lo escriben solo el orquestador (/sdd-*) y el verifier (secciones red_check y verify). Etapas: spec, plan, tasks, tests, implement, verify, review, docs, close, done.",
+  "schema_version": 1,
+  "feature": "001-health-endpoint",
+  "title": "Endpoint GET /api/health con chequeo de base de datos (prueba en seco backend)",
+  "type": "feature",
+  "scope": {
+    "backend": true,
+    "frontend": false
+  },
+  "branch": "feat/001-health-endpoint",
+  "base_branch": "chore/sdd-harness",
+  "created_at": "2026-09-25T05:55:48.364Z",
+  "stage": "plan",
+  "status": "in_progress",
+  "approvals": {
+    "spec": {
+      "at": "2026-09-25T06:04:58.899Z",
+      "note": "1. Si. 2. Si"
+    },
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
+    "verify": null,
+    "review": null,
+    "docs": null,
+    "close": null
+  },
+  "commits": {},
+  "iterations": {
+    "tests": 0,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": null,
+    "at": null
+  },
+  "verify": {
+    "result": null,
+    "at": null
+  },
+  "review": {
+    "verdict": null,
+    "at": null
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-09-25T05:55:48.364Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "Creada con /sdd-new; rama desde chore/sdd-harness (prueba en seco backend)"
+    },
+    {
+      "at": "2026-09-25T05:56:57.203Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegado en spec-writer (iteración 1)"
+    },
+    {
+      "at": "2026-09-25T05:58:00.846Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "spec-writer: 4 REQ/9 AC + 2 NFR; preguntas Q1-Q5"
+    },
+    {
+      "at": "2026-09-25T06:01:22.821Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Respuestas Q1-Q5: \"Todas las propuestas por defecto\". Re-delegado (no consume iteración)"
+    },
+    {
+      "at": "2026-09-25T06:02:39.202Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec-writer DONE: 4 REQ/8 AC + 2 NFR/2 AC"
+    },
+    {
+      "at": "2026-09-25T06:02:39.202Z",
+      "stage": "spec",
+      "event": "gate_mode",
+      "note": "Modo sin pausas plan→verify autorizado por el usuario (solo 001)"
+    },
+    {
+      "at": "2026-09-25T06:04:58.899Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Etapa y commit aprobados"
+    }
+  ],
+  "gate_mode": {
+    "mode": "batch",
+    "range": "plan→verify",
+    "push": false,
+    "at": "2026-09-25T06:02:39.202Z",
+    "note": "Usuario, 2026-09-25, solo para 001: tras el commit de spec, plan→verify sin gates intermedios; un único commit al final de verify; review/docs/close con gates normales; sin push. Se para igual ante NEEDS_INPUT, 3 fallos o bloqueo de entorno."
+  }
+}
