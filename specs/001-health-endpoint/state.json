@@ -11,8 +11,8 @@
   "branch": "feat/001-health-endpoint",
   "base_branch": "chore/sdd-harness",
   "created_at": "2026-09-25T05:55:48.364Z",
-  "stage": "close",
-  "status": "in_progress",
+  "stage": "done",
+  "status": "done",
   "approvals": {
     "spec": {
       "at": "2026-09-25T06:04:58.899Z",
@@ -46,12 +46,16 @@
       "at": "2026-09-25T07:01:33.353Z",
       "note": "1. Si. 2. Si"
     },
-    "close": null
+    "close": {
+      "at": "2026-09-25T07:03:09.927Z",
+      "note": "1. Si. 2.Opcion A"
+    }
   },
   "commits": {
     "spec": "c1e7629",
     "batch_plan_to_verify": "b6e7110",
-    "review": "cbbd619"
+    "review": "cbbd619",
+    "docs": "aa2b373"
   },
   "iterations": {
     "tests": 0,
@@ -336,6 +340,36 @@
       "stage": "docs",
       "event": "approved",
       "note": "Etapa y commit aprobados"
+    },
+    {
+      "at": "2026-09-25T07:01:33.491Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "aa2b373"
+    },
+    {
+      "at": "2026-09-25T07:01:33.491Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Orquestador: checklist de hecho"
+    },
+    {
+      "at": "2026-09-25T07:02:00.922Z",
+      "stage": "close",
+      "event": "env",
+      "note": "Postgres temporal detenido (--rm); contenedores (3) y volúmenes (27) idénticos a antes"
+    },
+    {
+      "at": "2026-09-25T07:03:09.927Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Checklist OK; integración opción A (merge a chore/sdd-harness, sin push)"
+    },
+    {
+      "at": "2026-09-25T07:03:09.927Z",
+      "stage": "done",
+      "event": "done",
+      "note": "Feature cerrada"
     }
   ],
   "gate_mode": {
