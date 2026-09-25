@@ -1,0 +1,392 @@
+{
+  "$comment": "Única fuente de verdad del flujo SDD de una feature. Lo escriben solo el orquestador (/sdd-*) y el verifier (secciones red_check y verify). Etapas: spec, plan, tasks, tests, implement, verify, review, docs, close, done.",
+  "schema_version": 1,
+  "feature": "001-health-endpoint",
+  "title": "Endpoint GET /api/health con chequeo de base de datos (prueba en seco backend)",
+  "type": "feature",
+  "scope": {
+    "backend": true,
+    "frontend": false
+  },
+  "branch": "feat/001-health-endpoint",
+  "base_branch": "chore/sdd-harness",
+  "created_at": "2026-09-25T05:55:48.364Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": {
+      "at": "2026-09-25T06:04:58.899Z",
+      "note": "1. Si. 2. Si"
+    },
+    "plan": {
+      "at": "2026-09-25T06:07:57.188Z",
+      "note": "auto: modo sin pausas plan→verify autorizado por el usuario (gate_mode)"
+    },
+    "tasks": {
+      "at": "2026-09-25T06:09:54.051Z",
+      "note": "auto: modo sin pausas plan→verify autorizado por el usuario (gate_mode)"
+    },
+    "tests": {
+      "at": "2026-09-25T06:33:15.785Z",
+      "note": "auto: modo sin pausas plan→verify autorizado por el usuario (gate_mode)"
+    },
+    "implement": {
+      "at": "2026-09-25T06:34:40.859Z",
+      "note": "auto: modo sin pausas plan→verify autorizado por el usuario (gate_mode)"
+    },
+    "verify": {
+      "at": "2026-09-25T06:55:08.093Z",
+      "note": "Si (iteración 2)"
+    },
+    "review": {
+      "at": "2026-09-25T06:57:00.429Z",
+      "note": "1. Si. 2. Si"
+    },
+    "docs": {
+      "at": "2026-09-25T07:01:33.353Z",
+      "note": "1. Si. 2. Si"
+    },
+    "close": {
+      "at": "2026-09-25T07:03:09.927Z",
+      "note": "1. Si. 2.Opcion A"
+    }
+  },
+  "commits": {
+    "spec": "c1e7629",
+    "batch_plan_to_verify": "b6e7110",
+    "review": "cbbd619",
+    "docs": "aa2b373"
+  },
+  "iterations": {
+    "tests": 0,
+    "implement": 0,
+    "review": 1
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-09-25T06:32:14.976Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-09-25T06:53:32.654Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-09-25T06:56:06.847Z"
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-09-25T05:55:48.364Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "Creada con /sdd-new; rama desde chore/sdd-harness (prueba en seco backend)"
+    },
+    {
+      "at": "2026-09-25T05:56:57.203Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegado en spec-writer (iteración 1)"
+    },
+    {
+      "at": "2026-09-25T05:58:00.846Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "spec-writer: 4 REQ/9 AC + 2 NFR; preguntas Q1-Q5"
+    },
+    {
+      "at": "2026-09-25T06:01:22.821Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Respuestas Q1-Q5: \"Todas las propuestas por defecto\". Re-delegado (no consume iteración)"
+    },
+    {
+      "at": "2026-09-25T06:02:39.202Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec-writer DONE: 4 REQ/8 AC + 2 NFR/2 AC"
+    },
+    {
+      "at": "2026-09-25T06:02:39.202Z",
+      "stage": "spec",
+      "event": "gate_mode",
+      "note": "Modo sin pausas plan→verify autorizado por el usuario (solo 001)"
+    },
+    {
+      "at": "2026-09-25T06:04:58.899Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Etapa y commit aprobados"
+    },
+    {
+      "at": "2026-09-25T06:04:59.045Z",
+      "stage": "spec",
+      "event": "commit",
+      "note": "c1e7629"
+    },
+    {
+      "at": "2026-09-25T06:04:59.045Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegado en planner (iteración 1; modo sin pausas)"
+    },
+    {
+      "at": "2026-09-25T06:07:57.188Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "planner DONE: health_bp + HealthService + HealthRepository(SELECT 1); integración con sqlalchemy.event"
+    },
+    {
+      "at": "2026-09-25T06:07:57.188Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode)"
+    },
+    {
+      "at": "2026-09-25T06:07:57.188Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegado en task-breaker (iteración 1)"
+    },
+    {
+      "at": "2026-09-25T06:09:54.051Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "task-breaker DONE: 20 tareas (3 scaffold, 16 test, 3 impl, 1 config)"
+    },
+    {
+      "at": "2026-09-25T06:09:54.051Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode)"
+    },
+    {
+      "at": "2026-09-25T06:09:54.051Z",
+      "stage": "tests",
+      "event": "env",
+      "note": "Postgres temporal sdd-dryrun-pg (pgvector pg18, :5433, --rm); baseline pytest 28/28"
+    },
+    {
+      "at": "2026-09-25T06:09:54.051Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: implementer modo scaffold"
+    },
+    {
+      "at": "2026-09-25T06:10:26.195Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author; scaffold T-001/T-002 hecho"
+    },
+    {
+      "at": "2026-09-25T06:30:49.593Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier modo red; test-author DONE (14 tests)"
+    },
+    {
+      "at": "2026-09-25T06:33:15.785Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS (confirmado por el orquestador: 14/14 rojo legítimo)"
+    },
+    {
+      "at": "2026-09-25T06:33:15.785Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode); tests_snapshot registrado (F14)"
+    },
+    {
+      "at": "2026-09-25T06:33:15.785Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegado en implementer (iteración 1)"
+    },
+    {
+      "at": "2026-09-25T06:34:40.859Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "implementer DONE: T-030..T-033; 42/42; ruff sin nuevas"
+    },
+    {
+      "at": "2026-09-25T06:34:40.859Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode); tests intactos por hash"
+    },
+    {
+      "at": "2026-09-25T06:34:40.859Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado en verifier modo full (iteración 1)"
+    },
+    {
+      "at": "2026-09-25T06:37:27.242Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verifier full PASS (confirmado por el orquestador: 42/42, ruff sin nuevas)"
+    },
+    {
+      "at": "2026-09-25T06:39:35.256Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "Cierre del tramo sin pausas; commit único aprobado"
+    },
+    {
+      "at": "2026-09-25T06:39:35.446Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "b6e7110 (commit único plan→verify)"
+    },
+    {
+      "at": "2026-09-25T06:39:35.446Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado en reviewer (iteración 1)"
+    },
+    {
+      "at": "2026-09-25T06:41:11.223Z",
+      "stage": "review",
+      "event": "done",
+      "note": "reviewer APPROVED: 0 bloq/0 mayor/2 menor/2 NIT; veredicto copiado por el orquestador"
+    },
+    {
+      "at": "2026-09-25T06:48:03.410Z",
+      "stage": "review",
+      "event": "changes_requested",
+      "note": "Usuario elige ciclo de corrección para MENOR F1,F2 y NIT F3; F4 aceptado"
+    },
+    {
+      "at": "2026-09-25T06:48:03.410Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Iteración review 1/3: test-author corrige F2 (review.md). Tras implement, sin red check (F16)"
+    },
+    {
+      "at": "2026-09-25T06:51:28.701Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "test-author corrigió F2; 42/42; tests_snapshot actualizado"
+    },
+    {
+      "at": "2026-09-25T06:51:28.701Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "implementer corrige F1 y F3 (review.md)"
+    },
+    {
+      "at": "2026-09-25T06:52:21.127Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "implementer corrigió F1 y F3; tests intactos por hash"
+    },
+    {
+      "at": "2026-09-25T06:52:21.127Z",
+      "stage": "verify",
+      "event": "rework",
+      "note": "verify full iteración 2"
+    },
+    {
+      "at": "2026-09-25T06:54:11.078Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify full iteración 2 PASS (confirmado 42/42)"
+    },
+    {
+      "at": "2026-09-25T06:55:08.093Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "iteración 2"
+    },
+    {
+      "at": "2026-09-25T06:55:08.093Z",
+      "stage": "review",
+      "event": "started",
+      "note": "reviewer iteración 2"
+    },
+    {
+      "at": "2026-09-25T06:56:06.847Z",
+      "stage": "review",
+      "event": "done",
+      "note": "reviewer iteración 2 APPROVED: F1-F3 resueltos, 0 hallazgos nuevos"
+    },
+    {
+      "at": "2026-09-25T06:57:00.429Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Etapa y commit aprobados (iteración 2)"
+    },
+    {
+      "at": "2026-09-25T06:57:00.596Z",
+      "stage": "review",
+      "event": "commit",
+      "note": "cbbd619"
+    },
+    {
+      "at": "2026-09-25T06:57:00.596Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegado en doc-keeper (iteración 1)"
+    },
+    {
+      "at": "2026-09-25T06:58:10.437Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "doc-keeper DONE: sin cambios necesarios"
+    },
+    {
+      "at": "2026-09-25T07:01:33.353Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "Etapa y commit aprobados"
+    },
+    {
+      "at": "2026-09-25T07:01:33.491Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "aa2b373"
+    },
+    {
+      "at": "2026-09-25T07:01:33.491Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Orquestador: checklist de hecho"
+    },
+    {
+      "at": "2026-09-25T07:02:00.922Z",
+      "stage": "close",
+      "event": "env",
+      "note": "Postgres temporal detenido (--rm); contenedores (3) y volúmenes (27) idénticos a antes"
+    },
+    {
+      "at": "2026-09-25T07:03:09.927Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Checklist OK; integración opción A (merge a chore/sdd-harness, sin push)"
+    },
+    {
+      "at": "2026-09-25T07:03:09.927Z",
+      "stage": "done",
+      "event": "done",
+      "note": "Feature cerrada"
+    }
+  ],
+  "gate_mode": {
+    "mode": "batch",
+    "range": "plan→verify",
+    "push": false,
+    "at": "2026-09-25T06:02:39.202Z",
+    "note": "Usuario, 2026-09-25, solo para 001: tras el commit de spec, plan→verify sin gates intermedios; un único commit al final de verify; review/docs/close con gates normales; sin push. Se para igual ante NEEDS_INPUT, 3 fallos o bloqueo de entorno."
+  },
+  "tests_snapshot": {
+    "at": "2026-09-25T06:51:28.701Z",
+    "reason": "gate_mode batch: no existe commits.tests; el reviewer compara estos hashes · actualizado tras la corrección autorizada de F2 (iteración review 2)",
+    "sha256": {
+      "backend/tests/test_services/test_health_service.py": "88fcc745296397a31b082befa89318f1325e73fc189bb9d8313255101130517b",
+      "backend/tests/test_routes/test_health_routes.py": "9d7dc9798bc443c4043fda6989d714acf75e32516d27e571a567a93cf360d425",
+      "backend/tests/conftest.py": "7beda174275dd0aaf9c1d4244f94d5ffd202a12e0ba5fc710475b228b2c38ab1",
+      "backend/tests/fakes.py": "2187bb6c4aa675e12f4ad0e933c6e149e4bd65835a45e56596599f049c133190"
+    }
+  }
+}

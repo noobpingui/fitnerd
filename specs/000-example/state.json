@@ -1,0 +1,336 @@
+{
+  "$comment": "Única fuente de verdad del flujo SDD de una feature. Lo escriben solo el orquestador (/sdd-*) y el verifier (secciones red_check y verify). Etapas: spec, plan, tasks, tests, implement, verify, review, docs, close, done.",
+  "schema_version": 1,
+  "feature": "000-example",
+  "title": "Utilidad clamp(value, min, max) en el frontend (prueba en seco del harness)",
+  "type": "feature",
+  "scope": {
+    "backend": false,
+    "frontend": true
+  },
+  "branch": "feat/000-example",
+  "base_branch": "chore/sdd-harness",
+  "created_at": "2026-09-23T21:18:26.435Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": {
+      "at": "2026-09-23T22:08:21.080Z",
+      "note": "1. Aprobado. 2. Aprobado"
+    },
+    "plan": {
+      "at": "2026-09-24T04:12:46.314Z",
+      "note": "1. Aprobado. 2. Si. 3. B"
+    },
+    "tasks": {
+      "at": "2026-09-24T04:27:21.185Z",
+      "note": "1.Si. 2. Si"
+    },
+    "tests": {
+      "at": "2026-09-24T04:48:38.555Z",
+      "note": "1. Si. 2. Si"
+    },
+    "implement": {
+      "at": "2026-09-25T04:53:33.161Z",
+      "note": "1. Si. 2. Si"
+    },
+    "verify": {
+      "at": "2026-09-25T05:02:38.631Z",
+      "note": "Si"
+    },
+    "review": {
+      "at": "2026-09-25T05:18:35.229Z",
+      "note": "1. Si. Acepto ambas propuestas para las 2 sugerencias. 2. Si"
+    },
+    "docs": {
+      "at": "2026-09-25T05:28:03.893Z",
+      "note": "1. Si. 2. Si."
+    },
+    "close": {
+      "at": "2026-09-25T05:32:33.668Z",
+      "note": "1. Si. 2. Opcion A"
+    }
+  },
+  "commits": {
+    "spec": "18c19c6",
+    "plan": "56cc4bb",
+    "tasks": "4bab84a",
+    "tests": "255de3c",
+    "implement": "17592a3",
+    "review": "243a636",
+    "docs": "ecfe40e"
+  },
+  "iterations": {
+    "tests": 0,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-09-24T04:35:00Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-09-25T22:54:00Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-09-25T05:03:52.883Z"
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-09-23T21:18:26.435Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "Creada con /sdd-new; rama desde chore/sdd-harness (prueba en seco)"
+    },
+    {
+      "at": "2026-09-23T21:21:24.780Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegado en spec-writer (iteración 1)"
+    },
+    {
+      "at": "2026-09-23T21:22:23.408Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "spec-writer: 7 REQ / 18 AC; 4 preguntas abiertas (Q1-Q4)"
+    },
+    {
+      "at": "2026-09-23T21:24:19.826Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Respuestas del usuario a Q1-Q4 copiadas en spec.md: \"Todas las propuestas por defecto\". Re-delegado (no consume iteración)"
+    },
+    {
+      "at": "2026-09-23T21:24:53.771Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec-writer DONE: 7 REQ / 20 AC; Q1-Q4 resueltas"
+    },
+    {
+      "at": "2026-09-23T22:08:21.080Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Etapa y commit aprobados"
+    },
+    {
+      "at": "2026-09-23T22:08:21.209Z",
+      "stage": "spec",
+      "event": "commit",
+      "note": "18c19c6"
+    },
+    {
+      "at": "2026-09-23T22:08:21.209Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegado en planner (iteración 1)"
+    },
+    {
+      "at": "2026-09-24T04:12:46.314Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "planner DONE: clamp.ts + clamp.test.ts; riesgo F5 (rojo legitimo en TS)"
+    },
+    {
+      "at": "2026-09-24T04:12:46.314Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "Etapa y commit aprobados; F5 opcion (b): paso scaffold en el harness"
+    },
+    {
+      "at": "2026-09-24T04:12:46.314Z",
+      "stage": "tasks",
+      "event": "blocked",
+      "note": "Pausa: se aplica arreglo F5 en chore/sdd-harness antes de tasks"
+    },
+    {
+      "at": "2026-09-24T04:21:16.536Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "56cc4bb"
+    },
+    {
+      "at": "2026-09-24T04:21:16.536Z",
+      "stage": "tasks",
+      "event": "unblocked",
+      "note": "Arreglo F5 (ADR-0012, 6e5f8aa) integrado con merge 78a303d"
+    },
+    {
+      "at": "2026-09-24T04:21:16.536Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegado en task-breaker (iteración 1)"
+    },
+    {
+      "at": "2026-09-24T04:22:27.134Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "task-breaker DONE: 1 scaffold, 20 test, 1 impl"
+    },
+    {
+      "at": "2026-09-24T04:27:21.185Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "Etapa y commit aprobados"
+    },
+    {
+      "at": "2026-09-24T04:27:21.325Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "4bab84a"
+    },
+    {
+      "at": "2026-09-24T04:27:21.325Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: implementer modo scaffold (T-000)"
+    },
+    {
+      "at": "2026-09-24T04:27:46.938Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (T-001..T-020); scaffold T-000 hecho"
+    },
+    {
+      "at": "2026-09-24T04:30:20.943Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier modo red; test-author DONE (20 tests)"
+    },
+    {
+      "at": "2026-09-24T04:32:40.515Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS: 20/20 fallan por comportamiento ausente (verificado también por el orquestador)"
+    },
+    {
+      "at": "2026-09-24T04:48:38.555Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "Etapa y commit aprobados"
+    },
+    {
+      "at": "2026-09-24T04:48:38.696Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "255de3c"
+    },
+    {
+      "at": "2026-09-24T04:48:38.696Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegado en implementer (T-021, iteración 1)"
+    },
+    {
+      "at": "2026-09-24T04:49:43.541Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "implementer DONE: T-021; 29/29 tests, lint sin errores, tsc ok"
+    },
+    {
+      "at": "2026-09-25T04:53:33.161Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "Etapa y commit aprobados"
+    },
+    {
+      "at": "2026-09-25T04:53:33.356Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "17592a3"
+    },
+    {
+      "at": "2026-09-25T04:53:33.356Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado en verifier modo full (iteración 1)"
+    },
+    {
+      "at": "2026-09-25T04:56:34.026Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verifier full PASS"
+    },
+    {
+      "at": "2026-09-25T05:02:38.631Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "Etapa aprobada (sin commit por diseño)"
+    },
+    {
+      "at": "2026-09-25T05:02:38.631Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado en reviewer (iteración 1)"
+    },
+    {
+      "at": "2026-09-25T05:03:45.922Z",
+      "stage": "review",
+      "event": "done",
+      "note": "reviewer APPROVED; 0 bloq/0 mayor/0 menor/2 NIT"
+    },
+    {
+      "at": "2026-09-25T05:03:52.883Z",
+      "stage": "review",
+      "event": "done",
+      "note": "Orquestador copia el veredicto de review.md a state.review (hueco F11)"
+    },
+    {
+      "at": "2026-09-25T05:18:35.229Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "NIT F1 y F2 aceptados sin cambios"
+    },
+    {
+      "at": "2026-09-25T05:18:35.399Z",
+      "stage": "review",
+      "event": "commit",
+      "note": "243a636"
+    },
+    {
+      "at": "2026-09-25T05:18:35.399Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegado en doc-keeper (iteración 1)"
+    },
+    {
+      "at": "2026-09-25T05:19:14.804Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "doc-keeper DONE: sin cambios necesarios"
+    },
+    {
+      "at": "2026-09-25T05:28:03.893Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "Etapa y commit aprobados"
+    },
+    {
+      "at": "2026-09-25T05:28:04.029Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "ecfe40e"
+    },
+    {
+      "at": "2026-09-25T05:28:04.029Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Orquestador: checklist de hecho"
+    },
+    {
+      "at": "2026-09-25T05:32:33.668Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Checklist de hecho OK; integración opción A (merge a chore/sdd-harness, sin push)"
+    },
+    {
+      "at": "2026-09-25T05:32:33.668Z",
+      "stage": "done",
+      "event": "done",
+      "note": "Feature cerrada"
+    }
+  ]
+}

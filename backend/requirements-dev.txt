@@ -1,0 +1,3 @@
+# Dependencias de desarrollo (no entran en la imagen Docker de runtime).
+# Instalar una vez en el .venv:  pip install -r requirements-dev.txt
+ruff
