@@ -9,7 +9,7 @@ Al terminar una feature suele quedar documentación desactualizada: el README (c
 ## Decisión
 - Se añade el agente `doc-keeper` (modelo `sonnet`) y la etapa `docs`, que va **después de `review` y antes de `close`**, con su propio gate humano.
 - **Entradas:** `spec.md`, `plan.md`, `review.md` y el diff de la rama respecto a `main`.
-- **Rutas en las que puede escribir:**
+- **Rutas en las que puede escribir** (ampliadas por la ADR-0013 con la sección Proyecto de `CLAUDE.md`):
   - `README.md` y `frontend/README.md`;
   - los `.env.example` (raíz, `backend/` y `frontend/`);
   - `docs/**`, **excepto** `docs/sdd/decisions/`;

@@ -20,7 +20,7 @@ Todos los hooks son `PreToolUse`: se ejecutan **antes** de que Claude use la her
 | `implementer` | `backend/**` y `frontend/**` (sin tests), los `.env.example` y las casillas de `tasks.md` |
 | `verifier` | `specs/NNN/verify-report.md`, `specs/NNN/state.json` |
 | `reviewer` | `specs/NNN/review.md` |
-| `doc-keeper` | `README.md`, `frontend/README.md`, los `.env.example`, `docs/**` (salvo `docs/sdd/decisions/`) y `specs/NNN/docs-report.md` |
+| `doc-keeper` | `README.md`, `frontend/README.md`, `CLAUDE.md` (el hook permite el archivo; su prompt lo limita a la sección Proyecto, ADR-0013), los `.env.example`, `docs/**` (salvo `docs/sdd/decisions/`) y `specs/NNN/docs-report.md` |
 
   4. Ningún subagente edita un `.env` real.
 - Si el hook falla internamente, el agente queda bloqueado (*fail-closed*).
