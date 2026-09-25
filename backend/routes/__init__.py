@@ -6,6 +6,7 @@ from routes.exercise_category_routes import exercise_category_bp
 from routes.exercise_routes import exercise_bp
 from routes.exercise_favorite_routes import exercise_favorite_bp
 from routes.feedback_routes import feedback_bp
+from routes.health_routes import health_bp
 from routes.weekly_plan_routes import weekly_plan_bp
 
 
@@ -18,4 +19,5 @@ def register_blueprints(app):
     app.register_blueprint(exercise_bp)
     app.register_blueprint(exercise_favorite_bp)
     app.register_blueprint(feedback_bp)
+    app.register_blueprint(health_bp)
     app.register_blueprint(weekly_plan_bp)
