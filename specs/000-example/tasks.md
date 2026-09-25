@@ -45,7 +45,7 @@ Reglas:
 - [x] T-020 [REQ-007, AC-007.2] (test) `clamp(1000, 0, Infinity)` devuelve `1000` (límite superior `Infinity`) — `frontend/src/lib/clamp.test.ts`
 
 ## Fase B — Implementación (implementer)
-- [ ] T-021 [REQ-001, REQ-002, REQ-003, REQ-004, REQ-005, REQ-006, REQ-007] (impl) Implementar el cuerpo completo de `clamp` según el orden de evaluación del plan §3.3 (1. `RangeError` si `min` o `max` es `NaN`; 2. `RangeError` si `min > max`; 3. devolver `NaN` si `value` es `NaN`; 4. devolver `Math.min(Math.max(value, min), max)`), con JSDoc en español que documente límites inclusivos, errores y trato de `NaN` — `frontend/src/lib/clamp.ts`
+- [x] T-021 [REQ-001, REQ-002, REQ-003, REQ-004, REQ-005, REQ-006, REQ-007] (impl) Implementar el cuerpo completo de `clamp` según el orden de evaluación del plan §3.3 (1. `RangeError` si `min` o `max` es `NaN`; 2. `RangeError` si `min > max`; 3. devolver `NaN` si `value` es `NaN`; 4. devolver `Math.min(Math.max(value, min), max)`), con JSDoc en español que documente límites inclusivos, errores y trato de `NaN` — `frontend/src/lib/clamp.ts`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |
