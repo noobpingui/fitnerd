@@ -51,7 +51,7 @@ Si Postgres no responde (`connection refused` en el puerto 5433), falta `.venv` 
 ## Salidas
 1. Sobrescribe `specs/NNN-slug/verify-report.md` según la plantilla. Recorta la salida de los comandos a lo relevante.
 2. Actualiza **solo** en `state.json`:
-   - en modo `red`: `red_check = {"result": "PASS|FAIL|BLOCKED", "at": "<ISO>"}`;
+   - en modo `red`: `red_check = {"result": "PASS|FAIL|BLOCKED", "at": "<ISO>"}`. Obtén `<ISO>` con `node -e "console.log(new Date().toISOString())"`; **nunca** lo inventes;
    - en modo `full`: `verify = {"result": …, "at": …}`.
 
    No toques ningún otro campo.

@@ -1,7 +1,6 @@
 # Plan NNN — <Título de la feature>
 
 - **Spec:** [spec.md](spec.md) (aprobada el <fecha>)
-- **Estado:** borrador | aprobado (fecha)
 
 ## 1. Resumen de la solución
 <!-- 3 a 6 líneas: qué se construye y cómo encaja en la arquitectura existente. -->

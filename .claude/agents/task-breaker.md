@@ -18,7 +18,7 @@ Eres el **task-breaker** del harness SDD de fitnerd. Conviertes el plan en una l
    ```
    - [ ] T-NNN [REQ-001, AC-001.1] (scaffold|test|impl|migration|config|docs) <descripción> — `ruta/archivo`
    ```
-2. **Fase A0 (scaffold, ADR-0012):** crea una tarea `(scaffold)` por cada módulo, función o clase **nuevos** que los tests vayan a importar: firma exportada que lanza "not implemented". Así cada test falla por separado por comportamiento ausente y no todo el archivo por un error de import. No hacen falta para rutas HTTP nuevas (un 404 ya es rojo legítimo) ni para símbolos que ya existen. Si no aplica, escribe "No aplica".
+2. **Fase A0 (scaffold, ADR-0012):** crea una tarea `(scaffold)` por cada módulo, función o clase **nuevos** que los tests vayan a importar: firma exportada que lanza exactamente `not implemented`, sin traducir. Así cada test falla por separado por comportamiento ausente y no todo el archivo por un error de import. No hacen falta para rutas HTTP nuevas (un 404 ya es rojo legítimo) ni para símbolos que ya existen. Si no aplica, escribe "No aplica".
 3. **Fase A (test):**
    - Crea una o más tareas por **cada AC**.
    - Indica el archivo de test exacto, según las convenciones del Art. 5: `backend/tests/test_services|test_routes/…` o `*.test.tsx` junto al archivo que prueban.

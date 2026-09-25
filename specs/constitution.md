@@ -65,6 +65,7 @@
    - `globals: false`, así que cada test importa `describe`, `it` y `expect` desde `vitest`;
    - la red se simula en la capa `api.ts` o `apiClient`, nunca con llamadas reales.
 6. Los nombres de los tests describen el comportamiento: en backend, `test_<comportamiento>` en inglés, como en los tests actuales; en frontend, `it("…")` en español. Docstrings y comentarios en español.
+7. Los esqueletos `(scaffold)` (ADR-0012) lanzan **exactamente** `Error("not implemented")` en TypeScript (con los parámetros prefijados con `_`) o `NotImplementedError` en Python, y no contienen lógica.
 
 ## Art. 6 — Arquitectura y convenciones
 

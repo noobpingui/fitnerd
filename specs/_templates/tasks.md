@@ -1,7 +1,6 @@
 # Tareas NNN — <Título de la feature>
 
 - **Plan:** [plan.md](plan.md) (aprobado el <fecha>)
-- **Estado:** borrador | aprobado (fecha)
 
 <!--
 Reglas:

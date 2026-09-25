@@ -27,10 +27,12 @@ Este archivo es de lectura obligatoria para todas las skills `/sdd-*`. Lo ejecut
    ```
    Feature: specs/NNN-slug/  ·  Etapa: <etapa>  ·  Modo: <red|full|->  ·  Iteración: <n>/3
    Lee tus entradas según tu definición. Hallazgos a corregir (si aplica): specs/NNN-slug/<verify-report.md|review.md>, ítems <F1, F3…>
+   Tu mensaje final debe ser EXACTAMENTE el bloque "Informe final" de tu definición.
    ```
+   La aprobación de cada etapa vive solo en `state.json` (`approvals`); los artefactos no tienen campo de estado.
 4. Lee el **informe final** del agente (`STATUS / ARTIFACTS / SUMMARY / …`) y **verifica en disco** que los artefactos existen. No te fíes solo del informe.
 5. Según el `STATUS` del informe:
-   - `DONE`, `PASS` o `APPROVED`: pasa al gate (§3).
+   - `DONE`, `PASS` o `APPROVED`: pasa al gate (§3). Tras el `reviewer`, copia tú el veredicto de `review.md` a `state.json.review = {"verdict": …, "at": …}`, porque el reviewer no puede escribir `state.json`. Haz lo mismo con `CHANGES_REQUESTED`.
    - `NEEDS_INPUT`: muestra las preguntas al usuario con la respuesta propuesta de cada una. Cuando responda, copia las respuestas literalmente en el artefacto que corresponda y vuelve a delegar. Esto no consume iteración.
    - `FAIL` o `CHANGES_REQUESTED`: aplica el ciclo de corrección (§5).
    - `BLOCKED`: `status="blocked"`. Explica el bloqueo y el comando o la decisión que lo resuelve, y espera al usuario.
@@ -111,6 +113,7 @@ Cuando el usuario responda:
 - Las correcciones pasan por el gate de la etapa que se repite, igual que la primera vez.
 
 ## 6. Mantenimiento de `state.json`
+- Las fechas se obtienen siempre del sistema, nunca se escriben a mano: `node -e "console.log(new Date().toISOString())"`.
 - Tras cada cambio, valida que sigue siendo JSON válido: `node -e "JSON.parse(require('fs').readFileSync('<ruta>','utf8'))"`.
 - `history` solo crece: `{"at": "<ISO>", "stage": "<etapa>", "event": "<started|done|approved|changes_requested|rework|blocked|commit|push>", "note": "<breve>"}`.
 - Nunca se borran aprobaciones históricas. Al reabrir una etapa, se ponen a `null` y se deja constancia en `history`.

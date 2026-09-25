@@ -30,7 +30,7 @@ Lee primero `.claude/sdd/protocol.md` (§0 y §4).
    Muestra ese resumen y la idea literal, y pregunta: **"¿Apruebas crear la rama y la carpeta?"**. Después termina tu turno.
 5. **Con la aprobación explícita del usuario:**
    1. Crea la rama y cámbiate a ella: `git checkout -b <rama>`.
-   2. Crea `specs/NNN-slug/idea.md` con la idea **literal** del usuario, precedida de un encabezado `# Idea original · NNN-slug` y la fecha.
+   2. Crea `specs/NNN-slug/idea.md` con la idea **literal** del usuario, precedida de un encabezado `# Idea original · NNN-slug` y la fecha. Normaliza solo los saltos de línea y sangrías que introduce el prompt (une las líneas partidas); no cambies ninguna palabra.
    3. Copia `specs/_templates/state.json` a `specs/NNN-slug/state.json` y rellena:
       - `feature`, `title`, `type`, `scope`, `branch` y `created_at`;
       - `stage: "spec"` y `status: "in_progress"`;

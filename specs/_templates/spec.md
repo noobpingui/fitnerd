@@ -2,7 +2,6 @@
 
 - **Feature:** `NNN-slug` · **Tipo:** feature | fix | refactor
 - **Ámbito:** backend | frontend | ambos
-- **Estado:** borrador | aprobada (fecha)
 
 ## 1. Contexto y problema
 <!-- Qué problema resuelve y para quién. Sin mencionar la implementación. -->
