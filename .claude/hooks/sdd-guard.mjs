@@ -67,7 +67,7 @@ function allowedFor(agent, rel, fdir) {
     case 'verifier': return f('verify-report.md') || f('state.json');
     case 'reviewer': return f('review.md');
     case 'doc-keeper':
-      return rel === 'README.md' || rel === 'frontend/README.md' || isEnvExample(rel) || f('docs-report.md') ||
+      return rel === 'README.md' || rel === 'frontend/README.md' || rel === 'CLAUDE.md' || isEnvExample(rel) || f('docs-report.md') ||
         (rel.startsWith('docs/') && !rel.startsWith('docs/sdd/decisions/'));
     default: return false;
   }
@@ -81,7 +81,7 @@ const ALLOWED_TEXT = {
   implementer: 'código de producción en backend/ y frontend/ (sin tests), .env.example y las casillas de <feature>/tasks.md',
   verifier: '<feature>/verify-report.md y <feature>/state.json',
   reviewer: '<feature>/review.md',
-  'doc-keeper': 'README.md, frontend/README.md, .env.example, docs/** (salvo docs/sdd/decisions/) y <feature>/docs-report.md',
+  'doc-keeper': 'README.md, frontend/README.md, CLAUDE.md (solo la sección Proyecto), .env.example, docs/** (salvo docs/sdd/decisions/) y <feature>/docs-report.md',
 };
 
 const approved = (state, stage) => Boolean(state && state.approvals && state.approvals[stage]);
