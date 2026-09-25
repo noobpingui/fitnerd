@@ -11,7 +11,7 @@
   "branch": "feat/001-health-endpoint",
   "base_branch": "chore/sdd-harness",
   "created_at": "2026-09-25T05:55:48.364Z",
-  "stage": "docs",
+  "stage": "close",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -42,12 +42,16 @@
       "at": "2026-09-25T06:57:00.429Z",
       "note": "1. Si. 2. Si"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-09-25T07:01:33.353Z",
+      "note": "1. Si. 2. Si"
+    },
     "close": null
   },
   "commits": {
     "spec": "c1e7629",
-    "batch_plan_to_verify": "b6e7110"
+    "batch_plan_to_verify": "b6e7110",
+    "review": "cbbd619"
   },
   "iterations": {
     "tests": 0,
@@ -308,6 +312,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Etapa y commit aprobados (iteración 2)"
+    },
+    {
+      "at": "2026-09-25T06:57:00.596Z",
+      "stage": "review",
+      "event": "commit",
+      "note": "cbbd619"
+    },
+    {
+      "at": "2026-09-25T06:57:00.596Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegado en doc-keeper (iteración 1)"
+    },
+    {
+      "at": "2026-09-25T06:58:10.437Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "doc-keeper DONE: sin cambios necesarios"
+    },
+    {
+      "at": "2026-09-25T07:01:33.353Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "Etapa y commit aprobados"
     }
   ],
   "gate_mode": {
