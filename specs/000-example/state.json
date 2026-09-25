@@ -11,8 +11,8 @@
   "branch": "feat/000-example",
   "base_branch": "chore/sdd-harness",
   "created_at": "2026-09-23T21:18:26.435Z",
-  "stage": "close",
-  "status": "in_progress",
+  "stage": "done",
+  "status": "done",
   "approvals": {
     "spec": {
       "at": "2026-09-23T22:08:21.080Z",
@@ -46,7 +46,10 @@
       "at": "2026-09-25T05:28:03.893Z",
       "note": "1. Si. 2. Si."
     },
-    "close": null
+    "close": {
+      "at": "2026-09-25T05:32:33.668Z",
+      "note": "1. Si. 2. Opcion A"
+    }
   },
   "commits": {
     "spec": "18c19c6",
@@ -54,7 +57,8 @@
     "tasks": "4bab84a",
     "tests": "255de3c",
     "implement": "17592a3",
-    "review": "243a636"
+    "review": "243a636",
+    "docs": "ecfe40e"
   },
   "iterations": {
     "tests": 0,
@@ -303,6 +307,30 @@
       "stage": "docs",
       "event": "approved",
       "note": "Etapa y commit aprobados"
+    },
+    {
+      "at": "2026-09-25T05:28:04.029Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "ecfe40e"
+    },
+    {
+      "at": "2026-09-25T05:28:04.029Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Orquestador: checklist de hecho"
+    },
+    {
+      "at": "2026-09-25T05:32:33.668Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Checklist de hecho OK; integración opción A (merge a chore/sdd-harness, sin push)"
+    },
+    {
+      "at": "2026-09-25T05:32:33.668Z",
+      "stage": "done",
+      "event": "done",
+      "note": "Feature cerrada"
     }
   ]
 }
