@@ -17,6 +17,19 @@ export type AuthResponse = {
   token: string
 }
 
+export type ForgotPasswordPayload = {
+  email: string
+}
+
+export type ResetPasswordPayload = {
+  token: string
+  password: string
+}
+
+export type MessageResponse = {
+  message: string
+}
+
 export type CurrentUser = {
   id: string
   email: string

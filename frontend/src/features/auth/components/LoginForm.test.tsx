@@ -154,3 +154,48 @@ describe("LoginForm - login exitoso (API mockeada)", () => {
     expect(screen.queryByText("Pantalla de home")).not.toBeInTheDocument()
   })
 })
+
+// Recuperacion de contraseña (spec 002): enlace en el login y aviso tras un
+// restablecimiento exitoso (llega por location.state.passwordReset).
+describe("LoginForm - recuperacion de contraseña", () => {
+  beforeEach(() => {
+    vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "")
+  })
+
+  function renderWithState(state?: { passwordReset: boolean }) {
+    return render(
+      <QueryClientProvider client={new QueryClient()}>
+        <MemoryRouter initialEntries={[{ pathname: "/login", state }]}>
+          <LoginForm />
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+  }
+
+  // SDD: REQ-001 AC-001.1
+  it("muestra el enlace ¿Olvidaste tu contraseña? que apunta a /forgot-password", () => {
+    renderWithState()
+
+    const link = screen.getByRole("link", { name: "¿Olvidaste tu contraseña?" })
+
+    expect(link).toHaveAttribute("href", "/forgot-password")
+  })
+
+  // SDD: REQ-011 AC-011.4
+  it("muestra el aviso de exito cuando llega state.passwordReset", () => {
+    renderWithState({ passwordReset: true })
+
+    expect(
+      screen.getByText("Contraseña actualizada. Ya puedes iniciar sesión.")
+    ).toBeInTheDocument()
+  })
+
+  // SDD: REQ-011 AC-011.4
+  it("no muestra el aviso de exito sin state.passwordReset", () => {
+    renderWithState()
+
+    expect(
+      screen.queryByText("Contraseña actualizada. Ya puedes iniciar sesión.")
+    ).not.toBeInTheDocument()
+  })
+})

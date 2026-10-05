@@ -9,7 +9,7 @@ cliente HTTP falso, etc.
 import pytest
 
 from app import create_app
-from extensions import db as _db, jwt_manager as _jwt_manager
+from extensions import db as _db, jwt_manager as _jwt_manager, email_sender as _email_sender
 
 
 @pytest.fixture(scope="session")
@@ -140,3 +140,17 @@ def admin_headers(app):
     with app.app_context():
         token = _jwt_manager.generate_token({"id": "admin-test-id", "user_role": "admin"}, 30)
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(autouse=True)
+def _clear_email_outbox():
+    """Antes de cada test instala un `InMemoryTransport` nuevo (bandeja y
+    `fail_with` vacios) en `email_sender`, para que los tests de integracion
+    lean `email_sender.transport.outbox` y los correos o el `fail_with` de un
+    test no se filtren al siguiente. No depende de que `init_app` configure
+    el transporte."""
+    from utils.email_sender import InMemoryTransport
+
+    _email_sender.transport = InMemoryTransport()
+    yield
+    _email_sender.transport = InMemoryTransport()

@@ -2,8 +2,11 @@ import { apiFetch } from "@/lib/apiClient"
 import type {
   AuthResponse,
   CurrentUser,
+  ForgotPasswordPayload,
   LoginCredentials,
+  MessageResponse,
   RegisterPayload,
+  ResetPasswordPayload,
 } from "@/features/auth/types"
 
 export function login(credentials: LoginCredentials) {
@@ -32,4 +35,12 @@ export function loginWithGoogle(credential: string) {
 
 export function getCurrentUser() {
   return apiFetch<CurrentUser>("/api/auth/me")
+}
+
+export function requestPasswordReset(_payload: ForgotPasswordPayload): Promise<MessageResponse> {
+  throw new Error("not implemented")
+}
+
+export function resetPassword(_payload: ResetPasswordPayload): Promise<MessageResponse> {
+  throw new Error("not implemented")
 }

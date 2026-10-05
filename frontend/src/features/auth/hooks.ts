@@ -45,6 +45,14 @@ export function useGoogleLogin() {
   })
 }
 
+export function useRequestPasswordReset(): never {
+  throw new Error("not implemented")
+}
+
+export function useResetPassword(): never {
+  throw new Error("not implemented")
+}
+
 export function useRegister() {
   const navigate = useNavigate()
 

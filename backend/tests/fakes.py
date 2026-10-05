@@ -49,3 +49,34 @@ class FakeRateLimiter:
     def check_and_increment(self, key, limit, window_seconds):
         self.calls.append((key, limit, window_seconds))
         return self.allowed
+
+
+class FakeEmailSender:
+    """Doble de EmailSender (utils/email_sender.py) - guarda en `sent` cada
+    correo que el servicio intento enviar (claves to, subject, text, html),
+    o levanta `raise_error` para simular una caida del proveedor. Como
+    `raise_error` es mutable, un test puede "arreglar" el proveedor a mitad
+    del escenario (ponerlo en None) para probar la recuperacion."""
+    def __init__(self, raise_error=None):
+        self.raise_error = raise_error
+        self.sent = []
+
+    def send(self, to, subject, text, html):
+        if self.raise_error is not None:
+            raise self.raise_error
+        self.sent.append({"to": to, "subject": subject, "text": text, "html": html})
+
+
+class FakeClock:
+    """Reloj controlable para probar limites y caducidades por tiempo sin
+    esperar de verdad. Es invocable (`clock()` devuelve `now`) para poder
+    inyectarlo donde el servicio espera una funcion de reloj."""
+    def __init__(self, now):
+        self.now = now
+
+    def __call__(self):
+        return self.now
+
+    def advance(self, **timedelta_kwargs):
+        from datetime import timedelta
+        self.now = self.now + timedelta(**timedelta_kwargs)
