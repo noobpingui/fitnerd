@@ -11,7 +11,7 @@
   "branch": "feat/002-forgot-password",
   "base_branch": "main",
   "created_at": "2026-10-05T19:14:48.861Z",
-  "stage": "plan",
+  "stage": "tasks",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
@@ -22,7 +22,10 @@
       "at": "2026-10-05T22:00:19.748Z",
       "note": "1,2 y 3 approved (ADR-0015, etapa plan y commit)"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-05T22:04:01.434Z",
+      "note": "1. Si. 2. Si"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -32,7 +35,8 @@
   },
   "commits": {
     "spec": "ea351fe",
-    "spec_reopen": "492b023"
+    "spec_reopen": "492b023",
+    "plan": "b45a18e"
   },
   "iterations": {
     "tests": 0,
@@ -179,6 +183,30 @@
       "stage": "plan",
       "event": "approved",
       "note": "Usuario aprueba ADR-0015, la etapa plan y el commit; planner marca ADR-0015 como Aceptada antes del commit"
+    },
+    {
+      "at": "2026-10-05T22:00:56.560Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "b45a18e Add plan for 002-forgot-password"
+    },
+    {
+      "at": "2026-10-05T22:00:56.560Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegada al task-breaker (iteración 1)"
+    },
+    {
+      "at": "2026-10-05T22:02:38.956Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "task-breaker DONE: 56 tareas; 62/62 AC cubiertos"
+    },
+    {
+      "at": "2026-10-05T22:04:01.434Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "Usuario aprueba la etapa tasks y el commit"
     }
   ]
 }
