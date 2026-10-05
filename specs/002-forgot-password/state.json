@@ -11,14 +11,17 @@
   "branch": "feat/002-forgot-password",
   "base_branch": "main",
   "created_at": "2026-10-05T19:14:48.861Z",
-  "stage": "spec",
+  "stage": "plan",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
       "at": "2026-10-05T21:49:12.962Z",
       "note": "1. Aprobado. 2. Aprobado (reapertura por Q15)"
     },
-    "plan": null,
+    "plan": {
+      "at": "2026-10-05T22:00:19.748Z",
+      "note": "1,2 y 3 approved (ADR-0015, etapa plan y commit)"
+    },
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -28,7 +31,8 @@
     "close": null
   },
   "commits": {
-    "spec": "ea351fe"
+    "spec": "ea351fe",
+    "spec_reopen": "492b023"
   },
   "iterations": {
     "tests": 0,
@@ -151,6 +155,30 @@
       "stage": "spec",
       "event": "approved",
       "note": "Usuario aprueba la spec reabierta y el commit"
+    },
+    {
+      "at": "2026-10-05T21:49:23.402Z",
+      "stage": "spec",
+      "event": "commit",
+      "note": "492b023 Add per-IP rate limit to spec for 002-forgot-password"
+    },
+    {
+      "at": "2026-10-05T21:49:23.402Z",
+      "stage": "plan",
+      "event": "rework",
+      "note": "Plan reabierto: delegado al planner (iteración 2) con comentarios del usuario"
+    },
+    {
+      "at": "2026-10-05T21:54:31.709Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "planner DONE (iteración 2): REQ-012 con client_ip + advisory locks + ProxyFix (ADR-0015 Propuesta); ADR-0014 Aceptada"
+    },
+    {
+      "at": "2026-10-05T22:00:19.748Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "Usuario aprueba ADR-0015, la etapa plan y el commit; planner marca ADR-0015 como Aceptada antes del commit"
     }
   ]
 }
