@@ -7,7 +7,7 @@
 
 Hoy un usuario que se registró en fitnerd con correo y contraseña y la olvida no puede volver a entrar: la pantalla de login solo ofrece "Entrar" con contraseña o con Google, y no existe forma de restablecer la contraseña. La app tampoco envía hoy ningún correo electrónico.
 
-Se necesita un flujo de autoservicio: desde la pantalla de login, el usuario pide un enlace de restablecimiento indicando su correo, lo recibe enseguida y, desde ese enlace, fija una contraseña nueva. Para evitar spam, solo se puede pedir un enlace cada 2 minutos por correo; cada enlace caduca a los 5 minutos y el más reciente siempre invalida a los anteriores.
+Se necesita un flujo de autoservicio: desde la pantalla de login, el usuario pide un enlace de restablecimiento indicando su correo, lo recibe enseguida y, desde ese enlace, fija una contraseña nueva. Para evitar spam, solo se puede pedir un enlace cada 2 minutos por correo y, para frenar a scripts o bots que prueban muchos correos distintos, como mucho 3 solicitudes cada 10 minutos desde una misma dirección IP (Q15). Cada enlace caduca a los 5 minutos y el más reciente siempre invalida a los anteriores.
 
 ## 2. Historia de usuario
 
@@ -20,6 +20,7 @@ Como **usuario registrado con correo y contraseña que ha olvidado su contraseñ
 - Una página pública para solicitar el enlace de restablecimiento introduciendo el correo.
 - El envío inmediato de un correo en español con el enlace de restablecimiento a las cuentas que tienen contraseña.
 - El límite de una solicitud cada 2 minutos por dirección de correo.
+- El límite de 3 solicitudes cada 10 minutos por dirección IP del cliente, que se aplica además del límite por correo (Q15).
 - La caducidad del enlace a los 5 minutos, su invalidación al emitirse otro más reciente y su uso único.
 - Una página pública, a la que lleva el enlace, para fijar la contraseña nueva.
 - La actualización de la contraseña y la vuelta al login con un aviso de éxito.
@@ -29,7 +30,8 @@ Como **usuario registrado con correo y contraseña que ha olvidado su contraseñ
 - Que una cuenta creada solo con Google (sin contraseña) pueda crear una contraseña mediante este flujo (Q3).
 - Cerrar las sesiones abiertas (tokens ya emitidos) al cambiar la contraseña (Q7).
 - Cambiar la contraseña desde dentro de la app estando autenticado.
-- Límites por dirección IP u otros mecanismos antispam distintos del límite por correo (captcha, etc.).
+- Otros mecanismos antispam distintos del límite por correo y del límite por IP de la solicitud de enlace (captcha, listas de bloqueo, etc.).
+- Limitar por IP el endpoint de fijar la contraseña nueva (`/api/auth/reset-password`) o el login.
 - Verificación del correo en el registro y cualquier otro correo transaccional (bienvenida, avisos).
 - Cambiar cómo se comparan los correos en el login o en el registro.
 - Comprobar la validez del enlace al abrir la página, antes de enviar el formulario (Q10).
@@ -43,7 +45,7 @@ THE SYSTEM SHALL mostrar en el formulario de login un enlace con el texto "¿Olv
 - **AC-001.2:** Given un usuario sin sesión iniciada, When navega a `/forgot-password`, Then ve un formulario con un campo "Email" y un botón "Enviar enlace", sin ser redirigido al login.
 
 ### REQ-002 — Solicitud de enlace para una cuenta con contraseña
-WHEN se solicita un restablecimiento para un correo que pertenece a una cuenta con contraseña y no hay ninguna solicitud previa para ese correo en los últimos 2 minutos THE SYSTEM SHALL generar un enlace de restablecimiento nuevo, enviarlo por correo a esa dirección antes de responder y responder con el código `200` y el mensaje genérico de solicitud aceptada.
+WHEN se solicita un restablecimiento para un correo que pertenece a una cuenta con contraseña y no hay ninguna solicitud previa para ese correo en los últimos 2 minutos ni se ha alcanzado el límite por IP (REQ-012) THE SYSTEM SHALL generar un enlace de restablecimiento nuevo, enviarlo por correo a esa dirección antes de responder y responder con el código `200` y el mensaje genérico de solicitud aceptada.
 
 - **AC-002.1:** Given una cuenta con contraseña con el correo `ana@example.com` y sin solicitudes previas, When se hace `POST /api/auth/forgot-password` con `{"email": "ana@example.com"}`, Then la respuesta es `200` con el cuerpo `{"message": "Si el correo pertenece a una cuenta con contraseña, recibirás un enlace para restablecerla."}`.
 - **AC-002.2:** Given el mismo escenario que AC-002.1, When la petición termina, Then se ha enviado exactamente un correo, dirigido a `ana@example.com`, antes de que se devolviera la respuesta.
@@ -57,7 +59,7 @@ IF se solicita un restablecimiento para un correo que no pertenece a ninguna cue
 - **AC-003.2:** Given una cuenta creada solo con Google (sin contraseña) con el correo `google@example.com`, When se hace `POST /api/auth/forgot-password` con ese correo, Then la respuesta es `200` con el mismo cuerpo que AC-002.1 y no se envía ningún correo.
 
 ### REQ-004 — Límite de una solicitud cada 2 minutos por correo
-IF se solicita un restablecimiento para un correo que ya tuvo una solicitud aceptada hace menos de 2 minutos THEN THE SYSTEM SHALL rechazar la solicitud con el código `429`, no enviar ningún correo y no generar un enlace nuevo. El límite se aplica por dirección de correo, exista o no la cuenta, para no revelar qué correos están registrados.
+IF se solicita un restablecimiento para un correo que ya tuvo una solicitud aceptada hace menos de 2 minutos THEN THE SYSTEM SHALL rechazar la solicitud con el código `429`, no enviar ningún correo y no generar un enlace nuevo. El límite se aplica por dirección de correo, exista o no la cuenta, para no revelar qué correos están registrados, y es independiente del límite por IP de REQ-012 (se aplican los dos).
 
 - **AC-004.1:** Given una cuenta con contraseña con una solicitud aceptada hace 1 minuto y 59 segundos, When se vuelve a solicitar el restablecimiento para su correo, Then la respuesta es `429` con el cuerpo `{"error": "Ya se envió un enlace hace menos de 2 minutos. Inténtalo de nuevo más tarde."}` y no se envía ningún correo.
 - **AC-004.2:** Given la situación de AC-004.1, When se usa el enlace emitido en la solicitud aceptada (todavía dentro de sus 5 minutos), Then sigue siendo válido (la solicitud rechazada no lo invalida).
@@ -133,6 +135,19 @@ WHEN el usuario abre el enlace del correo THE SYSTEM SHALL mostrar en `/reset-pa
 - **AC-011.8:** Given el formulario con una "Nueva contraseña" formada por `"a"` repetida 73 veces (73 bytes), When el usuario lo envía, Then se muestra "Contraseña demasiado larga" junto al campo y no se envía ninguna petición.
 - **AC-011.9:** Given el formulario con una "Nueva contraseña" formada por `"ñ"` repetida 37 veces (37 caracteres, 74 bytes), When el usuario lo envía, Then se muestra "Contraseña demasiado larga" junto al campo y no se envía ninguna petición.
 
+### REQ-012 — Límite de 3 solicitudes cada 10 minutos por IP
+IF se solicita un restablecimiento desde una dirección IP de cliente que ya tiene 3 solicitudes aceptadas en los últimos 10 minutos THEN THE SYSTEM SHALL rechazar la solicitud con el código `429` y el cuerpo `{"error": "Has hecho demasiadas solicitudes. Inténtalo de nuevo más tarde."}`, sin enviar ningún correo, sin generar un enlace nuevo y sin consumir el límite por correo de REQ-004 (Q15). El límite cuenta las solicitudes aceptadas desde esa IP para cualquier correo, exista o no la cuenta, y se aplica además del límite por correo.
+
+- **AC-012.1:** Given 3 solicitudes aceptadas en los últimos 10 minutos desde la IP `203.0.113.10` para tres correos distintos, When desde esa IP se solicita el restablecimiento para un cuarto correo `luis@example.com` de una cuenta con contraseña, Then la respuesta es `429` con `{"error": "Has hecho demasiadas solicitudes. Inténtalo de nuevo más tarde."}` y no se envía ningún correo.
+- **AC-012.2:** Given 2 solicitudes aceptadas en los últimos 10 minutos desde la IP `203.0.113.10`, When desde esa IP se solicita el restablecimiento para otra cuenta con contraseña, Then la respuesta es `200` y se envía el correo.
+- **AC-012.3:** Given 3 solicitudes aceptadas desde la IP `203.0.113.10`, la más antigua hace exactamente 10 minutos y las otras dos hace menos, When desde esa IP se solicita el restablecimiento para otra cuenta con contraseña, Then la respuesta es `200` y se envía el correo.
+- **AC-012.4:** Given la IP `203.0.113.10` en el límite (como en AC-012.1), When desde la IP `198.51.100.20` se solicita el restablecimiento para una cuenta con contraseña, Then la respuesta es `200` y se envía el correo (el límite es independiente por IP).
+- **AC-012.5:** Given 3 solicitudes aceptadas en los últimos 10 minutos desde una IP, todas para correos sin cuenta, When desde esa IP se solicita el restablecimiento para una cuenta con contraseña, Then la respuesta es `429` con el mismo cuerpo que AC-012.1 y no se envía ningún correo.
+- **AC-012.6:** Given desde una IP, en los últimos 10 minutos, 3 solicitudes rechazadas con `400` (correo inválido), 3 rechazadas con `429` por el límite por correo y 3 fallidas con `503`, y ninguna aceptada, When desde esa IP se solicita el restablecimiento para otra cuenta con contraseña, Then la respuesta es `200` y se envía el correo (solo cuentan las solicitudes aceptadas).
+- **AC-012.7:** Given la situación de AC-012.1, When justo después se solicita el restablecimiento para `luis@example.com` desde la IP `198.51.100.20`, Then la respuesta es `200` y se envía el correo (la solicitud rechazada por IP no consume el límite por correo).
+- **AC-012.8:** Given la IP `203.0.113.10` en el límite y una solicitud aceptada para `ana@example.com` hace 1 minuto desde otra IP, When desde `203.0.113.10` se solicita el restablecimiento para `ana@example.com`, Then la respuesta es `429` con el cuerpo de AC-012.1 (prevalece el límite por IP).
+- **AC-012.9:** Given dos clientes con IPs distintas cuyas peticiones llegan a la app a través del mismo proxy inverso de producción, When el primero alcanza el límite de 3 solicitudes, Then el segundo sigue obteniendo `200` (se cuenta la IP del cliente original, no la del proxy).
+
 ## 5. Requisitos no funcionales
 
 ### NFR-001 — No exponer el token ni detalles internos
@@ -159,9 +174,10 @@ Cuerpo de la petición: `{"email": "<correo>"}`.
 
 | Situación | Código | Cuerpo JSON |
 |---|---|---|
-| Correo válido (con cuenta con contraseña, sin cuenta o con cuenta solo de Google), fuera del límite de 2 minutos | `200` | `{"message": "Si el correo pertenece a una cuenta con contraseña, recibirás un enlace para restablecerla."}` |
+| Correo válido (con cuenta con contraseña, sin cuenta o con cuenta solo de Google), fuera del límite de 2 minutos por correo y del límite por IP | `200` | `{"message": "Si el correo pertenece a una cuenta con contraseña, recibirás un enlace para restablecerla."}` |
 | Correo ausente, vacío o con formato inválido | `400` | `{"error": "Email inválido"}` |
-| Solicitud para el mismo correo hace menos de 2 minutos | `429` | `{"error": "Ya se envió un enlace hace menos de 2 minutos. Inténtalo de nuevo más tarde."}` |
+| La IP del cliente ya tiene 3 solicitudes aceptadas en los últimos 10 minutos | `429` | `{"error": "Has hecho demasiadas solicitudes. Inténtalo de nuevo más tarde."}` |
+| Solicitud para el mismo correo hace menos de 2 minutos (y la IP no está en su límite) | `429` | `{"error": "Ya se envió un enlace hace menos de 2 minutos. Inténtalo de nuevo más tarde."}` |
 | Fallo al enviar el correo | `503` | `{"error": "No se pudo enviar el correo. Inténtalo de nuevo más tarde."}` |
 
 ### Endpoint `POST /api/auth/reset-password` (público)
@@ -180,7 +196,9 @@ Si el token no es válido y además la contraseña tampoco, prevalece el error d
 ### Reglas
 
 - **Correo:** se ignoran los espacios al principio y al final; la comparación con las cuentas existentes es la misma que usa hoy el login.
-- **Límite de solicitudes:** 1 solicitud aceptada cada 2 minutos por dirección de correo. Una solicitud rechazada (`400`, `429`) o fallida (`503`) no reinicia ni consume el límite.
+- **Límite por correo:** 1 solicitud aceptada cada 2 minutos por dirección de correo. Una solicitud rechazada (`400`, `429`) o fallida (`503`) no reinicia ni consume el límite.
+- **Límite por IP (Q15):** como mucho 3 solicitudes aceptadas en cualquier intervalo de 10 minutos desde la misma IP de cliente, para cualquier correo. Una solicitud deja de contar cuando han pasado 10 minutos desde que se aceptó. Las rechazadas (`400`, `429`) o fallidas (`503`) no cuentan. La IP es la del cliente original, aunque la petición pase por el proxy inverso de producción. Se aplica además del límite por correo; si se superan los dos, prevalece el error del límite por IP. El frontend muestra el texto del campo `error` igual que en el resto de los `429` (AC-010.2).
+- **Orden de comprobación:** primero la validación del correo (`400`), después el límite por IP, después el límite por correo y, por último, el envío (`503` si falla).
 - **Caducidad:** el enlace es válido mientras hayan pasado menos de 5 minutos desde su emisión.
 - **Vigencia única:** como mucho hay un enlace válido por cuenta; emitir uno nuevo invalida los anteriores, y usarlo con éxito lo invalida.
 - **Contraseña nueva:** mínimo 8 caracteres (igual que el registro) y máximo 72 bytes en UTF-8 (Q13), validado en el frontend y en el backend. Un carácter sin tilde ni símbolos ocupa 1 byte, las letras con tilde y la ñ 2, y los emojis hasta 4; por eso una contraseña con esos caracteres puede superar el máximo con menos de 72 caracteres. El registro no cambia en esta feature.
@@ -205,7 +223,7 @@ Mensajes de validación del frontend: "Email inválido", "Mínimo 8 caracteres",
 
 ## 7. Preguntas abiertas
 
-Q1–Q14 están **resueltas** (usuario, 2026-10-05) e incorporadas a la spec. Q5 eliminó el máximo, Q12 lo recuperó y Q13 lo fija en 72 **bytes** (no caracteres): la contraseña nueva tiene un mínimo de 8 caracteres y un máximo de 72 bytes en UTF-8 (REQ-009, AC-009.5 a AC-009.9, AC-011.8 y AC-011.9). Q14 sustituye los mensajes de ese máximo por otros genéricos que no mencionan bytes: "La contraseña es demasiado larga" (`400`) y "Contraseña demasiado larga" (frontend). Q9 se mantiene como se propuso; la comparación de mayúsculas en el correo queda para otra feature. No quedan preguntas abiertas.
+Q1–Q14 están **resueltas** (usuario, 2026-10-05) e incorporadas a la spec. Q5 eliminó el máximo, Q12 lo recuperó y Q13 lo fija en 72 **bytes** (no caracteres): la contraseña nueva tiene un mínimo de 8 caracteres y un máximo de 72 bytes en UTF-8 (REQ-009, AC-009.5 a AC-009.9, AC-011.8 y AC-011.9). Q14 sustituye los mensajes de ese máximo por otros genéricos que no mencionan bytes: "La contraseña es demasiado larga" (`400`) y "Contraseña demasiado larga" (frontend). Q9 se mantiene como se propuso; la comparación de mayúsculas en el correo queda para otra feature. Q15 (reapertura desde el gate de plan) también está **resuelta**: se añade un límite de 3 solicitudes aceptadas cada 10 minutos por IP, además del límite de 1 cada 2 minutos por correo (REQ-012). No quedan preguntas abiertas.
 
 | # | Pregunta | Respuesta del usuario |
 |---|---|---|
@@ -223,6 +241,7 @@ Q1–Q14 están **resueltas** (usuario, 2026-10-05) e incorporadas a la spec. Q5
 | Q12 | (Gate de spec, orquestador) El backend usa bcrypt 5.0.0, que lanza ValueError con contraseñas de más de 72 bytes; sin máximo, una contraseña muy larga daría un 500 en el reset. **Propuesta (A):** añadir la regla "más de 72 → 400 con un mensaje claro". | "1. A, no pasa nada. Pongamos la regla de minimo 8 caracteres y hasta 72 caracteres. Despues yo lo arreglo en otra sesion en la parte de register para que queden alineados." (usuario, 2026-10-05) **Resuelta:** incorporada en REQ-009 (AC-009.5 a AC-009.7), AC-011.8 y la sección 6, con el mensaje `400` "La contraseña no puede tener más de 72 caracteres" y, en el frontend, "Máximo 72 caracteres". |
 | Q13 | El límite real del hash es de 72 **bytes**, no de 72 caracteres: las letras con tilde, la ñ o los emojis ocupan 2 a 4 bytes, así que una contraseña como "contraseñaÁrbol…" de menos de 72 caracteres puede superar el límite y daría un error 500. ¿Cómo se trata? **Propuesta:** el máximo visible es "72 caracteres", pero el backend rechaza también las que superan el tamaño real admitido con el mismo `400` "La contraseña no puede tener más de 72 caracteres" (nunca un 500), aunque tengan menos de 72 caracteres. El frontend solo comprueba los 72 caracteres; el caso raro de caracteres especiales lo muestra el error del backend (AC-011.5). Es un caso poco frecuente. | "que sean 72 bytes, no caracteres" (usuario, 2026-10-05) **Resuelta:** el máximo es de 72 bytes en UTF-8, validado igual en backend y frontend (REQ-009, AC-009.5 a AC-009.9, AC-011.8, AC-011.9 y sección 6). Los mensajes pasan a "La contraseña no puede ocupar más de 72 bytes (las tildes, la ñ y los emojis cuentan más de uno)" (`400`) y "Máximo 72 bytes (las tildes, la ñ y los emojis cuentan más de uno)" (frontend). Nunca da un `5xx`. |
 | Q14 | (Gate de spec, orquestador) Los mensajes de error del máximo de 72 bytes (backend y frontend) mencionan "bytes" y son poco amigables. ¿Se simplifican? | "Con respecto a los dos mensajes de 72 bytes, tienes razon, eso no es amigable con el usuario, mejor mantener eltono que sugieres, algo mas generico sin dar tanto detalle. "La contrasena es demasiado larga" O algo parecido." (usuario, 2026-10-05) **Resuelta:** el mensaje `400` del backend pasa a "La contraseña es demasiado larga" (REQ-009, AC-009.5, AC-009.8 y sección 6) y el de validación del frontend a "Contraseña demasiado larga" (AC-011.8, AC-011.9 y sección 6), en la línea de "Mínimo 8 caracteres". La regla no cambia: máximo de 72 bytes en UTF-8, nunca `5xx`. Los mensajes citados en Q12 y Q13 quedan sustituidos. |
+| Q15 | (Gate de plan, orquestador; reabre la spec) El límite de REQ-004 es solo por correo: un bot puede enviar solicitudes para miles de correos distintos desde una misma IP. ¿Se añade un límite por IP? ¿Solo por IP o por IP y por correo? ¿Con qué cuota? | "el 3 si, porque un script o bot malicioso puede generar problemas graves a futuro. [...] el 3 si es necesario regresar y replantear que la regla de solicitudes cada 2 minutos se aplique para la ip y no para el email como tal." Tras aclarar opciones: "1. Por IP y por correo. 2. Dejemolo en un punto intermedio; 3 solicitudes cada 10 minutos." (usuario, 2026-10-05) **Resuelta:** se aplican los dos límites. El límite por correo de REQ-004 no cambia (1 solicitud aceptada cada 2 minutos) y se añade REQ-012: como mucho 3 solicitudes aceptadas cada 10 minutos por IP de cliente, para cualquier correo, con `429` y `{"error": "Has hecho demasiadas solicitudes. Inténtalo de nuevo más tarde."}` (AC-012.1 a AC-012.9 y sección 6). Detalles fijados por el spec-writer en la línea de las reglas ya aprobadas: solo cuentan las solicitudes aceptadas (`200`), igual que en el límite por correo; la ventana es móvil y una solicitud deja de contar a los 10 minutos exactos; una solicitud rechazada por IP no consume el límite por correo; si se superan los dos límites, prevalece el de IP; se cuenta la IP del cliente original aunque pase por el proxy. El límite por IP de `reset-password` y del login queda fuera de alcance. |
 
 ## 8. Glosario
 
@@ -230,3 +249,4 @@ Q1–Q14 están **resueltas** (usuario, 2026-10-05) e incorporadas a la spec. Q5
 - **Cuenta solo de Google:** cuenta creada con Google Sign-In que no tiene contraseña.
 - **Enlace (o token) de restablecimiento:** URL enviada por correo que permite fijar una contraseña nueva una sola vez, durante 5 minutos.
 - **Solicitud aceptada:** solicitud de restablecimiento que obtiene `200` (se haya enviado correo o no, según REQ-002 y REQ-003).
+- **IP del cliente:** dirección IP del dispositivo que hace la petición, no la del proxy inverso que la reenvía a la app.
