@@ -64,6 +64,7 @@ App de fitness full-stack con un **coach de IA basado en contenido real**: respo
 - **Migraciones sin detectar:** los tests crean las tablas con `create_all()`, no con las migraciones, así que una migración olvidada no la detecta ningún test. Revísalo a mano.
 - **Dependencias:** `requirements.txt` no fija versiones y mezcla las del runtime con las del pipeline RAG.
 - **Codificación de `README.md`:** fue UTF-16 en el pasado. Comprueba con `file README.md` después de editarlo.
+- **Resend rechaza el User-Agent por defecto de Python (403, Cloudflare 1010):** `ResendTransport` envía `fitnerd/1.0 (+https://fitnerd.betofallas.dev)`; si vuelven los 503 al recuperar contraseña, mira en el log del backend el cuerpo del error de Resend (recortado a 200 caracteres, sin la API key).
 - **Código existente sin lint:** tiene unas 145 violaciones de ruff previas; no las arregles fuera de una tarea que lo pida.
 - **Antes de tocar un área, mira su estado real:** la cobertura de tests es baja (ver `docs/sdd/00-discovery.md`, que es una foto de septiembre de 2026).
 

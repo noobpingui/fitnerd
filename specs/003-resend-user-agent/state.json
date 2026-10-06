@@ -11,7 +11,7 @@
   "branch": "fix/003-resend-user-agent",
   "base_branch": "main",
   "created_at": "2026-10-06T07:51:47.316Z",
-  "stage": "review",
+  "stage": "docs",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
@@ -42,7 +42,10 @@
       "at": "2026-10-06T08:33:29.950Z",
       "note": "1. Seguimos tus recomendaciones. 2. Si. 3. Si"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-06T08:35:09.992Z",
+      "note": "Si y si"
+    },
     "close": null
   },
   "commits": {
@@ -50,7 +53,8 @@
     "plan": "17ef4d5",
     "tasks": "c68d4ca",
     "tests": "4f7dd5c",
-    "implement": "41fdbc0"
+    "implement": "41fdbc0",
+    "review": "7c51cee"
   },
   "iterations": {
     "tests": 0,
@@ -281,6 +285,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Usuario acepta F1-F3 según recomendación (F1 al backlog); aprueba etapa y commit"
+    },
+    {
+      "at": "2026-10-06T08:33:30.124Z",
+      "stage": "review",
+      "event": "commit",
+      "note": "7c51cee Add review for 003-resend-user-agent"
+    },
+    {
+      "at": "2026-10-06T08:33:30.124Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegada al doc-keeper (iteración 1)"
+    },
+    {
+      "at": "2026-10-06T08:34:04.651Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "doc-keeper DONE: CLAUDE.md Puntos delicados + docs-report.md"
+    },
+    {
+      "at": "2026-10-06T08:35:09.992Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "Usuario aprueba docs y commit"
     }
   ],
   "tests_snapshot": {
