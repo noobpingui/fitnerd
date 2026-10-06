@@ -5,6 +5,8 @@ import { AppLayout } from "@/app/AppLayout"
 import { PageTransition } from "@/app/PageTransition"
 import { LoginPage } from "@/features/auth/pages/LoginPage"
 import { RegisterPage } from "@/features/auth/pages/RegisterPage"
+import { ForgotPasswordPage } from "@/features/auth/pages/ForgotPasswordPage"
+import { ResetPasswordPage } from "@/features/auth/pages/ResetPasswordPage"
 import { RegionsPage } from "@/features/exercises/pages/RegionsPage"
 import { CategoriesPage } from "@/features/exercises/pages/CategoriesPage"
 import { ExercisesPage } from "@/features/exercises/pages/ExercisesPage"
@@ -51,6 +53,22 @@ function AnimatedRoutes() {
           element={
             <PageTransition>
               <RegisterPage />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <PageTransition>
+              <ForgotPasswordPage />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <PageTransition>
+              <ResetPasswordPage />
             </PageTransition>
           }
         />

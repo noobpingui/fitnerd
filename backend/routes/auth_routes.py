@@ -2,10 +2,16 @@ from datetime import date
 
 from flask import Blueprint, request, jsonify, g, current_app
 
-from extensions import db, jwt_manager
+from extensions import db, jwt_manager, email_sender
 from repositories.user_repository import UserRepository
 from unit_of_work.unit_of_work import UnitOfWork
+from repositories.password_reset_repository import PasswordResetRepository
 from services.auth_service import AuthService
+from services.password_reset_service import (
+    PasswordResetService,
+    REQUEST_ACCEPTED_MESSAGE,
+    PASSWORD_UPDATED_MESSAGE,
+)
 from decorators import require_auth
 
 auth_bp = Blueprint(
@@ -18,6 +24,16 @@ def _build_auth_service():
     user_repository = UserRepository(db.session)
     unit_of_work = UnitOfWork(db.session)
     return AuthService(user_repository, unit_of_work, jwt_manager, current_app.config["GOOGLE_CLIENT_ID"])
+
+
+def _build_password_reset_service():
+    return PasswordResetService(
+        UserRepository(db.session),
+        PasswordResetRepository(db.session),
+        UnitOfWork(db.session),
+        email_sender,
+        current_app.config["FRONTEND_BASE_URL"],
+    )
 
 
 @auth_bp.route("/register", methods=["POST"])
@@ -62,6 +78,22 @@ def google_login():
     token = auth_service.login_with_google(data.get("credential"))
 
     return jsonify({"token": token}), 200
+
+@auth_bp.route("/forgot-password", methods=["POST"])
+def forgot_password():
+    data = request.get_json(silent=True) or {}
+
+    _build_password_reset_service().request_reset(data.get("email"), request.remote_addr or "")
+
+    return jsonify({"message": REQUEST_ACCEPTED_MESSAGE}), 200
+
+@auth_bp.route("/reset-password", methods=["POST"])
+def reset_password():
+    data = request.get_json(silent=True) or {}
+
+    _build_password_reset_service().reset_password(data.get("token"), data.get("password"))
+
+    return jsonify({"message": PASSWORD_UPDATED_MESSAGE}), 200
 
 @auth_bp.route("/me", methods=["GET"])
 @require_auth

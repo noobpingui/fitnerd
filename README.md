@@ -17,6 +17,7 @@ I built it as a personal project - both because I wanted exactly this tool for m
 - **Body metrics tracking** - weight, body-fat %, muscle-mass % with progress charts over time
 - **AI Coach** - a RAG-grounded chat that only answers from real fitness content, with multi-turn conversation memory
 - Email/password auth **and** Google Sign-In
+- **Password recovery by email** - a reset link (valid 5 minutes, single use) sent through Resend, with per-email and per-IP rate limits
 - A feedback widget built right into the app
 - Fully responsive, with an "add to home screen" shortcut for mobile
 
@@ -70,3 +71,5 @@ docker compose up --build
 Frontend at `localhost:5173`, backend at `localhost:5000`.
 
 **Manual** - backend: create a venv, `pip install -r requirements.txt`, set up the same `.env` files above against your own local Postgres/Redis, run migrations (`flask db upgrade`), then `flask run`. Frontend: `npm install`, `npm run dev`.
+
+**Heads-up when running Flask by hand:** `backend/wsgi.py` defaults to `FLASK_ENV=production`, so `flask run` or `flask db upgrade` without `FLASK_ENV=development` uses `ProductionConfig` and points at the production database (`PROD_DATABASE_URL`). Always set `FLASK_ENV=development` first. Password-reset emails are only logged to the console locally (`MAIL_BACKEND=console`); no real email is sent.

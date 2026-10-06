@@ -8,6 +8,7 @@ from flask_cors import CORS
 from utils.jwt_utils import JWTManager
 from utils.embeddings import EmbeddingClient
 from utils.rate_limiter import RateLimiter
+from utils.email_sender import EmailSender
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -15,4 +16,5 @@ cors = CORS()
 jwt_manager = JWTManager()
 embedding_client = EmbeddingClient()
 rate_limiter = RateLimiter()
+email_sender = EmailSender()
 

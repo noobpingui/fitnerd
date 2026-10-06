@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Link } from "react-router"
+import { Link, useLocation } from "react-router"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -22,6 +22,8 @@ export function LoginForm() {
     defaultValues: { email: "", password: "" },
   })
   const { mutate, isPending, error } = useLogin()
+  const location = useLocation()
+  const passwordReset = location.state?.passwordReset === true
 
   function onSubmit(values: LoginFormValues) {
     mutate(values)
@@ -30,6 +32,12 @@ export function LoginForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {passwordReset && (
+          <p role="status" className="text-sm text-primary">
+            Contraseña actualizada. Ya puedes iniciar sesión.
+          </p>
+        )}
+
         <FormField
           control={form.control}
           name="email"
@@ -54,6 +62,12 @@ export function LoginForm() {
                 <Input type="password" {...field} />
               </FormControl>
               <FormMessage />
+              <Link
+                to="/forgot-password"
+                className="block text-sm text-primary underline-offset-4 hover:underline"
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
             </FormItem>
           )}
         />

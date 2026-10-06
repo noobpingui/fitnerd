@@ -8,7 +8,7 @@ App de fitness full-stack con un **coach de IA basado en contenido real**: respo
 
 | Área | Backend (`routes/`) | Frontend (`src/features/`) |
 |---|---|---|
-| Autenticación (email/contraseña, Google Sign-In, JWT RS256) | `auth_routes` | `auth` |
+| Autenticación (email/contraseña, Google Sign-In, JWT RS256, recuperación de contraseña por correo con Resend) | `auth_routes` | `auth` |
 | Catálogo de ejercicios (región → categoría → ejercicio) | `body_region_routes`, `exercise_category_routes`, `exercise_routes` | `exercises` |
 | Favoritos y plan semanal (drag and drop) | `exercise_favorite_routes`, `weekly_plan_routes` | `weekly-plan` |
 | Métricas corporales, gráficas y análisis con IA | `body_metric_routes` | `body-metrics` |
@@ -36,6 +36,8 @@ App de fitness full-stack con un **coach de IA basado en contenido real**: respo
 - Frontend en **Vercel**: cada push a `main` despliega automáticamente.
 - Backend en **AWS EC2**, detrás de Caddy con HTTPS en `api.fitnerd.betofallas.dev`. Se despliega a mano: `git pull` y después `docker compose -f docker-compose.prod.yml up -d --build`.
 - Redis corre en la misma instancia.
+- **Paso previo al despliegue (recuperación de contraseña, ADR-0014):** crea la cuenta de Resend y verifica el dominio `fitnerd.betofallas.dev` (registros SPF y DKIM) antes de desplegar; sin eso los correos no se entregan.
+- **Variables nuevas en el `backend/.env` de EC2 (recuperación de contraseña, ADR-0014 y ADR-0015):** `FRONTEND_BASE_URL=https://fitnerd.betofallas.dev` (obligatoria: si falta, los correos llevan enlaces a `localhost` sin avisar), `RESEND_API_KEY` y `MAIL_FROM`. `MAIL_BACKEND` y `PROXY_FIX_X_FOR` ya valen `resend` y `1` en producción. Tras desplegar, aplica la migración y haz una prueba manual con una cuenta real.
 - Postgres de producción en **Supabase**.
 - CI (GitHub Actions): `backend-tests.yml` ejecuta pytest y `frontend-tests.yml` ejecuta `npm test`. Solo se disparan en push o PR a `main`.
 
@@ -55,6 +57,7 @@ App de fitness full-stack con un **coach de IA basado en contenido real**: respo
 | Migraciones | `flask db migrate -m "…"` / `flask db upgrade` | — |
 
 **Puntos delicados:**
+- **`flask` sin `FLASK_ENV` usa producción:** `backend/wsgi.py` carga `ProductionConfig` por defecto, así que `flask run` o `flask db …` apuntan a Supabase. Usa siempre `FLASK_ENV=development` en local (ya causó una migración en producción).
 - **Windows:** hay Git Bash y PowerShell, y el Python del venv está en `.venv/Scripts/python.exe`.
 - **`backend/.env.example` está incompleto:** la lista real de variables está en `config.py`. Faltan las de JWT, Voyage, `ANTHROPIC_MODEL`, `CORS_ORIGINS` y `SECRET_KEY`.
 - **Nunca ejecutes `docker compose config`:** imprime los secretos en claro. Ya causó una rotación de contraseña. Para validar un YAML, usa un parser.
