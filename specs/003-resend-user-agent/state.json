@@ -1,0 +1,82 @@
+{
+  "$comment": "Única fuente de verdad del flujo SDD de una feature. Lo escriben solo el orquestador (/sdd-*) y el verifier (secciones red_check y verify). Etapas: spec, plan, tasks, tests, implement, verify, review, docs, close, done.",
+  "schema_version": 1,
+  "feature": "003-resend-user-agent",
+  "title": "User-Agent propio en el envío de correos con Resend",
+  "type": "fix",
+  "scope": {
+    "backend": true,
+    "frontend": false
+  },
+  "branch": "fix/003-resend-user-agent",
+  "base_branch": "main",
+  "created_at": "2026-10-06T07:51:47.316Z",
+  "stage": "spec",
+  "status": "awaiting_approval",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-06T08:02:57.877Z",
+      "note": "1. Si. 2. Si"
+    },
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
+    "verify": null,
+    "review": null,
+    "docs": null,
+    "close": null
+  },
+  "commits": {},
+  "iterations": {
+    "tests": 0,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": null,
+    "at": null
+  },
+  "verify": {
+    "result": null,
+    "at": null
+  },
+  "review": {
+    "verdict": null,
+    "at": null
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-06T07:51:47.316Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "Fix creado con /sdd-new; rama fix/003-resend-user-agent desde main (ccc6e36)"
+    },
+    {
+      "at": "2026-10-06T07:54:09.605Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegada al spec-writer (iteración 1)"
+    },
+    {
+      "at": "2026-10-06T08:01:01.366Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "NEEDS_INPUT resuelto: Q1,Q2,Q4 aceptadas; Q3 sí (cuerpo de error recortado en el log). Se reenvía al spec-writer"
+    },
+    {
+      "at": "2026-10-06T08:02:11.960Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec-writer DONE: 4 REQ, 14 AC; sin preguntas abiertas"
+    },
+    {
+      "at": "2026-10-06T08:02:57.877Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Usuario aprueba spec y commit"
+    }
+  ]
+}
