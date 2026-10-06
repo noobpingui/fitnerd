@@ -11,7 +11,7 @@
   "branch": "feat/002-forgot-password",
   "base_branch": "main",
   "created_at": "2026-10-05T19:14:48.861Z",
-  "stage": "review",
+  "stage": "docs",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
@@ -42,7 +42,10 @@
       "at": "2026-10-06T05:54:15.655Z",
       "note": "1. Aceptados como lo propones. 2. No es necesario borrar nada ya que nunca se creo dicho usuario, yo utilice uno que ya tenia en la bd desde antes de hacer el feature. 3. Si. 4. Si"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-06T05:57:24.310Z",
+      "note": "1. Si y si 2. Si. 3. Si"
+    },
     "close": null
   },
   "commits": {
@@ -51,7 +54,8 @@
     "plan": "b45a18e",
     "tasks": "5b4ea4d",
     "tests": "bb252e1",
-    "implement": "4fb974a"
+    "implement": "4fb974a",
+    "review": "af7fa50"
   },
   "iterations": {
     "tests": 2,
@@ -390,6 +394,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Usuario acepta F1-F7 según propuesta; aclara que no se creó usuario de prueba en prod (usó uno existente). Aprueba etapa y commit"
+    },
+    {
+      "at": "2026-10-06T05:54:15.863Z",
+      "stage": "review",
+      "event": "commit",
+      "note": "af7fa50 Add review for 002-forgot-password"
+    },
+    {
+      "at": "2026-10-06T05:54:15.863Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegada al doc-keeper (iteración 1)"
+    },
+    {
+      "at": "2026-10-06T05:55:08.398Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "doc-keeper DONE: README (ASCII), CLAUDE.md Proyecto, docs-report.md"
+    },
+    {
+      "at": "2026-10-06T05:57:24.310Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "Usuario aprueba docs y commit, con el añadido del paso Resend/DNS; doc-keeper lo aplica antes del commit"
     }
   ],
   "tests_snapshot": {
