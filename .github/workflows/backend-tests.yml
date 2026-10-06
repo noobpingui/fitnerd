@@ -68,9 +68,9 @@ jobs:
     steps:
       # Trae el codigo del repo a la maquina de Actions - sin este paso no
       # hay nada que testear, la maquina arranca completamente vacia.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
           # Cachea las dependencias de pip entre corridas usando
@@ -144,12 +144,12 @@ jobs:
     steps:
       # fetch-depth: 0 trae todo el historial, necesario para comparar con
       # el commit anterior al push y detectar migraciones nuevas.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Obtener credenciales de AWS (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
