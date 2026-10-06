@@ -80,3 +80,62 @@ class FakeClock:
     def advance(self, **timedelta_kwargs):
         from datetime import timedelta
         self.now = self.now + timedelta(**timedelta_kwargs)
+
+
+class FakeHTTPResponse:
+    """Respuesta de exito de mentira: solo hace de context manager vacio."""
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        return False
+
+
+class FakeOpener:
+    """Doble de `urllib.request.urlopen` para ResendTransport: guarda cada
+    `Request` en `requests` y, segun la configuracion, tiene exito, lanza un
+    HTTPError con `status` y `body`, o lanza un URLError (`no_connection`).
+    Nunca toca la red."""
+
+    def __init__(self, status=None, body=b"", no_connection=False):
+        self.status = status
+        self.body = body
+        self.no_connection = no_connection
+        self.requests = []
+
+    def __call__(self, request, timeout=None):
+        import io
+        import urllib.error
+
+        self.requests.append(request)
+        if self.no_connection:
+            raise urllib.error.URLError("sin conexion")
+        if self.status is not None:
+            raise urllib.error.HTTPError(
+                request.full_url, self.status, "error", {}, io.BytesIO(self.body)
+            )
+        return FakeHTTPResponse()
+
+
+class FakeLogger:
+    """Logger de mentira: guarda cada entrada ya formateada (`msg % args`)
+    en `records`, para poder buscar subcadenas en ella."""
+
+    def __init__(self):
+        self.records = []
+
+    def _log(self, msg, *args):
+        self.records.append(msg % args if args else msg)
+
+    def debug(self, msg, *args, **kwargs):
+        self._log(msg, *args)
+
+    def info(self, msg, *args, **kwargs):
+        self._log(msg, *args)
+
+    def warning(self, msg, *args, **kwargs):
+        self._log(msg, *args)
+
+    def error(self, msg, *args, **kwargs):
+        self._log(msg, *args)

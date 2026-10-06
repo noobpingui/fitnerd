@@ -16,6 +16,8 @@ from sqlalchemy import select, update
 from extensions import db, email_sender
 from models.password_reset_request import PasswordResetRequest
 from models.user import User
+from tests.fakes import FakeLogger, FakeOpener
+from utils.email_sender import ResendTransport
 
 ACCEPTED = {
     "message": (
@@ -511,3 +513,22 @@ def test_limit_counts_the_original_client_ip_and_not_the_proxy_ip(client):
         ips = set(db.session.execute(select(PasswordResetRequest.client_ip)).scalars())
     assert "127.0.0.1" not in ips
     assert {IP, OTHER_IP} <= ips
+
+
+# ---------------------------------------------------------------- Spec 003
+
+# SDD: REQ-004 AC-004.6
+def test_resend_403_body_never_reaches_forgot_password_response(client):
+    """Resend responde 403 con 'error code: 1010': el usuario ve el 503 generico, sin '1010'."""
+    register(client, "ana@example.com")
+    email_sender.transport = ResendTransport(
+        "re_test_123",
+        opener=FakeOpener(status=403, body=b"error code: 1010"),
+        logger=FakeLogger(),
+    )
+
+    response = forgot(client, "ana@example.com")
+
+    assert response.status_code == 503
+    assert response.get_json() == SEND_FAILED
+    assert "1010" not in response.get_data(as_text=True)
