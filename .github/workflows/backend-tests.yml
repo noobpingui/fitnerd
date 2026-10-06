@@ -4,13 +4,30 @@ name: Backend tests
 # hacia main. El filtro "paths" es importante en un monorepo como el
 # nuestro: sin esto, un cambio SOLO en frontend/ tambien dispararia (e
 # inutilmente correria) los tests del backend.
+#
+# Además de los tests, el job "deploy" (al final) despliega en EC2 cuando
+# todo pasa en main (ADR-0016). Por eso los paths incluyen también los
+# archivos de despliegue: cambiarlos exige volver a desplegar.
 on:
   push:
     branches: [main]
-    paths: ["backend/**", ".github/workflows/backend-tests.yml"]
+    paths:
+      - "backend/**"
+      - "docker-compose.prod.yml"
+      - "Caddyfile"
+      - ".github/workflows/backend-tests.yml"
+      - ".github/scripts/deploy-backend.sh"
   pull_request:
     branches: [main]
-    paths: ["backend/**", ".github/workflows/backend-tests.yml"]
+    paths:
+      - "backend/**"
+      - "docker-compose.prod.yml"
+      - "Caddyfile"
+      - ".github/workflows/backend-tests.yml"
+      - ".github/scripts/deploy-backend.sh"
+  # Botón "Run workflow" en la pestaña Actions: vuelve a correr los tests y
+  # a desplegar main sin necesidad de un commit nuevo.
+  workflow_dispatch:
 
 jobs:
   test:
@@ -94,3 +111,91 @@ jobs:
           # actual llega a hacer una llamada de red real con esto.
           VOYAGE_API_KEY: fake-key-for-ci
           VOYAGE_EMBEDDING_MODEL: voyage-4
+
+  # Despliegue continuo (ADR-0016). Solo arranca si "test" pasó, y solo en
+  # main (push o botón manual), nunca en un Pull Request.
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+
+    # El environment "production" (Settings > Environments en GitHub) guarda
+    # las variables de abajo, y el rol de AWS solo confía en jobs que lo
+    # declaren: ninguna otra rama ni PR puede asumirlo.
+    environment: production
+
+    # Dos despliegues nunca corren a la vez: si llega otro push, espera a
+    # que termine el actual en lugar de cortarlo a medias.
+    concurrency:
+      group: deploy-backend
+      cancel-in-progress: false
+
+    # id-token: write permite pedir a GitHub el token OIDC que AWS cambia
+    # por credenciales temporales. Sin esto, configure-aws-credentials falla.
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+      HEALTH_URL: https://api.fitnerd.betofallas.dev/api/health
+
+    steps:
+      # fetch-depth: 0 trae todo el historial, necesario para comparar con
+      # el commit anterior al push y detectar migraciones nuevas.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Obtener credenciales de AWS (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Desplegar en EC2 con SSM
+        id: deploy
+        run: bash .github/scripts/deploy-backend.sh
+
+      # Tras "up -d" el contenedor nuevo tarda unos segundos en arrancar, y
+      # mientras tanto Caddy puede responder 502: por eso los reintentos.
+      - name: Comprobar /api/health
+        run: |
+          for i in $(seq 1 12); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "$HEALTH_URL" || true)
+            echo "Intento $i: HTTP $code"
+            if [ "$code" = "200" ]; then exit 0; fi
+            sleep 5
+          done
+          echo "::error::$HEALTH_URL no respondió 200 en un minuto."
+          exit 1
+
+      # Las migraciones NO se aplican solas (ADR-0016). Este paso corre
+      # siempre (incluso si algo falló) y deja en el resumen del job el
+      # commit desplegado y, si hace falta, el aviso de migraciones.
+      - name: Resumen del despliegue
+        if: always()
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          DEPLOYED_SHA: ${{ steps.deploy.outputs.deployed_sha }}
+        run: |
+          {
+            echo "## Despliegue del backend"
+            echo "- Commit desplegado: \`${DEPLOYED_SHA:-desconocido}\`"
+            if [ -n "$BEFORE_SHA" ] && git cat-file -e "$BEFORE_SHA^{commit}" 2>/dev/null; then
+              migrations=$(git diff --name-only "$BEFORE_SHA" "$GITHUB_SHA" -- backend/migrations/)
+              if [ -n "$migrations" ]; then
+                echo ""
+                echo "> [!WARNING]"
+                echo "> Este push incluye migraciones nuevas y **no** se aplicaron. Aplícalas a mano en la instancia:"
+                echo "> \`docker compose -f docker-compose.prod.yml exec backend flask db upgrade\`"
+                echo ""
+                echo "$migrations" | sed 's/^/- /'
+              else
+                echo "- Sin migraciones nuevas."
+              fi
+            else
+              echo "- No se pudo comparar con el commit anterior (ejecución manual): revisa a mano si hay migraciones pendientes."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
