@@ -11,8 +11,8 @@
   "branch": "fix/003-resend-user-agent",
   "base_branch": "main",
   "created_at": "2026-10-06T07:51:47.316Z",
-  "stage": "docs",
-  "status": "awaiting_approval",
+  "stage": "done",
+  "status": "done",
   "approvals": {
     "spec": {
       "at": "2026-10-06T08:02:57.877Z",
@@ -46,7 +46,10 @@
       "at": "2026-10-06T08:35:09.992Z",
       "note": "Si y si"
     },
-    "close": null
+    "close": {
+      "at": "2026-10-06T08:37:02.042Z",
+      "note": "1. Si. 2. Si. 3. B"
+    }
   },
   "commits": {
     "spec": "c6b5a22",
@@ -54,7 +57,8 @@
     "tasks": "c68d4ca",
     "tests": "4f7dd5c",
     "implement": "41fdbc0",
-    "review": "7c51cee"
+    "review": "7c51cee",
+    "docs": "f56711e"
   },
   "iterations": {
     "tests": 0,
@@ -309,6 +313,24 @@
       "stage": "docs",
       "event": "approved",
       "note": "Usuario aprueba docs y commit"
+    },
+    {
+      "at": "2026-10-06T08:35:10.177Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "f56711e Update docs for 003-resend-user-agent"
+    },
+    {
+      "at": "2026-10-06T08:35:10.177Z",
+      "stage": "close",
+      "event": "done",
+      "note": "Checklist Art. 9 completo; esperando aprobación de cierre"
+    },
+    {
+      "at": "2026-10-06T08:37:02.042Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Usuario aprueba cierre y commit; integración (b) merge local"
     }
   ],
   "tests_snapshot": {
