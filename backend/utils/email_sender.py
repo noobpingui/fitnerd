@@ -39,9 +39,13 @@ class ResendTransport:
 
     URL = "https://api.resend.com/emails"
 
-    def __init__(self, api_key: str | None, timeout: int = 10):
+    USER_AGENT = "fitnerd/1.0 (+https://fitnerd.betofallas.dev)"
+
+    def __init__(self, api_key: str | None, timeout: int = 10, opener=None, logger=None):
         self.api_key = api_key
         self.timeout = timeout
+        self.opener = opener or urllib.request.urlopen
+        self.logger = logger
 
     def send(self, message: EmailMessage) -> None:
         if not self.api_key:
@@ -64,7 +68,7 @@ class ResendTransport:
             },
         )
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout):
+            with self.opener(request, timeout=self.timeout):
                 pass
         except urllib.error.HTTPError as exc:
             raise EmailSendError(f"Resend respondió con HTTP {exc.code}") from None

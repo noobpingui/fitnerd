@@ -11,7 +11,7 @@
   "branch": "fix/003-resend-user-agent",
   "base_branch": "main",
   "created_at": "2026-10-06T07:51:47.316Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
@@ -26,7 +26,10 @@
       "at": "2026-10-06T08:13:01.450Z",
       "note": "1,2: Si"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-06T08:21:30.921Z",
+      "note": "Si a ambas"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -35,7 +38,8 @@
   },
   "commits": {
     "spec": "c6b5a22",
-    "plan": "17ef4d5"
+    "plan": "17ef4d5",
+    "tasks": "c68d4ca"
   },
   "iterations": {
     "tests": 0,
@@ -44,8 +48,8 @@
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-06T08:18:55.884Z"
   },
   "verify": {
     "result": null,
@@ -134,6 +138,74 @@
       "stage": "tasks",
       "event": "approved",
       "note": "Usuario aprueba tasks y commit"
+    },
+    {
+      "at": "2026-10-06T08:13:01.617Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "c68d4ca Add tasks for 003-resend-user-agent"
+    },
+    {
+      "at": "2026-10-06T08:13:01.617Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: implementer en modo scaffold (T-000)"
+    },
+    {
+      "at": "2026-10-06T08:13:27.597Z",
+      "stage": "tests",
+      "event": "blocked",
+      "note": "Scaffold DONE (T-000), pero send() sigue llamando a urllib.request.urlopen directamente e ignora self.opener: los tests con FakeOpener harían peticiones reales a api.resend.com en el red check (Art. 5.4). Pausa para decisión del usuario antes de delegar al test-author"
+    },
+    {
+      "at": "2026-10-06T08:15:40.120Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Usuario elige (A): ampliar el scaffold para que send() use self.opener (urlopen por defecto). Re-delegado al implementer modo scaffold"
+    },
+    {
+      "at": "2026-10-06T08:16:18.700Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Scaffold ampliado: send() usa self.opener (urlopen por defecto); sin UA ni log; 115 tests existentes en verde"
+    },
+    {
+      "at": "2026-10-06T08:16:18.700Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (iteración 1)"
+    },
+    {
+      "at": "2026-10-06T08:17:35.497Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "test-author DONE: 14 tests nuevos (13 unit + 1 integración); T-001..T-015 [x]"
+    },
+    {
+      "at": "2026-10-06T08:17:35.497Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier modo red (iteración 1); regresiones en verde aceptadas por el usuario (plan.md, Comentarios del usuario)"
+    },
+    {
+      "at": "2026-10-06T08:20:39.208Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS: 6 rojos legítimos, 8 regresiones en verde (aceptadas); 115 existentes en verde"
+    },
+    {
+      "at": "2026-10-06T08:21:30.921Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "Usuario aprueba tests y commit; tests_snapshot guardado"
     }
-  ]
+  ],
+  "tests_snapshot": {
+    "at": "2026-10-06T08:21:30.921Z",
+    "sha256": {
+      "backend/tests/test_services/test_email_sender.py": "300dabc0212282cdcfd195876160ac917bb05fa6ac54951598d9858e64015cd9",
+      "backend/tests/test_routes/test_password_reset_routes.py": "b6dd224852faaa59da768d8c0bbf2131361542658f6820560e1892dc78f31272",
+      "backend/tests/fakes.py": "7e7c3aa204512698dc803f1a0d8d543bf786189050c72524ef5ffa9f02ff561a"
+    }
+  }
 }
