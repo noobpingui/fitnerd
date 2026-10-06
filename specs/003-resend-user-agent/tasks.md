@@ -25,9 +25,9 @@ Fakes nuevos (`FakeOpener`, `FakeLogger`, `make_transport`), locales al archivo 
 - [x] T-015 [REQ-004, AC-004.6] (test) Con Resend fallando con 403 y `error code: 1010`, `POST /api/auth/forgot-password` responde 503 con el mensaje genérico y sin `1010` — `backend/tests/test_routes/test_password_reset_routes.py`
 
 ## Fase B — Implementación (implementer)
-- [ ] T-020 [REQ-001, AC-001.1, AC-001.2, AC-001.3] (impl) Enviar la cabecera `User-Agent: USER_AGENT` en la `Request` de `ResendTransport.send`, sin cambiar el resto de la petición, e invocar `self.opener` en lugar de `urlopen` directo — `backend/utils/email_sender.py`
-- [ ] T-021 [REQ-004, AC-004.1, AC-004.2, AC-004.3, AC-004.5] (impl) Añadir `_error_snippet` (lee hasta 4096 bytes con `try`, decodifica con `errors="replace"`, quita la API key y recorta a 200) y registrar con `logger.warning("Resend respondió con HTTP %s: %s", ...)` en la rama `HTTPError` — `backend/utils/email_sender.py`
-- [ ] T-022 [REQ-002, REQ-003, AC-002.1, AC-002.2, AC-003.1, AC-003.2, AC-003.3, AC-004.4, AC-004.6] (impl) Mantener sin cambios el mensaje `EmailSendError("Resend respondió con HTTP <code>")` (sin cuerpo ni key), las ramas de red y la comprobación de la API key; `init_app` pasa `logger=app.logger` a `ResendTransport` — `backend/utils/email_sender.py`
+- [x] T-020 [REQ-001, AC-001.1, AC-001.2, AC-001.3] (impl) Enviar la cabecera `User-Agent: USER_AGENT` en la `Request` de `ResendTransport.send`, sin cambiar el resto de la petición, e invocar `self.opener` en lugar de `urlopen` directo — `backend/utils/email_sender.py`
+- [x] T-021 [REQ-004, AC-004.1, AC-004.2, AC-004.3, AC-004.5] (impl) Añadir `_error_snippet` (lee hasta 4096 bytes con `try`, decodifica con `errors="replace"`, quita la API key y recorta a 200) y registrar con `logger.warning("Resend respondió con HTTP %s: %s", ...)` en la rama `HTTPError` — `backend/utils/email_sender.py`
+- [x] T-022 [REQ-002, REQ-003, AC-002.1, AC-002.2, AC-003.1, AC-003.2, AC-003.3, AC-004.4, AC-004.6] (impl) Mantener sin cambios el mensaje `EmailSendError("Resend respondió con HTTP <code>")` (sin cuerpo ni key), las ramas de red y la comprobación de la API key; `init_app` pasa `logger=app.logger` a `ResendTransport` — `backend/utils/email_sender.py`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

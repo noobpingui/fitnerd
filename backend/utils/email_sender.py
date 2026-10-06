@@ -1,4 +1,5 @@
 import json
+import logging
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -40,12 +41,26 @@ class ResendTransport:
     URL = "https://api.resend.com/emails"
 
     USER_AGENT = "fitnerd/1.0 (+https://fitnerd.betofallas.dev)"
+    ERROR_BODY_MAX_CHARS = 200
+    ERROR_BODY_MAX_BYTES = 4096
 
     def __init__(self, api_key: str | None, timeout: int = 10, opener=None, logger=None):
         self.api_key = api_key
         self.timeout = timeout
         self.opener = opener or urllib.request.urlopen
-        self.logger = logger
+        self.logger = logger or logging.getLogger(__name__)
+
+    def _error_snippet(self, exc: urllib.error.HTTPError) -> str:
+        """Cuerpo del error de Resend, sin la API key y recortado, solo para el log."""
+        try:
+            raw = exc.read(self.ERROR_BODY_MAX_BYTES)
+            text = raw.decode("utf-8", errors="replace")
+        except Exception:
+            return ""
+        # Primero se quita la key y después se recorta, para no dejar un prefijo suyo.
+        if self.api_key:
+            text = text.replace(self.api_key, "[REDACTED]")
+        return text[: self.ERROR_BODY_MAX_CHARS]
 
     def send(self, message: EmailMessage) -> None:
         if not self.api_key:
@@ -65,12 +80,15 @@ class ResendTransport:
             headers={
                 "Authorization": f"Bearer {self.api_key}",
                 "Content-Type": "application/json",
+                "User-Agent": self.USER_AGENT,
             },
         )
         try:
             with self.opener(request, timeout=self.timeout):
                 pass
         except urllib.error.HTTPError as exc:
+            snippet = self._error_snippet(exc)
+            self.logger.warning("Resend respondió con HTTP %s: %s", exc.code, snippet)
             raise EmailSendError(f"Resend respondió con HTTP {exc.code}") from None
         except (urllib.error.URLError, TimeoutError, OSError) as exc:
             raise EmailSendError(f"No se pudo contactar a Resend: {type(exc).__name__}") from None
@@ -95,7 +113,7 @@ class EmailSender:
     def init_app(self, app) -> None:
         backend = app.config["MAIL_BACKEND"]
         if backend == "resend":
-            self.transport = ResendTransport(app.config.get("RESEND_API_KEY"))
+            self.transport = ResendTransport(app.config.get("RESEND_API_KEY"), logger=app.logger)
         elif backend == "console":
             self.transport = ConsoleTransport(app.logger)
         elif backend == "memory":
