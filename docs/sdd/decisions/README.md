@@ -19,3 +19,4 @@ Formato breve: contexto, decisión y consecuencias. Las ADRs que generen futuras
 | [0013](ADR-0013-claude-md-proyecto.md) | `CLAUDE.md` con sección Proyecto, mantenida por el `doc-keeper` |
 | [0014](ADR-0014-correo-transaccional.md) | Correo transaccional con Resend (API HTTP, sin SDK) detrás de un `EmailSender` con transportes `resend`, `console` y `memory` (Aceptada) |
 | [0015](ADR-0015-ip-cliente-proxyfix.md) | IP del cliente con `ProxyFix(x_for=PROXY_FIX_X_FOR)`: 1 en producción (Caddy), 0 en desarrollo y 1 fijo en tests (Aceptada) |
+| [0016](ADR-0016-cd-backend.md) | CD del backend: job `deploy` tras los tests, AWS SSM Run Command con OIDC, sin migraciones automáticas; cambios de CI/CD en ramas `chore/…` sin SDD completo (Aceptada) |

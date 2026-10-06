@@ -34,12 +34,12 @@ App de fitness full-stack con un **coach de IA basado en contenido real**: respo
 
 **Despliegue:**
 - Frontend en **Vercel**: cada push a `main` despliega automáticamente.
-- Backend en **AWS EC2**, detrás de Caddy con HTTPS en `api.fitnerd.betofallas.dev`. Se despliega a mano: `git pull` y después `docker compose -f docker-compose.prod.yml up -d --build`.
+- Backend en **AWS EC2**, detrás de Caddy con HTTPS en `api.fitnerd.betofallas.dev`. **CD (ADR-0016):** el job `deploy` de `backend-tests.yml` se ejecuta tras pasar los tests en un push a `main` (o a mano con *Run workflow*). Se autentica en AWS por OIDC, ejecuta por SSM `git pull --ff-only` y `docker compose -f docker-compose.prod.yml up -d --build` como `ec2-user` en `/home/ec2-user/fitnerd`, y comprueba `/api/health`. Las variables `AWS_ROLE_ARN`, `AWS_REGION`, `EC2_INSTANCE_ID` y `DEPLOY_PATH` están en el environment `production` de GitHub. **Las migraciones no se aplican solas:** si el resumen del job lo avisa, ejecuta `docker compose -f docker-compose.prod.yml exec backend flask db upgrade` en la instancia.
 - Redis corre en la misma instancia.
 - **Paso previo al despliegue (recuperación de contraseña, ADR-0014):** crea la cuenta de Resend y verifica el dominio `fitnerd.betofallas.dev` (registros SPF y DKIM) antes de desplegar; sin eso los correos no se entregan.
 - **Variables nuevas en el `backend/.env` de EC2 (recuperación de contraseña, ADR-0014 y ADR-0015):** `FRONTEND_BASE_URL=https://fitnerd.betofallas.dev` (obligatoria: si falta, los correos llevan enlaces a `localhost` sin avisar), `RESEND_API_KEY` y `MAIL_FROM`. `MAIL_BACKEND` y `PROXY_FIX_X_FOR` ya valen `resend` y `1` en producción. Tras desplegar, aplica la migración y haz una prueba manual con una cuenta real.
 - Postgres de producción en **Supabase**.
-- CI (GitHub Actions): `backend-tests.yml` ejecuta pytest y `frontend-tests.yml` ejecuta `npm test`. Solo se disparan en push o PR a `main`.
+- CI (GitHub Actions): `backend-tests.yml` ejecuta pytest (y despliega, ver arriba) y `frontend-tests.yml` ejecuta `npm test`. Se disparan en push o PR a `main`; el del backend también con *Run workflow*.
 
 **Entorno local:**
 - Copia los tres `.env.example` (raíz, `backend/` y `frontend/`) a `.env`.
@@ -89,7 +89,7 @@ App de fitness full-stack con un **coach de IA basado en contenido real**: respo
 
 ## Convenciones
 
-- **Ramas:** `feat/NNN-slug` o `fix/NNN-slug`; `chore/…` solo para cambios del harness o de documentación. Nunca trabajes directamente en `main`.
+- **Ramas:** `feat/NNN-slug` o `fix/NNN-slug`; `chore/…` solo para cambios del harness, de documentación o de CI/CD (estos últimos sin SDD completo, con ADR si introducen una decisión nueva; ADR-0016). Nunca trabajes directamente en `main`.
 - **Commits:** en inglés e imperativo, sin prefijos convencionales.
 - **Idioma:** comentarios, docstrings y textos de la UI en español correcto, sin voseo. Los nombres de tests del backend van en inglés.
 - **Tests:** fakes escritos a mano en lugar de mocks, y cada test lleva un marcador de trazabilidad `SDD: REQ-… AC-…`.
