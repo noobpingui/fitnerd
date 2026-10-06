@@ -21,3 +21,27 @@ export const registerSchema = z.object({
   date_of_birth: z.iso.date("Fecha inválida"),
 })
 export type RegisterFormValues = z.infer<typeof registerSchema>
+
+export const forgotPasswordSchema = z.object({
+  email: z.email("Email inválido"),
+})
+export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>
+
+// Mínimo 8 caracteres (puntos de código, igual que len() en Python) y máximo
+// 72 bytes UTF-8 (límite de bcrypt), igual que el backend.
+export const resetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .refine((v) => Array.from(v).length >= 8, "Mínimo 8 caracteres")
+      .refine(
+        (v) => new TextEncoder().encode(v).length <= 72,
+        "Contraseña demasiado larga",
+      ),
+    confirmPassword: z.string(),
+  })
+  .refine((d) => d.password === d.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+  })
+export type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>

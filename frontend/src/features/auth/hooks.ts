@@ -1,6 +1,13 @@
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useNavigate } from "react-router"
-import { getCurrentUser, login, loginWithGoogle, register } from "@/features/auth/api"
+import {
+  getCurrentUser,
+  login,
+  loginWithGoogle,
+  register,
+  requestPasswordReset,
+  resetPassword,
+} from "@/features/auth/api"
 import { setToken } from "@/lib/authToken"
 
 // useMutation es el otro lado de la moneda de useQuery: se usa para
@@ -45,12 +52,22 @@ export function useGoogleLogin() {
   })
 }
 
-export function useRequestPasswordReset(): never {
-  throw new Error("not implemented")
+// Solo mutaciones: no se cachea nada, asi que no hay claves de query nuevas.
+export function useRequestPasswordReset() {
+  return useMutation({ mutationFn: requestPasswordReset })
 }
 
-export function useResetPassword(): never {
-  throw new Error("not implemented")
+// Al terminar bien vuelve al login con un aviso (lo lee LoginForm desde
+// location.state.passwordReset).
+export function useResetPassword() {
+  const navigate = useNavigate()
+
+  return useMutation({
+    mutationFn: resetPassword,
+    onSuccess: () => {
+      navigate("/login", { replace: true, state: { passwordReset: true } })
+    },
+  })
 }
 
 export function useRegister() {

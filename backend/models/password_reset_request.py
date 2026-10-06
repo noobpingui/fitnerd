@@ -1,8 +1,10 @@
-from models.base import Base
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import ForeignKey, Index, String
 import uuid
 from datetime import datetime
+
+from sqlalchemy import ForeignKey, Index, String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from models.base import Base
 
 
 # Una fila por cada solicitud de restablecimiento aceptada. Sirve de registro para los

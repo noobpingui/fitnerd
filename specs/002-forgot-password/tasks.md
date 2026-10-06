@@ -66,26 +66,26 @@ Reglas:
 ## Fase B — Implementación (implementer)
 
 ### Backend (models → migration → config → utils → repositories → services → routes)
-- [ ] T-050 [REQ-002, REQ-004, REQ-012] (migration) Migración `create password_reset_requests table` (`down_revision = 'e28ebf553c7d'`), revisada a mano: solo `create_table` con tres índices simples y el compuesto, y su inverso en `downgrade()`; sin operaciones espurias — `backend/migrations/versions/`
-- [ ] T-051 [REQ-002, REQ-012] (config) `MAIL_BACKEND`, `RESEND_API_KEY`, `MAIL_FROM`, `FRONTEND_BASE_URL` y `PROXY_FIX_X_FOR` en `Config`, `ProductionConfig` y `TestingConfig` (valores fijos en tests) — `backend/config.py`
-- [ ] T-052 [REQ-002, REQ-006, NFR-001, AC-002.2, AC-002.3, AC-006.1, AC-N001.2] (impl) `EmailSender`, `ResendTransport` (urllib, timeout 10, sin filtrar la API key), `ConsoleTransport` e `InMemoryTransport` — `backend/utils/email_sender.py`
-- [ ] T-053 [REQ-002, REQ-012] (impl) `email_sender.init_app(app)` y `ProxyFix(x_for=PROXY_FIX_X_FOR)` en `create_app()` — `backend/app.py`
-- [ ] T-054 [REQ-004, REQ-008, REQ-012] (impl) Repositorio: `lock_keys` (advisory locks en orden), `count_recent_by_ip`, `get_latest_by_email`, `get_by_token_hash`, `invalidate_active_for_user` — `backend/repositories/password_reset_repository.py`
-- [ ] T-055 [REQ-002, REQ-003, REQ-004, REQ-005, REQ-006, REQ-012, NFR-001, NFR-002] (impl) Constantes de mensajes, `utc_now`, `hash_token` y `request_reset` (validación, locks, límite por IP, límite por correo, envío antes de escribir) — `backend/services/password_reset_service.py`
-- [ ] T-056 [REQ-007, REQ-008, REQ-009, NFR-003] (impl) `reset_password` (token, mínimo 8, máximo 72 bytes, bcrypt, `used_at`) — `backend/services/password_reset_service.py`
-- [ ] T-057 [REQ-002, REQ-007, REQ-012] (impl) `_build_password_reset_service()` y vistas `forgot_password` (con `request.remote_addr`) y `reset_password` — `backend/routes/auth_routes.py`
-- [ ] T-058 [REQ-002, REQ-012] (config) Documentar las cinco variables nuevas — `backend/.env.example`
+- [x] T-050 [REQ-002, REQ-004, REQ-012] (migration) Migración `create password_reset_requests table` (`down_revision = 'e28ebf553c7d'`), revisada a mano: solo `create_table` con tres índices simples y el compuesto, y su inverso en `downgrade()`; sin operaciones espurias — `backend/migrations/versions/`
+- [x] T-051 [REQ-002, REQ-012] (config) `MAIL_BACKEND`, `RESEND_API_KEY`, `MAIL_FROM`, `FRONTEND_BASE_URL` y `PROXY_FIX_X_FOR` en `Config`, `ProductionConfig` y `TestingConfig` (valores fijos en tests) — `backend/config.py`
+- [x] T-052 [REQ-002, REQ-006, NFR-001, AC-002.2, AC-002.3, AC-006.1, AC-N001.2] (impl) `EmailSender`, `ResendTransport` (urllib, timeout 10, sin filtrar la API key), `ConsoleTransport` e `InMemoryTransport` — `backend/utils/email_sender.py`
+- [x] T-053 [REQ-002, REQ-012] (impl) `email_sender.init_app(app)` y `ProxyFix(x_for=PROXY_FIX_X_FOR)` en `create_app()` — `backend/app.py`
+- [x] T-054 [REQ-004, REQ-008, REQ-012] (impl) Repositorio: `lock_keys` (advisory locks en orden), `count_recent_by_ip`, `get_latest_by_email`, `get_by_token_hash`, `invalidate_active_for_user` — `backend/repositories/password_reset_repository.py`
+- [x] T-055 [REQ-002, REQ-003, REQ-004, REQ-005, REQ-006, REQ-012, NFR-001, NFR-002] (impl) Constantes de mensajes, `utc_now`, `hash_token` y `request_reset` (validación, locks, límite por IP, límite por correo, envío antes de escribir) — `backend/services/password_reset_service.py`
+- [x] T-056 [REQ-007, REQ-008, REQ-009, NFR-003] (impl) `reset_password` (token, mínimo 8, máximo 72 bytes, bcrypt, `used_at`) — `backend/services/password_reset_service.py`
+- [x] T-057 [REQ-002, REQ-007, REQ-012] (impl) `_build_password_reset_service()` y vistas `forgot_password` (con `request.remote_addr`) y `reset_password` — `backend/routes/auth_routes.py`
+- [x] T-058 [REQ-002, REQ-012] (config) Documentar las cinco variables nuevas — `backend/.env.example`
 
 ### Frontend (types → schemas → api → hooks → components → pages → router)
-- [ ] T-060 [REQ-005, REQ-009, REQ-011, AC-005.3, AC-011.2, AC-011.3, AC-011.8, AC-011.9] (impl) `forgotPasswordSchema` y `resetPasswordSchema` (puntos de código, bytes con `TextEncoder`, confirmación) — `frontend/src/features/auth/schemas.ts`
-- [ ] T-061 [REQ-010, REQ-011] (impl) `requestPasswordReset` y `resetPassword` con `apiFetch` — `frontend/src/features/auth/api.ts`
-- [ ] T-062 [REQ-010, REQ-011] (impl) `useRequestPasswordReset` y `useResetPassword` (navega a `/login` con `state.passwordReset`) — `frontend/src/features/auth/hooks.ts`
-- [ ] T-063 [REQ-005, REQ-010] (impl) `ForgotPasswordForm` real — `frontend/src/features/auth/components/ForgotPasswordForm.tsx`
-- [ ] T-064 [REQ-011] (impl) `ResetPasswordForm` real — `frontend/src/features/auth/components/ResetPasswordForm.tsx`
-- [ ] T-065 [REQ-001, REQ-010] (impl) `ForgotPasswordPage` real con `AuthLayout` — `frontend/src/features/auth/pages/ForgotPasswordPage.tsx`
-- [ ] T-066 [REQ-011] (impl) `ResetPasswordPage` real (lee `token`, mensaje de enlace no válido) — `frontend/src/features/auth/pages/ResetPasswordPage.tsx`
-- [ ] T-067 [REQ-001, REQ-011] (impl) Enlace "¿Olvidaste tu contraseña?" y aviso de éxito en el login — `frontend/src/features/auth/components/LoginForm.tsx`
-- [ ] T-068 [REQ-001] (impl) Rutas públicas `/forgot-password` y `/reset-password` con `PageTransition`, antes del comodín — `frontend/src/app/router.tsx`
+- [x] T-060 [REQ-005, REQ-009, REQ-011, AC-005.3, AC-011.2, AC-011.3, AC-011.8, AC-011.9] (impl) `forgotPasswordSchema` y `resetPasswordSchema` (puntos de código, bytes con `TextEncoder`, confirmación) — `frontend/src/features/auth/schemas.ts`
+- [x] T-061 [REQ-010, REQ-011] (impl) `requestPasswordReset` y `resetPassword` con `apiFetch` — `frontend/src/features/auth/api.ts`
+- [x] T-062 [REQ-010, REQ-011] (impl) `useRequestPasswordReset` y `useResetPassword` (navega a `/login` con `state.passwordReset`) — `frontend/src/features/auth/hooks.ts`
+- [x] T-063 [REQ-005, REQ-010] (impl) `ForgotPasswordForm` real — `frontend/src/features/auth/components/ForgotPasswordForm.tsx`
+- [x] T-064 [REQ-011] (impl) `ResetPasswordForm` real — `frontend/src/features/auth/components/ResetPasswordForm.tsx`
+- [x] T-065 [REQ-001, REQ-010] (impl) `ForgotPasswordPage` real con `AuthLayout` — `frontend/src/features/auth/pages/ForgotPasswordPage.tsx`
+- [x] T-066 [REQ-011] (impl) `ResetPasswordPage` real (lee `token`, mensaje de enlace no válido) — `frontend/src/features/auth/pages/ResetPasswordPage.tsx`
+- [x] T-067 [REQ-001, REQ-011] (impl) Enlace "¿Olvidaste tu contraseña?" y aviso de éxito en el login — `frontend/src/features/auth/components/LoginForm.tsx`
+- [x] T-068 [REQ-001] (impl) Rutas públicas `/forgot-password` y `/reset-password` con `PageTransition`, antes del comodín — `frontend/src/app/router.tsx`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

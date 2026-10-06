@@ -11,7 +11,7 @@
   "branch": "feat/002-forgot-password",
   "base_branch": "main",
   "created_at": "2026-10-05T19:14:48.861Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
@@ -30,7 +30,10 @@
       "at": "2026-10-05T22:27:19.360Z",
       "note": "1. Punto 2, dejalo asi. No es necesario el test de init_app. Punto 3. Tampoco es necesario en este punto la ortografia. 2. Aprobado. 3. Aprobado"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-06T03:51:19.506Z",
+      "note": "1. Aprobado. 2. Aprobado"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -40,7 +43,8 @@
     "spec": "ea351fe",
     "spec_reopen": "492b023",
     "plan": "b45a18e",
-    "tasks": "5b4ea4d"
+    "tasks": "5b4ea4d",
+    "tests": "bb252e1"
   },
   "iterations": {
     "tests": 1,
@@ -283,6 +287,30 @@
       "stage": "tests",
       "event": "approved",
       "note": "Usuario aprueba tests y commit; acepta sin test de init_app y sin corregir tildes ahora; tests_snapshot guardado"
+    },
+    {
+      "at": "2026-10-05T22:27:19.614Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "bb252e1 Add failing tests for 002-forgot-password"
+    },
+    {
+      "at": "2026-10-05T22:27:19.614Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegada al implementer (iteración 1)"
+    },
+    {
+      "at": "2026-10-05T22:31:41.358Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "implementer DONE: T-050..T-068 [x]; backend 115 passed, frontend 51 passed; tests_snapshot intacto"
+    },
+    {
+      "at": "2026-10-06T03:51:19.506Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "Usuario aprueba implement y commit"
     }
   ],
   "tests_snapshot": {

@@ -2,8 +2,9 @@ import os
 import models
 
 from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
 from config import config_by_name
-from extensions import db, migrate, cors, jwt_manager, embedding_client, rate_limiter
+from extensions import db, migrate, cors, jwt_manager, embedding_client, rate_limiter, email_sender
 from exceptions import error_handlers
 from routes import register_blueprints
 
@@ -19,6 +20,10 @@ def create_app(config_name=None):
     #To load all the variables from that class to app.config: "DEBUG"=TRUE, "SQLALCHEMY_DATABASE_URI"=..., etc
     app.config.from_object(config_by_name[config_name])
 
+    #Detrás de Caddy, remote_addr sería la IP del proxy: se toma la de X-Forwarded-For (ADR-0015)
+    if app.config["PROXY_FIX_X_FOR"] > 0:
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=app.config["PROXY_FIX_X_FOR"])
+
     #To initialize extensions here like db, auth, migrate, etc
     db.init_app(app)
     migrate.init_app(app,db)
@@ -26,6 +31,7 @@ def create_app(config_name=None):
     jwt_manager.init_app(app)
     rate_limiter.init_app(app)
     embedding_client.init_app(app)
+    email_sender.init_app(app)
     error_handlers.register_error_handlers(app)
     register_blueprints(app)
 

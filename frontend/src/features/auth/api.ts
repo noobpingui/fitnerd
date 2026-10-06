@@ -37,10 +37,16 @@ export function getCurrentUser() {
   return apiFetch<CurrentUser>("/api/auth/me")
 }
 
-export function requestPasswordReset(_payload: ForgotPasswordPayload): Promise<MessageResponse> {
-  throw new Error("not implemented")
+export function requestPasswordReset(payload: ForgotPasswordPayload) {
+  return apiFetch<MessageResponse>("/api/auth/forgot-password", {
+    method: "POST",
+    body: payload,
+  })
 }
 
-export function resetPassword(_payload: ResetPasswordPayload): Promise<MessageResponse> {
-  throw new Error("not implemented")
+export function resetPassword(payload: ResetPasswordPayload) {
+  return apiFetch<MessageResponse>("/api/auth/reset-password", {
+    method: "POST",
+    body: payload,
+  })
 }

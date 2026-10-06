@@ -31,6 +31,19 @@ class Config:
     #URL de conexion a Redis - usado hoy para el rate limiting de /api/coach/ask.
     REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
+    #Correo saliente (recuperación de contraseña): "console" (solo log, desarrollo),
+    #"resend" (producción) o "memory" (tests).
+    MAIL_BACKEND = os.getenv("MAIL_BACKEND", "console")
+    RESEND_API_KEY = os.getenv("RESEND_API_KEY")
+    MAIL_FROM = os.getenv("MAIL_FROM", "fitnerd <no-reply@fitnerd.betofallas.dev>")
+
+    #URL base del frontend, usada para construir el enlace del correo.
+    FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:5173")
+
+    #Número de proxies de confianza delante de la app (ProxyFix, x_for).
+    #0 = no se confía en X-Forwarded-For.
+    PROXY_FIX_X_FOR = int(os.getenv("PROXY_FIX_X_FOR", "0"))
+
 class DevelopmentConfig(Config):
     """Configuración exclusiva para mi pc (Desarrollo)"""
     DEBUG = True
@@ -40,6 +53,9 @@ class ProductionConfig(Config):
     """Configuración exclusiva para el servidor real (Producción)"""
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.getenv("PROD_DATABASE_URL")
+    MAIL_BACKEND = os.getenv("MAIL_BACKEND", "resend")
+    #Un proxy de confianza: Caddy.
+    PROXY_FIX_X_FOR = int(os.getenv("PROXY_FIX_X_FOR", "1"))
 
 class TestingConfig(Config):
     """Configuración exclusiva para correr los tests (pytest) - apunta a
@@ -48,6 +64,10 @@ class TestingConfig(Config):
     TESTING = True
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.getenv("TEST_DATABASE_URL")
+    #Valores fijos: no deben depender del .env local.
+    MAIL_BACKEND = "memory"
+    FRONTEND_BASE_URL = "http://localhost:5173"
+    PROXY_FIX_X_FOR = 1
 
 
 #Dictionary to easily select environments
