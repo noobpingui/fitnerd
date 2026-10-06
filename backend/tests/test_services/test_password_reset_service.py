@@ -18,7 +18,6 @@ from exceptions.custom_exceptions import (
     ServiceUnavailableError,
     ValidationError,
 )
-from models.password_reset_request import PasswordResetRequest
 from services.password_reset_service import PasswordResetService
 from tests.fakes import FakeClock, FakeEmailSender, FakeUnitOfWork
 
@@ -27,7 +26,10 @@ IP = "203.0.113.10"
 OTHER_IP = "198.51.100.20"
 T0 = datetime(2026, 1, 1, 12, 0, 0)
 
-ACCEPTED_MESSAGE = "Si el correo pertenece a una cuenta con contraseña, recibirás un enlace para restablecerla."
+ACCEPTED_MESSAGE = (
+    "Si el correo pertenece a una cuenta con contraseña, "
+    "recibirás un enlace para restablecerla."
+)
 INVALID_EMAIL = "Email inválido"
 EMAIL_LIMIT = "Ya se envió un enlace hace menos de 2 minutos. Inténtalo de nuevo más tarde."
 IP_LIMIT = "Has hecho demasiadas solicitudes. Inténtalo de nuevo más tarde."
@@ -102,7 +104,9 @@ class FakePasswordResetRepository:
 
 def make_user(email, password=OLD_PASSWORD, google_id=None):
     password_hash = hash_password(password) if password is not None else None
-    return SimpleNamespace(id=uuid.uuid4(), email=email, password_hash=password_hash, google_id=google_id)
+    return SimpleNamespace(
+        id=uuid.uuid4(), email=email, password_hash=password_hash, google_id=google_id
+    )
 
 
 def make_service(users=None, email_sender=None):
@@ -132,7 +136,7 @@ def fill_ip_limit(ctx, ip=IP, count=3):
 
 # SDD: REQ-002 AC-002.1 NFR-001 AC-N001.1
 def test_request_reset_accepts_an_account_with_password_and_exposes_the_generic_message():
-    """Una cuenta con contraseña no lanza nada y la constante del mensaje es el texto exacto de la spec."""
+    """Una cuenta con contraseña no lanza nada y el mensaje es el texto exacto de la spec."""
     from services import password_reset_service as module
 
     ctx = make_service([make_user("ana@example.com")])
@@ -160,7 +164,7 @@ def test_request_reset_sends_exactly_one_email_and_stores_a_row_with_token_hash(
 
 # SDD: REQ-002 AC-002.3
 def test_request_reset_email_is_in_spanish_with_link_and_expiry():
-    """El correo tiene el asunto de la spec, el enlace a /reset-password con token y avisa de los 5 minutos."""
+    """El correo tiene el asunto de la spec, el enlace a /reset-password y avisa de 5 min."""
     ctx = make_service([make_user("ana@example.com")])
 
     ctx.service.request_reset("ana@example.com", IP)
@@ -284,7 +288,7 @@ def test_request_reset_rejects_invalid_emails_without_side_effects(bad_email):
 
 # SDD: REQ-006 AC-006.1 NFR-001 AC-N001.2
 def test_email_failure_raises_service_unavailable_without_internal_details_or_rows():
-    """Si el proveedor falla: 503 con mensaje fijo, sin el texto interno, sin filas y con rollback."""
+    """Si el proveedor falla: 503 con mensaje fijo, sin texto interno, sin filas y con rollback."""
     sender = FakeEmailSender(raise_error=RuntimeError("SMTP-SECRETO-123"))
     ctx = make_service([make_user("ana@example.com")], email_sender=sender)
 
@@ -299,7 +303,7 @@ def test_email_failure_raises_service_unavailable_without_internal_details_or_ro
 
 # SDD: REQ-006 AC-006.2
 def test_request_succeeds_right_after_the_email_provider_recovers():
-    """Un fallo no consume el limite por correo: al recuperarse el proveedor se acepta de inmediato."""
+    """Un fallo no consume el limite por correo: al recuperarse el proveedor se acepta."""
     sender = FakeEmailSender(raise_error=RuntimeError("caido"))
     ctx = make_service([make_user("ana@example.com")], email_sender=sender)
     with pytest.raises(ServiceUnavailableError):
@@ -607,7 +611,7 @@ def test_only_accepted_requests_count_towards_the_ip_limit():
 
 # SDD: REQ-012 AC-012.7
 def test_request_rejected_by_ip_does_not_consume_the_email_limit():
-    """Rechazada por IP, la misma peticion desde otra IP se acepta (no se creo fila de ese correo)."""
+    """Rechazada por IP, la misma peticion desde otra IP se acepta (sin fila de ese correo)."""
     ctx = make_service([make_user("luis@example.com")])
     fill_ip_limit(ctx, ip=IP)
     with pytest.raises(RateLimitError):

@@ -17,8 +17,18 @@ from extensions import db, email_sender
 from models.password_reset_request import PasswordResetRequest
 from models.user import User
 
-ACCEPTED = {"message": "Si el correo pertenece a una cuenta con contraseña, recibirás un enlace para restablecerla."}
-EMAIL_LIMIT = {"error": "Ya se envió un enlace hace menos de 2 minutos. Inténtalo de nuevo más tarde."}
+ACCEPTED = {
+    "message": (
+        "Si el correo pertenece a una cuenta con contraseña, "
+        "recibirás un enlace para restablecerla."
+    )
+}
+EMAIL_LIMIT = {
+    "error": (
+        "Ya se envió un enlace hace menos de 2 minutos. "
+        "Inténtalo de nuevo más tarde."
+    )
+}
 IP_LIMIT = {"error": "Has hecho demasiadas solicitudes. Inténtalo de nuevo más tarde."}
 SEND_FAILED = {"error": "No se pudo enviar el correo. Inténtalo de nuevo más tarde."}
 INVALID_LINK = {"error": "El enlace no es válido o ha caducado. Solicita uno nuevo."}
@@ -117,7 +127,7 @@ def test_forgot_password_returns_the_exact_generic_body_and_never_the_token(clie
 
 # SDD: REQ-002 AC-002.2 AC-002.3
 def test_forgot_password_sends_one_spanish_email_with_the_reset_link(client):
-    """Un correo a la cuenta, con asunto, remitente, enlace a /reset-password y aviso de 5 minutos."""
+    """Un correo a la cuenta, con asunto, remitente, enlace a /reset-password y aviso de 5 min."""
     register(client, "ana@example.com")
 
     forgot(client, "ana@example.com")
@@ -213,7 +223,9 @@ def test_forgot_password_rejects_missing_empty_or_malformed_email(client):
     headers = {"X-Forwarded-For": fresh_ip()}
 
     responses = [
-        client.post("/api/auth/forgot-password", json={"email": "no-es-un-correo"}, headers=headers),
+        client.post(
+            "/api/auth/forgot-password", json={"email": "no-es-un-correo"}, headers=headers
+        ),
         client.post("/api/auth/forgot-password", json={}, headers=headers),
         client.post("/api/auth/forgot-password", json={"email": ""}, headers=headers),
         client.post("/api/auth/forgot-password", data="esto no es json", headers=headers),
@@ -322,7 +334,9 @@ def test_stored_password_hash_is_bcrypt_and_not_plain_text(client, app):
     reset(client, token, "NuevaClave123")
 
     with app.app_context():
-        stored = db.session.execute(select(User.password_hash).where(User.email == "ana@example.com")).scalar_one()
+        stored = db.session.execute(
+            select(User.password_hash).where(User.email == "ana@example.com")
+        ).scalar_one()
 
     assert stored != "NuevaClave123"
     assert bcrypt.checkpw(b"NuevaClave123", stored.encode("utf-8"))
@@ -332,7 +346,7 @@ def test_stored_password_hash_is_bcrypt_and_not_plain_text(client, app):
 
 # SDD: REQ-009 AC-009.1 AC-009.5 AC-009.8
 def test_invalid_passwords_return_exact_400_and_keep_the_link_alive(client):
-    """Corta, de 73 y de 74 bytes: 400 exactos (nunca 5xx); despues el mismo token con una valida da 200."""
+    """Corta, de 73 y de 74 bytes: 400 exactos (nunca 5xx); luego, con una valida, da 200."""
     register(client, "ana@example.com")
     token = request_token(client)
 
@@ -383,7 +397,7 @@ def test_two_emissions_produce_different_tokens_of_at_least_32_chars(client, app
 
 # SDD: REQ-012 AC-012.1 AC-012.5
 def test_fourth_request_from_one_ip_returns_429_even_if_the_first_three_had_no_account(client):
-    """3 solicitudes aceptadas (correos sin cuenta) desde una IP bloquean la cuarta, para una cuenta real."""
+    """3 solicitudes aceptadas (correos sin cuenta) desde una IP bloquean la cuarta."""
     register(client, "luis@example.com")
     fill_ip_limit(client, ip=IP)
 

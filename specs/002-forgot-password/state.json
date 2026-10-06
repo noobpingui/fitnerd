@@ -11,7 +11,7 @@
   "branch": "feat/002-forgot-password",
   "base_branch": "main",
   "created_at": "2026-10-05T19:14:48.861Z",
-  "stage": "implement",
+  "stage": "review",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
@@ -34,8 +34,14 @@
       "at": "2026-10-06T03:51:19.506Z",
       "note": "1. Aprobado. 2. Aprobado"
     },
-    "verify": null,
-    "review": null,
+    "verify": {
+      "at": "2026-10-06T05:21:37.199Z",
+      "note": "Listo, ya se hizo el downgrade, la tabla se elimino y regregsamos a la version anterior. Creo que las pruebas manuales no las voy a hacer, podemos continuar"
+    },
+    "review": {
+      "at": "2026-10-06T05:54:15.655Z",
+      "note": "1. Aceptados como lo propones. 2. No es necesario borrar nada ya que nunca se creo dicho usuario, yo utilice uno que ya tenia en la bd desde antes de hacer el feature. 3. Si. 4. Si"
+    },
     "docs": null,
     "close": null
   },
@@ -44,10 +50,11 @@
     "spec_reopen": "492b023",
     "plan": "b45a18e",
     "tasks": "5b4ea4d",
-    "tests": "bb252e1"
+    "tests": "bb252e1",
+    "implement": "4fb974a"
   },
   "iterations": {
-    "tests": 1,
+    "tests": 2,
     "implement": 0,
     "review": 0
   },
@@ -57,12 +64,12 @@
     "at": "2026-10-05T22:21:47.696Z"
   },
   "verify": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-06T03:59:54.703Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-10-06T05:26:03.540Z"
   },
   "bypass": false,
   "history": [
@@ -311,15 +318,87 @@
       "stage": "implement",
       "event": "approved",
       "note": "Usuario aprueba implement y commit"
+    },
+    {
+      "at": "2026-10-06T03:51:19.829Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "4fb974a Implement 002-forgot-password"
+    },
+    {
+      "at": "2026-10-06T03:51:19.829Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegada al verifier modo full (iteración 1)"
+    },
+    {
+      "at": "2026-10-06T03:57:12.271Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Verify FAIL: 15 violaciones ruff nuevas (E501, F401) en archivos de test; el informe las asigna al implementer, pero son tests -> test-author (Art. 2.1). iterations.tests=2. Corrección de test post-implement: sin red check, se actualizará tests_snapshot"
+    },
+    {
+      "at": "2026-10-06T03:58:06.260Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "test-author corrigió 15 violaciones ruff (solo formato: mismos 63 tests, marcadores SDD y asserts). tests_snapshot actualizado (cambio autorizado, protocolo §5)"
+    },
+    {
+      "at": "2026-10-06T03:58:06.260Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verify full de nuevo (iteración 2)"
+    },
+    {
+      "at": "2026-10-06T03:59:54.703Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS (iteración 2): pytest 115 passed, ruff-new OK, npm test 51 passed, tsc -b OK, npm run build OK; todas las violaciones de ruff corregidas"
+    },
+    {
+      "at": "2026-10-06T04:00:41.900Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify full PASS (iteración 2)"
+    },
+    {
+      "at": "2026-10-06T05:21:37.199Z",
+      "stage": "verify",
+      "event": "blocked",
+      "note": "Incidente en prueba manual: flask sin FLASK_APP/FLASK_ENV carga wsgi.py -> ProductionConfig; la migración se aplicó en Supabase prod y se registró un usuario de prueba. El usuario hizo downgrade a e28ebf553c7d en prod (tabla eliminada). Trampa preexistente a documentar (doc-keeper)"
+    },
+    {
+      "at": "2026-10-06T05:21:37.199Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "Usuario aprueba verify sin pruebas manuales"
+    },
+    {
+      "at": "2026-10-06T05:21:37.199Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegada al reviewer (iteración 1)"
+    },
+    {
+      "at": "2026-10-06T05:26:03.540Z",
+      "stage": "review",
+      "event": "done",
+      "note": "reviewer APPROVED: 0 bloqueantes, 0 mayores, 3 menores (F1-F3), 4 nit (F4-F7)"
+    },
+    {
+      "at": "2026-10-06T05:54:15.655Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Usuario acepta F1-F7 según propuesta; aclara que no se creó usuario de prueba en prod (usó uno existente). Aprueba etapa y commit"
     }
   ],
   "tests_snapshot": {
-    "at": "2026-10-05T22:27:19.360Z",
+    "at": "2026-10-06T03:58:06.260Z",
     "sha256": {
       "backend/tests/conftest.py": "4783eafc75aba8a99854af9617a6173f19d1ce48b3ad5f64a774152e05107122",
       "backend/tests/fakes.py": "bbc1adceef830023d2d258d64c36342c9ece7d3a784b5b3124157c1c7748fd54",
-      "backend/tests/test_services/test_password_reset_service.py": "ec581d661be89963c5fd2e318b9486c0a97967778a494c5464d6bb50a4809bf1",
-      "backend/tests/test_routes/test_password_reset_routes.py": "cabf0ae5570fb9d726b1127a3e0ce84830a566a1f1e52e7b74d2d5fcd6a3e2fa",
+      "backend/tests/test_services/test_password_reset_service.py": "f9ce891a3252b66844faa4f52bf63539c115b7b61363f456a2f177d592f93d13",
+      "backend/tests/test_routes/test_password_reset_routes.py": "d33331614e1cb7026a4b16ddc7db80b64f515cf4ea797620d4d2de1c181e6188",
       "frontend/src/features/auth/components/LoginForm.test.tsx": "7d8a1c42e93daf0367c2f72d6aa2dc79df6bae87449da264d25385e02f2778d0",
       "frontend/src/app/router.test.tsx": "f16d4295db90369270a98f24a332c09b3d2e9e6738b3277a26d15c6aa7e8742b",
       "frontend/src/features/auth/components/ForgotPasswordForm.test.tsx": "c063e235012f50201b51f6c98688bc324fc00db2a417f0c21b2ba96581d3d233",
