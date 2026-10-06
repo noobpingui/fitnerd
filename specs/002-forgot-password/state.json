@@ -11,8 +11,8 @@
   "branch": "feat/002-forgot-password",
   "base_branch": "main",
   "created_at": "2026-10-05T19:14:48.861Z",
-  "stage": "docs",
-  "status": "awaiting_approval",
+  "stage": "done",
+  "status": "done",
   "approvals": {
     "spec": {
       "at": "2026-10-05T21:49:12.962Z",
@@ -46,7 +46,10 @@
       "at": "2026-10-06T05:57:24.310Z",
       "note": "1. Si y si 2. Si. 3. Si"
     },
-    "close": null
+    "close": {
+      "at": "2026-10-06T06:01:33.313Z",
+      "note": "1. Si. 2. Si 3. Sigamos con la b, no hay problema."
+    }
   },
   "commits": {
     "spec": "ea351fe",
@@ -55,7 +58,8 @@
     "tasks": "5b4ea4d",
     "tests": "bb252e1",
     "implement": "4fb974a",
-    "review": "af7fa50"
+    "review": "af7fa50",
+    "docs": "943855b"
   },
   "iterations": {
     "tests": 2,
@@ -418,6 +422,30 @@
       "stage": "docs",
       "event": "approved",
       "note": "Usuario aprueba docs y commit, con el añadido del paso Resend/DNS; doc-keeper lo aplica antes del commit"
+    },
+    {
+      "at": "2026-10-06T05:58:22.066Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "943855b Update docs for 002-forgot-password"
+    },
+    {
+      "at": "2026-10-06T05:58:22.066Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Checklist de hecho (orquestador)"
+    },
+    {
+      "at": "2026-10-06T05:58:26.927Z",
+      "stage": "close",
+      "event": "done",
+      "note": "Checklist Art. 9 completo (todo OK); esperando aprobación de cierre"
+    },
+    {
+      "at": "2026-10-06T06:01:33.313Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Usuario aprueba cierre y commit; integración (b) merge local"
     }
   ],
   "tests_snapshot": {
