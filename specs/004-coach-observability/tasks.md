@@ -53,17 +53,17 @@ Tests de los clientes reales (iteración 2, sin red ni mocks: se asigna un fake 
 
 ## Fase B — Implementación (implementer)
 Orden: config → dependencia → clientes → retrieval → puerto → adaptador → app → servicio → ruta.
-- [ ] T-036 [REQ-009, REQ-010] (config) `resolve_langfuse_base_url`, `observability_enabled`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_BASE_URL` y `OBSERVABILITY_ENVIRONMENT` por clase (`TestingConfig` con claves `None`) — `backend/config.py`
-- [ ] T-037 [REQ-009] (config) Añadir `langfuse>=4.17,<5` — `backend/requirements.txt`
-- [ ] T-038 [REQ-009] (config) Documentar `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` y `LANGFUSE_BASE_URL` (por defecto `https://us.cloud.langfuse.com`) — `backend/.env.example`
-- [ ] T-039 [REQ-002] (impl) `EmbeddingClient.embed_query_with_usage` con tokens; `embed_query` no cambia — `backend/utils/embeddings.py`
-- [ ] T-040 [REQ-004] (impl) `LLMClient.generate_with_usage` con tokens y rechazo; `generate()` delega en él — `backend/utils/llm_client.py`
-- [ ] T-041 [REQ-002, REQ-003, REQ-006] (impl) `DEFAULT_TOP_K`, `embedding_model`, `embed`, `find_candidates`, `is_relevant` y `search()` compuesto con idéntico resultado — `backend/services/retrieval_service.py`
-- [ ] T-042 [REQ-007, REQ-008, REQ-009] (impl) `format_error`, recorders autoprotegidos y nulos, y `Tracer` con `init_app` y `start_trace` que nunca lanzan — `backend/utils/tracing.py`
-- [ ] T-043 [REQ-001, REQ-002, REQ-003, REQ-004, REQ-005, REQ-006, REQ-007, REQ-010, NFR-001, NFR-002] (impl) `LangfuseTraceBackend` sobre el SDK con cliente perezoso, `propagate_attributes` por creación y entorno — `backend/utils/langfuse_backend.py`
-- [ ] T-044 [REQ-009] (impl) Llamar a `tracer.init_app(app)` en `create_app()` — `backend/app.py`
-- [ ] T-045 [REQ-001, REQ-002, REQ-003, REQ-004, REQ-005, REQ-006, REQ-007, REQ-008] (impl) Instrumentar `ask` por fases con `tracer`, clasificar `outcome`, `finish` y puntuaciones finales fuera del `try` — `backend/services/coach_service.py`
-- [ ] T-046 [REQ-001, REQ-008, NFR-001] (impl) Inyectar el singleton `tracer` en `_build_coach_service()` — `backend/routes/coach_routes.py`
+- [x] T-036 [REQ-009, REQ-010] (config) `resolve_langfuse_base_url`, `observability_enabled`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_BASE_URL` y `OBSERVABILITY_ENVIRONMENT` por clase (`TestingConfig` con claves `None`) — `backend/config.py`
+- [x] T-037 [REQ-009] (config) Añadir `langfuse>=4.17,<5` — `backend/requirements.txt`
+- [x] T-038 [REQ-009] (config) Documentar `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` y `LANGFUSE_BASE_URL` (por defecto `https://us.cloud.langfuse.com`) — `backend/.env.example`
+- [x] T-039 [REQ-002] (impl) `EmbeddingClient.embed_query_with_usage` con tokens; `embed_query` no cambia — `backend/utils/embeddings.py`
+- [x] T-040 [REQ-004] (impl) `LLMClient.generate_with_usage` con tokens y rechazo; `generate()` delega en él — `backend/utils/llm_client.py`
+- [x] T-041 [REQ-002, REQ-003, REQ-006] (impl) `DEFAULT_TOP_K`, `embedding_model`, `embed`, `find_candidates`, `is_relevant` y `search()` compuesto con idéntico resultado — `backend/services/retrieval_service.py`
+- [x] T-042 [REQ-007, REQ-008, REQ-009] (impl) `format_error`, recorders autoprotegidos y nulos, y `Tracer` con `init_app` y `start_trace` que nunca lanzan — `backend/utils/tracing.py`
+- [x] T-043 [REQ-001, REQ-002, REQ-003, REQ-004, REQ-005, REQ-006, REQ-007, REQ-010, NFR-001, NFR-002] (impl) `LangfuseTraceBackend` sobre el SDK con cliente perezoso, `propagate_attributes` por creación y entorno — `backend/utils/langfuse_backend.py`
+- [x] T-044 [REQ-009] (impl) Llamar a `tracer.init_app(app)` en `create_app()` — `backend/app.py`
+- [x] T-045 [REQ-001, REQ-002, REQ-003, REQ-004, REQ-005, REQ-006, REQ-007, REQ-008] (impl) Instrumentar `ask` por fases con `tracer`, clasificar `outcome`, `finish` y puntuaciones finales fuera del `try` — `backend/services/coach_service.py`
+- [x] T-046 [REQ-001, REQ-008, NFR-001] (impl) Inyectar el singleton `tracer` en `_build_coach_service()` — `backend/routes/coach_routes.py`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |
@@ -128,3 +128,7 @@ Indicación: añadir tareas de test para
 - `generate_with_usage`: tokens, rechazo y que `generate()` mantenga su comportamiento;
 - `embed_query_with_usage`: con y sin tokens;
 - `RetrievalService`: `find_candidates`, `is_relevant` en el límite de 0,7, y que `search()` devuelva lo mismo que hoy.
+
+**Gate de implement, iteración 1 (2026-10-07).** Respuesta literal del usuario: "Devuelve para que corrija la codificacion".
+
+Hallazgo que se le presentó: `backend/.env.example` quedó con codificación mezclada. Las líneas existentes están en UTF-8 (`ó`, `ñ`, `ú`), pero la línea nueva "Sin las DOS claves no se envía nada" tiene la `í` en Latin-1 (byte `0xED`), así que `file` ya no lo detecta como UTF-8 y un editor UTF-8 muestra `env�a`. Hay que reescribir esa línea en UTF-8 y comprobar que todo el archivo es UTF-8 válido.

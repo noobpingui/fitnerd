@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app, g
 
-from extensions import db, embedding_client, rate_limiter
+from extensions import db, embedding_client, rate_limiter, tracer
 from repositories.transcript_chunk_repository import TranscriptChunkRepository
 from services.retrieval_service import RetrievalService
 from services.coach_service import CoachService
@@ -50,7 +50,7 @@ def _build_coach_service():
     retrieval_service = RetrievalService(transcript_chunk_repository, embedding_client)
     llm_client = LLMClient(model=current_app.config["ANTHROPIC_MODEL"])
 
-    return CoachService(retrieval_service, llm_client, rate_limiter)
+    return CoachService(retrieval_service, llm_client, rate_limiter, tracer)
 
 
 @coach_bp.route("/ask", methods=["POST"])

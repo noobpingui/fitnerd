@@ -8,12 +8,23 @@ from dotenv import load_dotenv
 load_dotenv() #To load the variables from the .env file
 
 
-def resolve_langfuse_base_url(_value):
-    raise NotImplementedError("not implemented")
+DEFAULT_LANGFUSE_BASE_URL = "https://us.cloud.langfuse.com"
 
 
-def observability_enabled(_config):
-    raise NotImplementedError("not implemented")
+def resolve_langfuse_base_url(value):
+    """URL base de Langfuse: la configurada sin la barra final, o la de EE. UU. por defecto."""
+    if not value:
+        return DEFAULT_LANGFUSE_BASE_URL
+    return value.rstrip("/")
+
+
+def observability_enabled(config):
+    """La observabilidad solo se activa con ambas claves y fuera de los tests."""
+    return bool(
+        config.get("LANGFUSE_PUBLIC_KEY")
+        and config.get("LANGFUSE_SECRET_KEY")
+        and not config.get("TESTING")
+    )
 
 
 class Config:
@@ -53,6 +64,12 @@ class Config:
     #0 = no se confía en X-Forwarded-For.
     PROXY_FIX_X_FOR = int(os.getenv("PROXY_FIX_X_FOR", "0"))
 
+    #Observabilidad del coach (Langfuse Cloud, ADR-0017): sin las dos claves no se envía nada.
+    LANGFUSE_PUBLIC_KEY = os.getenv("LANGFUSE_PUBLIC_KEY") or None
+    LANGFUSE_SECRET_KEY = os.getenv("LANGFUSE_SECRET_KEY") or None
+    LANGFUSE_BASE_URL = resolve_langfuse_base_url(os.getenv("LANGFUSE_BASE_URL"))
+    OBSERVABILITY_ENVIRONMENT = "development"
+
 class DevelopmentConfig(Config):
     """Configuración exclusiva para mi pc (Desarrollo)"""
     DEBUG = True
@@ -65,6 +82,7 @@ class ProductionConfig(Config):
     MAIL_BACKEND = os.getenv("MAIL_BACKEND", "resend")
     #Un proxy de confianza: Caddy.
     PROXY_FIX_X_FOR = int(os.getenv("PROXY_FIX_X_FOR", "1"))
+    OBSERVABILITY_ENVIRONMENT = "production"
 
 class TestingConfig(Config):
     """Configuración exclusiva para correr los tests (pytest) - apunta a
@@ -77,6 +95,9 @@ class TestingConfig(Config):
     MAIL_BACKEND = "memory"
     FRONTEND_BASE_URL = "http://localhost:5173"
     PROXY_FIX_X_FOR = 1
+    LANGFUSE_PUBLIC_KEY = None
+    LANGFUSE_SECRET_KEY = None
+    OBSERVABILITY_ENVIRONMENT = "testing"
 
 
 #Dictionary to easily select environments

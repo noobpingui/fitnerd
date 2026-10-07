@@ -11,7 +11,7 @@
   "branch": "feat/004-coach-observability",
   "base_branch": "main",
   "created_at": "2026-10-07T04:01:00.113Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
@@ -30,7 +30,10 @@
       "at": "2026-10-07T06:04:32.631Z",
       "note": "1,2: Aprobado"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-07T06:11:46.846Z",
+      "note": "1,2: Aprobado"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -39,7 +42,8 @@
   "commits": {
     "spec": "252c418",
     "plan": "d52b313",
-    "tasks": "13300d2"
+    "tasks": "13300d2",
+    "tests": "cf6649b"
   },
   "iterations": {
     "tests": 0,
@@ -222,6 +226,48 @@
       "stage": "tests",
       "event": "approved",
       "note": "Etapa tests y commit aprobados; tests_snapshot guardado (12 archivos)"
+    },
+    {
+      "at": "2026-10-07T06:04:32.839Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "cf6649b Add failing tests for 004-coach-observability"
+    },
+    {
+      "at": "2026-10-07T06:04:32.839Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegado al implementer (iteración 1)"
+    },
+    {
+      "at": "2026-10-07T06:07:40.918Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "implementer DONE: 236 passed; tests_snapshot intacto; adaptador revisado contra SDK 4.17"
+    },
+    {
+      "at": "2026-10-07T06:10:31.683Z",
+      "stage": "implement",
+      "event": "changes_requested",
+      "note": "Usuario devuelve implement: .env.example con codificación mezclada (í en Latin-1). Comentario en tasks.md"
+    },
+    {
+      "at": "2026-10-07T06:10:31.684Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "Delegado de nuevo al implementer para corregir la codificación"
+    },
+    {
+      "at": "2026-10-07T06:11:06.074Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "Codificación de .env.example corregida (UTF-8); 236 passed; snapshot intacto"
+    },
+    {
+      "at": "2026-10-07T06:11:46.846Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "Etapa implement y commit aprobados por el usuario"
     }
   ],
   "tests_snapshot": {
