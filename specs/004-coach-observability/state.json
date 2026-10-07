@@ -11,8 +11,8 @@
   "branch": "feat/004-coach-observability",
   "base_branch": "main",
   "created_at": "2026-10-07T04:01:00.113Z",
-  "stage": "docs",
-  "status": "awaiting_approval",
+  "stage": "done",
+  "status": "done",
   "approvals": {
     "spec": {
       "at": "2026-10-07T04:19:23.549Z",
@@ -46,7 +46,10 @@
       "at": "2026-10-07T07:53:40.509Z",
       "note": "1,2: Si"
     },
-    "close": null
+    "close": {
+      "at": "2026-10-07T07:58:23.386Z",
+      "note": "1. Si. 2. B."
+    }
   },
   "commits": {
     "spec": "252c418",
@@ -54,7 +57,8 @@
     "tasks": "13300d2",
     "tests": "cf6649b",
     "implement": "54ae3ca",
-    "review": "9e551c6"
+    "review": "9e551c6",
+    "docs": "b9964cc"
   },
   "iterations": {
     "tests": 1,
@@ -447,6 +451,30 @@
       "stage": "docs",
       "event": "approved",
       "note": "Etapa docs y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-07T07:53:40.844Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "b9964cc Update docs for 004-coach-observability"
+    },
+    {
+      "at": "2026-10-07T07:53:40.844Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Checklist de hecho (orquestador)"
+    },
+    {
+      "at": "2026-10-07T07:54:11.528Z",
+      "stage": "close",
+      "event": "done",
+      "note": "Checklist de hecho completo (Art. 9): todo OK"
+    },
+    {
+      "at": "2026-10-07T07:58:23.386Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Cierre aprobado; integración por merge local (opción b)"
     }
   ],
   "tests_snapshot": {
