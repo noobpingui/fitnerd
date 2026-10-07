@@ -4,7 +4,9 @@ import models
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 from config import config_by_name
-from extensions import db, migrate, cors, jwt_manager, embedding_client, rate_limiter, email_sender
+from extensions import (
+    db, migrate, cors, jwt_manager, embedding_client, rate_limiter, email_sender, tracer,
+)
 from exceptions import error_handlers
 from routes import register_blueprints
 
@@ -32,6 +34,7 @@ def create_app(config_name=None):
     rate_limiter.init_app(app)
     embedding_client.init_app(app)
     email_sender.init_app(app)
+    tracer.init_app(app)
     error_handlers.register_error_handlers(app)
     register_blueprints(app)
 

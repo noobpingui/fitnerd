@@ -1,6 +1,7 @@
 import logging
 
-from services.retrieval_service import RetrievalService
+from services.retrieval_service import DEFAULT_TOP_K, RetrievalService
+from utils.tracing import Tracer
 from utils.llm_client import LLMClient
 from utils.rate_limiter import RateLimiter
 from exceptions.custom_exceptions import ServiceUnavailableError, RateLimitError
@@ -40,10 +41,12 @@ Reglas de estilo:
 
 
 class CoachService:
-    def __init__(self, retrieval_service: RetrievalService, llm_client: LLMClient, rate_limiter: RateLimiter):
+    def __init__(self, retrieval_service: RetrievalService, llm_client: LLMClient, rate_limiter: RateLimiter, tracer: Tracer | None = None):
         self.retrieval_service = retrieval_service
         self.llm_client = llm_client
         self.rate_limiter = rate_limiter
+        #Sin tracer inyectado se usa uno inactivo: no se envía nada a ningún lado.
+        self.tracer = tracer if tracer is not None else Tracer()
 
     #history: turnos anteriores de ESTA conversacion, en formato [{"role": "user"|"assistant",
     #"content": str}, ...] - tal cual los muestra el frontend, sin la "muleta" de contexto
@@ -69,28 +72,87 @@ class CoachService:
                 "Volve a intentarlo en un rato."
             )
 
+        #La traza se abre después del límite de uso: un 429 no genera traza.
+        trace = self.tracer.start_trace("coach-ask", user_id=str(user_id), input=question)
+
         try:
             retrieval_query = self._build_retrieval_query(question, history)
-            relevant_chunks = self.retrieval_service.search(retrieval_query)
+
+            step = trace.start_step(
+                "embedding", "generation", retrieval_query, self.retrieval_service.embedding_model
+            )
+            try:
+                vector, tokens = self.retrieval_service.embed(retrieval_query)
+            except Exception as exc:
+                step.fail(exc)
+                raise
+            step.end(None, {"input": tokens} if tokens is not None else None)
+
+            threshold = self.retrieval_service.max_distance
+            step = trace.start_step(
+                "retrieval", "span", {"limit": DEFAULT_TOP_K, "threshold": threshold}
+            )
+            try:
+                candidates = self.retrieval_service.find_candidates(vector, DEFAULT_TOP_K)
+            except Exception as exc:
+                step.fail(exc)
+                raise
+            relevant_chunks = [c for c in candidates if self.retrieval_service.is_relevant(c)]
+            step.end(
+                {
+                    "candidates": [
+                        {
+                            "video_title": c["video_title"],
+                            "chunk_text": c["chunk_text"],
+                            "distance": c["distance"],
+                            "passed_threshold": self.retrieval_service.is_relevant(c),
+                        }
+                        for c in candidates
+                    ],
+                    "passed_count": len(relevant_chunks),
+                },
+                None,
+            )
+            if candidates:
+                trace.add_score(
+                    "best_chunk_distance", min(c["distance"] for c in candidates), "NUMERIC"
+                )
 
             if not relevant_chunks:
                 #Nada paso el umbral de relevancia - ni llamamos a Claude, evitamos que
                 #el modelo tenga que "improvisar" con contexto debil.
-                return "No tengo informacion relacionada con ese tema en especifico."
+                answer = "No tengo informacion relacionada con ese tema en especifico."
+                outcome = "dont_know"
+            else:
+                #Ya no incluimos el titulo del video en el texto que le llega al modelo - le
+                #dabamos una "muleta" para citar la fuente, justo lo que no queremos que haga
+                #en la respuesta.
+                context = "\n\n".join(chunk["chunk_text"] for chunk in relevant_chunks)
 
-            #Ya no incluimos el titulo del video en el texto que le llega al modelo - le
-            #dabamos una "muleta" para citar la fuente, justo lo que no queremos que haga
-            #en la respuesta.
-            context = "\n\n".join(chunk["chunk_text"] for chunk in relevant_chunks)
-
-            user_message = f"""Fragmentos de contexto:
+                user_message = f"""Fragmentos de contexto:
 {context}
 
 Pregunta: {question}"""
 
-            messages = [*(history or []), {"role": "user", "content": user_message}]
+                messages = [*(history or []), {"role": "user", "content": user_message}]
 
-            answer = self.llm_client.generate(SYSTEM_PROMPT, messages)
+                step = trace.start_step("generation", "generation", messages, self.llm_client.model)
+                try:
+                    result = self.llm_client.generate_with_usage(SYSTEM_PROMPT, messages)
+                except Exception as exc:
+                    step.fail(exc)
+                    raise
+                step.end(
+                    result.text or "",
+                    {"input": result.input_tokens, "output": result.output_tokens},
+                )
+
+                if result.text is None:
+                    answer = "No pude generar una respuesta para esa pregunta."
+                    outcome = "refused"
+                else:
+                    answer = result.text
+                    outcome = "answered"
         except Exception:
             #Cualquier falla de un proveedor externo (Voyage al buscar contexto, Anthropic
             #al generar) - rate limit, timeout, caida del servicio, etc. Se traduce a un
@@ -99,13 +161,15 @@ Pregunta: {question}"""
             #util. El error real SI queda registrado en el log del servidor, solo que el
             #usuario ve un mensaje limpio.
             logger.exception("Fallo un proveedor externo al responder una pregunta del coach")
+            trace.add_score("outcome", "error", "CATEGORICAL")
+            trace.finish("")
             raise ServiceUnavailableError(
                 "No se pudo generar una respuesta en este momento. Intenta de nuevo en unos minutos."
             )
 
-        if answer is None:
-            return "No pude generar una respuesta para esa pregunta."
-
+        #Fuera del try de proveedores: un fallo de instrumentación nunca debe ser un 503.
+        trace.add_score("outcome", outcome, "CATEGORICAL")
+        trace.finish(answer)
         return answer
 
     #Truco barato para que las preguntas de seguimiento cortas ("dame mas detalle",

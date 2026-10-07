@@ -12,7 +12,7 @@ App de fitness full-stack con un **coach de IA basado en contenido real**: respo
 | Catálogo de ejercicios (región → categoría → ejercicio) | `body_region_routes`, `exercise_category_routes`, `exercise_routes` | `exercises` |
 | Favoritos y plan semanal (drag and drop) | `exercise_favorite_routes`, `weekly_plan_routes` | `weekly-plan` |
 | Métricas corporales, gráficas y análisis con IA | `body_metric_routes` | `body-metrics` |
-| Coach de IA con RAG (pgvector, Voyage y Claude, con rate limit en Redis) | `coach_routes` | `coach` |
+| Coach de IA con RAG (pgvector, Voyage y Claude, con rate limit en Redis y trazas en Langfuse Cloud, ADR-0017) | `coach_routes` | `coach` |
 | Feedback, home, páginas legales y tienda (solo estructura) | `feedback_routes` | `feedback`, `home`, `legal`, `store` |
 | Salud del servicio (`GET /api/health`) | `health_routes` | — |
 
@@ -38,6 +38,7 @@ App de fitness full-stack con un **coach de IA basado en contenido real**: respo
 - Redis corre en la misma instancia.
 - **Paso previo al despliegue (recuperación de contraseña, ADR-0014):** crea la cuenta de Resend y verifica el dominio `fitnerd.betofallas.dev` (registros SPF y DKIM) antes de desplegar; sin eso los correos no se entregan.
 - **Variables nuevas en el `backend/.env` de EC2 (recuperación de contraseña, ADR-0014 y ADR-0015):** `FRONTEND_BASE_URL=https://fitnerd.betofallas.dev` (obligatoria: si falta, los correos llevan enlaces a `localhost` sin avisar), `RESEND_API_KEY` y `MAIL_FROM`. `MAIL_BACKEND` y `PROXY_FIX_X_FOR` ya valen `resend` y `1` en producción. Tras desplegar, aplica la migración y haz una prueba manual con una cuenta real.
+- **Variables opcionales de observabilidad del coach (ADR-0017):** `LANGFUSE_PUBLIC_KEY` y `LANGFUSE_SECRET_KEY` en el `backend/.env` de EC2 (sin las dos no se envía nada; en tests siempre inactiva); `LANGFUSE_BASE_URL` es opcional (por defecto `https://us.cloud.langfuse.com`). Si el modelo de Claude no está en la tabla de precios de Langfuse, añade su precio a mano en el proyecto; mientras falte, las trazas no llevan coste.
 - Postgres de producción en **Supabase**.
 - CI (GitHub Actions): `backend-tests.yml` ejecuta pytest (y despliega, ver arriba) y `frontend-tests.yml` ejecuta `npm test`. Se disparan en push o PR a `main`; el del backend también con *Run workflow*.
 
