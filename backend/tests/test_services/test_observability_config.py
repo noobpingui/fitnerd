@@ -1,5 +1,5 @@
-"""Configuracion de la observabilidad (config.py): URL por defecto de Langfuse,
-activacion solo con las dos claves, inactividad en tests y etiqueta de entorno.
+"""Configuración de la observabilidad (config.py): URL por defecto de Langfuse,
+activación solo con las dos claves, inactividad en tests y etiqueta de entorno.
 """
 
 import pytest
@@ -41,14 +41,14 @@ def test_testing_config_has_no_keys_regardless_of_the_environment():
 
 # SDD: REQ-009 AC-009.3
 def test_observability_is_disabled_when_testing_even_with_both_keys():
-    """Con `TESTING` verdadero la observabilidad esta inactiva aunque haya
+    """Con `TESTING` verdadero la observabilidad está inactiva aunque haya
     claves."""
     assert observability_enabled({**KEYS, "TESTING": True}) is False
 
 
 # SDD: REQ-009 AC-009.3
 def test_the_tracer_singleton_is_inactive_in_the_test_app(app):
-    """En la app de tests el singleton `extensions.tracer` esta inactivo."""
+    """En la app de tests el singleton `extensions.tracer` está inactivo."""
     from extensions import tracer
 
     assert app.config["LANGFUSE_PUBLIC_KEY"] is None
@@ -74,7 +74,7 @@ def test_observability_is_enabled_with_both_keys_and_testing_false():
     ],
 )
 def test_observability_is_disabled_without_both_keys(config):
-    """Con una sola clave, claves vacias o ninguna, queda inactiva."""
+    """Con una sola clave, claves vacías o ninguna, queda inactiva."""
     assert observability_enabled({**config, "TESTING": False}) is False
 
 

@@ -9,7 +9,12 @@ cliente HTTP falso, etc.
 import pytest
 
 from app import create_app
-from extensions import db as _db, jwt_manager as _jwt_manager, email_sender as _email_sender, tracer as _tracer
+from extensions import (
+    db as _db,
+    email_sender as _email_sender,
+    jwt_manager as _jwt_manager,
+    tracer as _tracer,
+)
 
 
 @pytest.fixture(scope="session")
@@ -145,7 +150,7 @@ def admin_headers(app):
 @pytest.fixture(autouse=True)
 def _clear_email_outbox():
     """Antes de cada test instala un `InMemoryTransport` nuevo (bandeja y
-    `fail_with` vacios) en `email_sender`, para que los tests de integracion
+    `fail_with` vacíos) en `email_sender`, para que los tests de integración
     lean `email_sender.transport.outbox` y los correos o el `fail_with` de un
     test no se filtren al siguiente. No depende de que `init_app` configure
     el transporte."""
@@ -158,9 +163,9 @@ def _clear_email_outbox():
 
 @pytest.fixture(autouse=True)
 def _reset_tracer_backend():
-    """Deja `extensions.tracer.backend = None` antes y despues de cada test
+    """Deja `extensions.tracer.backend = None` antes y después de cada test
     (observabilidad inactiva por defecto), para que un backend de trazas que
-    un test de integracion instale en el singleton no se filtre al siguiente."""
+    un test de integración instale en el singleton no se filtre al siguiente."""
     _tracer.backend = None
     yield
     _tracer.backend = None

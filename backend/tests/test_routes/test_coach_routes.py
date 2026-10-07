@@ -1,4 +1,4 @@
-"""Integracion de POST /api/coach/ask: solo lo que cambia con la
+"""Integración de POST /api/coach/ask: solo lo que cambia con la
 observabilidad (las preguntas invalidas no generan traza). El resto de AC se
 prueba a nivel de servicio, porque la ruta construye clientes reales de
 Anthropic y Voyage.
@@ -17,7 +17,7 @@ from tests.fakes_observability import FakeTraceBackend
     ids=["empty", "only-spaces", "501-characters"],
 )
 def test_invalid_questions_return_400_and_send_no_trace(client, registered_user, question):
-    """Una pregunta vacia, de solo espacios o de mas de 500 caracteres
+    """Una pregunta vacía, de solo espacios o de más de 500 caracteres
     responde 400 y el destino no recibe ninguna traza."""
     backend = FakeTraceBackend()
     tracer.backend = backend

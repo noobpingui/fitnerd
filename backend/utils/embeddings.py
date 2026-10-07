@@ -23,6 +23,6 @@ class EmbeddingClient:
         return result.embeddings[0]
 
     def embed_query_with_usage(self, text: str) -> tuple[list[float], int | None]:
-        #Igual que embed_query, pero devuelve tambien los tokens que informa Voyage (o None).
+        #Igual que embed_query, pero devuelve también los tokens que informa Voyage (o None).
         result = self.client.embed([text], model=self.model, input_type="query")
         return result.embeddings[0], getattr(result, "total_tokens", None)

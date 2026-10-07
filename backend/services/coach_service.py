@@ -45,7 +45,7 @@ class CoachService:
         self.retrieval_service = retrieval_service
         self.llm_client = llm_client
         self.rate_limiter = rate_limiter
-        #Sin tracer inyectado se usa uno inactivo: no se envia nada a ningun lado.
+        #Sin tracer inyectado se usa uno inactivo: no se envía nada a ningún lado.
         self.tracer = tracer if tracer is not None else Tracer()
 
     #history: turnos anteriores de ESTA conversacion, en formato [{"role": "user"|"assistant",
@@ -72,7 +72,7 @@ class CoachService:
                 "Volve a intentarlo en un rato."
             )
 
-        #La traza se abre despues del limite de uso: un 429 no genera traza.
+        #La traza se abre después del límite de uso: un 429 no genera traza.
         trace = self.tracer.start_trace("coach-ask", user_id=str(user_id), input=question)
 
         try:
@@ -167,7 +167,7 @@ Pregunta: {question}"""
                 "No se pudo generar una respuesta en este momento. Intenta de nuevo en unos minutos."
             )
 
-        #Fuera del try de proveedores: un fallo de instrumentacion nunca debe ser un 503.
+        #Fuera del try de proveedores: un fallo de instrumentación nunca debe ser un 503.
         trace.add_score("outcome", outcome, "CATEGORICAL")
         trace.finish(answer)
         return answer

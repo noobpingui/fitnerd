@@ -54,7 +54,7 @@ def test_find_candidates_respects_the_default_limit_of_five():
 
 # SDD: REQ-003 AC-003.2
 def test_find_candidates_keeps_candidates_that_exceed_the_threshold():
-    """Los candidatos por encima del umbral tambien se devuelven."""
+    """Los candidatos por encima del umbral también se devuelven."""
     service, _, _ = make_service(rows=[("Texto A", "Video A", 0.75), ("Texto B", "Video B", 0.9)])
 
     assert [c["distance"] for c in service.find_candidates([0.1, 0.2])] == [0.75, 0.9]
@@ -62,7 +62,7 @@ def test_find_candidates_keeps_candidates_that_exceed_the_threshold():
 
 # SDD: REQ-003 AC-003.3
 def test_find_candidates_with_empty_corpus_returns_an_empty_list():
-    """Un corpus vacio devuelve una lista vacia."""
+    """Un corpus vacío devuelve una lista vacía."""
     service, _, _ = make_service(rows=[])
 
     assert service.find_candidates([0.1, 0.2]) == []
@@ -70,7 +70,7 @@ def test_find_candidates_with_empty_corpus_returns_an_empty_list():
 
 # SDD: REQ-003 AC-003.3
 def test_is_relevant_accepts_the_threshold_boundary_and_rejects_above_it():
-    """En el limite de 0,7 la distancia 0,7 pasa y 0,71 no."""
+    """En el límite de 0,7 la distancia 0,7 pasa y 0,71 no."""
     service, _, _ = make_service()
 
     assert service.is_relevant({"distance": 0.7}) is True
@@ -81,7 +81,9 @@ def test_is_relevant_accepts_the_threshold_boundary_and_rejects_above_it():
 # SDD: REQ-006 AC-006.2
 def test_is_relevant_uses_the_configured_max_distance():
     """El umbral es `max_distance`, configurable por constructor."""
-    service = RetrievalService(FakeTranscriptChunkRepository([]), FakeEmbeddingClient(), max_distance=0.5)
+    service = RetrievalService(
+        FakeTranscriptChunkRepository([]), FakeEmbeddingClient(), max_distance=0.5
+    )
 
     assert service.max_distance == 0.5
     assert service.is_relevant({"distance": 0.5}) is True
@@ -120,7 +122,7 @@ def test_search_still_returns_only_relevant_chunks_in_the_same_shape_and_order()
 
 # SDD: REQ-003 AC-003.1
 def test_search_honors_a_custom_top_k():
-    """`search(question, top_k)` sigue respetando el limite pedido."""
+    """`search(question, top_k)` sigue respetando el límite pedido."""
     service, repository, _ = make_service()
 
     result = service.search("pregunta", top_k=1)
@@ -131,7 +133,7 @@ def test_search_honors_a_custom_top_k():
 
 # SDD: REQ-003 AC-003.2
 def test_search_returns_an_empty_list_when_nothing_is_relevant():
-    """Sin fragmentos bajo el umbral devuelve una lista vacia."""
+    """Sin fragmentos bajo el umbral devuelve una lista vacía."""
     service, _, _ = make_service(rows=[("Texto A", "Video A", 0.75), ("Texto B", "Video B", 0.9)])
 
     assert service.search("pregunta") == []

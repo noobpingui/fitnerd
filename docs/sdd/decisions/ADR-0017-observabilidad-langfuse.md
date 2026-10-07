@@ -1,6 +1,6 @@
 # ADR-0017: observabilidad del coach con el SDK oficial de Langfuse detrás de un puerto `Tracer`
 
-- **Estado:** Propuesta · 2026-10-07 (reescrita en la iteración 2 del plan y revisada en la iteración 3 con las firmas reales del SDK 4.17)
+- **Estado:** Aceptada · 2026-10-07 (aprobada por el usuario con el plan de la feature `004-coach-observability`; reescrita en la iteración 2 del plan y revisada en la iteración 3 con las firmas reales del SDK 4.17)
 - **Decidido por:** el usuario eligió el SDK oficial en el gate de plan de la feature `004-coach-observability`. El planner propone el diseño de integración.
 
 ## Contexto

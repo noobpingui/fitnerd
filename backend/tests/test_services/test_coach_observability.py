@@ -1,5 +1,5 @@
 """Observabilidad del coach (feature 004): CoachService traza cada pregunta a
-traves del puerto `Tracer`. Todo con fakes escritos a mano (un backend de
+través del puerto `Tracer`. Todo con fakes escritos a mano (un backend de
 trazas en memoria y, en los tests de latencia, un cliente de Langfuse de
 mentira detras del adaptador real) - nada llama a Langfuse, Voyage, Claude ni
 Redis.
@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 import pytest
 
 from exceptions.custom_exceptions import RateLimitError, ServiceUnavailableError
-from services.coach_service import CoachService, SYSTEM_PROMPT
+from services.coach_service import SYSTEM_PROMPT, CoachService
 from tests.fakes import FakeClock, FakeLLMClient, FakeLogger, FakeRateLimiter
 from tests.fakes_observability import (
     FakeApp,
@@ -25,13 +25,23 @@ from tests.fakes_observability import (
 from utils.langfuse_backend import LangfuseTraceBackend
 from utils.tracing import NullTraceRecorder, Tracer
 
-UNAVAILABLE_MESSAGE = "No se pudo generar una respuesta en este momento. Intenta de nuevo en unos minutos."
+UNAVAILABLE_MESSAGE = (
+    "No se pudo generar una respuesta en este momento. Intenta de nuevo en unos minutos."
+)
 DONT_KNOW_MESSAGE = "No tengo informacion relacionada con ese tema en especifico."
 REFUSED_MESSAGE = "No pude generar una respuesta para esa pregunta."
 
 GOOD_CANDIDATES = [
-    {"video_title": "Series y repeticiones", "chunk_text": "Haz 3 series de 10 repeticiones.", "distance": 0.35},
-    {"video_title": "Descanso", "chunk_text": "Descansa 90 segundos entre series.", "distance": 0.62},
+    {
+        "video_title": "Series y repeticiones",
+        "chunk_text": "Haz 3 series de 10 repeticiones.",
+        "distance": 0.35,
+    },
+    {
+        "video_title": "Descanso",
+        "chunk_text": "Descansa 90 segundos entre series.",
+        "distance": 0.62,
+    },
 ]
 
 
@@ -50,7 +60,9 @@ def make_service(
     retrieval = retrieval or FakeObservableRetrievalService(
         candidates=GOOD_CANDIDATES if candidates is None else candidates
     )
-    llm = llm or FakeLLMClient(answer="Haz 3 series de 10.", input_tokens=850, output_tokens=40, model="claude-sonnet-5")
+    llm = llm or FakeLLMClient(
+        answer="Haz 3 series de 10.", input_tokens=850, output_tokens=40, model="claude-sonnet-5"
+    )
     backend = backend or FakeTraceBackend(clock=make_clock())
     tracer = tracer or Tracer(backend=backend, logger=FakeLogger())
     service = CoachService(retrieval, llm, FakeRateLimiter(allowed=allowed), tracer)
@@ -104,7 +116,7 @@ def test_two_questions_produce_two_distinct_traces():
 
 # SDD: REQ-001 AC-001.4
 def test_rate_limited_question_produces_no_trace():
-    """Con el limite de uso alcanzado se lanza RateLimitError y el destino no
+    """Con el límite de uso alcanzado se lanza RateLimitError y el destino no
     recibe ninguna traza."""
     service, backend, retrieval, _ = make_service(allowed=False)
 
@@ -123,7 +135,9 @@ def test_embedding_step_records_input_model_and_times_without_history():
     """El paso `embedding` lleva la pregunta, el modelo de embedding y horas
     de inicio y fin."""
     service, backend, _, _ = make_service(
-        retrieval=FakeObservableRetrievalService(candidates=GOOD_CANDIDATES, embedding_model="voyage-3-test")
+        retrieval=FakeObservableRetrievalService(
+            candidates=GOOD_CANDIDATES, embedding_model="voyage-3-test"
+        )
     )
 
     service.ask("¿Y el descanso?", user_id=42)
@@ -137,7 +151,7 @@ def test_embedding_step_records_input_model_and_times_without_history():
 
 # SDD: REQ-002 AC-002.2
 def test_embedding_step_input_joins_last_user_question_and_current_one():
-    """Con historial, el texto enviado a Voyage es la ultima pregunta del
+    """Con historial, el texto enviado a Voyage es la última pregunta del
     usuario seguida de la actual."""
     service, backend, _, _ = make_service()
     history = [
@@ -184,15 +198,30 @@ def test_retrieval_step_records_all_candidates_with_passed_threshold():
     assert step.input == {"limit": 5, "threshold": 0.7}
     assert step.output["passed_count"] == 2
     assert step.output["candidates"] == [
-        {"video_title": "Video A", "chunk_text": "Texto completo A", "distance": 0.35, "passed_threshold": True},
-        {"video_title": "Video B", "chunk_text": "Texto completo B", "distance": 0.62, "passed_threshold": True},
-        {"video_title": "Video C", "chunk_text": "Texto completo C", "distance": 0.81, "passed_threshold": False},
+        {
+            "video_title": "Video A",
+            "chunk_text": "Texto completo A",
+            "distance": 0.35,
+            "passed_threshold": True,
+        },
+        {
+            "video_title": "Video B",
+            "chunk_text": "Texto completo B",
+            "distance": 0.62,
+            "passed_threshold": True,
+        },
+        {
+            "video_title": "Video C",
+            "chunk_text": "Texto completo C",
+            "distance": 0.81,
+            "passed_threshold": False,
+        },
     ]
 
 
 # SDD: REQ-003 AC-003.2
 def test_retrieval_step_marks_every_candidate_as_not_passed_when_all_exceed_the_threshold():
-    """Ningun candidato pasa el umbral: `passed_count` es 0 y todos quedan
+    """Ningún candidato pasa el umbral: `passed_count` es 0 y todos quedan
     con `passed_threshold` falso."""
     candidates = [
         {"video_title": "Video A", "chunk_text": "A", "distance": 0.75},
@@ -209,7 +238,7 @@ def test_retrieval_step_marks_every_candidate_as_not_passed_when_all_exceed_the_
 
 # SDD: REQ-003 AC-003.3
 def test_retrieval_step_with_empty_corpus_records_no_candidates():
-    """Un corpus vacio produce `candidates` vacia y `passed_count` 0."""
+    """Un corpus vacío produce `candidates` vacía y `passed_count` 0."""
     service, backend, _, _ = make_service(candidates=[])
 
     service.ask("Pregunta", user_id=42)
@@ -275,8 +304,8 @@ def test_no_generation_step_when_no_chunk_passes_the_threshold():
 
 # SDD: REQ-004 AC-004.4
 def test_generation_step_on_refusal_keeps_tokens_and_has_empty_output():
-    """Si Claude rechaza la peticion, el paso existe, registra los tokens y su
-    salida esta vacia."""
+    """Si Claude rechaza la petición, el paso existe, registra los tokens y su
+    salida está vacía."""
     llm = FakeLLMClient(answer=None, input_tokens=500, output_tokens=0, model="claude-sonnet-5")
     service, backend, _, _ = make_service(llm=llm)
 
@@ -293,7 +322,7 @@ def test_generation_step_on_refusal_keeps_tokens_and_has_empty_output():
 
 # SDD: REQ-005 AC-005.1
 def test_outcome_score_is_answered_when_claude_generates_the_answer():
-    """`outcome` = `answered` cuando Claude genero la respuesta."""
+    """`outcome` = `answered` cuando Claude generó la respuesta."""
     service, backend, _, _ = make_service()
 
     service.ask("Pregunta", user_id=42)
@@ -329,7 +358,9 @@ def test_outcome_score_is_refused_when_claude_refuses():
 # SDD: REQ-005 AC-005.4
 def test_outcome_score_is_error_when_the_embedding_provider_fails():
     """`outcome` = `error` cuando falla un proveedor."""
-    retrieval = FakeObservableRetrievalService(candidates=GOOD_CANDIDATES, embed_error=ConnectionError("voyage caido"))
+    retrieval = FakeObservableRetrievalService(
+        candidates=GOOD_CANDIDATES, embed_error=ConnectionError("voyage caido")
+    )
     service, backend, _, _ = make_service(retrieval=retrieval)
 
     with pytest.raises(ServiceUnavailableError):
@@ -363,7 +394,7 @@ def test_best_chunk_distance_is_the_minimum_over_all_candidates():
 
 # SDD: REQ-006 AC-006.2
 def test_best_chunk_distance_is_recorded_even_when_no_candidate_passes_the_threshold():
-    """Aunque ninguno pase el umbral, la puntuacion es la menor distancia."""
+    """Aunque ninguno pase el umbral, la puntuación es la menor distancia."""
     candidates = [
         {"video_title": "A", "chunk_text": "A", "distance": 0.9},
         {"video_title": "B", "chunk_text": "B", "distance": 0.75},
@@ -377,7 +408,7 @@ def test_best_chunk_distance_is_recorded_even_when_no_candidate_passes_the_thres
 
 # SDD: REQ-006 AC-006.3
 def test_no_best_chunk_distance_when_search_returns_no_candidates():
-    """Sin candidatos no se anade la puntuacion."""
+    """Sin candidatos no se añade la puntuación."""
     service, backend, _, _ = make_service(candidates=[])
 
     service.ask("Pregunta", user_id=42)
@@ -387,8 +418,10 @@ def test_no_best_chunk_distance_when_search_returns_no_candidates():
 
 # SDD: REQ-006 AC-006.4
 def test_no_best_chunk_distance_when_the_embedding_provider_fails():
-    """Si el embedding falla, la busqueda no se ejecuta y no hay puntuacion."""
-    retrieval = FakeObservableRetrievalService(candidates=GOOD_CANDIDATES, embed_error=ConnectionError("voyage caido"))
+    """Si el embedding falla, la búsqueda no se ejecuta y no hay puntuación."""
+    retrieval = FakeObservableRetrievalService(
+        candidates=GOOD_CANDIDATES, embed_error=ConnectionError("voyage caido")
+    )
     service, backend, _, _ = make_service(retrieval=retrieval)
 
     with pytest.raises(ServiceUnavailableError):
@@ -423,7 +456,9 @@ def test_generation_failure_marks_the_step_as_error_and_keeps_the_503():
 # SDD: REQ-007 AC-007.2
 def test_embedding_failure_leaves_only_the_failed_embedding_step():
     """Si falla Voyage solo existe el paso `embedding`, marcado como error."""
-    retrieval = FakeObservableRetrievalService(candidates=GOOD_CANDIDATES, embed_error=ConnectionError("voyage caido"))
+    retrieval = FakeObservableRetrievalService(
+        candidates=GOOD_CANDIDATES, embed_error=ConnectionError("voyage caido")
+    )
     service, backend, _, llm = make_service(retrieval=retrieval)
 
     with pytest.raises(ServiceUnavailableError):
@@ -439,7 +474,9 @@ def test_embedding_failure_leaves_only_the_failed_embedding_step():
 def test_search_failure_marks_the_retrieval_step_and_skips_generation():
     """Si falla la busqueda de fragmentos, `retrieval` queda como error y no
     hay `generation`."""
-    retrieval = FakeObservableRetrievalService(candidates=GOOD_CANDIDATES, search_error=RuntimeError("db caida"))
+    retrieval = FakeObservableRetrievalService(
+        candidates=GOOD_CANDIDATES, search_error=RuntimeError("db caida")
+    )
     service, backend, _, _ = make_service(retrieval=retrieval)
 
     with pytest.raises(ServiceUnavailableError):
@@ -452,7 +489,7 @@ def test_search_failure_marks_the_retrieval_step_and_skips_generation():
 
 # SDD: REQ-007 AC-007.3
 def test_step_error_message_is_trimmed_to_200_characters_without_a_stack_trace():
-    """Un mensaje de 500 caracteres se recorta a 200 como maximo y no incluye
+    """Un mensaje de 500 caracteres se recorta a 200 como máximo y no incluye
     traza de pila."""
     llm = FakeLLMClient(raise_error=RuntimeError("x" * 500))
     service, backend, _, _ = make_service(llm=llm)
@@ -470,7 +507,7 @@ def test_step_error_message_is_trimmed_to_200_characters_without_a_stack_trace()
 
 # SDD: REQ-008 AC-008.1
 def test_inactive_tracer_returns_todays_answer_and_sends_nothing():
-    """Con el tracer inactivo la respuesta es la de hoy y no se envia nada."""
+    """Con el tracer inactivo la respuesta es la de hoy y no se envía nada."""
     unused_backend = FakeTraceBackend()
     inactive = Tracer(logger=FakeLogger())
     service, _, _, _ = make_service(tracer=inactive)
@@ -485,7 +522,7 @@ def test_inactive_tracer_returns_todays_answer_and_sends_nothing():
 
 # SDD: REQ-008 AC-008.2
 def test_answer_is_unchanged_when_the_destination_fails_on_every_send():
-    """Un destino que lanza error en cada envio no cambia la respuesta 200."""
+    """Un destino que lanza error en cada envío no cambia la respuesta 200."""
     backend = FakeTraceBackend(raise_error=RuntimeError("secreto-sk-lf-123"))
     service, _, _, _ = make_service(backend=backend)
 
@@ -494,7 +531,7 @@ def test_answer_is_unchanged_when_the_destination_fails_on_every_send():
 
 # SDD: REQ-008 AC-008.3
 def test_dont_know_answer_is_unchanged_when_the_destination_fails():
-    """El mensaje fijo de "sin informacion" tampoco cambia."""
+    """El mensaje fijo de "sin información" tampoco cambia."""
     backend = FakeTraceBackend(raise_error=RuntimeError("secreto-sk-lf-123"))
     service, _, _, _ = make_service(candidates=[], backend=backend)
 
@@ -517,7 +554,7 @@ def test_provider_failure_still_gives_the_same_503_when_the_destination_fails():
 # SDD: REQ-008 AC-008.5
 def test_destination_failure_is_logged_as_a_warning_without_credentials_or_exception_message():
     """El fallo del destino queda como aviso en el log, sin credenciales ni el
-    mensaje de la excepcion."""
+    mensaje de la excepción."""
     logger = FakeLogger()
     backend = FakeTraceBackend(raise_error=RuntimeError("secreto-sk-lf-123"))
     tracer = Tracer(backend=backend, logger=logger)
@@ -546,7 +583,13 @@ def test_tracer_without_both_keys_stays_inactive_silent_and_never_builds_the_cli
     pregunta y el cliente del SDK no se crea."""
     fake = FakeLangfuseClient()
     factory = FakeLangfuseClientFactory(fake)
-    app = FakeApp({**config, "LANGFUSE_BASE_URL": "https://us.cloud.langfuse.com", "OBSERVABILITY_ENVIRONMENT": "development"})
+    app = FakeApp(
+        {
+            **config,
+            "LANGFUSE_BASE_URL": "https://us.cloud.langfuse.com",
+            "OBSERVABILITY_ENVIRONMENT": "development",
+        }
+    )
     tracer = Tracer(client_factory=factory, propagate_attributes=fake.propagate_attributes)
     tracer.init_app(app)
     service, _, _, _ = make_service(tracer=tracer)
@@ -570,7 +613,7 @@ JWT = "eyJhbGciOiJSUzI1NiJ9.eyJpZCI6IjQyIn0.firma-de-prueba"
 
 # SDD: NFR-001 AC-N001.1
 def test_trace_contains_only_the_internal_user_id_and_no_personal_data():
-    """Ningun campo de la traza contiene email, nombre ni token; el usuario es
+    """Ningún campo de la traza contiene email, nombre ni token; el usuario es
     solo su ID interno."""
     service, backend, _, _ = make_service()
 
@@ -603,7 +646,9 @@ def test_trace_never_contains_provider_or_langfuse_credentials(fails):
         client_factory=FakeLangfuseClientFactory(fake),
         propagate_attributes=fake.propagate_attributes,
     )
-    sdk_service, _, _, _ = make_service(llm=llm, tracer=Tracer(backend=adapter, logger=FakeLogger()))
+    sdk_service, _, _, _ = make_service(
+        llm=llm, tracer=Tracer(backend=adapter, logger=FakeLogger())
+    )
 
     for service in (memory_service, sdk_service):
         try:
@@ -611,7 +656,10 @@ def test_trace_never_contains_provider_or_langfuse_credentials(fails):
         except ServiceUnavailableError:
             assert fails
 
-    dumped = json.dumps(dataclasses.asdict(memory_backend.traces[0]), default=str) + fake.serialized_calls()
+    dumped = (
+        json.dumps(dataclasses.asdict(memory_backend.traces[0]), default=str)
+        + fake.serialized_calls()
+    )
     for key in keys:
         assert key not in dumped
 
@@ -633,8 +681,8 @@ def make_langfuse_tracer(fake):
 
 # SDD: NFR-002 AC-N002.1
 def test_a_slow_langfuse_export_does_not_delay_the_answer_and_never_flushes():
-    """Con un cliente cuya exportacion tarda 3 s la respuesta llega en menos
-    de 0,5 s y la peticion nunca llama a flush()."""
+    """Con un cliente cuya exportación tarda 3 s la respuesta llega en menos
+    de 0,5 s y la petición nunca llama a flush()."""
     fake = FakeLangfuseClient(flush_delay_seconds=3)
     service, _, _, _ = make_service(tracer=make_langfuse_tracer(fake))
 
@@ -656,7 +704,10 @@ def test_a_destination_that_fails_instantly_does_not_delay_the_answer():
     failing_backend = FakeTraceBackend(raise_error=RuntimeError("caido"))
     failing_client = FakeLangfuseClient(raise_error=RuntimeError("caido"))
 
-    for tracer in (Tracer(backend=failing_backend, logger=FakeLogger()), make_langfuse_tracer(failing_client)):
+    for tracer in (
+        Tracer(backend=failing_backend, logger=FakeLogger()),
+        make_langfuse_tracer(failing_client),
+    ):
         service, _, _, _ = make_service(tracer=tracer)
         started = time.perf_counter()
         answer = service.ask("Pregunta", user_id=42)

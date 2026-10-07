@@ -34,7 +34,7 @@ class LLMClient:
     def generate(self, system_prompt: str, messages: list[dict], max_tokens: int = 2048) -> str | None:
         return self.generate_with_usage(system_prompt, messages, max_tokens).text
 
-    #Igual que generate(), pero devuelve tambien los tokens de entrada y salida.
+    #Igual que generate(), pero devuelve también los tokens de entrada y salida.
     def generate_with_usage(
         self, system_prompt: str, messages: list[dict], max_tokens: int = 2048
     ) -> GenerationResult:

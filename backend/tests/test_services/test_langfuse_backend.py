@@ -1,6 +1,6 @@
 """Adaptador del SDK de Langfuse (utils/langfuse_backend.py), probado con un
 cliente del SDK de mentira inyectado por `client_factory` y
-`propagate_attributes`. Ningun test importa el paquete `langfuse` ni usa la red.
+`propagate_attributes`. Ningún test importa el paquete `langfuse` ni usa la red.
 """
 
 import re
@@ -42,8 +42,8 @@ def methods(obs):
 
 # SDD: REQ-001 AC-001.1
 def test_root_observation_is_created_with_user_and_trace_name_active():
-    """La raiz `coach-ask` se crea con `start_observation` y, en ese momento,
-    `user_id` y `trace_name` estan activos en el contexto."""
+    """La raíz `coach-ask` se crea con `start_observation` y, en ese momento,
+    `user_id` y `trace_name` están activos en el contexto."""
     backend, fake, _ = make_backend()
 
     backend.start_trace("coach-ask", "42", "¿Cuántas series hago?")
@@ -57,7 +57,7 @@ def test_root_observation_is_created_with_user_and_trace_name_active():
 # SDD: REQ-001 AC-001.1
 def test_finish_updates_the_root_output_and_ends_it_without_deprecated_trace_calls():
     """Al cerrar, `root.update(output=...)` y `root.end()`; nunca `update_trace`
-    ni `set_trace_io` (el fake de la observacion ni los tiene)."""
+    ni `set_trace_io` (el fake de la observación ni los tiene)."""
     backend, fake, _ = make_backend()
     trace = backend.start_trace("coach-ask", "42", "pregunta")
 
@@ -72,7 +72,7 @@ def test_finish_updates_the_root_output_and_ends_it_without_deprecated_trace_cal
 
 # SDD: REQ-002 AC-002.1
 def test_embedding_step_is_a_generation_child_of_the_root_with_input_and_model():
-    """El paso `embedding` se crea desde la raiz como `generation`, con
+    """El paso `embedding` se crea desde la raíz como `generation`, con
     entrada y modelo."""
     backend, fake, _ = make_backend()
     trace = backend.start_trace("coach-ask", "42", "pregunta")
@@ -99,21 +99,30 @@ def test_span_step_without_model_does_not_pass_the_model_argument():
     trace.start_step("retrieval", "span", {"limit": 5, "threshold": 0.7})
 
     step = fake.observations[1]
-    assert step.kwargs == {"name": "retrieval", "as_type": "span", "input": {"limit": 5, "threshold": 0.7}}
+    assert step.kwargs == {
+        "name": "retrieval",
+        "as_type": "span",
+        "input": {"limit": 5, "threshold": 0.7},
+    }
 
 
 # SDD: REQ-004 AC-004.1
 def test_step_end_updates_output_and_usage_details_then_ends():
-    """Al cerrar un paso se llama `update(output, usage_details)` y despues
+    """Al cerrar un paso se llama `update(output, usage_details)` y después
     `end()`."""
     backend, fake, _ = make_backend()
     trace = backend.start_trace("coach-ask", "42", "pregunta")
-    step = trace.start_step("generation", "generation", [{"role": "user", "content": "hola"}], "claude-sonnet-5")
+    step = trace.start_step(
+        "generation", "generation", [{"role": "user", "content": "hola"}], "claude-sonnet-5"
+    )
 
     step.end("Haz 3 series de 10.", {"input": 850, "output": 40})
 
     obs = fake.observations[1]
-    assert obs.calls[0] == ("update", {"output": "Haz 3 series de 10.", "usage_details": {"input": 850, "output": 40}})
+    assert obs.calls[0] == (
+        "update",
+        {"output": "Haz 3 series de 10.", "usage_details": {"input": 850, "output": 40}},
+    )
     assert methods(obs)[-1] == "end"
 
 
@@ -132,7 +141,10 @@ def test_step_end_only_passes_the_fields_that_are_not_none():
     other = trace.start_step("retrieval", "span", {"limit": 5})
     other.end({"candidates": [], "passed_count": 0}, None)
 
-    assert fake.observations[2].calls[0] == ("update", {"output": {"candidates": [], "passed_count": 0}})
+    assert fake.observations[2].calls[0] == (
+        "update",
+        {"output": {"candidates": [], "passed_count": 0}},
+    )
 
 
 # SDD: REQ-007 AC-007.1
@@ -145,7 +157,10 @@ def test_failed_step_is_updated_with_error_level_and_status_message_then_ended()
     step.fail("RuntimeError: overloaded")
 
     obs = fake.observations[1]
-    assert obs.calls[0] == ("update", {"level": "ERROR", "status_message": "RuntimeError: overloaded"})
+    assert obs.calls[0] == (
+        "update",
+        {"level": "ERROR", "status_message": "RuntimeError: overloaded"},
+    )
     assert methods(obs)[-1] == "end"
 
 
@@ -158,19 +173,23 @@ def test_categorical_score_goes_through_score_trace_on_the_root():
     trace.add_score("outcome", "answered", "CATEGORICAL")
 
     root = fake.observations[0]
-    assert root.calls == [("score_trace", {"name": "outcome", "value": "answered", "data_type": "CATEGORICAL"})]
+    assert root.calls == [
+        ("score_trace", {"name": "outcome", "value": "answered", "data_type": "CATEGORICAL"})
+    ]
 
 
 # SDD: REQ-006 AC-006.1
 def test_numeric_score_goes_through_score_trace_on_the_root():
-    """`best_chunk_distance` se envia como puntuacion numerica."""
+    """`best_chunk_distance` se envía como puntuación numérica."""
     backend, fake, _ = make_backend()
     trace = backend.start_trace("coach-ask", "42", "pregunta")
 
     trace.add_score("best_chunk_distance", 0.35, "NUMERIC")
 
     root = fake.observations[0]
-    assert root.calls == [("score_trace", {"name": "best_chunk_distance", "value": 0.35, "data_type": "NUMERIC"})]
+    assert root.calls == [
+        ("score_trace", {"name": "best_chunk_distance", "value": 0.35, "data_type": "NUMERIC"})
+    ]
 
 
 # SDD: REQ-008 AC-008.2
@@ -194,14 +213,16 @@ def test_attribute_context_is_closed_after_every_adapter_call():
     assert len(enters) == len(exits) == 2
     for obs in fake.observations:
         # Solo las llamadas update/score_trace/end; start_observation corre dentro del with.
-        later = [a for (name, _), a in zip(obs.calls, obs.active_at_calls) if name != "start_observation"]
+        later = [
+            a for (name, _), a in zip(obs.calls, obs.active_at_calls) if name != "start_observation"
+        ]
         assert all(a == {} for a in later)
 
 
 # SDD: REQ-008 AC-008.2
 def test_attribute_context_is_restored_when_creating_the_root_fails():
     """Si `start_observation` lanza dentro del `with`, el contexto se restaura
-    y la excepcion sube a quien llama."""
+    y la excepción sube a quien llama."""
     backend, fake, _ = make_backend(FakeLangfuseClient(raise_error=RuntimeError("sdk roto")))
 
     with pytest.raises(RuntimeError):
@@ -271,11 +292,13 @@ def test_client_creation_is_safe_with_concurrent_threads():
 # SDD: NFR-001 AC-N001.2
 def test_no_recorded_call_contains_any_credential_and_baggage_is_never_enabled():
     """Ninguna llamada al SDK contiene las claves de Langfuse, Voyage o
-    Anthropic (las de Langfuse solo van a la factoria) y `propagate_attributes`
+    Anthropic (las de Langfuse solo van a la factoría) y `propagate_attributes`
     nunca recibe `as_baggage=True`."""
     backend, fake, factory = make_backend()
     trace = backend.start_trace("coach-ask", "42", "¿Cuántas series hago?")
-    step = trace.start_step("generation", "generation", [{"role": "user", "content": "hola"}], "claude-sonnet-5")
+    step = trace.start_step(
+        "generation", "generation", [{"role": "user", "content": "hola"}], "claude-sonnet-5"
+    )
     step.fail("RuntimeError: overloaded")
     trace.add_score("outcome", "error", "CATEGORICAL")
     trace.finish("")
@@ -293,8 +316,8 @@ def test_no_recorded_call_contains_any_credential_and_baggage_is_never_enabled()
 
 # SDD: REQ-008 AC-008.5
 def test_sdk_errors_behind_a_tracer_become_the_warning_and_never_propagate():
-    """Con un cliente del SDK que lanza en cada llamada, detras de un `Tracer`
-    la excepcion se convierte en el aviso y la traza queda nula."""
+    """Con un cliente del SDK que lanza en cada llamada, detrás de un `Tracer`
+    la excepción se convierte en el aviso y la traza queda nula."""
     logger = FakeLogger()
     backend, _, _ = make_backend(FakeLangfuseClient(raise_error=RuntimeError("secreto-sk-lf-123")))
     tracer = Tracer(backend=backend, logger=logger)
@@ -308,7 +331,7 @@ def test_sdk_errors_behind_a_tracer_become_the_warning_and_never_propagate():
 
 # SDD: NFR-003 AC-N003.1
 def test_no_test_in_the_suite_imports_the_langfuse_package():
-    """Ningun archivo de test importa `langfuse` y el paquete no esta cargado
+    """Ningún archivo de test importa `langfuse` y el paquete no está cargado
     durante la suite (el adaptador solo usa el cliente de mentira)."""
     pattern = re.compile(r"^\s*(?:import|from)\s+langfuse(?:\s|\.|$)", re.MULTILINE)
     tests_dir = Path(__file__).resolve().parents[1]

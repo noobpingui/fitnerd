@@ -83,9 +83,9 @@ class _FakeBackendTrace:
 
 class FakeTraceBackend:
     """Doble del backend de trazas (puerto de utils/tracing.py): registra en
-    memoria cada traza, paso y puntuacion. Si `raise_error` tiene valor (se
+    memoria cada traza, paso y puntuación. Si `raise_error` tiene valor (se
     puede cambiar a mitad del test), TODAS sus operaciones lo lanzan, para
-    simular un destino que falla en cada envio. `clock` es opcional: un
+    simular un destino que falla en cada envío. `clock` es opcional: un
     invocable que devuelve la hora; sin el se usa la hora real."""
 
     def __init__(self, clock=None, raise_error=None):
@@ -108,7 +108,7 @@ class FakeTraceBackend:
 
 
 class FakeLangfuseObservation:
-    """Doble de la observacion del SDK langfuse 4.17: solo implementa
+    """Doble de la observación del SDK langfuse 4.17: solo implementa
     `start_observation`, `update`, `score_trace` y `end`. A proposito NO
     tiene `update_trace` ni `set_trace_io`: si el adaptador los llamara, el
     test fallaria con AttributeError."""
@@ -160,12 +160,12 @@ class _FakePropagateContext:
 
 
 class FakeLangfuseClient:
-    """Doble del cliente `Langfuse` del SDK 4.17 (solo la API publica que usa
+    """Doble del cliente `Langfuse` del SDK 4.17 (solo la API pública que usa
     el adaptador). `active_attributes` imita el contexto de OpenTelemetry
-    (uno por hilo): cada observacion guarda una copia al crearse, igual que
+    (uno por hilo): cada observación guarda una copia al crearse, igual que
     el procesador de spans del SDK en `on_start`. `calls` guarda
-    `(objeto, metodo, kwargs)` en orden. `flush()` y `shutdown()`
-    representan la exportacion por red: esperan `flush_delay_seconds`."""
+    `(objeto, método, kwargs)` en orden. `flush()` y `shutdown()`
+    representan la exportación por red: esperan `flush_delay_seconds`."""
 
     def __init__(self, raise_error=None, flush_delay_seconds=0):
         self.raise_error = raise_error
@@ -215,7 +215,7 @@ class FakeLangfuseClient:
 
 class FakeLangfuseClientFactory:
     """Invocable que reemplaza a `Langfuse(...)`: guarda en `calls` los kwargs
-    con los que se pidio el cliente y devuelve `client`. `delay_seconds`
+    con los que se pidió el cliente y devuelve `client`. `delay_seconds`
     ensancha la ventana de una posible carrera entre hilos."""
 
     def __init__(self, client, delay_seconds=0):
@@ -242,7 +242,7 @@ class FakeApp:
 class FakeObservableRetrievalService:
     """Doble de RetrievalService para los tests de observabilidad del coach:
     `candidates` (lista de {"video_title", "chunk_text", "distance"}) es lo
-    que devuelve la busqueda sin filtrar; `embed_error` y `search_error`
+    que devuelve la búsqueda sin filtrar; `embed_error` y `search_error`
     simulan fallas de Voyage y de la busqueda."""
 
     def __init__(
@@ -284,7 +284,14 @@ class FakeAnthropicClient:
     respuesta con `content`, `usage` y `stop_reason` configurables, y guarda
     en `calls` los kwargs de cada llamada. Nunca toca la red."""
 
-    def __init__(self, text="Haz 3 series de 10.", input_tokens=850, output_tokens=40, stop_reason="end_turn", content=None):
+    def __init__(
+        self,
+        text="Haz 3 series de 10.",
+        input_tokens=850,
+        output_tokens=40,
+        stop_reason="end_turn",
+        content=None,
+    ):
         if content is None:
             content = [SimpleNamespace(type="text", text=text)] if text is not None else []
         self.response = SimpleNamespace(
@@ -339,7 +346,7 @@ class FakeEmbeddingClient:
 class FakeTranscriptChunkRepository:
     """Doble de TranscriptChunkRepository: `rows` es una lista de
     (chunk_text, video_title, distance); `find_similar` devuelve filas
-    `(chunk, titulo, distancia)` respetando `limit`."""
+    `(chunk, título, distancia)` respetando `limit`."""
 
     def __init__(self, rows=None):
         self.rows = rows if rows is not None else []

@@ -1,6 +1,6 @@
 """Puerto de trazas (utils/tracing.py): recorders autoprotegidos, recorder
-nulo, `format_error` y activacion del `Tracer` por configuracion. Todo con
-fakes: ningun test importa ni llama al SDK real de Langfuse.
+nulo, `format_error` y activación del `Tracer` por configuración. Todo con
+fakes: ningún test importa ni llama al SDK real de Langfuse.
 """
 
 import pytest
@@ -51,7 +51,7 @@ def test_format_error_includes_type_and_message_and_trims_to_200_characters():
 
 # SDD: REQ-008 AC-008.2
 def test_safe_recorder_records_normally_when_the_backend_works():
-    """Con un backend sano el recorder reenvia pasos, puntuaciones y cierre."""
+    """Con un backend sano el recorder reenvía pasos, puntuaciones y cierre."""
     recorder, backend, logger = make_recorder()
 
     step = recorder.start_step("embedding", "generation", "pregunta", "voyage-test")
@@ -84,7 +84,7 @@ def test_safe_recorder_never_propagates_backend_errors():
 # SDD: REQ-008 AC-008.5
 def test_safe_recorder_warns_once_with_only_the_exception_type_and_then_goes_inert():
     """El primer fallo registra un aviso con solo el nombre del tipo de la
-    excepcion; despues la traza queda inerte y no vuelve a avisar."""
+    excepción; después la traza queda inerte y no vuelve a avisar."""
     recorder, backend, logger = make_recorder()
     backend.raise_error = BOOM
 
@@ -125,7 +125,7 @@ def test_safe_step_handle_swallows_errors_and_warns_once():
 
 # SDD: REQ-007 AC-007.1
 def test_safe_step_handle_fail_formats_the_exception_for_the_backend():
-    """`fail(exc)` recibe la excepcion y entrega al backend tipo y mensaje."""
+    """`fail(exc)` recibe la excepción y entrega al backend tipo y mensaje."""
     recorder, backend, _ = make_recorder()
     step = recorder.start_step("generation", "generation", [], "claude-sonnet-5")
 
@@ -176,7 +176,7 @@ def test_null_recorder_has_no_effects_and_never_raises():
     assert isinstance(step, NullStepHandle)
 
 
-# --- Activacion por configuracion (REQ-009 / REQ-010) -------------------------
+# --- Activación por configuración (REQ-009 / REQ-010) -------------------------
 
 
 def make_config(**overrides):

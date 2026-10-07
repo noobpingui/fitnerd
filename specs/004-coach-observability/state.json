@@ -11,7 +11,7 @@
   "branch": "feat/004-coach-observability",
   "base_branch": "main",
   "created_at": "2026-10-07T04:01:00.113Z",
-  "stage": "implement",
+  "stage": "review",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
@@ -34,8 +34,14 @@
       "at": "2026-10-07T06:11:46.846Z",
       "note": "1,2: Aprobado"
     },
-    "verify": null,
-    "review": null,
+    "verify": {
+      "at": "2026-10-07T06:42:06.265Z",
+      "note": "Si apruebo cerrar la etapa pero primero borra el usuario de prueba en la bd local."
+    },
+    "review": {
+      "at": "2026-10-07T07:52:01.074Z",
+      "note": "1,2: Si"
+    },
     "docs": null,
     "close": null
   },
@@ -43,12 +49,13 @@
     "spec": "252c418",
     "plan": "d52b313",
     "tasks": "13300d2",
-    "tests": "cf6649b"
+    "tests": "cf6649b",
+    "implement": "54ae3ca"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 1,
     "implement": 0,
-    "review": 0
+    "review": 1
   },
   "max_iterations": 3,
   "red_check": {
@@ -56,12 +63,12 @@
     "at": "2026-10-07T06:01:40.250Z"
   },
   "verify": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-07T07:39:39.520Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-10-07T07:42:25.175Z"
   },
   "bypass": false,
   "history": [
@@ -268,22 +275,166 @@
       "stage": "implement",
       "event": "approved",
       "note": "Etapa implement y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-07T06:11:47.051Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "54ae3ca Implement 004-coach-observability"
+    },
+    {
+      "at": "2026-10-07T06:11:47.052Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier (modo full)"
+    },
+    {
+      "at": "2026-10-07T06:14:22.738Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify FAIL: 30 violaciones nuevas de ruff (E501/I001), todas en archivos de test; producción limpia; 236 passed; trazabilidad completa"
+    },
+    {
+      "at": "2026-10-07T06:14:22.738Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Corrección de ruff en tests asignada al test-author (iterations.tests=1); solo formato, sin cambiar aserciones"
+    },
+    {
+      "at": "2026-10-07T06:15:44.388Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "test-author: solo formato (ruff). AST idéntico salvo orden de imports en conftest.py y test_coach_observability.py; mismos asserts/SDD/tests; 236 passed; ruff-new OK"
+    },
+    {
+      "at": "2026-10-07T06:15:44.388Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "tests_snapshot actualizado como cambio autorizado (formato ruff): backend/tests/conftest.py, backend/tests/fakes_observability.py, backend/tests/test_services/test_coach_observability.py, backend/tests/test_services/test_langfuse_backend.py, backend/tests/test_services/test_embedding_client.py, backend/tests/test_services/test_retrieval_service.py"
+    },
+    {
+      "at": "2026-10-07T06:15:44.390Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier (modo full, iteración 2)"
+    },
+    {
+      "at": "2026-10-07T06:17:50.298Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS (iteración 2): 236 passed, ruff-new OK, trazabilidad 42/42"
+    },
+    {
+      "at": "2026-10-07T06:42:06.265Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "Etapa verify aprobada. Prueba manual con Langfuse Cloud real OK: 3 trazas completas, costes, 6 puntuaciones, user_id interno, entorno development. Usuario de prueba local borrado"
+    },
+    {
+      "at": "2026-10-07T06:42:06.266Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado al reviewer (iteración 1)"
+    },
+    {
+      "at": "2026-10-07T06:45:37.910Z",
+      "stage": "review",
+      "event": "done",
+      "note": "reviewer APPROVED: 0 bloqueantes, 0 mayores, 4 menores (F1-F4), 4 nits (F5-F8)"
+    },
+    {
+      "at": "2026-10-07T07:35:13.846Z",
+      "stage": "review",
+      "event": "changes_requested",
+      "note": "Usuario elige (a): corregir F1 (implementer), F2 (test-author), F5 (planner); F3/F4 al backlog; F6-F8 aceptados. Descartado cambio ajeno en CLAUDE.md (línea vacía)"
+    },
+    {
+      "at": "2026-10-07T07:35:13.847Z",
+      "stage": "plan",
+      "event": "rework",
+      "note": "F5: solo el estado de ADR-0017 (Propuesta -> Aceptada), aprobado con el plan; no reabre el contenido del plan ni sus aprobaciones"
+    },
+    {
+      "at": "2026-10-07T07:35:47.550Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "F5 corregido: ADR-0017 Aceptada; plan.md sin cambios"
+    },
+    {
+      "at": "2026-10-07T07:35:47.551Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "F1: tildes en comentarios nuevos (implementer)"
+    },
+    {
+      "at": "2026-10-07T07:36:28.308Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F1 corregido: solo comentarios (AST idéntico); 236 passed; ruff-new OK"
+    },
+    {
+      "at": "2026-10-07T07:36:28.309Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "F2: tildes en docstrings/comentarios de tests (test-author); cambio de snapshot autorizado"
+    },
+    {
+      "at": "2026-10-07T07:38:24.747Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "F2 corregido: solo docstrings/comentarios (AST igual a HEAD salvo docstrings y orden de imports); 236 passed; ruff-new OK"
+    },
+    {
+      "at": "2026-10-07T07:38:24.747Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "tests_snapshot actualizado como cambio autorizado (F2 tildes): 8 archivos"
+    },
+    {
+      "at": "2026-10-07T07:38:24.749Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier (modo full) tras correcciones F1/F2/F5"
+    },
+    {
+      "at": "2026-10-07T07:40:57.255Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS tras correcciones de review (236 passed, ruff OK, 42/42)"
+    },
+    {
+      "at": "2026-10-07T07:40:57.255Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado al reviewer (iteración 2)"
+    },
+    {
+      "at": "2026-10-07T07:42:25.175Z",
+      "stage": "review",
+      "event": "done",
+      "note": "reviewer APPROVED (iteración 2): F1, F2, F5 resueltos; 0 hallazgos nuevos; F3/F4 al backlog; F6-F8 aceptados"
+    },
+    {
+      "at": "2026-10-07T07:52:01.074Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Etapa review y commit aprobados por el usuario"
     }
   ],
   "tests_snapshot": {
-    "at": "2026-10-07T06:04:32.631Z",
+    "at": "2026-10-07T07:38:24.747Z",
     "sha256": {
-      "backend/tests/conftest.py": "fc29dbd6a24de122d45a5252d369268a929607c1c4d31a704909fa40e4d6e3f9",
+      "backend/tests/conftest.py": "a1fd17e9a0a189900952773eea78d30018128ed2e2c0f31426e01e3e6f0fd0cb",
       "backend/tests/fakes.py": "138c61ff6569610fd49364b34bfd5445720054ced517be10ae688bda419fdeb6",
-      "backend/tests/fakes_observability.py": "b184ad7853d6313b5855238dae624ee261195370fe1be0d108b32f0d83fc5b9d",
-      "backend/tests/test_routes/test_coach_routes.py": "2bca839bffb234d29c9eaeb76b5673866403246e13e9fc478a7ef3670c0412c5",
-      "backend/tests/test_services/test_coach_observability.py": "15a61eb00390f6cf096f51f8ca5915b24b05db80002f8ef8e84b4efa8ba6b383",
-      "backend/tests/test_services/test_tracer.py": "045b802f1a599607de6a0ed028902d3108543d070779ef603fe12f77db0c5aac",
-      "backend/tests/test_services/test_langfuse_backend.py": "edb7eb57e5d2df12a4c7026888a7d4ec258506b4b5009467b6f31622180e7dc9",
-      "backend/tests/test_services/test_observability_config.py": "b540944cd764b1a9be895bf21e4a473853007817d362b4d0eb12a6459e33f1bd",
+      "backend/tests/fakes_observability.py": "14bef34005ba5e1085dbd239f3c56f6c1435f18d9576f34b743efb66ffab7d79",
+      "backend/tests/test_routes/test_coach_routes.py": "c01a9df2519db3543568b46595d8528ce55726fb0b49cc609bea259aa4787eb8",
+      "backend/tests/test_services/test_coach_observability.py": "342bd4aebf0d170574866c8f1cb13846be6b38b53955a829d235bd4c9be14c15",
+      "backend/tests/test_services/test_tracer.py": "551b8cd90cfe133b08520daca25604dcb1866cc60e8a3def81d3508d17393e0a",
+      "backend/tests/test_services/test_langfuse_backend.py": "15c141fccea05d93be324ae7ab17205cc537de366e27a3b4b327c011f8490ed8",
+      "backend/tests/test_services/test_observability_config.py": "3255e202d5f6a46ccdb0e166a9418c5aeb08c0470dafad1c106e788e9aebceb5",
       "backend/tests/test_services/test_llm_client.py": "f270c6f4012465802d5ff4f1240993bed9c661f962f7488f3877ea8200114542",
-      "backend/tests/test_services/test_embedding_client.py": "d576451937f455658b71623cbdc64228eb8df3d825b5aaa552a4350906b2af91",
-      "backend/tests/test_services/test_retrieval_service.py": "28968db056c2ad9a032096f5469d6395ce66841fde8b448928addd22918b1d54",
+      "backend/tests/test_services/test_embedding_client.py": "88fc1d4fc30cca3b13f08b8e4c08ee9e7e6564e7048405c14820087d2f3b25c0",
+      "backend/tests/test_services/test_retrieval_service.py": "5d424a0e9a67be18e0ddc5fda69c1a8584f18d2abb52e373bb29bb4a857e02b7",
       "backend/tests/test_services/test_coach_service.py": "10810c163189a82ff51605d3f6d273be5ef5801fe93398818d3112df451fc364"
     }
   }
