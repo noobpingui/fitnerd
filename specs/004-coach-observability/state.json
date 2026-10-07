@@ -11,7 +11,7 @@
   "branch": "feat/004-coach-observability",
   "base_branch": "main",
   "created_at": "2026-10-07T04:01:00.113Z",
-  "stage": "review",
+  "stage": "docs",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
@@ -42,7 +42,10 @@
       "at": "2026-10-07T07:52:01.074Z",
       "note": "1,2: Si"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-07T07:53:40.509Z",
+      "note": "1,2: Si"
+    },
     "close": null
   },
   "commits": {
@@ -50,7 +53,8 @@
     "plan": "d52b313",
     "tasks": "13300d2",
     "tests": "cf6649b",
-    "implement": "54ae3ca"
+    "implement": "54ae3ca",
+    "review": "9e551c6"
   },
   "iterations": {
     "tests": 1,
@@ -419,6 +423,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Etapa review y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-07T07:52:01.296Z",
+      "stage": "review",
+      "event": "commit",
+      "note": "9e551c6 Add review for 004-coach-observability"
+    },
+    {
+      "at": "2026-10-07T07:52:01.297Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegado al doc-keeper (iteración 1)"
+    },
+    {
+      "at": "2026-10-07T07:52:37.659Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "doc-keeper DONE: README paso 6 Observability, CLAUDE.md (fila coach + nota de despliegue Langfuse), docs-report con F3/F4 al backlog"
+    },
+    {
+      "at": "2026-10-07T07:53:40.509Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "Etapa docs y commit aprobados por el usuario"
     }
   ],
   "tests_snapshot": {
