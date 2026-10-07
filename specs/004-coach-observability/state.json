@@ -11,7 +11,7 @@
   "branch": "feat/004-coach-observability",
   "base_branch": "main",
   "created_at": "2026-10-07T04:01:00.113Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
@@ -26,7 +26,10 @@
       "at": "2026-10-07T05:50:25.565Z",
       "note": "1,2: Aprobado"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-07T06:04:32.631Z",
+      "note": "1,2: Aprobado"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -35,7 +38,8 @@
   },
   "commits": {
     "spec": "252c418",
-    "plan": "d52b313"
+    "plan": "d52b313",
+    "tasks": "13300d2"
   },
   "iterations": {
     "tests": 0,
@@ -44,8 +48,8 @@
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-07T06:01:40.250Z"
   },
   "verify": {
     "result": null,
@@ -176,6 +180,65 @@
       "stage": "tasks",
       "event": "approved",
       "note": "Etapa tasks y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-07T05:50:25.701Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "13300d2 Add tasks for 004-coach-observability"
+    },
+    {
+      "at": "2026-10-07T05:50:25.702Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Delegado al implementer en modo scaffold (T-001..T-005)"
+    },
+    {
+      "at": "2026-10-07T05:51:30.616Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Scaffold corregido: los esqueletos Python lanzan Exception(\"not implemented\") en vez de NotImplementedError (constitución Art. 5.7). Reenviado al implementer (scaffold). Restaurados email_sender.py y jwt_utils.py (solo finales de línea)"
+    },
+    {
+      "at": "2026-10-07T05:51:58.760Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Scaffold T-001..T-005 listo (NotImplementedError, imports OK). Delegado al test-author"
+    },
+    {
+      "at": "2026-10-07T05:59:07.185Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "test-author DONE (~95 tests nuevos). Postgres levantado a petición del usuario. Delegado al verifier (modo red)"
+    },
+    {
+      "at": "2026-10-07T06:03:01.512Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS: 96 fallos legítimos en archivos nuevos; 140 pasan (suite previa intacta + regresión T-049/T-050/T-053 + AC-001.3)"
+    },
+    {
+      "at": "2026-10-07T06:04:32.631Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "Etapa tests y commit aprobados; tests_snapshot guardado (12 archivos)"
     }
-  ]
+  ],
+  "tests_snapshot": {
+    "at": "2026-10-07T06:04:32.631Z",
+    "sha256": {
+      "backend/tests/conftest.py": "fc29dbd6a24de122d45a5252d369268a929607c1c4d31a704909fa40e4d6e3f9",
+      "backend/tests/fakes.py": "138c61ff6569610fd49364b34bfd5445720054ced517be10ae688bda419fdeb6",
+      "backend/tests/fakes_observability.py": "b184ad7853d6313b5855238dae624ee261195370fe1be0d108b32f0d83fc5b9d",
+      "backend/tests/test_routes/test_coach_routes.py": "2bca839bffb234d29c9eaeb76b5673866403246e13e9fc478a7ef3670c0412c5",
+      "backend/tests/test_services/test_coach_observability.py": "15a61eb00390f6cf096f51f8ca5915b24b05db80002f8ef8e84b4efa8ba6b383",
+      "backend/tests/test_services/test_tracer.py": "045b802f1a599607de6a0ed028902d3108543d070779ef603fe12f77db0c5aac",
+      "backend/tests/test_services/test_langfuse_backend.py": "edb7eb57e5d2df12a4c7026888a7d4ec258506b4b5009467b6f31622180e7dc9",
+      "backend/tests/test_services/test_observability_config.py": "b540944cd764b1a9be895bf21e4a473853007817d362b4d0eb12a6459e33f1bd",
+      "backend/tests/test_services/test_llm_client.py": "f270c6f4012465802d5ff4f1240993bed9c661f962f7488f3877ea8200114542",
+      "backend/tests/test_services/test_embedding_client.py": "d576451937f455658b71623cbdc64228eb8df3d825b5aaa552a4350906b2af91",
+      "backend/tests/test_services/test_retrieval_service.py": "28968db056c2ad9a032096f5469d6395ce66841fde8b448928addd22918b1d54",
+      "backend/tests/test_services/test_coach_service.py": "10810c163189a82ff51605d3f6d273be5ef5801fe93398818d3112df451fc364"
+    }
+  }
 }

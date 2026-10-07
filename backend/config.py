@@ -7,6 +7,15 @@ from dotenv import load_dotenv
 
 load_dotenv() #To load the variables from the .env file
 
+
+def resolve_langfuse_base_url(_value):
+    raise NotImplementedError("not implemented")
+
+
+def observability_enabled(_config):
+    raise NotImplementedError("not implemented")
+
+
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "DEFAULT SECRET")
     SQLALCHEMY_TRACK_MODIFICATIONS = False

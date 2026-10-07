@@ -9,7 +9,7 @@ cliente HTTP falso, etc.
 import pytest
 
 from app import create_app
-from extensions import db as _db, jwt_manager as _jwt_manager, email_sender as _email_sender
+from extensions import db as _db, jwt_manager as _jwt_manager, email_sender as _email_sender, tracer as _tracer
 
 
 @pytest.fixture(scope="session")
@@ -154,3 +154,13 @@ def _clear_email_outbox():
     _email_sender.transport = InMemoryTransport()
     yield
     _email_sender.transport = InMemoryTransport()
+
+
+@pytest.fixture(autouse=True)
+def _reset_tracer_backend():
+    """Deja `extensions.tracer.backend = None` antes y despues de cada test
+    (observabilidad inactiva por defecto), para que un backend de trazas que
+    un test de integracion instale en el singleton no se filtre al siguiente."""
+    _tracer.backend = None
+    yield
+    _tracer.backend = None

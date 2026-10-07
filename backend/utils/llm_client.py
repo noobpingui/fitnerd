@@ -1,4 +1,13 @@
+from dataclasses import dataclass
+
 import anthropic
+
+
+@dataclass
+class GenerationResult:
+    text: str | None
+    input_tokens: int | None
+    output_tokens: int | None
 
 
 #Envoltorio sobre el SDK de Anthropic - aisla al resto de la app de su forma especifica
@@ -36,3 +45,6 @@ class LLMClient:
             return None
 
         return next((block.text for block in response.content if block.type == "text"), "")
+
+    def generate_with_usage(self, _system_prompt: str, _messages: list[dict], _max_tokens: int = 2048) -> GenerationResult:
+        raise NotImplementedError("not implemented")

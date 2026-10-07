@@ -24,10 +24,22 @@ class FakeLLMClient:
     falla real del proveedor. `calls` queda para poder afirmar CUANTAS
     veces (o si) se llego a llamar - clave para probar que un
     short-circuit (rate limit, sin contexto, etc.) evita gastar una
-    llamada real."""
-    def __init__(self, answer="Respuesta de mentira, sin tocar Anthropic", raise_error=None):
+    llamada real. `answer=None` simula un rechazo por seguridad.
+    `input_tokens`, `output_tokens` y `model` alimentan a
+    `generate_with_usage` (observabilidad del coach)."""
+    def __init__(
+        self,
+        answer="Respuesta de mentira, sin tocar Anthropic",
+        raise_error=None,
+        input_tokens=0,
+        output_tokens=0,
+        model="fake-model",
+    ):
         self.answer = answer
         self.raise_error = raise_error
+        self.input_tokens = input_tokens
+        self.output_tokens = output_tokens
+        self.model = model
         self.calls = []
 
     def generate(self, system_prompt, messages):
@@ -35,6 +47,14 @@ class FakeLLMClient:
         if self.raise_error:
             raise self.raise_error
         return self.answer
+
+    def generate_with_usage(self, system_prompt, messages, max_tokens=2048):
+        from utils.llm_client import GenerationResult
+
+        self.calls.append((system_prompt, messages))
+        if self.raise_error:
+            raise self.raise_error
+        return GenerationResult(self.answer, self.input_tokens, self.output_tokens)
 
 
 class FakeRateLimiter:

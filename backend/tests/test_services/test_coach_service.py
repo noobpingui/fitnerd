@@ -21,6 +21,29 @@ class FakeRetrievalService:
         self.calls.append(query)
         return self.chunks
 
+    # Metodos nuevos (feature 004): CoachService ahora separa embedding,
+    # candidatos y umbral. Se traducen a partir de `chunks` para no cambiar
+    # ninguna asercion de los tests existentes.
+    embedding_model = "fake-embedding-model"
+    max_distance = 0.7
+
+    def embed(self, text):
+        self.calls.append(text)
+        return [0.0], None
+
+    def find_candidates(self, vector, top_k=5):
+        return [
+            {
+                "video_title": chunk.get("video_title", "video de prueba"),
+                "chunk_text": chunk["chunk_text"],
+                "distance": chunk.get("distance", 0.1),
+            }
+            for chunk in self.chunks
+        ]
+
+    def is_relevant(self, candidate):
+        return candidate["distance"] <= self.max_distance
+
 
 def make_service(chunks=None, llm_client=None, rate_limiter_allowed=True):
     retrieval_service = FakeRetrievalService(chunks)
