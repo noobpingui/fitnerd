@@ -122,6 +122,9 @@ class Tracer:
             propagate_attributes=self.propagate_attributes,
         )
 
+    def score_trace(self, trace_id, name, value, data_type, score_id) -> None:
+        raise NotImplementedError("not implemented")
+
     def start_trace(self, name, user_id, input):
         if self.backend is None:
             return NullTraceRecorder()

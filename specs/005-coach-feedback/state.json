@@ -11,7 +11,7 @@
   "branch": "feat/005-coach-feedback",
   "base_branch": "main",
   "created_at": "2026-10-07T20:50:56.619Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
@@ -26,7 +26,10 @@
       "at": "2026-10-08T06:38:19.174Z",
       "note": "1,2 Si"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-08T07:22:03.396Z",
+      "note": "1,2 Si"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -35,17 +38,18 @@
   },
   "commits": {
     "spec": "0f1c0db",
-    "plan": "da2a5e1"
+    "plan": "da2a5e1",
+    "tasks": "7951014"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 1,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-08T07:11:40.696Z"
   },
   "verify": {
     "result": null,
@@ -140,6 +144,99 @@
       "stage": "tasks",
       "event": "commit",
       "note": "Add tasks for 005-coach-feedback"
+    },
+    {
+      "at": "2026-10-08T06:38:19.341Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Delegado al implementer en modo scaffold (T-000..T-005)"
+    },
+    {
+      "at": "2026-10-08T06:39:09.945Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "implementer scaffold DONE: T-000..T-005"
+    },
+    {
+      "at": "2026-10-08T06:39:09.945Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Delegado al test-author"
+    },
+    {
+      "at": "2026-10-08T06:43:43.804Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "test-author DONE: tests backend+frontend (T-010..T-042). Red check pendiente: Docker/Postgres no está levantado"
+    },
+    {
+      "at": "2026-10-08T06:47:44.895Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Postgres y Redis levantados; delegado al verifier en modo red"
+    },
+    {
+      "at": "2026-10-08T06:51:11.738Z",
+      "stage": "tests",
+      "event": "blocked",
+      "note": "Red check FAIL por TypeError en ask_with_feedback(user_id=) vs scaffold _user_id. El orquestador discrepa del responsable propuesto (test-author): Art. 5.7 exige el prefijo _ solo en TypeScript; consulta al usuario"
+    },
+    {
+      "at": "2026-10-08T07:07:40.173Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Usuario elige opción 1: implementer (scaffold) quita el prefijo _ de los parámetros Python. Iteración tests 2/3"
+    },
+    {
+      "at": "2026-10-08T07:08:04.303Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "implementer scaffold (iter 2): prefijo _ eliminado en esqueletos Python"
+    },
+    {
+      "at": "2026-10-08T07:08:04.303Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Delegado al verifier en modo red (iter 2)"
+    },
+    {
+      "at": "2026-10-08T07:11:40.696Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Verifier (iter 2): PASS — 77 fallos backend + 19 frontend, todos legítimos (scaffolds NotImplementedError/Error). 237 tests anteriores aún pasan. Scaffolds Python sin underscore; TypeScript con underscore"
+    },
+    {
+      "at": "2026-10-08T07:13:44.717Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS (iter 2): 77 backend + 19 frontend rojos legítimos; 237 existentes en verde"
+    },
+    {
+      "at": "2026-10-08T07:22:03.396Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "1,2 Si; tests_snapshot guardado (10 archivos)"
+    },
+    {
+      "at": "2026-10-08T07:22:03.396Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "Add failing tests for 005-coach-feedback"
     }
-  ]
+  ],
+  "tests_snapshot": {
+    "at": "2026-10-08T07:22:03.396Z",
+    "sha256": {
+      "backend/tests/fakes.py": "ee47a6032e098b09f621ffccebdd7d49e7633bbbb779b38a83c69b2b80fcc336",
+      "backend/tests/fakes_observability.py": "0ed7347baebf31df570123dfb981077ab53a5743fceb3421b7cf40cf8f3a7cc5",
+      "backend/tests/test_routes/test_coach_feedback_routes.py": "ade7f4b1c120df7fbe8a7bfb4d9053f1b5511d884e655d176ef23f0d5d59c26a",
+      "backend/tests/test_services/test_coach_feedback.py": "d2959673d7b12501a90ac1dd1ad9eaad673e3f3c2b6365573ad163d0c893bd38",
+      "backend/tests/test_services/test_feedback_token.py": "01ebacc7cc81c9f543c5994ad74c776ff9820bf9caf66b607ad8bc15dc6af118",
+      "backend/tests/test_services/test_langfuse_backend.py": "0faf140fb0377f8ddd1916ab7ebf4564204ae0883df3695bb726c3043a47ff3f",
+      "backend/tests/test_services/test_tracer.py": "9d457f9ee1d843c30d0e45a09bacfc10c701f71a51566d610dd5d066a352353b",
+      "frontend/src/features/coach/components/CoachFeedbackButtons.test.tsx": "65e6e5a08f8c33b23882ba577c5992bfa90303166a433896f0d6b74d78812c36",
+      "frontend/src/features/coach/pages/CoachPage.test.tsx": "7bbdf4899b19c1260942c584fb60f3efa3c65e151eca067ae9187097b3638e83",
+      "frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx": "a112f4a38d2ac1f55a4c8e17006033dde0479ea8478ae424fafb0480892619ca"
+    }
+  }
 }

@@ -1,4 +1,5 @@
 import logging
+from dataclasses import dataclass
 
 from services.retrieval_service import DEFAULT_TOP_K, RetrievalService
 from utils.tracing import Tracer
@@ -40,8 +41,15 @@ Reglas de estilo:
   proporcionada dice"."""
 
 
+@dataclass
+class CoachAnswer:
+    answer: str
+    feedback_id: str | None
+
+
 class CoachService:
-    def __init__(self, retrieval_service: RetrievalService, llm_client: LLMClient, rate_limiter: RateLimiter, tracer: Tracer | None = None):
+    def __init__(self, retrieval_service: RetrievalService, llm_client: LLMClient, rate_limiter: RateLimiter, tracer: Tracer | None = None, feedback_signer=None):
+        self.feedback_signer = feedback_signer
         self.retrieval_service = retrieval_service
         self.llm_client = llm_client
         self.rate_limiter = rate_limiter
@@ -171,6 +179,9 @@ Pregunta: {question}"""
         trace.add_score("outcome", outcome, "CATEGORICAL")
         trace.finish(answer)
         return answer
+
+    def ask_with_feedback(self, question: str, user_id: str, history: list[dict] | None = None) -> CoachAnswer:
+        raise NotImplementedError("not implemented")
 
     #Truco barato para que las preguntas de seguimiento cortas ("dame mas detalle",
     #"por que pasa eso") no fallen la busqueda semantica - solas no tienen suficiente

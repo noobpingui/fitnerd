@@ -71,6 +71,23 @@ class FakeRateLimiter:
         return self.allowed
 
 
+class FakeRedisClient:
+    """Doble del cliente de Redis para inyectarlo en un `RateLimiter` real
+    (`limiter.client = FakeRedisClient()`): `incr` cuenta por key en `counts`
+    y `expire` registra cada llamada en `expirations`. Así se prueba la lógica
+    real de la ventana sin Redis."""
+    def __init__(self):
+        self.counts = {}
+        self.expirations = []
+
+    def incr(self, key):
+        self.counts[key] = self.counts.get(key, 0) + 1
+        return self.counts[key]
+
+    def expire(self, key, seconds):
+        self.expirations.append((key, seconds))
+
+
 class FakeEmailSender:
     """Doble de EmailSender (utils/email_sender.py) - guarda en `sent` cada
     correo que el servicio intento enviar (claves to, subject, text, html),

@@ -14,6 +14,13 @@ export type AskCoachPayload = {
   history: ChatMessage[]
 }
 
+export type CoachFeedbackRating = "up" | "down"
+
+export type CoachFeedbackPayload = {
+  feedback_id: string
+  rating: CoachFeedbackRating
+}
+
 export type AskCoachResponse = {
   answer: string
 }

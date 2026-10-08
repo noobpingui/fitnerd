@@ -5,6 +5,7 @@ SDK real de Langfuse.
 
 import json
 import threading
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from types import SimpleNamespace
@@ -41,6 +42,18 @@ class RecordedTrace:
     finished: bool = False
     steps: list = field(default_factory=list)
     scores: list = field(default_factory=list)
+    trace_id: str = field(default_factory=lambda: uuid.uuid4().hex)
+
+
+@dataclass
+class RecordedTraceScore:
+    """Puntuación enviada sobre una traza ya cerrada (feature 005)."""
+
+    trace_id: str
+    name: str
+    value: object
+    data_type: str
+    score_id: str
 
 
 class _FakeBackendStep:
@@ -64,6 +77,7 @@ class _FakeBackendTrace:
     def __init__(self, backend, recorded):
         self._backend = backend
         self.recorded = recorded
+        self.trace_id = recorded.trace_id
 
     def start_step(self, name, kind, input, model=None):
         self._backend._maybe_raise()
@@ -88,10 +102,23 @@ class FakeTraceBackend:
     simular un destino que falla en cada envío. `clock` es opcional: un
     invocable que devuelve la hora; sin el se usa la hora real."""
 
-    def __init__(self, clock=None, raise_error=None):
+    def __init__(self, clock=None, raise_error=None, delay_seconds=0):
         self.clock = clock
         self.raise_error = raise_error
+        self.delay_seconds = delay_seconds
         self.traces = []
+        #Feature 005: todos los envíos de `score_trace` (en orden) y la última
+        #puntuación por `score_id`, para imitar el upsert de Langfuse.
+        self.trace_scores = []
+        self.scores_by_id = {}
+
+    def score_trace(self, trace_id, name, value, data_type, score_id):
+        self._maybe_raise()
+        if self.delay_seconds:
+            threading.Event().wait(self.delay_seconds)
+        score = RecordedTraceScore(trace_id, name, value, data_type, score_id)
+        self.trace_scores.append(score)
+        self.scores_by_id[score_id] = score
 
     def _now(self):
         return self.clock() if self.clock else datetime.now(timezone.utc)
@@ -117,6 +144,8 @@ class FakeLangfuseObservation:
         self.client = client
         self.kwargs = kwargs
         self.parent = parent
+        #32 caracteres hexadecimales, uno por raíz; los hijos comparten el de su raíz.
+        self.trace_id = parent.trace_id if parent is not None else uuid.uuid4().hex
         self.attributes_at_creation = dict(client.active_attributes)
         self.calls = []
         self.active_at_calls = []
@@ -197,6 +226,10 @@ class FakeLangfuseClient:
         self._check_error()
         self.calls.append((self, "start_observation", kwargs))
         return self._create(kwargs)
+
+    def create_score(self, **kwargs):
+        self._check_error()
+        self.calls.append((self, "create_score", kwargs))
 
     def propagate_attributes(self, **kwargs):
         return _FakePropagateContext(self, kwargs)
