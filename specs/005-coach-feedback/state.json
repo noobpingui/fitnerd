@@ -1,0 +1,88 @@
+{
+  "$comment": "Única fuente de verdad del flujo SDD de una feature. Lo escriben solo el orquestador (/sdd-*) y el verifier (secciones red_check y verify). Etapas: spec, plan, tasks, tests, implement, verify, review, docs, close, done.",
+  "schema_version": 1,
+  "feature": "005-coach-feedback",
+  "title": "Valoración 👍/👎 de las respuestas del coach como score en Langfuse",
+  "type": "feature",
+  "scope": {
+    "backend": true,
+    "frontend": true
+  },
+  "branch": "feat/005-coach-feedback",
+  "base_branch": "main",
+  "created_at": "2026-10-07T20:50:56.619Z",
+  "stage": "spec",
+  "status": "awaiting_approval",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-08T05:59:45.093Z",
+      "note": "1,2 Si"
+    },
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
+    "verify": null,
+    "review": null,
+    "docs": null,
+    "close": null
+  },
+  "commits": {},
+  "iterations": {
+    "tests": 0,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": null,
+    "at": null
+  },
+  "verify": {
+    "result": null,
+    "at": null
+  },
+  "review": {
+    "verdict": null,
+    "at": null
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-07T20:50:56.619Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "Feature creada con /sdd-new; incluye arreglo de copy (voseo) fuera de spec, Art. 1.2"
+    },
+    {
+      "at": "2026-10-08T02:39:59.733Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "/sdd-run: delegado al spec-writer. Arreglo de copy (voseo en 429 de coach y progress analysis) aplazado a la etapa implement como commit aparte (Art. 1.2), decisión del usuario: opción 3"
+    },
+    {
+      "at": "2026-10-08T05:58:32.193Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Respuestas del usuario a Q1-Q11 copiadas en spec.md (\"todas como propone el agente\"); reenviado al spec-writer"
+    },
+    {
+      "at": "2026-10-08T05:59:11.592Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec-writer DONE: 13 REQ, 46 AC, 4 NFR; Q1-Q11 resueltas"
+    },
+    {
+      "at": "2026-10-08T05:59:45.093Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "1,2 Si"
+    },
+    {
+      "at": "2026-10-08T05:59:45.093Z",
+      "stage": "spec",
+      "event": "commit",
+      "note": "Add spec for 005-coach-feedback"
+    }
+  ]
+}
