@@ -1,70 +1,54 @@
 # Review 005 — Valoración 👍/👎 de las respuestas del coach como puntuación en Langfuse
 
-- **Iteración:** 1 de 3
-- **Commit / diff revisado:** `git diff main...feat/005-coach-feedback` @ `e27f259` (más los cambios sin commitear de `state.json` y `verify-report.md`, que son del orquestador y del verifier)
+- **Iteración:** 2 de 3
+- **Commit / diff revisado:** `git diff main...feat/005-coach-feedback` @ `fbe1350` (centrado en `git show fbe1350`; más los cambios sin commitear de `state.json` y `verify-report.md`, que son del orquestador y del verifier)
 - **Veredicto:** APPROVED
 
 ## 1. Resumen
-El cambio añade un `feedback_id` firmado con HMAC (ADR-0018) a la respuesta `200` de `POST /api/coach/ask`, un endpoint `POST /api/coach/feedback` que valida, verifica la firma contra el `user_id` del token, aplica un límite de 60 votos por hora y envía la puntuación `user_feedback` (`BOOLEAN`, `score_id` determinista) a través del puerto `Tracer`. En el frontend, cada respuesta con `feedback_id` muestra los botones 👍/👎, y la política de privacidad pasa a tuteo e incluye Langfuse y Voyage AI. La implementación sigue el plan casi al pie de la letra, es pequeña y está bien protegida. No encuentro hallazgos bloqueantes ni mayores. He vuelto a ejecutar las suites: 314 tests de backend y 71 de frontend pasan, y `ruff-new` no da violaciones nuevas.
+Esta iteración comprueba las correcciones de F3, F4 y F5 de la iteración 1 (commit `fbe1350`), que el usuario pidió con la opción (a). Las tres están aplicadas tal como se pidieron, sin tocar tests ni comportamiento. El resto del cambio no ha variado desde la iteración 1, cuyo análisis de spec, plan y constitución sigue vigente. `verify.result` es `PASS` (verify full de la iteración 2: 314 tests de backend y 71 de frontend, `ruff-new`, lint, `tsc` y build en verde).
 
 ## 2. Cumplimiento de la spec
+Sin cambios respecto a la iteración 1: todos los AC (AC-001.1 a AC-013.1 y AC-N001.1 a AC-N004.1) están implementados como se especificó. La evidencia por AC está en la tabla de la iteración 1 (commit `50afc6e`, `specs/005-coach-feedback/review.md` §2).
+
+El único cambio que toca un AC es el de F5, en el texto de la política de privacidad:
 | REQ / AC | ¿Implementado como se especificó? | Evidencia (archivo:línea o test) |
 |---|---|---|
-| AC-001.1 a AC-001.3 | Sí | `backend/services/coach_service.py:187-190` firma el `trace_id` al final de `ask_with_feedback`, que cubre las tres salidas `200`; `backend/routes/coach_routes.py:84` serializa `feedback_id` (comprobado a mano, como pide el plan §5) |
-| AC-001.4 | Sí | `utils/tracing.py` `NullTraceRecorder.trace_id = None` y `start_trace` devuelve `NullTraceRecorder` si `backend is None` |
-| AC-001.5 | Sí | `utils/tracing.py` `start_trace` lee `backend_trace.trace_id` dentro del `try` |
-| AC-001.6 | Sí | El `trace_id` es distinto por traza; `test_ask_with_feedback_returns_a_different_id_for_each_question` |
-| AC-001.7 | Sí | El cálculo del `feedback_id` va después del `try` de proveedores; un fallo lanza `ServiceUnavailableError` antes de llegar |
-| AC-002.1 a AC-002.3 | Sí | `backend/services/coach_feedback_service.py:47-53`; `backend/utils/langfuse_backend.py` `score_trace` → `create_score(..., data_type="BOOLEAN")` |
-| AC-003.1 y AC-003.2 | Sí | `score_id` = `f"{trace_id}-user_feedback"` (`coach_feedback_service.py:52`); el *upsert* real de Langfuse queda pendiente de la prueba manual tras desplegar (riesgo del plan §6) |
-| AC-004.1 a AC-004.3 | Sí | `coach_feedback_service.py:28-32`, con los mensajes exactos de la spec |
-| AC-004.4 | Sí | `coach_routes.py:91` usa `get_json(silent=True)` y fuerza `{}` si no es `dict` |
-| AC-005.1 a AC-005.3 | Sí | `backend/utils/feedback_token.py` `verify`: forma con regex, HMAC ligado a `user_id` y `compare_digest`; `coach_feedback_service.py:34-36` lanza `ResourceNotFoundError` |
-| AC-006.1 | Sí | `coach_routes.py:88` usa `@require_auth`; `user_id` solo sale de `g.decoded_token` |
-| AC-007.1 a AC-007.4 | Sí | `coach_feedback_service.py:38-44`; el límite se aplica después de validar y verificar, así que los `400` y `404` no cuentan |
-| AC-008.1 a AC-008.3 | Sí | `Tracer.score_trace` no hace nada con `backend is None`, captura cualquier excepción y registra solo `type(exc).__name__` |
-| AC-009.1 a AC-009.4 | Sí | `ChatMessageBubble.tsx:23-24` (solo `assistant` con `feedbackId` de tipo `string`); estado local por instancia en `CoachFeedbackButtons.tsx` |
-| AC-010.1 a AC-010.4 | Sí | `CoachFeedbackButtons.tsx:23` (no-op si ya está seleccionado), `:55-56` y `:66-67` (`aria-pressed` y `disabled` mientras `isPending`) |
-| AC-010.5 | Sí | `CoachPage.tsx:36` limpia el historial y deja solo `role` y `content` |
-| AC-011.1 a AC-011.4 | Sí | `CoachFeedbackButtons.tsx:28-43`: la selección solo cambia en `onSuccess`, el mensaje del `429` sale de `err.message` y el éxito limpia el error |
-| AC-012.1 a AC-012.4 | Sí | `PrivacyPolicyPage.tsx:5` (8 de octubre de 2026), `:39`, `:74-82` y `:119-120` |
-| AC-013.1 | Sí | Sin formas de voseo en `PrivacyPolicyPage.tsx` (grep manual además del test) |
-| AC-N001.1 | Sí | El token solo lleva el `trace_id` y la firma; `score_trace` solo envía `trace_id`, nombre, valor, tipo y `score_id` |
-| AC-N002.1 | Sí (ver F1) | `create_score` del SDK encola; no se llama a `flush` en la petición |
-| AC-N003.1 | Sí | Las suites pasan sin red; `test_no_test_in_the_suite_imports_the_langfuse_package` |
-| AC-N004.1 | Sí | `Button` de shadcn (`<button>`) con `aria-label` y `aria-pressed` |
+| AC-012.x (política de privacidad) | Sí | `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx:37-40`: "las valoraciones (👍/👎) que das a sus respuestas (para mejorar el coach y por límites de uso)". Es coherente con la entrada de Langfuse y con que los votos no se guardan en fitnerd. `PrivacyPolicyPage.test.tsx` sigue pasando (no comprobaba la frase anterior). |
 
 ## 3. Cumplimiento del plan
-- **Desviación menor y justificada:** `CoachFeedbackButtons` añade un estado `isLimitError` para elegir la clase del mensaje (`text-muted-foreground` con `429`, `text-destructive` en el resto). Implementa lo que el plan §3.4 describe, con otro mecanismo.
-- `CoachService.__init__` recibe `feedback_signer=None` sin anotación de tipo; el plan no la exige (ver F3).
-- El arreglo de voseo del `429` del coach, del análisis de progreso y de `TermsOfServicePage` está en un commit aparte (`e27f259`), como fijaron `state.json` y la spec §3 (Art. 1.2), y el usuario lo aprobó.
-- No hay cambios de modelo ni variables de entorno nuevas, como dice el plan §3.1. `SECRET_KEY` sigue teniendo el valor por defecto `"DEFAULT SECRET"` en `config.py:31` (preexistente). El plan §6 lo asume como riesgo bajo y el usuario ya la configuró en EC2. El doc-keeper debe dejarlo anotado, como indica el plan.
-- ADR-0018 sigue en estado "Propuesta" (`docs/sdd/decisions/ADR-0018-feedback-id-firmado.md:3` y en el índice). Se aprobó con el plan; le toca al doc-keeper pasarlo a "Aceptada" en la etapa docs.
+`fbe1350` solo cambia una anotación de tipo, comentarios y una frase de copy. No hay desviaciones nuevas respecto al plan. Siguen pendientes, como en la iteración 1 y según el plan:
+- la prueba manual del *upsert* de `user_feedback` en Langfuse tras desplegar;
+- pasar ADR-0018 de "Propuesta" a "Aceptada" en la etapa docs;
+- dejar anotado el riesgo del valor por defecto de `SECRET_KEY` (`config.py:31`, preexistente).
 
 ## 4. Checklist de la constitución
-- [x] Art. 2: los SHA-256 de los 10 archivos de `tests_snapshot` coinciden con los actuales, y `git diff d55088d HEAD -- backend/tests frontend/src/**/*.test.*` está vacío. Los tests no se tocaron durante implement.
-- [x] Art. 4: los marcadores `SDD:` nuevos son coherentes con los AC que prueban. Los archivos `test_langfuse_backend.py` y `test_tracer.py` mezclan marcadores de 004 con IDs que coinciden con los de 005 (por ejemplo, `REQ-005 AC-005.1` en `test_langfuse_backend.py:167` es de 004). Es una ambigüedad preexistente del formato de marcador, no de esta feature.
-- [x] Art. 5: no hay tests borrados, saltados ni debilitados. Los fakes están escritos a mano e inyectados (`FakeRedisClient`, `FakeTraceBackend`, `FakeLangfuseClient`), y no se usan `unittest.mock` ni `monkeypatch`. En el frontend, `vi.mock` se aplica en la capa `api.ts`.
-- [x] Art. 6: la ruta solo parsea y delega; la lógica está en `CoachFeedbackService`; las dependencias entran por constructor desde `_build_coach_feedback_service()`; los errores se lanzan con `ValidationError`, `ResourceNotFoundError` y `RateLimitError`. En el frontend se usan `apiFetch`, un `schemas.ts` con zod y la organización por feature.
-- [x] Art. 6.4: no hay cambios de modelo, así que no hace falta migración (comprobado en el diff: no se toca `models/` ni `migrations/`).
-- [x] Art. 7: no hay secretos en el diff; `@require_auth` y `user_id` del token; el input se valida en el servicio y con zod; el endpoint tiene rate limiting; el log solo lleva el nombre del tipo de excepción.
-- [x] Art. 6.11: los textos visibles están en español correcto y sin voseo. Algunos comentarios nuevos van sin tilde (F4).
+- [x] Art. 2: los SHA-256 de los 10 archivos de `tests_snapshot` coinciden con los actuales (comprobado con `node` y `crypto`), y `git diff d55088d HEAD -- backend/tests frontend/src/**/*.test.*` está vacío. `fbe1350` no toca tests.
+- [x] Art. 4: los marcadores `SDD:` no han cambiado.
+- [x] Art. 5: no hay tests borrados, saltados ni debilitados.
+- [x] Art. 6: `coach_service.py:5` importa `FeedbackTokenSigner` desde `utils/feedback_token.py`, que solo importa la biblioteca estándar, así que no hay riesgo de import circular. Las capas se respetan.
+- [x] Art. 6.4: no hay cambios de modelo, así que no hace falta migración.
+- [x] Art. 7: no hay cambios de seguridad en esta iteración.
+- [x] Art. 6.11: los textos visibles y los comentarios nuevos del frontend llevan tildes correctas.
 
 ## 5. Hallazgos
+Estado de los hallazgos de la iteración 1:
+| # | Severidad | Estado | Evidencia |
+|---|---|---|---|
+| F1 | MENOR | Diferido al backlog (decisión del usuario) | — |
+| F2 | NIT | Diferido al backlog (decisión del usuario) | — |
+| F3 | NIT | Corregido | `backend/services/coach_service.py:52` anota `feedback_signer: FeedbackTokenSigner \| None = None`; `:66-67`, el comentario sobre `user_id` ya está actualizado |
+| F4 | NIT | Corregido | `CoachFeedbackButtons.tsx:14-15,33` y `types.ts:29-30` llevan tildes |
+| F5 | NIT | Corregido | `PrivacyPolicyPage.tsx:40` |
+| F6 | — | Informativo (verifier) | El verify-report de la iteración 2 sigue citando nombres de test que no existen literalmente (por ejemplo, `test_ask_with_feedback_returns_feedback_id_on_no_info`) |
+
+Hallazgos nuevos:
 | # | Severidad | Archivo:línea | Hallazgo | Responsable |
 |---|---|---|---|---|
-| F1 | MENOR | `backend/tests/test_services/test_langfuse_backend.py:401` | El test de AC-N002.1 configura `FakeLangfuseClient(flush_delay_seconds=3)`, pero el retardo solo se aplica a `flush`, y `create_score` del fake es instantáneo. El test demuestra que no se llama a `flush`, no que la `204` llegue en menos de 0,5 s con un destino que tarda 3 s en aceptar cada envío (lo que pide la AC). La garantía real depende de que `create_score` del SDK encole, cosa que el plan verificó leyendo el código del SDK. Se puede diferir: bastaría con un retardo en `create_score` del fake o con documentar la limitación en el docstring. | test-author |
-| F2 | NIT | `backend/tests/test_services/test_coach_feedback.py:489` | En el test de servicio de AC-N001.1, el JWT de prueba es una constante que nunca llega al servicio, así que comprobar que no aparece en lo enviado es tautológico. El test de ruta (`test_coach_feedback_routes.py:224`) sí cubre el JWT real de la petición. | test-author |
-| F3 | NIT | `backend/services/coach_service.py:51` y `:65-66` | `feedback_signer=None` no tiene anotación de tipo (`FeedbackTokenSigner \| None`), a diferencia del resto de parámetros. Además, el comentario "user_id se usa UNICAMENTE para el rate limit" ha quedado desactualizado: `user_id` se usa también para la traza (desde 004) y ahora para firmar el `feedback_id`. | implementer |
-| F4 | NIT | `frontend/src/features/coach/components/CoachFeedbackButtons.tsx:14-15,33`; `frontend/src/features/coach/types.ts:29-30` | Los comentarios nuevos van sin tildes ("mutacion", "seleccion", "demas", "conversacion", "valoracion"). CLAUDE.md pide comentarios en español correcto. | implementer |
-| F5 | NIT | `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx:38-40` | La finalidad indicada para las valoraciones en "Actividad en la app" ("para poder responderte y por límites de uso") no es precisa: los votos no se guardan en fitnerd y se usan para revisar la calidad del coach (como dice la entrada de Langfuse). Una redacción más exacta sería, por ejemplo, "y las valoraciones (👍/👎) que das a sus respuestas (para mejorar el coach y por límites de uso)". | implementer |
-| F6 | NIT | `specs/005-coach-feedback/verify-report.md:18-70` | Informativo, fuera de los cuatro responsables: la columna "Tests con `SDD:`" del verify-report cita nombres de test que no existen (por ejemplo, `test_submit_requires_auth` o `test_feedback_buttons_render_with_correct_aria_attributes`; los reales son `test_vote_without_authorization_header_returns_401_and_sends_nothing` y tests `it("…")` en español). La cobertura real sí es completa (comprobada con grep de los marcadores), pero el informe no es trazable tal como está escrito. Le corresponde al verifier en futuras ejecuciones. | — (verifier) |
+| F7 | NIT | `backend/services/coach_service.py:66` | Al comentario reescrito le falta una tilde: debe decir "de quién es cada contador", no "de quien es". El resto del bloque de comentarios del archivo, que es preexistente, tampoco lleva tildes ("metodo", "vacio"), así que es coherente con el archivo; se puede ignorar. | implementer |
 
 ## 6. Decisión
-**APPROVED.** No hay hallazgos BLOQUEANTES ni MAYORES. F1 (MENOR) se puede diferir con aprobación del usuario, y F2 a F6 son sugerencias opcionales. Antes de cerrar quedan dos pendientes que ya recoge el plan: la prueba manual del *upsert* de `user_feedback` en Langfuse tras desplegar (votar `up` y luego `down` y comprobar una sola puntuación con valor `0`) y el paso de ADR-0018 a "Aceptada" en la etapa docs.
+**APPROVED.** No hay hallazgos BLOQUEANTES ni MAYORES. F3, F4 y F5 están corregidos; F1 y F2 quedan en el backlog por decisión del usuario; F7 es opcional. Quedan los pendientes de despliegue y de docs indicados en §3.
 
 ## Comentarios del usuario
 
-Decisión del usuario (2026-10-08), literal: "Opcion (a) y commit approved".
-
-Opción (a): el `implementer` corrige F3, F4 y F5 (en F5, con la redacción propuesta por el reviewer o equivalente exacta: las valoraciones se usan para mejorar el coach y por límites de uso). F1 y F2 no se corrigen en esta feature: quedan en el backlog. F6 es informativo. Después se repiten verify full y review.
+Iteración 1 (2026-10-08), literal: "Opcion (a) y commit approved". Opción (a): el `implementer` corrige F3, F4 y F5; F1 y F2 pasan al backlog; F6 es informativo.

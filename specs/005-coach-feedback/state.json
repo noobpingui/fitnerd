@@ -11,7 +11,7 @@
   "branch": "feat/005-coach-feedback",
   "base_branch": "main",
   "created_at": "2026-10-07T20:50:56.619Z",
-  "stage": "implement",
+  "stage": "review",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
@@ -35,10 +35,13 @@
       "note": "1,2,3 Si, incluye TermsOfServicePage"
     },
     "verify": {
-      "at": "2026-10-08T19:09:04.453Z",
-      "note": "1 Si, la prueba manual después del despliegue"
+      "at": "2026-10-08T19:32:29.209Z",
+      "note": "Si, aprobado (iteración 2)"
     },
-    "review": null,
+    "review": {
+      "at": "2026-10-08T19:49:11.997Z",
+      "note": "1,2 Si, F7 al backlog (F1, F2 también diferidos)"
+    },
     "docs": null,
     "close": null
   },
@@ -49,7 +52,8 @@
     "tests": "d55088d",
     "implement": "d79b98b",
     "copy_fix": "e27f259",
-    "review": "50afc6e"
+    "review": "50afc6e",
+    "review_fix_1": "fbe1350"
   },
   "iterations": {
     "tests": 1,
@@ -63,11 +67,11 @@
   },
   "verify": {
     "result": "PASS",
-    "at": "2026-10-08T07:49:48.284Z"
+    "at": "2026-10-08T19:31:09.857Z"
   },
   "review": {
     "verdict": "APPROVED",
-    "at": "2026-10-08T19:12:19.357Z"
+    "at": "2026-10-08T19:33:14.909Z"
   },
   "bypass": false,
   "history": [
@@ -328,6 +332,54 @@
       "stage": "implement",
       "event": "commit",
       "note": "Fix review findings for 005-coach-feedback (iteration 1)"
+    },
+    {
+      "at": "2026-10-08T19:29:26.695Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "verify full tras corrección de review (iteración 1)"
+    },
+    {
+      "at": "2026-10-08T19:31:09.857Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verifier (full, iter 2): PASS — 314 backend + 71 frontend, ruff-new OK, lint/tsc/build OK, trazabilidad 100% (49 AC, 13 REQ, 4 NFR cubiertos; 53 tareas [x])"
+    },
+    {
+      "at": "2026-10-08T19:31:31.980Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verifier full PASS (iter 2, tras F3-F5)"
+    },
+    {
+      "at": "2026-10-08T19:32:29.209Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "Si, aprobado (iter 2)"
+    },
+    {
+      "at": "2026-10-08T19:32:29.209Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review iteración 2 tras F3-F5"
+    },
+    {
+      "at": "2026-10-08T19:33:14.909Z",
+      "stage": "review",
+      "event": "done",
+      "note": "reviewer APPROVED (iter 2): F3-F5 corregidos; F7 NIT nuevo (tilde en comentario)"
+    },
+    {
+      "at": "2026-10-08T19:49:11.997Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "1,2 Si, F7 al backlog"
+    },
+    {
+      "at": "2026-10-08T19:49:11.997Z",
+      "stage": "review",
+      "event": "commit",
+      "note": "Add review for 005-coach-feedback (iteration 2)"
     }
   ],
   "tests_snapshot": {
