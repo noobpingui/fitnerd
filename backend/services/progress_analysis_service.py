@@ -111,8 +111,8 @@ class ProgressAnalysisService:
 
         if count >= MAX_ANALYSES_PER_WINDOW:
             raise RateLimitError(
-                f"Alcanzaste el limite de {MAX_ANALYSES_PER_WINDOW} analisis cada 24 horas. "
-                "Volve a intentarlo mas tarde."
+                f"Alcanzaste el límite de {MAX_ANALYSES_PER_WINDOW} análisis cada 24 horas. "
+                "Vuelve a intentarlo más tarde."
             )
 
     def _format_metrics(self, metrics) -> str:

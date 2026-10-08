@@ -21,3 +21,4 @@ Formato breve: contexto, decisión y consecuencias. Las ADRs que generen futuras
 | [0015](ADR-0015-ip-cliente-proxyfix.md) | IP del cliente con `ProxyFix(x_for=PROXY_FIX_X_FOR)`: 1 en producción (Caddy), 0 en desarrollo y 1 fijo en tests (Aceptada) |
 | [0016](ADR-0016-cd-backend.md) | CD del backend: job `deploy` tras los tests, AWS SSM Run Command con OIDC, sin migraciones automáticas; cambios de CI/CD en ramas `chore/…` sin SDD completo (Aceptada) |
 | [0017](ADR-0017-observabilidad-langfuse.md) | Observabilidad del coach: puerto `Tracer` con recorder autoprotegido y adaptador `LangfuseTraceBackend` sobre el SDK oficial `langfuse>=4.17,<5` (endpoint OpenTelemetry, `propagate_attributes` en `with` cortos por observación, `base_url`, exportación en los hilos del SDK) (Aceptada) |
+| [0018](ADR-0018-feedback-id-firmado.md) | `feedback_id` del coach sin estado: `<trace_id>.<HMAC-SHA256(SECRET_KEY, user_id y trace_id)>`, sin tabla ni Redis y sin caducidad (Aceptada) |

@@ -2,7 +2,7 @@ import { LegalPageLayout } from "@/features/legal/components/LegalPageLayout"
 
 export function PrivacyPolicyPage() {
   return (
-    <LegalPageLayout title="Política de privacidad" updatedAt="2 de septiembre de 2026">
+    <LegalPageLayout title="Política de privacidad" updatedAt="8 de octubre de 2026">
       <p>
         fitnerd es un proyecto personal, desarrollado y
         mantenido por una sola persona - no una empresa con un equipo
@@ -18,25 +18,26 @@ export function PrivacyPolicyPage() {
         <ul className="list-disc space-y-1 pl-5">
           <li>
             <strong>Datos de tu cuenta:</strong> email, nombre, apellido y
-            fecha de nacimiento. Si te registrás con email/contraseña, tu
+            fecha de nacimiento. Si te registras con email/contraseña, tu
             contraseña se guarda de forma encriptada (hasheada) - nunca en
             texto plano, ni siquiera nosotros podemos verla.
           </li>
           <li>
-            <strong>Google Sign-In:</strong> si iniciás sesión con Google,
+            <strong>Google Sign-In:</strong> si inicias sesión con Google,
             recibimos tu nombre, email y foto de perfil directamente de
             Google - no tu contraseña de Google ni acceso a tu cuenta más
             allá de eso.
           </li>
           <li>
             <strong>Métricas corporales:</strong> peso, altura, y demás
-            datos que decidas registrar vos mismo en la sección de
+            datos que decidas registrar tú mismo en la sección de
             métricas.
           </li>
           <li>
             <strong>Actividad en la app:</strong> tus ejercicios
-            favoritos, tu plan semanal, y las preguntas que le hacés al AI
-            Coach (para poder responderte y por límites de uso).
+            favoritos, tu plan semanal, y las preguntas que le haces al AI
+            Coach y las valoraciones (👍/👎) que das a sus respuestas (para
+            mejorar el coach y por límites de uso).
           </li>
           <li>
             <strong>Feedback:</strong> lo que escribas en el formulario de
@@ -66,11 +67,22 @@ export function PrivacyPolicyPage() {
         <ul className="mt-2 list-disc space-y-1 pl-5">
           <li>
             <strong>Anthropic (Claude):</strong> las preguntas que le
-            hacés al AI Coach se envían a Anthropic para generar la
+            haces al AI Coach se envían a Anthropic para generar la
             respuesta.
           </li>
           <li>
-            <strong>Google:</strong> si usás Google Sign-In, para
+            <strong>Langfuse:</strong> las preguntas, las respuestas, el
+            contenido de los vídeos usado y las valoraciones 👍/👎 se
+            envían para revisar la calidad del coach. Se identifican solo
+            con un identificador interno de la cuenta, nunca con tu email
+            ni tu nombre.
+          </li>
+          <li>
+            <strong>Voyage AI:</strong> recibe el texto de tus preguntas
+            para buscar el contenido relacionado.
+          </li>
+          <li>
+            <strong>Google:</strong> si usas Google Sign-In, para
             verificar tu identidad.
           </li>
           <li>
@@ -88,7 +100,7 @@ export function PrivacyPolicyPage() {
           Toda la comunicación entre tu navegador y nuestros servidores
           viaja encriptada (HTTPS). Las contraseñas se guardan hasheadas,
           nunca en texto plano. Aun así, ningún sistema es 100% infalible
-          - usá una contraseña que no reutilices en otros sitios
+          - usa una contraseña que no reutilices en otros sitios
           importantes.
         </p>
       </section>
@@ -96,7 +108,7 @@ export function PrivacyPolicyPage() {
       <section>
         <h2 className="mb-2 text-lg font-semibold">Tus derechos</h2>
         <p>
-          Podés pedir que eliminemos tu cuenta y todos tus datos en
+          Puedes pedir que eliminemos tu cuenta y todos tus datos en
           cualquier momento, escribiendo a{" "}
           <a
             href="mailto:albertofallas93@gmail.com"
@@ -104,7 +116,8 @@ export function PrivacyPolicyPage() {
           >
             albertofallas93@gmail.com
           </a>
-          .
+          . Al eliminar tu cuenta también se eliminan los datos que
+          enviamos a Langfuse.
         </p>
       </section>
 

@@ -329,6 +329,109 @@ def test_sdk_errors_behind_a_tracer_become_the_warning_and_never_propagate():
     assert not any("secreto-sk-lf-123" in r for r in logger.records)
 
 
+# --- Feature 005: valoración del coach -------------------------------------------
+
+
+def make_feedback_service(tracer):
+    from services.coach_feedback_service import CoachFeedbackService
+    from tests.fakes import FakeRedisClient
+    from utils.feedback_token import FeedbackTokenSigner
+    from utils.rate_limiter import RateLimiter
+
+    limiter = RateLimiter()
+    limiter.client = FakeRedisClient()
+    signer = FeedbackTokenSigner("test-secret")
+    return CoachFeedbackService(signer, limiter, tracer), signer
+
+
+# SDD: REQ-001 AC-001.1
+def test_started_trace_exposes_the_trace_id_of_the_root_observation():
+    """La traza que devuelve el adaptador expone el `trace_id` de la raíz
+    (32 caracteres hexadecimales)."""
+    backend, fake, _ = make_backend()
+
+    trace = backend.start_trace("coach-ask", "42", "pregunta")
+
+    assert trace.trace_id == fake.observations[0].trace_id
+    assert re.fullmatch(r"[0-9a-f]{32}", trace.trace_id)
+
+
+# SDD: REQ-002 AC-002.1
+def test_score_trace_calls_create_score_with_the_boolean_score():
+    """`score_trace` llama a `create_score` con nombre, valor, trace_id,
+    score_id y `data_type="BOOLEAN"`."""
+    backend, fake, _ = make_backend()
+    trace_id = "c" * 32
+
+    backend.score_trace(trace_id, "user_feedback", 1, "BOOLEAN", f"{trace_id}-user_feedback")
+
+    creates = [(name, kwargs) for _, name, kwargs in fake.calls if name == "create_score"]
+    assert creates == [
+        (
+            "create_score",
+            {
+                "name": "user_feedback",
+                "value": 1,
+                "trace_id": trace_id,
+                "score_id": f"{trace_id}-user_feedback",
+                "data_type": "BOOLEAN",
+            },
+        )
+    ]
+
+
+# SDD: REQ-003 AC-003.1
+def test_changing_the_vote_sends_two_scores_with_the_same_score_id():
+    """Dos votos sobre la misma traza llegan al SDK con el mismo `score_id`,
+    para que Langfuse sustituya el anterior."""
+    backend, fake, _ = make_backend()
+    tracer = Tracer(backend=backend, logger=FakeLogger())
+    service, signer = make_feedback_service(tracer)
+    feedback_id = signer.sign(42, "d" * 32)
+
+    service.submit(42, feedback_id, "up")
+    service.submit(42, feedback_id, "down")
+
+    creates = [kwargs for _, name, kwargs in fake.calls if name == "create_score"]
+    assert [c["value"] for c in creates] == [1, 0]
+    assert creates[0]["score_id"] == creates[1]["score_id"]
+
+
+# SDD: NFR-002 AC-N002.1
+def test_submit_returns_quickly_even_when_the_sdk_export_is_slow():
+    """Con un SDK cuyo `flush` tarda 3 s, el voto responde en menos de 0,5 s y
+    nunca llama a `flush`: la puntuación solo se encola."""
+    import time
+
+    fake = FakeLangfuseClient(flush_delay_seconds=3)
+    backend, _, _ = make_backend(fake)
+    service, signer = make_feedback_service(Tracer(backend=backend, logger=FakeLogger()))
+    feedback_id = signer.sign(42, "e" * 32)
+
+    started = time.monotonic()
+    service.submit(42, feedback_id, "up")
+    elapsed = time.monotonic() - started
+
+    assert elapsed < 0.5
+    assert fake.flush_calls == 0
+    assert any(name == "create_score" for _, name, _ in fake.calls)
+
+
+# SDD: NFR-001 AC-N001.1
+def test_vote_calls_to_the_sdk_do_not_contain_the_jwt_the_email_or_the_keys():
+    """Lo que el voto entrega al SDK no incluye JWT, email, nombre ni claves."""
+    jwt_token = "eyJhbGciOiJSUzI1NiJ9.eyJpZCI6NDJ9.firma-de-prueba"
+    backend, fake, _ = make_backend()
+    service, signer = make_feedback_service(Tracer(backend=backend, logger=FakeLogger()))
+
+    service.submit(42, signer.sign(42, "f" * 32), "down")
+
+    dumped = fake.serialized_calls()
+    assert "create_score" in dumped
+    for secret in (jwt_token, "ana@example.com", "Ana Pérez", LANGFUSE_PK, LANGFUSE_SK):
+        assert secret not in dumped
+
+
 # SDD: NFR-003 AC-N003.1
 def test_no_test_in_the_suite_imports_the_langfuse_package():
     """Ningún archivo de test importa `langfuse` y el paquete no está cargado

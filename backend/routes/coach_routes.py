@@ -4,6 +4,8 @@ from extensions import db, embedding_client, rate_limiter, tracer
 from repositories.transcript_chunk_repository import TranscriptChunkRepository
 from services.retrieval_service import RetrievalService
 from services.coach_service import CoachService
+from services.coach_feedback_service import CoachFeedbackService
+from utils.feedback_token import FeedbackTokenSigner
 from utils.llm_client import LLMClient
 from decorators import require_auth
 from exceptions.custom_exceptions import ValidationError
@@ -50,7 +52,15 @@ def _build_coach_service():
     retrieval_service = RetrievalService(transcript_chunk_repository, embedding_client)
     llm_client = LLMClient(model=current_app.config["ANTHROPIC_MODEL"])
 
-    return CoachService(retrieval_service, llm_client, rate_limiter, tracer)
+    feedback_signer = FeedbackTokenSigner(current_app.config["SECRET_KEY"])
+
+    return CoachService(retrieval_service, llm_client, rate_limiter, tracer, feedback_signer)
+
+
+def _build_coach_feedback_service():
+    signer = FeedbackTokenSigner(current_app.config["SECRET_KEY"])
+
+    return CoachFeedbackService(signer, rate_limiter, tracer)
 
 
 @coach_bp.route("/ask", methods=["POST"])
@@ -69,6 +79,22 @@ def ask():
     user_id = g.decoded_token["id"]
 
     coach_service = _build_coach_service()
-    answer = coach_service.ask(question, user_id, history)
+    result = coach_service.ask_with_feedback(question, user_id, history)
 
-    return jsonify(answer=answer), 200
+    return jsonify(answer=result.answer, feedback_id=result.feedback_id), 200
+
+
+@coach_bp.route("/feedback", methods=["POST"])
+@require_auth
+def feedback():
+    #silent=True: un cuerpo vacío o que no es JSON llega como {} y da el 400 del servicio.
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        data = {}
+
+    user_id = g.decoded_token["id"]
+
+    coach_feedback_service = _build_coach_feedback_service()
+    coach_feedback_service.submit(user_id, data.get("feedback_id"), data.get("rating"))
+
+    return "", 204

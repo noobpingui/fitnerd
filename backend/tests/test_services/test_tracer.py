@@ -280,3 +280,104 @@ def test_init_app_with_testing_true_stays_inactive_even_with_keys():
 
     assert tracer.enabled is False
     assert factory.calls == []
+
+
+# --- Feature 005: trace_id y puntuación de una traza cerrada --------------------
+
+
+class _TraceWithBrokenTraceId:
+    """Traza de mentira cuyo `trace_id` lanza al leerse."""
+
+    @property
+    def trace_id(self):
+        raise BOOM
+
+
+class _BackendWithBrokenTraceId:
+    def start_trace(self, name, user_id, input):
+        return _TraceWithBrokenTraceId()
+
+
+def warnings_about_the_score(logger):
+    return [r for r in logger.records if "valoración" in r]
+
+
+# SDD: REQ-001 AC-001.1
+def test_safe_recorder_exposes_the_trace_id_of_the_backend_trace():
+    """El recorder que devuelve `start_trace` expone el `trace_id` de la traza
+    abierta en el destino."""
+    backend = FakeTraceBackend()
+    tracer = Tracer(backend=backend, logger=FakeLogger())
+
+    recorder = tracer.start_trace("coach-ask", "42", "pregunta")
+
+    assert recorder.trace_id == backend.traces[0].trace_id
+    assert recorder.trace_id
+
+
+# SDD: REQ-001 AC-001.4
+def test_null_recorder_has_no_trace_id():
+    """El recorder nulo no tiene `trace_id` (`None`)."""
+    assert NullTraceRecorder().trace_id is None
+    assert Tracer().start_trace("coach-ask", "42", "pregunta").trace_id is None
+
+
+# SDD: REQ-001 AC-001.5
+def test_start_trace_returns_the_null_recorder_when_reading_the_trace_id_fails():
+    """Si leer el `trace_id` falla, `start_trace` no lanza, avisa sin el mensaje
+    de la excepción y devuelve el recorder nulo."""
+    logger = FakeLogger()
+    tracer = Tracer(backend=_BackendWithBrokenTraceId(), logger=logger)
+
+    recorder = tracer.start_trace("coach-ask", "42", "pregunta")
+
+    assert isinstance(recorder, NullTraceRecorder)
+    assert recorder.trace_id is None
+    assert len(logger.records) == 1
+    assert "secreto-sk-lf-123" not in logger.records[0]
+
+
+# SDD: REQ-008 AC-008.3
+def test_score_trace_without_backend_does_nothing():
+    """Con el tracer inactivo `score_trace` no lanza ni registra nada."""
+    logger = FakeLogger()
+    tracer = Tracer(logger=logger)
+
+    result = tracer.score_trace("a" * 32, "user_feedback", 1, "BOOLEAN", "id-1")
+
+    assert result is None
+    assert logger.records == []
+
+
+# SDD: REQ-002 AC-002.1
+def test_score_trace_forwards_the_score_to_the_backend():
+    """Con un destino sano, `score_trace` entrega la puntuación tal cual."""
+    backend = FakeTraceBackend()
+    tracer = Tracer(backend=backend, logger=FakeLogger())
+
+    tracer.score_trace("a" * 32, "user_feedback", 0, "BOOLEAN", "id-1")
+
+    score = backend.trace_scores[0]
+    assert (score.trace_id, score.name, score.value, score.data_type, score.score_id) == (
+        "a" * 32,
+        "user_feedback",
+        0,
+        "BOOLEAN",
+        "id-1",
+    )
+
+
+# SDD: REQ-008 AC-008.2
+def test_score_trace_warns_with_only_the_exception_type_and_does_not_raise():
+    """Si el destino falla, `score_trace` no lanza y avisa una vez con el nombre
+    del tipo, nunca con el mensaje."""
+    logger = FakeLogger()
+    tracer = Tracer(backend=FakeTraceBackend(raise_error=BOOM), logger=logger)
+
+    tracer.score_trace("a" * 32, "user_feedback", 1, "BOOLEAN", "id-1")
+
+    warnings = warnings_about_the_score(logger)
+    assert len(warnings) == 1
+    assert "Langfuse" in warnings[0]
+    assert "RuntimeError" in warnings[0]
+    assert "secreto-sk-lf-123" not in " ".join(logger.records)

@@ -13,6 +13,7 @@ from config import observability_enabled
 _fallback_logger = logging.getLogger(__name__)
 
 _WARNING = "No se pudo enviar la traza del coach a Langfuse: %s"
+_SCORE_WARNING = "No se pudo enviar la valoración del coach a Langfuse: %s"
 
 
 def format_error(exc) -> str:
@@ -29,6 +30,8 @@ class NullStepHandle:
 
 
 class NullTraceRecorder:
+    trace_id = None
+
     def start_step(self, name, kind, input, model=None):
         return NullStepHandle()
 
@@ -76,9 +79,10 @@ class SafeStepHandle:
 
 
 class SafeTraceRecorder:
-    def __init__(self, backend_trace, logger):
+    def __init__(self, backend_trace, logger, trace_id=None):
         self.backend_trace = backend_trace
         self.logger = logger
+        self.trace_id = trace_id
         self._state = _TraceState(logger)
 
     def start_step(self, name, kind, input, model=None):
@@ -122,13 +126,26 @@ class Tracer:
             propagate_attributes=self.propagate_attributes,
         )
 
+    def score_trace(self, trace_id, name, value, data_type, score_id) -> None:
+        """Puntúa una traza ya cerrada. Nunca lanza excepciones."""
+        if self.backend is None:
+            return None
+        logger = self.logger or _fallback_logger
+        try:
+            self.backend.score_trace(trace_id, name, value, data_type, score_id)
+        except Exception as exc:
+            # Solo el nombre del tipo: el mensaje podría contener credenciales.
+            logger.warning(_SCORE_WARNING, type(exc).__name__)
+        return None
+
     def start_trace(self, name, user_id, input):
         if self.backend is None:
             return NullTraceRecorder()
         logger = self.logger or _fallback_logger
         try:
             backend_trace = self.backend.start_trace(name, user_id, input)
+            trace_id = backend_trace.trace_id
         except Exception as exc:
             logger.warning(_WARNING, type(exc).__name__)
             return NullTraceRecorder()
-        return SafeTraceRecorder(backend_trace, logger)
+        return SafeTraceRecorder(backend_trace, logger, trace_id)

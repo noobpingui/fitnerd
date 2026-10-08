@@ -15,7 +15,7 @@ I built it as a personal project - both because I wanted exactly this tool for m
 - **Exercise catalog** (body region -> category -> exercise) with correct-technique videos
 - **Favorites** and a **weekly workout plan**
 - **Body metrics tracking** - weight, body-fat %, muscle-mass % with progress charts over time
-- **AI Coach** - a RAG-grounded chat that only answers from real fitness content, with multi-turn conversation memory
+- **AI Coach** - a RAG-grounded chat that only answers from real fitness content, with multi-turn conversation memory and a thumbs up/down rating on every answer
 - Email/password auth **and** Google Sign-In
 - **Password recovery by email** - a reset link (valid 5 minutes, single use) sent through Resend, with per-email and per-IP rate limits
 - A feedback widget built right into the app
@@ -45,7 +45,7 @@ I built it as a personal project - both because I wanted exactly this tool for m
 3. **Retrieval**: a user's question is embedded the same way, then compared against stored chunks by vector similarity. A distance threshold is what actually enforces "grounded" answers - below it, the app tells the user it doesn't have that information instead of letting the model improvise.
 4. **Generation**: the matched chunks are passed as context to **Claude** (Sonnet specifically - Opus would be overkill for bounded context-synthesis, Haiku noticeably weaker at reliably staying grounded in the retrieved text).
 5. **Multi-turn**, without server-side chat storage: the frontend resends the prior conversation with each new message, and follow-up questions are handled by concatenating the previous question with the current one before embedding - a deliberate, cheap heuristic over a second LLM call to rewrite the query.
-6. **Observability**: every question that gets processed sends one trace to **Langfuse Cloud** (embedding, retrieval and generation steps, retrieved chunks with their distances, tokens, cost, latency, plus `outcome` and `best_chunk_distance` scores), so the relevance threshold can be tuned with real data. It is off unless both `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` are set, traces are sent in the background, and a Langfuse failure never changes the coach's answer. Users are identified only by internal ID.
+6. **Observability**: every question that gets processed sends one trace to **Langfuse Cloud** (embedding, retrieval and generation steps, retrieved chunks with their distances, tokens, cost, latency, plus `outcome` and `best_chunk_distance` scores), so the relevance threshold can be tuned with real data. It is off unless both `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` are set, traces are sent in the background, and a Langfuse failure never changes the coach's answer. Users are identified only by internal ID. Each answer also carries a signed, opaque `feedback_id` (HMAC of the trace ID bound to the user, derived from `SECRET_KEY`, ADR-0018); the thumbs up/down vote is posted to `POST /api/coach/feedback` and attached to that trace as a boolean `user_feedback` score (changing a vote replaces it, 60 votes per user per hour). The vote is sent in the background and never fails because of Langfuse.
 
 ## CI/CD
 

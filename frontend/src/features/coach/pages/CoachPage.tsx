@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { ApiError } from "@/lib/apiClient"
 import { ChatMessageBubble } from "@/features/coach/components/ChatMessageBubble"
 import { useAskCoach } from "@/features/coach/hooks"
-import type { ChatMessage } from "@/features/coach/types"
+import type { ConversationMessage } from "@/features/coach/types"
 
 const MAX_QUESTION_LENGTH = 500
 
@@ -14,7 +14,7 @@ export function CoachPage() {
   // persistencia del lado del backend todavia (ver CoachService.ask). Si
   // refrescas la pagina, la conversacion se pierde - limitacion conocida
   // y aceptada para esta primera version.
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [messages, setMessages] = useState<ConversationMessage[]>([])
   const [question, setQuestion] = useState("")
   const askCoach = useAskCoach()
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -33,7 +33,7 @@ export function CoachPage() {
     // El historial que se manda es el de ANTES de esta pregunta - lo que
     // ya se dijo en la conversacion hasta este punto, sin incluir el
     // mensaje que estamos por agregar.
-    const history = messages
+    const history = messages.map(({ role, content }) => ({ role, content }))
 
     setMessages((prev) => [...prev, { role: "user", content: trimmed }])
     setQuestion("")
@@ -44,7 +44,11 @@ export function CoachPage() {
         onSuccess: (data) => {
           setMessages((prev) => [
             ...prev,
-            { role: "assistant", content: data.answer },
+            {
+              role: "assistant",
+              content: data.answer,
+              feedbackId: data.feedback_id,
+            },
           ])
         },
         // En error no revertimos el mensaje del usuario - queda visible

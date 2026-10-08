@@ -1,6 +1,8 @@
 import logging
+from dataclasses import dataclass
 
 from services.retrieval_service import DEFAULT_TOP_K, RetrievalService
+from utils.feedback_token import FeedbackTokenSigner
 from utils.tracing import Tracer
 from utils.llm_client import LLMClient
 from utils.rate_limiter import RateLimiter
@@ -40,8 +42,15 @@ Reglas de estilo:
   proporcionada dice"."""
 
 
+@dataclass
+class CoachAnswer:
+    answer: str
+    feedback_id: str | None
+
+
 class CoachService:
-    def __init__(self, retrieval_service: RetrievalService, llm_client: LLMClient, rate_limiter: RateLimiter, tracer: Tracer | None = None):
+    def __init__(self, retrieval_service: RetrievalService, llm_client: LLMClient, rate_limiter: RateLimiter, tracer: Tracer | None = None, feedback_signer: FeedbackTokenSigner | None = None):
+        self.feedback_signer = feedback_signer
         self.retrieval_service = retrieval_service
         self.llm_client = llm_client
         self.rate_limiter = rate_limiter
@@ -54,9 +63,14 @@ class CoachService:
     #no se reinyecta contexto viejo en cada mensaje historico). None/vacio = primera pregunta
     #de la conversacion, se comporta identico a como funcionaba antes de esto.
     #
-    #user_id se usa UNICAMENTE para el rate limit (identificar de quien es cada contador
-    #en Redis) - el resto del metodo no lo necesitaba y sigue sin necesitarlo.
+    #user_id se usa para el rate limit (de quien es cada contador en Redis), para la traza
+    #y para firmar el feedback_id, que queda ligado a este usuario.
     def ask(self, question: str, user_id: str, history: list[dict] | None = None) -> str:
+        return self.ask_with_feedback(question, user_id, history).answer
+
+    def ask_with_feedback(
+        self, question: str, user_id: str, history: list[dict] | None = None
+    ) -> CoachAnswer:
         #Chequeo de limite ANTES de gastar nada (retrieval + Claude) - a diferencia de
         #ProgressAnalysisService, aca no hay un caso "gratis" que se pueda resolver sin
         #golpear ningun proveedor externo, asi que el chequeo va primero en el metodo,
@@ -68,8 +82,8 @@ class CoachService:
         )
         if not allowed:
             raise RateLimitError(
-                f"Alcanzaste el limite de {MAX_QUESTIONS_PER_WINDOW} preguntas por hora. "
-                "Volve a intentarlo en un rato."
+                f"Alcanzaste el límite de {MAX_QUESTIONS_PER_WINDOW} preguntas por hora. "
+                "Vuelve a intentarlo en un rato."
             )
 
         #La traza se abre después del límite de uso: un 429 no genera traza.
@@ -170,7 +184,11 @@ Pregunta: {question}"""
         #Fuera del try de proveedores: un fallo de instrumentación nunca debe ser un 503.
         trace.add_score("outcome", outcome, "CATEGORICAL")
         trace.finish(answer)
-        return answer
+
+        feedback_id = None
+        if self.feedback_signer is not None and trace.trace_id is not None:
+            feedback_id = self.feedback_signer.sign(user_id, trace.trace_id)
+        return CoachAnswer(answer=answer, feedback_id=feedback_id)
 
     #Truco barato para que las preguntas de seguimiento cortas ("dame mas detalle",
     #"por que pasa eso") no fallen la busqueda semantica - solas no tienen suficiente

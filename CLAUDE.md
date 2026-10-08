@@ -12,7 +12,7 @@ App de fitness full-stack con un **coach de IA basado en contenido real**: respo
 | Catálogo de ejercicios (región → categoría → ejercicio) | `body_region_routes`, `exercise_category_routes`, `exercise_routes` | `exercises` |
 | Favoritos y plan semanal (drag and drop) | `exercise_favorite_routes`, `weekly_plan_routes` | `weekly-plan` |
 | Métricas corporales, gráficas y análisis con IA | `body_metric_routes` | `body-metrics` |
-| Coach de IA con RAG (pgvector, Voyage y Claude, con rate limit en Redis y trazas en Langfuse Cloud, ADR-0017) | `coach_routes` | `coach` |
+| Coach de IA con RAG (pgvector, Voyage y Claude, con rate limit en Redis y trazas en Langfuse Cloud, ADR-0017; valoración 👍/👎 de cada respuesta como score `user_feedback`, con `feedback_id` firmado con HMAC, ADR-0018) | `coach_routes` | `coach` |
 | Feedback, home, páginas legales y tienda (solo estructura) | `feedback_routes` | `feedback`, `home`, `legal`, `store` |
 | Salud del servicio (`GET /api/health`) | `health_routes` | — |
 
@@ -60,7 +60,7 @@ App de fitness full-stack con un **coach de IA basado en contenido real**: respo
 **Puntos delicados:**
 - **`flask` sin `FLASK_ENV` usa producción:** `backend/wsgi.py` carga `ProductionConfig` por defecto, así que `flask run` o `flask db …` apuntan a Supabase. Usa siempre `FLASK_ENV=development` en local (ya causó una migración en producción).
 - **Windows:** hay Git Bash y PowerShell, y el Python del venv está en `.venv/Scripts/python.exe`.
-- **`backend/.env.example` está incompleto:** la lista real de variables está en `config.py`. Faltan las de JWT, Voyage, `ANTHROPIC_MODEL`, `CORS_ORIGINS` y `SECRET_KEY`.
+- **`backend/.env.example` está incompleto:** la lista real de variables está en `config.py`. Faltan las de JWT, Voyage, `ANTHROPIC_MODEL` y `CORS_ORIGINS`. `SECRET_KEY` sí está (ejemplo `change-me`): firma el `feedback_id` del coach, así que en producción debe ser un valor propio y, si cambia, los votos de respuestas ya emitidas dejan de ser válidos (404).
 - **Nunca ejecutes `docker compose config`:** imprime los secretos en claro. Ya causó una rotación de contraseña. Para validar un YAML, usa un parser.
 - **Migraciones sin detectar:** los tests crean las tablas con `create_all()`, no con las migraciones, así que una migración olvidada no la detecta ningún test. Revísalo a mano.
 - **Dependencias:** `requirements.txt` no fija versiones y mezcla las del runtime con las del pipeline RAG.
