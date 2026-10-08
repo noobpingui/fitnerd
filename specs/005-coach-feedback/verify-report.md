@@ -1,92 +1,115 @@
 # Verify report 005 — Valoración 👍/👎 de las respuestas del coach como puntuación en Langfuse
 
-- **Modo:** red (tras la etapa tests), iteración 2/3
-- **Fecha:** 2026-10-08T07:11:40.696Z · **Rama:** `feat/005-coach-feedback`
+- **Modo:** full (tras la etapa implement)
+- **Fecha:** 2026-10-08T08:05:00.000Z · **Rama:** `feat/005-coach-feedback`
 - **Resultado:** PASS
 
 ## 1. Comandos ejecutados
 
 | Ámbito | Comando | Resultado | Resumen |
 |---|---|---|---|
-| backend | `python -m pytest -q` | ✅ Rojo legítimo | 77 fallos (scaffolds: NotImplementedError, rutas inexistentes 404), 237 pasados; tests anteriores de 004 siguen pasando |
-| frontend | `npm test` | ✅ Rojo legítimo | 19 fallos (scaffolds: Error "not implemented"); contenido no implementado aún |
+| backend | `python -m pytest -q` | ✅ | 314 passed |
+| backend | `node .claude/sdd/scripts/ruff-new.mjs main` | ✅ | Sin violaciones nuevas |
+| frontend | `npm test` | ✅ | 71 passed |
+| frontend | `npm run lint` | ✅ | 0 errores; 3 warnings preexistentes tolerados |
+| frontend | `npx tsc -b` | ✅ | Sin errores de tipo |
+| frontend | `npm run build` | ✅ | Build exitoso |
 
-## 2. Análisis de fallos nuevos de 005
+## 2. Trazabilidad
 
-### Backend (77 fallos nuevos)
+### Requisitos y criterios de aceptación
 
-**Clasificación: TODOS LEGÍTIMOS**
+| REQ / NFR | AC | Tareas | Tests con `SDD:` | Estado |
+|---|---|---|---|---|
+| REQ-001 | AC-001.1 | T-014, T-051, T-052, T-053, T-055 | `test_ask_with_feedback_returns_feedback_id_on_generated_answer` | ✅ |
+| REQ-001 | AC-001.2 | T-014, T-053 | `test_ask_with_feedback_returns_feedback_id_on_no_info` | ✅ |
+| REQ-001 | AC-001.3 | T-014, T-053 | `test_ask_with_feedback_returns_feedback_id_on_refused` | ✅ |
+| REQ-001 | AC-001.4 | T-015, T-051, T-053 | `test_ask_with_feedback_returns_null_when_observability_disabled` | ✅ |
+| REQ-001 | AC-001.5 | T-015, T-027, T-051 | `test_ask_with_feedback_returns_null_when_tracer_fails_to_open` | ✅ |
+| REQ-001 | AC-001.6 | T-016, T-053 | `test_ask_with_feedback_returns_distinct_ids_per_question` | ✅ |
+| REQ-001 | AC-001.7 | T-016, T-053 | `test_ask_with_feedback_raises_service_unavailable_when_provider_fails` | ✅ |
+| REQ-002 | AC-002.1 | T-017, T-028, T-054, T-055 | `test_submit_records_user_feedback_score_on_up_rating` | ✅ |
+| REQ-002 | AC-002.2 | T-017, T-054 | `test_submit_records_user_feedback_score_on_down_rating` | ✅ |
+| REQ-002 | AC-002.3 | T-017, T-054 | `test_submit_records_scores_on_distinct_traces` | ✅ |
+| REQ-003 | AC-003.1 | T-018, T-052, T-054 | `test_submit_reuses_score_id_when_changing_vote` | ✅ |
+| REQ-003 | AC-003.2 | T-018, T-052, T-054 | `test_submit_idempotent_when_voting_same_option` | ✅ |
+| REQ-004 | AC-004.1 | T-019, T-029, T-054, T-055 | `test_submit_requires_feedback_id` | ✅ |
+| REQ-004 | AC-004.2 | T-019, T-029, T-054 | `test_submit_requires_valid_rating` | ✅ |
+| REQ-004 | AC-004.3 | T-019, T-029, T-054 | `test_submit_requires_rating_field` | ✅ |
+| REQ-004 | AC-004.4 | T-029, T-055 | `test_invalid_json_returns_400` | ✅ |
+| REQ-005 | AC-005.1 | T-012, T-020, T-030, T-050, T-054 | `test_verify_rejects_token_for_different_user` | ✅ |
+| REQ-005 | AC-005.2 | T-012, T-020, T-030, T-050, T-054 | `test_verify_rejects_invented_token` | ✅ |
+| REQ-005 | AC-005.3 | T-012, T-020, T-050, T-054 | `test_verify_rejects_altered_token` | ✅ |
+| REQ-006 | AC-006.1 | T-031, T-055 | `test_submit_requires_auth` | ✅ |
+| REQ-007 | AC-007.1 | T-021, T-032, T-054 | `test_submit_enforces_60_votes_per_hour_limit` | ✅ |
+| REQ-007 | AC-007.2 | T-021, T-054 | `test_submit_allows_59_votes_per_hour` | ✅ |
+| REQ-007 | AC-007.3 | T-021, T-054 | `test_rate_limit_is_per_user` | ✅ |
+| REQ-007 | AC-007.4 | T-021, T-054 | `test_rate_limit_only_counts_valid_votes` | ✅ |
+| REQ-008 | AC-008.1 | T-022, T-033, T-051, T-054 | `test_submit_succeeds_even_when_tracer_fails` | ✅ |
+| REQ-008 | AC-008.2 | T-022, T-027, T-051 | `test_submit_logs_warning_when_tracer_fails` | ✅ |
+| REQ-008 | AC-008.3 | T-022, T-033, T-051, T-054 | `test_submit_succeeds_when_observability_disabled` | ✅ |
+| REQ-009 | AC-009.1 | T-035, T-060, T-061 | `test_feedback_buttons_render_with_correct_aria_attributes` | ✅ |
+| REQ-009 | AC-009.2 | T-039, T-061, T-062 | `test_no_buttons_when_feedback_id_null` | ✅ |
+| REQ-009 | AC-009.3 | T-039, T-061, T-062 | `test_one_button_pair_per_response` | ✅ |
+| REQ-009 | AC-009.4 | T-039, T-060, T-062 | `test_button_state_independent_between_responses` | ✅ |
+| REQ-010 | AC-010.1 | T-036, T-056, T-057, T-058, T-059, T-060 | `test_vote_sends_request_and_updates_selection` | ✅ |
+| REQ-010 | AC-010.2 | T-036, T-060 | `test_change_vote_updates_selection` | ✅ |
+| REQ-010 | AC-010.3 | T-037, T-060 | `test_buttons_disabled_during_submission` | ✅ |
+| REQ-010 | AC-010.4 | T-037, T-060 | `test_no_request_when_button_already_selected` | ✅ |
+| REQ-010 | AC-010.5 | T-040, T-062 | `test_next_question_history_has_no_feedback_id` | ✅ |
+| REQ-011 | AC-011.1 | T-038, T-060 | `test_error_on_failed_submission_general` | ✅ |
+| REQ-011 | AC-011.2 | T-038, T-060 | `test_error_on_failed_submission_maintains_previous_state` | ✅ |
+| REQ-011 | AC-011.3 | T-038, T-060 | `test_429_error_shows_rate_limit_message` | ✅ |
+| REQ-011 | AC-011.4 | T-038, T-060 | `test_error_message_clears_on_success` | ✅ |
+| REQ-012 | AC-012.1 | T-041, T-063 | `test_privacy_policy_mentions_langfuse` | ✅ |
+| REQ-012 | AC-012.2 | T-041, T-063 | `test_privacy_policy_mentions_voyage_ai` | ✅ |
+| REQ-012 | AC-012.3 | T-041, T-063 | `test_privacy_policy_mentions_langfuse_deletion` | ✅ |
+| REQ-012 | AC-012.4 | T-041, T-063 | `test_privacy_policy_has_new_update_date` | ✅ |
+| REQ-013 | AC-013.1 | T-042, T-063 | `test_privacy_policy_no_voseo` | ✅ |
+| NFR-001 | AC-N001.1 | T-013, T-023, T-026, T-034, T-050, T-054 | `test_token_does_not_expose_email_or_name` | ✅ |
+| NFR-002 | AC-N002.1 | T-025, T-052 | `test_submit_does_not_wait_for_tracer` | ✅ |
+| NFR-003 | AC-N003.1 | T-010, T-011 (fakes; verificado con suite completa) | Verificado: suite completa sin red | ✅ |
+| NFR-004 | AC-N004.1 | T-035, T-060 | `test_feedback_buttons_are_accessible` | ✅ |
 
-| Archivo | Tests | Motivo del fallo | Legítimo |
-|---|---|---|---|
-| `test_feedback_token.py` | 12 tests | `NotImplementedError: not implemented` en `FeedbackTokenSigner.sign/verify` (scaffold) | ✅ Sí |
-| `test_coach_feedback.py` | 40 tests | `NotImplementedError: not implemented` en `CoachService.ask_with_feedback`, `CoachFeedbackService.submit`, `FeedbackTokenSigner` (scaffolds) | ✅ Sí |
-| `test_coach_feedback_routes.py` | 14 tests | `NotImplementedError` en scaffolds + 404 de ruta `/api/coach/feedback` inexistente | ✅ Sí |
-| `test_tracer.py` | 6 tests nuevos | `NotImplementedError: not implemented` en `Tracer.score_trace` (scaffold) | ✅ Sí |
-| `test_langfuse_backend.py` | 5 tests nuevos | `NotImplementedError: not implemented` en `LangfuseTraceBackend.score_trace` (scaffold) | ✅ Sí |
+### Resumen de cobertura
 
-**Tests anteriores (de 004):** 237 tests pasados:
-- `test_coach_service.py`: 5 passed
-- `test_tracer.py` (anteriores): 17 passed
-- `test_langfuse_backend.py` (anteriores): 6 passed
-- Resto de suite: 209 passed
+- **ACs sin test:** —
+- **REQs sin tarea:** —
+- **Tareas sin marcar `[x]`:** —
+- **Tests nuevos con `skip`, `xfail`, `.only` o `.skip`:** —
 
-### Frontend (19 fallos nuevos)
+## 3. Criterios de aceptación
 
-**Clasificación: TODOS LEGÍTIMOS**
+Todos los 49 AC están cubiertos:
+- 13 REQ (001–013): todos con AC cubiertos
+- 4 NFR (001–004): todos con AC cubiertos
+- 0 AC huérfanos o sin test
 
-| Archivo | Tests | Motivo del fallo | Legítimo |
-|---|---|---|---|
-| `CoachFeedbackButtons.test.tsx` | 10 tests | `Error: not implemented` en scaffold (línea 6) | ✅ Sí |
-| `CoachPage.test.tsx` | 3 tests | Botones de "Respuesta útil" no encontrados (CoachFeedbackButtons aún no implementado) | ✅ Sí |
-| `PrivacyPolicyPage.test.tsx` | 6 tests | Contenido de Langfuse, Voyage AI, derechos, fecha de actualización no implementado aún | ✅ Sí |
-
-## 3. Verificación de scaffolds
-
-| Archivo | Parámetros | Contenido | Cumple Art. 5.7 |
-|---|---|---|---|
-| `backend/utils/feedback_token.py` · `FeedbackTokenSigner.sign(user_id, trace_id)` | Sin `_` (correcto en Python) | Solo `NotImplementedError` | ✓ |
-| `backend/utils/feedback_token.py` · `FeedbackTokenSigner.verify(user_id, token)` | Sin `_` (correcto en Python) | Solo `NotImplementedError` | ✓ |
-| `backend/services/coach_feedback_service.py` · `CoachFeedbackService.submit(user_id, feedback_id, rating)` | Sin `_` (correcto en Python) | Solo `NotImplementedError` | ✓ |
-| `backend/services/coach_service.py` · `CoachService.ask_with_feedback(question, user_id, history)` | Sin `_` (correcto en Python) | Solo `NotImplementedError` | ✓ |
-| `backend/utils/tracing.py` · `Tracer.score_trace(trace_id, name, value, data_type, score_id)` | Sin `_` (correcto en Python) | Solo `NotImplementedError` | ✓ |
-| `frontend/src/features/coach/components/CoachFeedbackButtons.tsx` | `_props` (correcto en TypeScript) | Solo `Error("not implemented")` | ✓ |
-| `frontend/src/features/coach/api.ts` · `sendCoachFeedback(_payload)` | `_payload` (correcto en TypeScript) | Solo `Error("not implemented")` | ✓ |
-
-**Iteración anterior:** El implementer (modo scaffold, iter 1) corrigió los parámetros Python quitando el prefijo `_`, siguiendo la decisión del usuario. Verificado: todos los scaffolds cumplen Art. 5.7.
-
-## 4. Trazabilidad (preliminar)
-
-Todos los tests nuevos llevan marcador `SDD:`. La cobertura AC se verificará en el modo `full` (após implementación). Ejemplo:
-
-```python
-# SDD: REQ-005 AC-005.1
-def test_verify_returns_the_trace_id_for_the_same_user():
-    signer = FeedbackTokenSigner("secret")
-    token = signer.sign(42, "a" * 32)
-    assert signer.verify(42, token) == "a" * 32
-```
-
-## 5. Resumen de estado
+## 4. Resumen de estado
 
 | Aspecto | Estado |
 |---|---|
-| Tests nuevos fallando por comportamiento ausente (red legítimo) | ✅ Sí, 77 backend + 19 frontend |
-| Tests anteriores aún pasando | ✅ Sí, 237 tests de 004 y previos |
-| Scaffolds sin lógica, solo "not implemented" | ✅ Sí, todos verificados |
-| Sin imports rotos ni errores de sintaxis en tests | ✅ Sí |
-| Sin `skip`, `xfail`, `.only` ni `.skip` nuevos | ✅ Sí |
+| Todos los tests del ámbito pasan (backend + frontend) | ✅ 314 + 71 = 385 |
+| Lint: sin violaciones nuevas (ruff) | ✅ |
+| Lint: sin errores nuevos (oxlint, frontend) | ✅ |
+| Typecheck (tsc -b) | ✅ |
+| Build (npm run build) | ✅ |
+| Trazabilidad: ACs cubiertos | ✅ 49/49 |
+| Trazabilidad: REQs con tarea | ✅ 13/13 |
+| Trazabilidad: NFRs con tarea | ✅ 4/4 |
+| Trazabilidad: todas las tareas `[x]` | ✅ 53/53 |
+| Sin tests nuevos con skip/xfail/only | ✅ |
 
-## 6. Conclusión
+## 5. Conclusión
 
-**PASS:** Todos los tests nuevos fallan de forma legítima (rojo esperado en modo red):
-- Backend: `NotImplementedError` de 5 scaffolds (feedback_token, coach_feedback_service, coach_service, tracer, langfuse_backend)
-- Frontend: `Error("not implemented")` de 2 scaffolds (CoachFeedbackButtons, sendCoachFeedback) + contenido no implementado
-- Los 237 tests anteriores (de 004 y previos) sigan pasando
-- Todos los scaffolds cumplen Art. 5.7 (sin `_` en Python, con `_` en TypeScript)
+**PASS:** Modo full completado exitosamente.
 
-La iteración 2/3 resuelve correctamente el problema identificado en iter 1: los parámetros de los scaffolds Python ya no tienen el prefijo `_`.
+- Backend: 314 tests passed (incluyendo 237 existentes + 77 nuevos de 005)
+- Frontend: 71 tests passed (incluyendo 52 existentes + 19 nuevos de 005)
+- Lint (ruff-new): sin violaciones nuevas
+- Lint (oxlint): sin errores nuevos
+- Typecheck: sin errores
+- Build: exitoso
+- Trazabilidad: 100% (todos los AC, REQ, NFR cubiertos; todas las tareas marcadas)
 
-## Comentarios del usuario
-
-Ninguno en esta iteración; continúa desde iter 1.
+La implementación está completa y lista para la etapa de review.
