@@ -11,7 +11,7 @@
   "branch": "feat/005-coach-feedback",
   "base_branch": "main",
   "created_at": "2026-10-07T20:50:56.619Z",
-  "stage": "review",
+  "stage": "docs",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
@@ -42,7 +42,10 @@
       "at": "2026-10-08T19:49:11.997Z",
       "note": "1,2 Si, F7 al backlog (F1, F2 también diferidos)"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-08T20:11:44.912Z",
+      "note": "1,2,3 Si (ADR-0018 a Aceptada y coma de CLAUDE.md en el mismo commit)"
+    },
     "close": null
   },
   "commits": {
@@ -52,7 +55,7 @@
     "tests": "d55088d",
     "implement": "d79b98b",
     "copy_fix": "e27f259",
-    "review": "50afc6e",
+    "review": "722cbf5",
     "review_fix_1": "fbe1350"
   },
   "iterations": {
@@ -380,6 +383,30 @@
       "stage": "review",
       "event": "commit",
       "note": "Add review for 005-coach-feedback (iteration 2)"
+    },
+    {
+      "at": "2026-10-08T19:49:12.123Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegado al doc-keeper"
+    },
+    {
+      "at": "2026-10-08T19:49:57.292Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "doc-keeper DONE: README, backend/.env.example, CLAUDE.md Proyecto, docs-report.md"
+    },
+    {
+      "at": "2026-10-08T20:11:44.912Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "1,2,3 Si"
+    },
+    {
+      "at": "2026-10-08T20:11:44.912Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "Update docs for 005-coach-feedback (incluye ADR-0018 Aceptada)"
     }
   ],
   "tests_snapshot": {

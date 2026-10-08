@@ -1,6 +1,6 @@
 # ADR-0018: `feedback_id` del coach firmado con HMAC, sin estado en el servidor
 
-- **Estado:** Propuesta · 2026-10-08 (planner de la feature `005-coach-feedback`)
+- **Estado:** Aceptada · 2026-10-08 (aprobada por el usuario con el plan de la feature `005-coach-feedback`)
 - **Decidido por:** el planner lo propone; lo acepta o rechaza el usuario en el gate de plan.
 
 ## Contexto
