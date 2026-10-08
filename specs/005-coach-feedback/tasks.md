@@ -54,22 +54,22 @@
 
 ## Fase B — Implementación (implementer)
 ### Backend (utils → services → routes)
-- [ ] T-050 [REQ-005, NFR-001] (impl) Implementar `FeedbackTokenSigner.sign` y `verify` (HMAC-SHA256, forma validada, `compare_digest`) — `backend/utils/feedback_token.py`
-- [ ] T-051 [REQ-001, REQ-002, REQ-008] (impl) Añadir `trace_id` a los recorders, capturarlo en `Tracer.start_trace` y implementar `Tracer.score_trace` autoprotegido — `backend/utils/tracing.py`
-- [ ] T-052 [REQ-001, REQ-002, REQ-003, NFR-002] (impl) Añadir `_LangfuseTrace.trace_id` y `LangfuseTraceBackend.score_trace` con `create_score` — `backend/utils/langfuse_backend.py`
-- [ ] T-053 [REQ-001] (impl) Implementar `ask_with_feedback` y `CoachAnswer`; `ask` delega y sigue devolviendo `str` — `backend/services/coach_service.py`
-- [ ] T-054 [REQ-002, REQ-003, REQ-004, REQ-005, REQ-007, REQ-008, NFR-001] (impl) Implementar `CoachFeedbackService.submit` (validar, verificar, límite, puntuar) — `backend/services/coach_feedback_service.py`
-- [ ] T-055 [REQ-001, REQ-002, REQ-004, REQ-006] (impl) Devolver `feedback_id` en `/ask`, crear la ruta `/feedback` y `_build_coach_feedback_service()` — `backend/routes/coach_routes.py`
+- [x] T-050 [REQ-005, NFR-001] (impl) Implementar `FeedbackTokenSigner.sign` y `verify` (HMAC-SHA256, forma validada, `compare_digest`) — `backend/utils/feedback_token.py`
+- [x] T-051 [REQ-001, REQ-002, REQ-008] (impl) Añadir `trace_id` a los recorders, capturarlo en `Tracer.start_trace` y implementar `Tracer.score_trace` autoprotegido — `backend/utils/tracing.py`
+- [x] T-052 [REQ-001, REQ-002, REQ-003, NFR-002] (impl) Añadir `_LangfuseTrace.trace_id` y `LangfuseTraceBackend.score_trace` con `create_score` — `backend/utils/langfuse_backend.py`
+- [x] T-053 [REQ-001] (impl) Implementar `ask_with_feedback` y `CoachAnswer`; `ask` delega y sigue devolviendo `str` — `backend/services/coach_service.py`
+- [x] T-054 [REQ-002, REQ-003, REQ-004, REQ-005, REQ-007, REQ-008, NFR-001] (impl) Implementar `CoachFeedbackService.submit` (validar, verificar, límite, puntuar) — `backend/services/coach_feedback_service.py`
+- [x] T-055 [REQ-001, REQ-002, REQ-004, REQ-006] (impl) Devolver `feedback_id` en `/ask`, crear la ruta `/feedback` y `_build_coach_feedback_service()` — `backend/routes/coach_routes.py`
 
 ### Frontend (types → schemas → api → hooks → components → pages)
-- [ ] T-056 [REQ-009, REQ-010] (impl) Actualizar `AskCoachResponse` y añadir `CoachFeedbackRating`, `CoachFeedbackPayload` y `ConversationMessage` — `frontend/src/features/coach/types.ts`
-- [ ] T-057 [REQ-010, REQ-004] (impl) Crear `coachFeedbackPayloadSchema` con zod — `frontend/src/features/coach/schemas.ts`
-- [ ] T-058 [REQ-010] (impl) Implementar `sendCoachFeedback` con validación zod y `apiFetch` — `frontend/src/features/coach/api.ts`
-- [ ] T-059 [REQ-010] (impl) Añadir `useSendCoachFeedback` — `frontend/src/features/coach/hooks.ts`
-- [ ] T-060 [REQ-009, REQ-010, REQ-011, NFR-004] (impl) Implementar `CoachFeedbackButtons` (aria-pressed, desactivado en envío, errores general y 429) — `frontend/src/features/coach/components/CoachFeedbackButtons.tsx`
-- [ ] T-061 [REQ-009] (impl) Mostrar los botones bajo las respuestas del coach con `feedbackId` — `frontend/src/features/coach/components/ChatMessageBubble.tsx`
-- [ ] T-062 [REQ-009, REQ-010] (impl) Guardar `feedbackId` en el estado y enviar un historial solo con `role` y `content` — `frontend/src/features/coach/pages/CoachPage.tsx`
-- [ ] T-063 [REQ-012, REQ-013] (impl) Reescribir la política de privacidad en tuteo con Langfuse, Voyage AI, valoraciones, derechos y nueva fecha — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
+- [x] T-056 [REQ-009, REQ-010] (impl) Actualizar `AskCoachResponse` y añadir `CoachFeedbackRating`, `CoachFeedbackPayload` y `ConversationMessage` — `frontend/src/features/coach/types.ts`
+- [x] T-057 [REQ-010, REQ-004] (impl) Crear `coachFeedbackPayloadSchema` con zod — `frontend/src/features/coach/schemas.ts`
+- [x] T-058 [REQ-010] (impl) Implementar `sendCoachFeedback` con validación zod y `apiFetch` — `frontend/src/features/coach/api.ts`
+- [x] T-059 [REQ-010] (impl) Añadir `useSendCoachFeedback` — `frontend/src/features/coach/hooks.ts`
+- [x] T-060 [REQ-009, REQ-010, REQ-011, NFR-004] (impl) Implementar `CoachFeedbackButtons` (aria-pressed, desactivado en envío, errores general y 429) — `frontend/src/features/coach/components/CoachFeedbackButtons.tsx`
+- [x] T-061 [REQ-009] (impl) Mostrar los botones bajo las respuestas del coach con `feedbackId` — `frontend/src/features/coach/components/ChatMessageBubble.tsx`
+- [x] T-062 [REQ-009, REQ-010] (impl) Guardar `feedbackId` en el estado y enviar un historial solo con `role` y `content` — `frontend/src/features/coach/pages/CoachPage.tsx`
+- [x] T-063 [REQ-012, REQ-013] (impl) Reescribir la política de privacidad en tuteo con Langfuse, Voyage AI, valoraciones, derechos y nueva fecha — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

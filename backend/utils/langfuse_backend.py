@@ -45,6 +45,7 @@ class _LangfuseTrace:
         self._user_id = user_id
         self._name = name
         self._propagate_attributes = propagate_attributes
+        self.trace_id = root.trace_id
 
     def start_step(self, name, kind, input, model=None):
         kwargs = {"name": name, "as_type": kind, "input": input}
@@ -101,3 +102,13 @@ class LangfuseTraceBackend:
         with self.propagate_attributes(user_id=user_id, trace_name=name):
             root = client.start_observation(name=name, as_type="span", input=input)
         return _LangfuseTrace(root, user_id, name, self.propagate_attributes)
+
+    def score_trace(self, trace_id, name, value, data_type, score_id):
+        # create_score encola el envío en segundo plano: no bloquea la petición.
+        self._get_client().create_score(
+            name=name,
+            value=value,
+            trace_id=trace_id,
+            score_id=score_id,
+            data_type=data_type,
+        )

@@ -65,6 +65,11 @@ class CoachService:
     #user_id se usa UNICAMENTE para el rate limit (identificar de quien es cada contador
     #en Redis) - el resto del metodo no lo necesitaba y sigue sin necesitarlo.
     def ask(self, question: str, user_id: str, history: list[dict] | None = None) -> str:
+        return self.ask_with_feedback(question, user_id, history).answer
+
+    def ask_with_feedback(
+        self, question: str, user_id: str, history: list[dict] | None = None
+    ) -> CoachAnswer:
         #Chequeo de limite ANTES de gastar nada (retrieval + Claude) - a diferencia de
         #ProgressAnalysisService, aca no hay un caso "gratis" que se pueda resolver sin
         #golpear ningun proveedor externo, asi que el chequeo va primero en el metodo,
@@ -178,10 +183,11 @@ Pregunta: {question}"""
         #Fuera del try de proveedores: un fallo de instrumentación nunca debe ser un 503.
         trace.add_score("outcome", outcome, "CATEGORICAL")
         trace.finish(answer)
-        return answer
 
-    def ask_with_feedback(self, question: str, user_id: str, history: list[dict] | None = None) -> CoachAnswer:
-        raise NotImplementedError("not implemented")
+        feedback_id = None
+        if self.feedback_signer is not None and trace.trace_id is not None:
+            feedback_id = self.feedback_signer.sign(user_id, trace.trace_id)
+        return CoachAnswer(answer=answer, feedback_id=feedback_id)
 
     #Truco barato para que las preguntas de seguimiento cortas ("dame mas detalle",
     #"por que pasa eso") no fallen la busqueda semantica - solas no tienen suficiente

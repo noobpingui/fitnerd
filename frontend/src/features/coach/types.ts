@@ -23,4 +23,11 @@ export type CoachFeedbackPayload = {
 
 export type AskCoachResponse = {
   answer: string
+  feedback_id: string | null
+}
+
+// Mensaje del estado local de la conversacion: ChatMessage es lo que viaja como
+// historial; feedbackId solo lo usa la UI para mostrar los botones de valoracion.
+export type ConversationMessage = ChatMessage & {
+  feedbackId?: string | null
 }
