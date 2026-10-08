@@ -11,7 +11,7 @@
   "branch": "feat/005-coach-feedback",
   "base_branch": "main",
   "created_at": "2026-10-07T20:50:56.619Z",
-  "stage": "review",
+  "stage": "implement",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
@@ -48,12 +48,13 @@
     "tasks": "7951014",
     "tests": "d55088d",
     "implement": "d79b98b",
-    "copy_fix": "e27f259"
+    "copy_fix": "e27f259",
+    "review": "50afc6e"
   },
   "iterations": {
     "tests": 1,
     "implement": 0,
-    "review": 0
+    "review": 1
   },
   "max_iterations": 3,
   "red_check": {
@@ -303,6 +304,30 @@
       "stage": "review",
       "event": "commit",
       "note": "Add review for 005-coach-feedback (iteración 1); usuario elige opción (a): F3,F4,F5 al implementer, F1,F2 al backlog"
+    },
+    {
+      "at": "2026-10-08T19:26:47.455Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "Review iteración 1: implementer corrige F3, F4, F5 (review.md)"
+    },
+    {
+      "at": "2026-10-08T19:28:05.279Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "implementer corrigió F3, F4, F5; 314/71 tests en verde"
+    },
+    {
+      "at": "2026-10-08T19:29:26.549Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "Corrección F3-F5: 1,2 Si"
+    },
+    {
+      "at": "2026-10-08T19:29:26.549Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "Fix review findings for 005-coach-feedback (iteration 1)"
     }
   ],
   "tests_snapshot": {

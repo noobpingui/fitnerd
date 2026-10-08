@@ -62,3 +62,9 @@ El cambio añade un `feedback_id` firmado con HMAC (ADR-0018) a la respuesta `20
 
 ## 6. Decisión
 **APPROVED.** No hay hallazgos BLOQUEANTES ni MAYORES. F1 (MENOR) se puede diferir con aprobación del usuario, y F2 a F6 son sugerencias opcionales. Antes de cerrar quedan dos pendientes que ya recoge el plan: la prueba manual del *upsert* de `user_feedback` en Langfuse tras desplegar (votar `up` y luego `down` y comprobar una sola puntuación con valor `0`) y el paso de ADR-0018 a "Aceptada" en la etapa docs.
+
+## Comentarios del usuario
+
+Decisión del usuario (2026-10-08), literal: "Opcion (a) y commit approved".
+
+Opción (a): el `implementer` corrige F3, F4 y F5 (en F5, con la redacción propuesta por el reviewer o equivalente exacta: las valoraciones se usan para mejorar el coach y por límites de uso). F1 y F2 no se corrigen en esta feature: quedan en el backlog. F6 es informativo. Después se repiten verify full y review.

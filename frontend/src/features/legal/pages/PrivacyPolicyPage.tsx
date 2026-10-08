@@ -37,7 +37,7 @@ export function PrivacyPolicyPage() {
             <strong>Actividad en la app:</strong> tus ejercicios
             favoritos, tu plan semanal, y las preguntas que le haces al AI
             Coach y las valoraciones (👍/👎) que das a sus respuestas (para
-            poder responderte y por límites de uso).
+            mejorar el coach y por límites de uso).
           </li>
           <li>
             <strong>Feedback:</strong> lo que escribas en el formulario de

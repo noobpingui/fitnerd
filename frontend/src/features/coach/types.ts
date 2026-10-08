@@ -26,8 +26,8 @@ export type AskCoachResponse = {
   feedback_id: string | null
 }
 
-// Mensaje del estado local de la conversacion: ChatMessage es lo que viaja como
-// historial; feedbackId solo lo usa la UI para mostrar los botones de valoracion.
+// Mensaje del estado local de la conversación: ChatMessage es lo que viaja como
+// historial; feedbackId solo lo usa la UI para mostrar los botones de valoración.
 export type ConversationMessage = ChatMessage & {
   feedbackId?: string | null
 }

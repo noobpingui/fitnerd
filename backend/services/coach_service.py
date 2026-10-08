@@ -2,6 +2,7 @@ import logging
 from dataclasses import dataclass
 
 from services.retrieval_service import DEFAULT_TOP_K, RetrievalService
+from utils.feedback_token import FeedbackTokenSigner
 from utils.tracing import Tracer
 from utils.llm_client import LLMClient
 from utils.rate_limiter import RateLimiter
@@ -48,7 +49,7 @@ class CoachAnswer:
 
 
 class CoachService:
-    def __init__(self, retrieval_service: RetrievalService, llm_client: LLMClient, rate_limiter: RateLimiter, tracer: Tracer | None = None, feedback_signer=None):
+    def __init__(self, retrieval_service: RetrievalService, llm_client: LLMClient, rate_limiter: RateLimiter, tracer: Tracer | None = None, feedback_signer: FeedbackTokenSigner | None = None):
         self.feedback_signer = feedback_signer
         self.retrieval_service = retrieval_service
         self.llm_client = llm_client
@@ -62,8 +63,8 @@ class CoachService:
     #no se reinyecta contexto viejo en cada mensaje historico). None/vacio = primera pregunta
     #de la conversacion, se comporta identico a como funcionaba antes de esto.
     #
-    #user_id se usa UNICAMENTE para el rate limit (identificar de quien es cada contador
-    #en Redis) - el resto del metodo no lo necesitaba y sigue sin necesitarlo.
+    #user_id se usa para el rate limit (de quien es cada contador en Redis), para la traza
+    #y para firmar el feedback_id, que queda ligado a este usuario.
     def ask(self, question: str, user_id: str, history: list[dict] | None = None) -> str:
         return self.ask_with_feedback(question, user_id, history).answer
 

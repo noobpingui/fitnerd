@@ -11,8 +11,8 @@ type CoachFeedbackButtonsProps = {
 
 const GENERAL_ERROR = "No se pudo enviar tu valoración. Inténtalo de nuevo."
 
-// Cada instancia tiene su propia mutacion y su propia seleccion: votar una
-// respuesta no afecta a las demas.
+// Cada instancia tiene su propia mutación y su propia selección: votar una
+// respuesta no afecta a las demás.
 export function CoachFeedbackButtons({ feedbackId }: CoachFeedbackButtonsProps) {
   const [selected, setSelected] = useState<CoachFeedbackRating | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -30,7 +30,7 @@ export function CoachFeedbackButtons({ feedbackId }: CoachFeedbackButtonsProps) 
           setErrorMessage(null)
           setIsLimitError(false)
         },
-        // En error la seleccion anterior no cambia.
+        // En error la selección anterior no cambia.
         onError: (err) => {
           if (err instanceof ApiError && err.status === 429) {
             setErrorMessage(err.message)
