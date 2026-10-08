@@ -81,8 +81,8 @@ class CoachService:
         )
         if not allowed:
             raise RateLimitError(
-                f"Alcanzaste el limite de {MAX_QUESTIONS_PER_WINDOW} preguntas por hora. "
-                "Volve a intentarlo en un rato."
+                f"Alcanzaste el límite de {MAX_QUESTIONS_PER_WINDOW} preguntas por hora. "
+                "Vuelve a intentarlo en un rato."
             )
 
         #La traza se abre después del límite de uso: un 429 no genera traza.

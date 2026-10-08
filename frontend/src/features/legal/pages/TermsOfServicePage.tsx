@@ -6,7 +6,7 @@ export function TermsOfServicePage() {
       <p>
         fitnerd es un proyecto personal, ofrecido de forma
         gratuita y "tal cual" (as-is), sin garantías formales. Al usar la
-        app, aceptás estos términos.
+        app, aceptas estos términos.
       </p>
 
       <section>
@@ -17,9 +17,9 @@ export function TermsOfServicePage() {
           El catálogo de ejercicios y las respuestas del AI Coach son
           información general con fines educativos - no reemplazan el
           consejo de un profesional de la salud, entrenador certificado o
-          médico. Consultá a un profesional antes de empezar cualquier
-          programa de ejercicio, especialmente si tenés alguna condición
-          médica preexistente. Vos sos responsable de las decisiones que
+          médico. Consulta a un profesional antes de empezar cualquier
+          programa de ejercicio, especialmente si tienes alguna condición
+          médica preexistente. Tú eres responsable de las decisiones que
           tomes sobre tu entrenamiento y tu salud.
         </p>
       </section>
@@ -27,7 +27,7 @@ export function TermsOfServicePage() {
       <section>
         <h2 className="mb-2 text-lg font-semibold">Tu cuenta</h2>
         <p>
-          Sos responsable de mantener segura tu contraseña. La
+          Eres responsable de mantener segura tu contraseña. La
           información que nos das al registrarte (email, fecha de
           nacimiento, etc.) debe ser real y tuya.
         </p>
@@ -55,7 +55,7 @@ export function TermsOfServicePage() {
       <section>
         <h2 className="mb-2 text-lg font-semibold">Cierre de cuenta</h2>
         <p>
-          Podés pedir que se elimine tu cuenta en cualquier momento (ver{" "}
+          Puedes pedir que se elimine tu cuenta en cualquier momento (ver{" "}
           <a href="/privacy" className="text-primary underline-offset-4 hover:underline">
             política de privacidad
           </a>
