@@ -11,8 +11,8 @@
   "branch": "feat/007-macros-calculation",
   "base_branch": "chore/frontend-redesign",
   "created_at": "2026-10-12T08:40:24.490Z",
-  "stage": "docs",
-  "status": "awaiting_approval",
+  "stage": "done",
+  "status": "done",
   "approvals": {
     "spec": {
       "at": "2026-10-12T09:05:59.354Z",
@@ -46,7 +46,10 @@
       "at": "2026-10-12T20:27:53.963Z",
       "note": "1,2 sí"
     },
-    "close": null
+    "close": {
+      "at": "2026-10-12T20:29:49.535Z",
+      "note": "1. Si. 2. Si. 3. b"
+    }
   },
   "commits": {
     "spec": "ca17070",
@@ -54,7 +57,8 @@
     "tasks": "390c012",
     "tests": "7e0936a",
     "implement": "624532e",
-    "review": "8cf9e62"
+    "review": "8cf9e62",
+    "docs": "aabe1da"
   },
   "iterations": {
     "tests": 0,
@@ -285,6 +289,24 @@
       "stage": "docs",
       "event": "approved",
       "note": "Etapa docs y commit aprobados"
+    },
+    {
+      "at": "2026-10-12T20:27:54.478Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "aabe1da"
+    },
+    {
+      "at": "2026-10-12T20:27:54.478Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Checklist de hecho (Art. 9)"
+    },
+    {
+      "at": "2026-10-12T20:29:49.535Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Cierre aprobado; integración por merge local en chore/frontend-redesign"
     }
   ],
   "tests_snapshot": {
