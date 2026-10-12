@@ -50,11 +50,13 @@ export type MacroResult = {
   grams: number
   kcal: number
   share: number
+  exactKcal: number
 }
 
 export type MacrosSummary = {
   maintenanceKcal: number
   targetKcal: number
+  exactTargetKcal: number
   macros: MacroResult[]
 }
 
@@ -93,11 +95,13 @@ export function calculateMacros(
     kcal: Math.round(kcalByMacro[key]),
     grams: Math.round(kcalByMacro[key] / KCAL_PER_GRAM[key]),
     share: kcalByMacro[key] / totalKcal,
+    exactKcal: Number.NaN,
   }))
 
   return {
     maintenanceKcal: Math.round(maintenanceKcal),
     targetKcal: Math.round(targetKcal),
+    exactTargetKcal: Number.NaN,
     macros,
   }
 }

@@ -57,4 +57,43 @@ describe("HomePage - perfil del servidor", () => {
     expect(screen.getByText("160 lb")).toBeInTheDocument()
     expect(screen.getByText(/1\.?858/)).toBeInTheDocument()
   })
+
+  // SDD: REQ-009 AC-009.4
+  it("muestra 3379 kcal y los gramos con el tope de proteína a 120 kg", async () => {
+    vi.setSystemTime(new Date(2026, 9, 12, 12, 0))
+    getProfileMock.mockResolvedValue(
+      makeProfileResponse(
+        { date_of_birth: "1996-01-01" },
+        { height_cm: 180, weight: 120, activity_level: "high", goal: "maintain" }
+      )
+    )
+    renderPage()
+
+    const card = (await screen.findByText("Objetivo de hoy")).closest("a")
+    expect(card).toHaveTextContent(/3\.?379/)
+    expect(card).toHaveTextContent("459 g")
+    expect(card).toHaveTextContent("175 g")
+    expect(card).toHaveTextContent("94 g")
+  })
+
+  // SDD: REQ-009 AC-009.5
+  it("muestra 1200 kcal cuando se aplica el suelo calórico", async () => {
+    vi.setSystemTime(new Date(2026, 9, 12, 12, 0))
+    getProfileMock.mockResolvedValue(
+      makeProfileResponse(
+        { date_of_birth: "1976-01-01" },
+        {
+          gender: "female",
+          height_cm: 160,
+          weight: 60,
+          activity_level: "low",
+          goal: "lose",
+        }
+      )
+    )
+    renderPage()
+
+    const card = (await screen.findByText("Objetivo de hoy")).closest("a")
+    expect(card).toHaveTextContent(/1\.?200/)
+  })
 })
