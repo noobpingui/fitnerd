@@ -21,6 +21,7 @@ import {
   isHeightValid,
   isWeightValid,
 } from "@/features/onboarding/validation"
+import { todayIsoDate } from "@/lib/dates"
 import { useSaveProfile } from "@/features/profile/hooks"
 import { payloadFromAnswers } from "@/features/profile/mappers"
 
@@ -41,14 +42,6 @@ const slide = {
   enter: (direction: number) => ({ opacity: 0, x: direction * 40 }),
   center: { opacity: 1, x: 0 },
   exit: (direction: number) => ({ opacity: 0, x: direction * -40 }),
-}
-
-// Fecha de hoy en local como "YYYY-MM-DD", para el atributo max del campo.
-function todayIso() {
-  const now = new Date()
-  const month = String(now.getMonth() + 1).padStart(2, "0")
-  const day = String(now.getDate()).padStart(2, "0")
-  return `${now.getFullYear()}-${month}-${day}`
 }
 
 export function OnboardingPage({
@@ -115,7 +108,7 @@ export function OnboardingPage({
             type="date"
             aria-label="Fecha de nacimiento"
             autoFocus
-            max={todayIso()}
+            max={todayIsoDate()}
             value={answers.dateOfBirth}
             aria-invalid={dobError ? true : undefined}
             onChange={(e) => update({ dateOfBirth: e.target.value })}

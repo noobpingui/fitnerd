@@ -60,8 +60,10 @@ export function ProfilePage() {
         >
           {/* Se espera al historial para precargar la última grasa y
               músculo conocidos; si falla, el formulario arranca vacío. */}
-          {profilePending && <ProfileLoading />}
-          {profileError && <ProfileLoadError onRetry={() => refetch()} />}
+          {profilePending && <ProfileLoading className="min-h-40" />}
+          {profileError && (
+            <ProfileLoadError className="min-h-40" onRetry={() => refetch()} />
+          )}
           {answers && !metricsLoading && (
             <PhysicalDataForm initial={answers} initialBody={latestBody} />
           )}

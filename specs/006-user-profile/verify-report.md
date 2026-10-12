@@ -1,45 +1,40 @@
 # Verify report 006 — Perfil de usuario persistido en el backend
 
-- **Modo:** red (tras la etapa tests, iteración 2/3)
-- **Fecha:** 2026-10-12T05:21:08.181Z · **Rama:** `feat/006-user-profile` @ `d8529aa` (cambios sin commit de tests y scaffold)
+- **Modo:** full (tras la etapa implement; iteración 2, tras las correcciones F1-F6 de review)
+- **Fecha:** 2026-10-12T05:51:49.191Z · **Rama:** `feat/006-user-profile` @ `ab5f8a3` (con cambios sin commit de las correcciones)
 - **Resultado:** PASS
 
 ## 1. Comandos ejecutados
 | Ámbito | Comando | Resultado | Resumen de la salida |
 |---|---|---|---|
-| backend | `python -m pytest -q tests/test_services/test_profile_service.py tests/test_routes/test_profile_routes.py` | ✅ rojo legítimo | 139 failed, 0 errores de colección. 112 `NotImplementedError` (scaffold), 27 `404` de `/api/profile` inexistente (aserciones de estado), 18 `assert 404 == 200`, 7 `assert 404 == 400`, 2 `assert 404 == 401` |
-| frontend | `npx vitest run` sobre los 12 archivos de test nuevos o con marcador nuevo | ✅ rojo legítimo | 61 failed, 0 passed. 21 `Error: not implemented` (scaffold), 12 + 11 + 1 + 1 textos o etiquetas que la UI aún no muestra (TestingLibrary), 2 aserciones numéricas de `calculateMacros` (2508 frente a 2322 y 2315) |
+| backend | `backend/.venv/Scripts/python.exe -m pytest -q` (`backend/`) | ✅ | 453 passed (suite completa) |
+| backend | `node .claude/sdd/scripts/ruff-new.mjs chore/frontend-redesign` (raíz) | ✅ | Sin violaciones nuevas en los 10 .py cambiados |
+| frontend | `npm test` (`frontend/`) | ✅ | 22 archivos, 132 tests passed |
+| frontend | `npm run lint` (`frontend/`) | ✅ | 0 errores (2 warnings preexistentes en `components/ui/button.tsx` y `components/ui/form.tsx`, fuera del diff) |
+| frontend | `npx tsc -b` (`frontend/`) | ✅ | Sin errores |
+| frontend | `npm run build` (`frontend/`) | ✅ | Build correcto. Aviso no bloqueante de Vite: chunk JS de más de 500 kB |
 
-Archivos de test nuevos (con marcador `SDD:`):
-- Backend: `backend/tests/test_services/test_profile_service.py` (41 marcadores), `backend/tests/test_routes/test_profile_routes.py` (25 marcadores).
-- Frontend: `src/app/OnboardingGuard.test.tsx`, `src/app/OnboardingRoute.test.tsx`, `src/app/accountSwitch.test.tsx`, `src/features/onboarding/validation.test.ts`, `src/features/onboarding/pages/OnboardingPage.test.tsx`, `src/features/profile/mappers.test.ts`, `src/features/profile/pages/ProfilePage.test.tsx`, `src/features/home/pages/HomePage.test.tsx`, `src/features/macros/calculations.test.ts`, `src/features/macros/pages/MacrosPage.test.tsx`, `src/features/body-metrics/pages/BodyMetricsPage.test.tsx`, `src/lib/age.test.ts`.
-
-Comprobaciones de la etapa red:
-- **Errores ilegítimos:** ninguno. No hay `SyntaxError`, `ModuleNotFoundError`, errores de import, de fixture ni de `conftest`. Vitest no reporta `does not provide an export`, `Failed to resolve` ni `is not a function`.
-- **Esqueletos `(scaffold)`:** `backend/services/profile_service.py` solo contiene `raise NotImplementedError` en `get_profile` y `save_profile`. La función `utc_now()` que señaló el red check anterior ya no existe. `frontend/src/lib/age.ts`, `frontend/src/features/profile/api.ts`, `frontend/src/features/profile/mappers.ts`, las dos funciones nuevas de `frontend/src/features/onboarding/validation.ts` y `frontend/src/app/OnboardingRoute.tsx` solo lanzan `Error("not implemented")` o `NotImplementedError`, sin lógica.
-- **Sin `skip`, `xfail`, `.only` ni `.skip` en los tests nuevos.**
-- **Mocks:** backend sin `unittest.mock` ni `monkeypatch`. Frontend usa `vi.mock` sobre la capa `api.ts` (permitido por Art. 5.5). Además, `BodyMetricsPage.test.tsx` y `ProfilePage.test.tsx` mockean componentes de gráficas o análisis (`TrendChart`, `ProgressAnalysis`). No es llamada de red, así que no infringe Art. 5.5; se anota solo como observación.
-- **Cobertura de marcadores:** los 70 AC de `spec.md` aparecen en al menos un marcador `SDD:` de un test nuevo.
+Base de comparación: `state.json.base_branch` = `chore/frontend-redesign` (el diff contra `main` mezclaría cambios ajenos a la feature).
 
 ## 2. Trazabilidad
-Esta comprobación no es bloqueante en modo red. Se revisará completa en la etapa verify.
+| REQ / NFR | AC | Tareas | Tests con `SDD:` | Estado del test |
+|---|---|---|---|---|
+| REQ-001 a REQ-013 | 70 ACs de `spec.md` (REQ-001..013 y NFR-001..002) | Todas las de `tasks.md` (T-001..T-129) | 14 archivos de tests de la feature (backend y frontend) | ✅ todos pasan |
 
-- ACs sin test: — (los 70 AC tienen marcador `SDD:`)
-- REQs sin tarea: — (no comprobado en red)
-- Tareas sin marcar `[x]`: T-100 a T-129 (fase B, esperado en red)
+- ACs sin test: —  (los 70 ACs de `spec.md` tienen al menos un marcador `SDD:` en los tests de la feature)
+- Marcadores de AC que no existen en `spec.md`: —
+- REQs/NFRs sin tarea: —  (los 15 REQ/NFR referenciados en los tests aparecen en `tasks.md`)
+- Tareas sin marcar `[x]`: —  (65 de 65 marcadas)
+- Nuevos `skip`, `xfail`, `.only`, `.skip` o `.todo` en el diff: ninguno
+
+Nota: una búsqueda global de marcadores `SDD:` devuelve también ACs de otras features (recuperación de contraseña, coach); se excluyeron del análisis porque no pertenecen a 006.
 
 ## 3. Criterios de aceptación
-Sin cambios en esta etapa. Los AC que solo se pueden verificar a mano (por ejemplo, la sensación visual del indicador de carga) se marcarán como "manual" en la etapa verify.
+- Todos los ACs de la feature (70) están cubiertos por tests automáticos que pasan.
+- Ningún AC requiere comprobación manual en este gate. Los textos y cifras visibles (por ejemplo, "03/04/1998", "27 años" frente a "28 años") se comprueban en tests de la UI y de cálculo.
 
 ## 4. Fallos (si los hay)
-Ningún fallo bloqueante. Los dos fallos del red check anterior quedan resueltos:
+Ninguno.
 
-| # | Qué falló | Estado actual | Responsable probable |
-|---|---|---|---|
-| 1 | `OnboardingGuard.test.tsx` > "redirige a /onboarding si el servidor dice que el onboarding está pendiente" pasaba sin implementación | Ahora falla por aserción legítima: `Unable to find ... "Pantalla onboarding"` (el guard actual muestra `Pantalla Home`) | — (resuelto) |
-| 2 | `utc_now()` con lógica en el esqueleto de `profile_service.py` | Eliminada; el esqueleto solo lanza `NotImplementedError` | — (resuelto) |
-| Obs. | Tests de rutas que leían el JSON antes de comprobar el estado (`KeyError` sobre 404) | Ahora comprueban el código de estado antes de leer el cuerpo (`assert 404 == 200`, `assert 404 == 400`, `assert 404 == 401`) | — (resuelto) |
-
-Rojos legítimos verificados (resumen):
-- Backend: `NotImplementedError` del scaffold (112), `404` de `/api/profile` aún inexistente (27 en total, con sus aserciones de 200, 400 y 401 esperadas).
-- Frontend: `Error: not implemented` de los esqueletos (21), textos o etiquetas que la UI aún no muestra ("Fecha de nacimiento", "Objetivo diario", "Meta: Perder peso", "No se pudo cargar tu perfil.", "Reintentar", "Pantalla onboarding", rol `status" del indicador de carga, etc.) y aserciones numéricas de Macros y `calculateMacros` (2508 frente a 2322 y 2315 esperados).
+## 5. Sobre las correcciones F1-F6 de review
+Esta verificación se ejecutó sobre el estado actual del árbol de trabajo, que incluye las correcciones F1-F6 (sin commit). Todas las comprobaciones anteriores pasan con esos cambios. Los 15 archivos de tests de la feature coinciden con `tests_snapshot` de `state.json` (sha256 verificados), así que los tests no se modificaron tras la etapa tests.

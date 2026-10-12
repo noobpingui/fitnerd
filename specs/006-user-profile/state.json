@@ -11,7 +11,7 @@
   "branch": "feat/006-user-profile",
   "base_branch": "chore/frontend-redesign",
   "created_at": "2026-10-12T04:13:25.965Z",
-  "stage": "implement",
+  "stage": "review",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
@@ -34,8 +34,14 @@
       "at": "2026-10-12T05:31:19.488Z",
       "note": "1,2 sí"
     },
-    "verify": null,
-    "review": null,
+    "verify": {
+      "at": "2026-10-12T05:36:43.343Z",
+      "note": "Corre el comando tu. Y si, aprobada la etapa verify"
+    },
+    "review": {
+      "at": "2026-10-12T08:12:17.284Z",
+      "note": "1. Si, al backlog. 2. Si. 3. Si"
+    },
     "docs": null,
     "close": null
   },
@@ -43,12 +49,13 @@
     "spec": "3b754c9",
     "plan": "d8529aa",
     "tasks": "d8529aa",
-    "tests": "bbf1387"
+    "tests": "bbf1387",
+    "implement": "ab5f8a3"
   },
   "iterations": {
     "tests": 1,
     "implement": 0,
-    "review": 0
+    "review": 1
   },
   "max_iterations": 3,
   "red_check": {
@@ -56,12 +63,12 @@
     "at": "2026-10-12T05:21:08.181Z"
   },
   "verify": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-12T05:51:49.191Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-10-12T05:53:04.216Z"
   },
   "bypass": false,
   "history": [
@@ -208,6 +215,114 @@
       "stage": "implement",
       "event": "approved",
       "note": "Etapa implement y commit aprobados"
+    },
+    {
+      "at": "2026-10-12T05:31:19.721Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "ab5f8a3"
+    },
+    {
+      "at": "2026-10-12T05:31:19.721Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier modo full (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T05:33:02.141Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify full PASS"
+    },
+    {
+      "at": "2026-10-12T05:36:43.343Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "Etapa verify aprobada. Migración aplicada en Postgres local (e28ebf553c7d -> b7c1d9e4a2f3 -> c6a1f0d2e9b4), round-trip downgrade/upgrade OK"
+    },
+    {
+      "at": "2026-10-12T05:36:43.343Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado al reviewer (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T05:39:16.538Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED: 0 bloqueantes, 0 mayores, 2 menores, 4 nits"
+    },
+    {
+      "at": "2026-10-12T05:47:53.338Z",
+      "stage": "review",
+      "event": "changes_requested",
+      "note": "Usuario elige (a): corregir F1-F6 antes de cerrar review (\"1. A 2. A\"). Commit de review no aprobado aún"
+    },
+    {
+      "at": "2026-10-12T05:47:53.338Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "F1-F5 -> implementer (iteración review 1)"
+    },
+    {
+      "at": "2026-10-12T05:47:53.338Z",
+      "stage": "plan",
+      "event": "rework",
+      "note": "F6 -> planner (ADR-0019 a Aceptada)"
+    },
+    {
+      "at": "2026-10-12T05:48:37.140Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "stage=implement para que el implementer corrija F1-F5 (el primer intento quedó bloqueado por el hook al seguir stage=review)"
+    },
+    {
+      "at": "2026-10-12T05:49:59.284Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F1-F5 corregidos (tests intactos: true)"
+    },
+    {
+      "at": "2026-10-12T05:49:59.284Z",
+      "stage": "plan",
+      "event": "rework",
+      "note": "stage=plan para que el planner corrija F6 (solo estado del ADR-0019; no cambia el diseño, no se reabren aprobaciones)"
+    },
+    {
+      "at": "2026-10-12T05:50:15.571Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "F6 corregido: ADR-0019 Aceptada"
+    },
+    {
+      "at": "2026-10-12T05:50:15.571Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "verify full tras correcciones de review (iteración 2)"
+    },
+    {
+      "at": "2026-10-12T05:52:14.255Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify full PASS (iteración 2)"
+    },
+    {
+      "at": "2026-10-12T05:52:14.255Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Re-review tras correcciones F1-F6 (iteración 2)"
+    },
+    {
+      "at": "2026-10-12T05:53:04.216Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED (iteración 2): F1-F6 resueltos; 2 NIT opcionales nuevos (F7, F8)"
+    },
+    {
+      "at": "2026-10-12T08:12:17.284Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Etapa review y commit aprobados; F7 y F8 al backlog"
     }
   ],
   "tests_snapshot": {

@@ -9,8 +9,9 @@ export function useProfile() {
   return useQuery({
     queryKey: profileKeys.detail,
     queryFn: getProfile,
-    // Sin staleTime, cada pantalla que monta volvería a pedir el perfil y
-    // pisaría lo recién guardado; el perfil solo lo cambia esta misma app.
+    // Sin staleTime, cada pantalla que monta volvería a pedir el perfil;
+    // con él se lee una sola vez y se reutiliza la caché (AC-011.7). El
+    // perfil solo lo cambia esta misma app.
     staleTime: 5 * 60 * 1000,
   })
 }

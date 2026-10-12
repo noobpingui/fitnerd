@@ -1,6 +1,7 @@
 import { LIMITS } from "@/features/onboarding/constants"
 import type { OnboardingAnswers } from "@/features/onboarding/types"
 import { ageFromIsoDate } from "@/lib/age"
+import { parseLocalDate } from "@/lib/dates"
 
 // Devuelve true solo si el texto es un número dentro de [min, max]. Un
 // input vacío ("") no es válido: todas las preguntas son obligatorias.
@@ -28,8 +29,8 @@ export function dateOfBirthError(
   today: Date = new Date()
 ): string | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(a.dateOfBirth)) return ""
-  const [year, month, day] = a.dateOfBirth.split("-").map(Number)
-  const dob = new Date(year, month - 1, day)
+  const [, month, day] = a.dateOfBirth.split("-").map(Number)
+  const dob = parseLocalDate(a.dateOfBirth)
   if (dob.getMonth() !== month - 1 || dob.getDate() !== day) return ""
   const startOfToday = new Date(
     today.getFullYear(),

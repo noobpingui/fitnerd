@@ -1,6 +1,6 @@
 # ADR-0019: Perfil de usuario en `user_profiles`, onboarding en `users` y caché vaciada al cambiar de sesión
 
-- **Estado:** Propuesta · 2026-10-12 (plan de la feature `006-user-profile`)
+- **Estado:** Aceptada · 2026-10-12 (aprobada por el usuario con el plan de la feature `006-user-profile`)
 - **Decidido por:** el planner lo propone; lo acepta o rechaza el usuario en el gate de plan.
 
 ## Contexto

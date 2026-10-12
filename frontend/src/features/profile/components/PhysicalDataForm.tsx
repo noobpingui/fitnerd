@@ -35,6 +35,7 @@ import {
   isHeightValid,
   isWeightValid,
 } from "@/features/onboarding/validation"
+import { todayIsoDate } from "@/lib/dates"
 import { useSaveProfile } from "@/features/profile/hooks"
 import { payloadFromAnswers } from "@/features/profile/mappers"
 
@@ -167,11 +168,15 @@ export function PhysicalDataForm({
         <Field
           label="Fecha de nacimiento"
           htmlFor="profile-dob"
-          error={dobError || undefined}
+          error={
+            dobError ||
+            (draft.dateOfBirth === "" ? "Indica tu fecha de nacimiento" : undefined)
+          }
         >
           <Input
             id="profile-dob"
             type="date"
+            max={todayIsoDate()}
             value={draft.dateOfBirth}
             onChange={(e) => update({ dateOfBirth: e.target.value })}
             aria-invalid={!dobOk || undefined}
