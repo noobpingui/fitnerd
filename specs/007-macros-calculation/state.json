@@ -1,0 +1,320 @@
+{
+  "$comment": "Única fuente de verdad del flujo SDD de una feature. Lo escriben solo el orquestador (/sdd-*) y el verifier (secciones red_check y verify). Etapas: spec, plan, tasks, tests, implement, verify, review, docs, close, done.",
+  "schema_version": 1,
+  "feature": "007-macros-calculation",
+  "title": "Cálculo de calorías y macros con límites de proteína y carbohidratos",
+  "type": "feature",
+  "scope": {
+    "backend": false,
+    "frontend": true
+  },
+  "branch": "feat/007-macros-calculation",
+  "base_branch": "chore/frontend-redesign",
+  "created_at": "2026-10-12T08:40:24.490Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-12T09:05:59.354Z",
+      "note": "1,2 sí"
+    },
+    "plan": {
+      "at": "2026-10-12T09:11:46.981Z",
+      "note": "1,2 sí"
+    },
+    "tasks": {
+      "at": "2026-10-12T09:15:50.383Z",
+      "note": "1,2 sí"
+    },
+    "tests": {
+      "at": "2026-10-12T09:19:43.787Z",
+      "note": "1,2 sí"
+    },
+    "implement": {
+      "at": "2026-10-12T09:22:36.506Z",
+      "note": "1,2 sí"
+    },
+    "verify": {
+      "at": "2026-10-12T09:27:19.653Z",
+      "note": "Si, aprobado"
+    },
+    "review": {
+      "at": "2026-10-12T09:37:17.382Z",
+      "note": "1. backlog 2. Si. 3. Si"
+    },
+    "docs": {
+      "at": "2026-10-12T20:27:53.963Z",
+      "note": "1,2 sí"
+    },
+    "close": {
+      "at": "2026-10-12T20:29:49.535Z",
+      "note": "1. Si. 2. Si. 3. b"
+    }
+  },
+  "commits": {
+    "spec": "ca17070",
+    "plan": "c86fc86",
+    "tasks": "390c012",
+    "tests": "7e0936a",
+    "implement": "624532e",
+    "review": "8cf9e62",
+    "docs": "aabe1da"
+  },
+  "iterations": {
+    "tests": 0,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-10-12T09:18:45.234Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-10-12T09:23:26.414Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-10-12T09:28:48.961Z"
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-12T08:40:24.490Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "Feature creada desde chore/frontend-redesign (aprobado por el usuario)"
+    },
+    {
+      "at": "2026-10-12T08:40:45.170Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegado al spec-writer (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T08:50:52.671Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Respuestas Q1-Q5 copiadas en spec.md (Q1 IMC 27, Q4 suelo calórico); re-delegado al spec-writer"
+    },
+    {
+      "at": "2026-10-12T09:02:09.292Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Respuesta Q6 copiada (1200/1500 kcal, suelo siempre); re-delegado al spec-writer"
+    },
+    {
+      "at": "2026-10-12T09:02:36.947Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec.md con 10 REQ / 33 AC, Q1-Q6 resueltas"
+    },
+    {
+      "at": "2026-10-12T09:05:59.354Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Etapa spec y commit aprobados"
+    },
+    {
+      "at": "2026-10-12T09:05:59.521Z",
+      "stage": "spec",
+      "event": "commit",
+      "note": "ca17070"
+    },
+    {
+      "at": "2026-10-12T09:05:59.521Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegado al planner (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T09:08:40.859Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md (solo frontend, sin ADR)"
+    },
+    {
+      "at": "2026-10-12T09:11:46.981Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "Etapa plan y commit aprobados (tests de caracterización en verde y scaffold con NaN aceptados)"
+    },
+    {
+      "at": "2026-10-12T09:11:47.152Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "c86fc86"
+    },
+    {
+      "at": "2026-10-12T09:11:47.152Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegado al task-breaker (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T09:12:26.288Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks.md con 23 tareas; la spec tiene 29 AC (no 33 como decía el informe del spec-writer)"
+    },
+    {
+      "at": "2026-10-12T09:15:50.383Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "Etapa tasks y commit aprobados"
+    },
+    {
+      "at": "2026-10-12T09:15:50.546Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "390c012"
+    },
+    {
+      "at": "2026-10-12T09:15:50.546Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Delegado al implementer en modo scaffold (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T09:16:10.316Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Scaffold T-000 DONE; delegado al test-author"
+    },
+    {
+      "at": "2026-10-12T09:18:22.840Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "test-author DONE (T-001..T-015); delegado al verifier modo red"
+    },
+    {
+      "at": "2026-10-12T09:19:09.007Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T09:19:43.787Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "Etapa tests y commit aprobados; tests_snapshot con 3 archivos"
+    },
+    {
+      "at": "2026-10-12T09:19:43.975Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "7e0936a"
+    },
+    {
+      "at": "2026-10-12T09:19:43.975Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegado al implementer (iteración 1); red_check PASS"
+    },
+    {
+      "at": "2026-10-12T09:20:41.985Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-020..T-026 hechas; tests_snapshot intacto"
+    },
+    {
+      "at": "2026-10-12T09:22:36.506Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "Etapa implement y commit aprobados"
+    },
+    {
+      "at": "2026-10-12T09:22:36.672Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "624532e"
+    },
+    {
+      "at": "2026-10-12T09:22:36.672Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier modo full (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T09:23:48.361Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify full PASS"
+    },
+    {
+      "at": "2026-10-12T09:27:19.653Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "Etapa verify aprobada"
+    },
+    {
+      "at": "2026-10-12T09:27:19.653Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado al reviewer (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T09:28:48.961Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED: 0 bloqueantes/mayores/menores, 3 NIT"
+    },
+    {
+      "at": "2026-10-12T09:37:17.382Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Etapa review y commit aprobados; F1-F3 al backlog"
+    },
+    {
+      "at": "2026-10-12T09:37:17.551Z",
+      "stage": "review",
+      "event": "commit",
+      "note": "8cf9e62"
+    },
+    {
+      "at": "2026-10-12T09:37:17.551Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegado al doc-keeper (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T09:37:44.671Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "README + CLAUDE.md (Proyecto) + docs-report.md"
+    },
+    {
+      "at": "2026-10-12T20:27:53.963Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "Etapa docs y commit aprobados"
+    },
+    {
+      "at": "2026-10-12T20:27:54.478Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "aabe1da"
+    },
+    {
+      "at": "2026-10-12T20:27:54.478Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Checklist de hecho (Art. 9)"
+    },
+    {
+      "at": "2026-10-12T20:29:49.535Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Cierre aprobado; integración por merge local en chore/frontend-redesign"
+    }
+  ],
+  "tests_snapshot": {
+    "at": "2026-10-12T09:19:43.787Z",
+    "sha256": {
+      "frontend/src/features/home/pages/HomePage.test.tsx": "70d8379b55039b2085676634df00c13ee3d19c265bf70f45fde7eeefe01a4711",
+      "frontend/src/features/macros/calculations.test.ts": "f6e5825ec6bd4b1ca23e5bd579f861f7f6707a5abace81221627f12d04e111c8",
+      "frontend/src/features/macros/pages/MacrosPage.test.tsx": "c1366c9112606121fa2ab70c97e9ca964ca9e9cc19160e173677808ab2c84533"
+    }
+  }
+}

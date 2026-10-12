@@ -16,6 +16,7 @@ I built it as a personal project - both because I wanted exactly this tool for m
 - **Favorites** and a **weekly workout plan**
 - **Body metrics tracking** - weight, body-fat %, muscle-mass % with progress charts over time
 - **Onboarding and profile** - physical data, birth date, activity level and goal are saved per account on the server, so they follow the user across devices
+- **Calories and macros** - daily target from Mifflin-St Jeor with a calorie floor, a protein cap for high body weights and a 100 g carb minimum, computed in the frontend
 - **AI Coach** - a RAG-grounded chat that only answers from real fitness content, with multi-turn conversation memory and a thumbs up/down rating on every answer
 - Email/password auth **and** Google Sign-In
 - **Password recovery by email** - a reset link (valid 5 minutes, single use) sent through Resend, with per-email and per-IP rate limits
