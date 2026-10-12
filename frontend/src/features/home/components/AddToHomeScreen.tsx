@@ -19,25 +19,25 @@ const STEPS: Record<Platform, { title: string; steps: string[] }> = {
   android: {
     title: "Agregar en Android",
     steps: [
-      "Tocá el menú (los tres puntos ⋮) arriba a la derecha de Chrome.",
-      'Elegí "Agregar a pantalla de inicio" o "Instalar app".',
-      'Confirmá tocando "Agregar" o "Instalar".',
+      "Toca el menú (los tres puntos ⋮) arriba a la derecha de Chrome.",
+      'Elige "Agregar a pantalla de inicio" o "Instalar app".',
+      'Confirma tocando "Agregar" o "Instalar".',
     ],
   },
   ios: {
     title: "Agregar en iPhone",
     steps: [
-      "Tocá el ícono de Compartir (el cuadrado con la flecha hacia arriba) en la barra inferior de Safari.",
-      'Deslizá hacia abajo en el menú y elegí "Agregar a inicio".',
-      'Tocá "Agregar" arriba a la derecha.',
+      "Toca el ícono de Compartir (el cuadrado con la flecha hacia arriba) en la barra inferior de Safari.",
+      'Desliza hacia abajo en el menú y elegí "Agregar a inicio".',
+      'Toca "Agregar" arriba a la derecha.',
     ],
   },
 }
 
 // Solo en /home (montado directamente en HomePage.tsx, no en un layout
 // compartido) - a proposito informativo/discreto: va al final del
-// contenido, despues del slideshow, en vez de un banner arriba que
-// compita con las 4 cards principales por atencion.
+// contenido, en vez de un banner arriba que compita con el resumen
+// personal por la atencion.
 export function AddToHomeScreen() {
   const [platform, setPlatform] = useState<Platform | null>(null)
 
@@ -45,7 +45,7 @@ export function AddToHomeScreen() {
     <div className="mt-10 flex flex-col items-center gap-3 border-t pt-8 text-center">
       <p className="text-sm font-medium">¿Te gusta fitnerd?</p>
       <p className="max-w-sm text-xs text-muted-foreground">
-        Agregá un acceso directo a tu pantalla de inicio para entrar más
+        Agrega un acceso directo a tu pantalla de inicio para entrar más
         rápido la próxima vez, sin tener que buscar el link.
       </p>
 
