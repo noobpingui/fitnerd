@@ -8,6 +8,7 @@ import {
   useRequestPasswordReset,
 } from "@/features/auth/hooks"
 import { getOnboardingAnswers } from "@/features/onboarding/storage"
+import { useBodyMetrics } from "@/features/body-metrics/hooks"
 import { ProfileSection } from "@/features/profile/components/ProfileSection"
 import { PhysicalDataForm } from "@/features/profile/components/PhysicalDataForm"
 
@@ -16,6 +17,21 @@ export function ProfilePage() {
   const { data: user } = useCurrentUser()
   const passwordReset = useRequestPasswordReset()
   const answers = useMemo(() => getOnboardingAnswers(), [])
+  const { data: metrics, isLoading: metricsLoading } = useBodyMetrics()
+
+  // Último valor conocido de cada campo (pueden venir de mediciones
+  // distintas: un día solo se registra el peso, otro la grasa).
+  const latestBody = useMemo(() => {
+    const sorted = [...(metrics ?? [])].sort((a, b) =>
+      b.recorded_at.localeCompare(a.recorded_at)
+    )
+    const fat = sorted.find((m) => m.body_fat_percentage !== null)
+    const muscle = sorted.find((m) => m.muscle_mass_percentage !== null)
+    return {
+      fat: fat ? String(fat.body_fat_percentage) : "",
+      muscle: muscle ? String(muscle.muscle_mass_percentage) : "",
+    }
+  }, [metrics])
 
   function handleLogout() {
     clearToken()
@@ -32,9 +48,13 @@ export function ProfilePage() {
       <div className="flex flex-col gap-4">
         <ProfileSection
           title="Datos físicos"
-          description="Se usan para calcular tus calorías y macros. Al guardarlos, tu objetivo se recalcula."
+          description="Se usan para calcular tus calorías y macros. Cada cambio de peso o composición se guarda como una medición de hoy en tu progreso."
         >
-          {answers && <PhysicalDataForm initial={answers} />}
+          {/* Se espera al historial para precargar la última grasa y
+              músculo conocidos; si falla, el formulario arranca vacío. */}
+          {answers && !metricsLoading && (
+            <PhysicalDataForm initial={answers} initialBody={latestBody} />
+          )}
         </ProfileSection>
 
         <ProfileSection title="Cuenta">

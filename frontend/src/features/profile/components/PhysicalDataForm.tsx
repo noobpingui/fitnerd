@@ -24,7 +24,12 @@ import type {
   Goal,
   OnboardingAnswers,
 } from "@/features/onboarding/types"
-import { convertHeight, convertWeight } from "@/features/onboarding/units"
+import {
+  convertHeight,
+  convertWeight,
+  KG_PER_LB,
+} from "@/features/onboarding/units"
+import { useCreateBodyMetric } from "@/features/body-metrics/hooks"
 import {
   isAgeValid,
   isHeightValid,
@@ -33,10 +38,32 @@ import {
 
 // Los mismos datos del onboarding, pero todos a la vista en un formulario:
 // aquí el usuario ya sabe qué es cada cosa y solo quiere cambiar una o dos.
-export function PhysicalDataForm({ initial }: { initial: OnboardingAnswers }) {
+// Composición corporal opcional (texto mientras se edita, "" = sin dato).
+export type BodyComposition = { fat: string; muscle: string }
+
+const FAT_LIMITS = { min: 3, max: 60 }
+const MUSCLE_LIMITS = { min: 10, max: 70 }
+
+// Opcional: vacío es válido; si hay algo escrito, debe estar en rango.
+function optionalInRange(value: string, { min, max }: { min: number; max: number }) {
+  if (value.trim() === "") return true
+  const n = Number(value)
+  return Number.isFinite(n) && n >= min && n <= max
+}
+
+export function PhysicalDataForm({
+  initial,
+  initialBody,
+}: {
+  initial: OnboardingAnswers
+  initialBody: BodyComposition
+}) {
   const [saved, setSaved] = useState(initial)
   const [draft, setDraft] = useState(initial)
+  const [savedBody, setSavedBody] = useState(initialBody)
+  const [body, setBody] = useState(initialBody)
   const [justSaved, setJustSaved] = useState(false)
+  const createMetric = useCreateBodyMetric()
 
   // El aviso "Cambios guardados" desaparece solo a los 3 segundos.
   useEffect(() => {
@@ -50,20 +77,66 @@ export function PhysicalDataForm({ initial }: { initial: OnboardingAnswers }) {
     setJustSaved(false)
   }
 
+  function updateBody(patch: Partial<BodyComposition>) {
+    setBody((current) => ({ ...current, ...patch }))
+    setJustSaved(false)
+  }
+
   const ageOk = isAgeValid(draft)
   const heightOk = isHeightValid(draft)
   const weightOk = isWeightValid(draft)
-  const allValid = ageOk && heightOk && weightOk
+  const fatOk = optionalInRange(body.fat, FAT_LIMITS)
+  const muscleOk = optionalInRange(body.muscle, MUSCLE_LIMITS)
+  const allValid = ageOk && heightOk && weightOk && fatOk && muscleOk
+
+  const weightKg = (a: OnboardingAnswers) =>
+    a.weightUnit === "kg" ? Number(a.weight) : Number(a.weight) * KG_PER_LB
+  // Una medición nueva solo si cambió algo medible (peso o composición);
+  // cambiar la unidad sin cambiar el peso no cuenta como medición.
+  const measurementChanged =
+    Math.abs(weightKg(draft) - weightKg(saved)) > 0.05 ||
+    body.fat !== savedBody.fat ||
+    body.muscle !== savedBody.muscle
   // Comparar el JSON basta aquí: son objetos planos con el mismo orden de
   // claves, así que "hay cambios" equivale a "el texto es distinto".
-  const dirty = JSON.stringify(draft) !== JSON.stringify(saved)
+  const dirty =
+    JSON.stringify(draft) !== JSON.stringify(saved) || measurementChanged
+
+  function commit() {
+    saveOnboardingAnswers(draft)
+    setSaved(draft)
+    setSavedBody(body)
+    setJustSaved(true)
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!dirty || !allValid) return
-    saveOnboardingAnswers(draft)
-    setSaved(draft)
-    setJustSaved(true)
+    if (!measurementChanged) {
+      commit()
+      return
+    }
+    // Cada cambio de peso o composición queda como medición de hoy en el
+    // historial (POST /api/body-metrics, que ya existe): es lo que alimenta
+    // los gráficos y la racha de Métricas. La grasa y el músculo solo se
+    // envían si se cambiaron ahora: si no, se copiaría a hoy una medición
+    // antigua como si fuera nueva.
+    const fatChanged = body.fat.trim() !== "" && body.fat !== savedBody.fat
+    const muscleChanged =
+      body.muscle.trim() !== "" && body.muscle !== savedBody.muscle
+    createMetric.mutate(
+      {
+        weight: Math.round(weightKg(draft) * 10) / 10,
+        ...(fatChanged && { body_fat_percentage: Number(body.fat) }),
+        ...(muscleChanged && { muscle_mass_percentage: Number(body.muscle) }),
+      },
+      { onSuccess: commit }
+    )
+  }
+
+  function discard() {
+    setDraft(saved)
+    setBody(savedBody)
   }
 
   const weightLimits = draft.weightUnit === "kg" ? LIMITS.kg : LIMITS.lb
@@ -171,6 +244,42 @@ export function PhysicalDataForm({ initial }: { initial: OnboardingAnswers }) {
           />
         </Field>
 
+        <Field
+          label="% Grasa corporal (opcional)"
+          htmlFor="profile-fat"
+          error={
+            fatOk
+              ? undefined
+              : `Entre ${FAT_LIMITS.min} y ${FAT_LIMITS.max} %`
+          }
+        >
+          <NumberField
+            id="profile-fat"
+            value={body.fat}
+            onChange={(fat) => updateBody({ fat })}
+            suffix="%"
+            invalid={!fatOk}
+          />
+        </Field>
+
+        <Field
+          label="% Masa muscular (opcional)"
+          htmlFor="profile-muscle"
+          error={
+            muscleOk
+              ? undefined
+              : `Entre ${MUSCLE_LIMITS.min} y ${MUSCLE_LIMITS.max} %`
+          }
+        >
+          <NumberField
+            id="profile-muscle"
+            value={body.muscle}
+            onChange={(muscle) => updateBody({ muscle })}
+            suffix="%"
+            invalid={!muscleOk}
+          />
+        </Field>
+
         <OptionSelect<ActivityLevel>
           label="Nivel de actividad"
           options={ACTIVITY_OPTIONS}
@@ -196,13 +305,21 @@ export function PhysicalDataForm({ initial }: { initial: OnboardingAnswers }) {
             Cambios guardados
           </span>
         )}
+        {createMetric.isError && (
+          <span role="alert" className="text-sm text-destructive">
+            No se pudo guardar la medición. Inténtalo de nuevo.
+          </span>
+        )}
         {dirty && (
-          <Button type="button" variant="ghost" onClick={() => setDraft(saved)}>
+          <Button type="button" variant="ghost" onClick={discard}>
             Descartar
           </Button>
         )}
-        <Button type="submit" disabled={!dirty || !allValid}>
-          Guardar cambios
+        <Button
+          type="submit"
+          disabled={!dirty || !allValid || createMetric.isPending}
+        >
+          {createMetric.isPending ? "Guardando…" : "Guardar cambios"}
         </Button>
       </div>
     </form>

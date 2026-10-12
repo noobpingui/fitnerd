@@ -8,7 +8,7 @@ export function ProgressAnalysis() {
   const { mutate, data, isPending, isError, error } = useAnalyzeBodyMetrics()
 
   return (
-    <div className="mb-8">
+    <div>
       <Button
         type="button"
         // default (relleno, con el color primario) en vez de outline - un
