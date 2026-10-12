@@ -11,7 +11,7 @@
   "branch": "feat/006-user-profile",
   "base_branch": "chore/frontend-redesign",
   "created_at": "2026-10-12T04:13:25.965Z",
-  "stage": "review",
+  "stage": "docs",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
@@ -42,7 +42,10 @@
       "at": "2026-10-12T08:12:17.284Z",
       "note": "1. Si, al backlog. 2. Si. 3. Si"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-12T08:15:06.115Z",
+      "note": "1,2 sí"
+    },
     "close": null
   },
   "commits": {
@@ -50,7 +53,8 @@
     "plan": "d8529aa",
     "tasks": "d8529aa",
     "tests": "bbf1387",
-    "implement": "ab5f8a3"
+    "implement": "ab5f8a3",
+    "review": "05b7f17"
   },
   "iterations": {
     "tests": 1,
@@ -323,6 +327,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Etapa review y commit aprobados; F7 y F8 al backlog"
+    },
+    {
+      "at": "2026-10-12T08:12:17.494Z",
+      "stage": "review",
+      "event": "commit",
+      "note": "05b7f17"
+    },
+    {
+      "at": "2026-10-12T08:12:17.494Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegado al doc-keeper (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T08:13:05.612Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "README + CLAUDE.md (Proyecto) + docs-report.md"
+    },
+    {
+      "at": "2026-10-12T08:15:06.115Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "Etapa docs y commit aprobados"
     }
   ],
   "tests_snapshot": {

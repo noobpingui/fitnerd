@@ -12,6 +12,7 @@ App de fitness full-stack con un **coach de IA basado en contenido real**: respo
 | Catálogo de ejercicios (región → categoría → ejercicio) | `body_region_routes`, `exercise_category_routes`, `exercise_routes` | `exercises` |
 | Favoritos y plan semanal (drag and drop) | `exercise_favorite_routes`, `weekly_plan_routes` | `weekly-plan` |
 | Métricas corporales, gráficas y análisis con IA | `body_metric_routes` | `body-metrics` |
+| Perfil y onboarding (datos físicos, fecha de nacimiento de la cuenta, nivel de actividad y meta guardados por usuario; `GET`/`PUT /api/profile`; la edad se calcula desde `users.date_of_birth`, ADR-0019; las calorías y macros se calculan en el frontend) | `profile_routes` | `onboarding`, `profile`, `macros` |
 | Coach de IA con RAG (pgvector, Voyage y Claude, con rate limit en Redis y trazas en Langfuse Cloud, ADR-0017; valoración 👍/👎 de cada respuesta como score `user_feedback`, con `feedback_id` firmado con HMAC, ADR-0018) | `coach_routes` | `coach` |
 | Feedback, home, páginas legales y tienda (solo estructura) | `feedback_routes` | `feedback`, `home`, `legal`, `store` |
 | Salud del servicio (`GET /api/health`) | `health_routes` | — |
