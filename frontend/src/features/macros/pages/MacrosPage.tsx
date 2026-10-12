@@ -155,10 +155,13 @@ export function MacrosPage() {
           una de las más precisas para estimar el gasto calórico. Parte de tu
           peso, altura, edad y sexo para obtener lo que tu cuerpo gasta en
           reposo, lo multiplica según tu nivel de actividad y lo ajusta a tu
-          meta. Las proteínas se fijan en 2 g por kg de peso, las grasas en el
-          25 % de las calorías y el resto son carbohidratos. Es una
-          estimación: úsala como punto de partida y ajústala según tu
-          progreso.
+          meta, sin bajar de 1200 kcal en mujeres ni de 1500 kcal en hombres.
+          Las proteínas se fijan en 2 g por kg de peso (si tu peso supera el
+          que corresponde a un IMC de 27 para tu altura, se usa ese peso), las
+          grasas en el 25 % de las calorías y el resto son carbohidratos, con
+          un mínimo de 100 g: si no llegan, se reducen primero las grasas
+          (hasta el 20 %) y después las proteínas. Es una estimación: úsala
+          como punto de partida y ajústala según tu progreso.
         </p>
       </div>
     </div>

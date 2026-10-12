@@ -24,13 +24,13 @@ No hay módulos, funciones ni clases nuevas que los tests vayan a importar (`cal
 - [x] T-015 [REQ-009, AC-009.4, AC-009.5] (test) `/home` muestra 3379 kcal, 459 g, 175 g y 94 g con el perfil de AC-006.1, y 1200 kcal con el de AC-004.1 — `frontend/src/features/home/pages/HomePage.test.tsx`
 
 ## Fase B — Implementación (implementer)
-- [ ] T-020 [REQ-004] (impl) Añadir `MIN_TARGET_KCAL` (1500 H / 1200 M) y aplicar el suelo al objetivo diario siempre, sin tocar el mantenimiento — `frontend/src/features/macros/calculations.ts`
-- [ ] T-021 [REQ-006] (impl) Añadir `PROTEIN_CAP_BMI` y calcular el peso de referencia `min(kg, 27 × m²)` para la proteína — `frontend/src/features/macros/calculations.ts`
-- [ ] T-022 [REQ-005, REQ-007] (impl) Reparto estándar y mínimo de 100 g de carbohidratos (`MIN_CARBS_G`, `MIN_FAT_SHARE`): grasas ceden hasta el 20 % y después proteínas como resto; eliminar el `Math.max(…, 0)` provisional — `frontend/src/features/macros/calculations.ts`
-- [ ] T-023 [REQ-008] (impl) Rellenar `exactKcal` y `exactTargetKcal` con valores reales, calcular `share = exactKcal / target`, gramos desde kcal sin redondear, y sustituir los comentarios provisionales por comentarios de la spec 007 — `frontend/src/features/macros/calculations.ts`
-- [ ] T-024 [REQ-001, REQ-002, REQ-003] (impl) Verificar que conversión de unidades, edad, Mifflin-St Jeor y factores de actividad y meta cumplen los AC (comportamiento ya existente; solo ajustar si algún test falla) — `frontend/src/features/macros/calculations.ts`
-- [ ] T-025 [REQ-010] (impl) Sustituir el párrafo de la nota informativa por el texto literal de la sección 6 de la spec, manteniendo "Mifflin-St Jeor" resaltado — `frontend/src/features/macros/pages/MacrosPage.tsx`
-- [ ] T-026 [REQ-009] (impl) Confirmar que `MacrosPage` y `HomePage` consumen el nuevo `MacrosSummary` sin cambios de lógica (kJ sobre kcal redondeadas, porcentaje entero); sin edición salvo fallo de test — `frontend/src/features/home/pages/HomePage.tsx`
+- [x] T-020 [REQ-004] (impl) Añadir `MIN_TARGET_KCAL` (1500 H / 1200 M) y aplicar el suelo al objetivo diario siempre, sin tocar el mantenimiento — `frontend/src/features/macros/calculations.ts`
+- [x] T-021 [REQ-006] (impl) Añadir `PROTEIN_CAP_BMI` y calcular el peso de referencia `min(kg, 27 × m²)` para la proteína — `frontend/src/features/macros/calculations.ts`
+- [x] T-022 [REQ-005, REQ-007] (impl) Reparto estándar y mínimo de 100 g de carbohidratos (`MIN_CARBS_G`, `MIN_FAT_SHARE`): grasas ceden hasta el 20 % y después proteínas como resto; eliminar el `Math.max(…, 0)` provisional — `frontend/src/features/macros/calculations.ts`
+- [x] T-023 [REQ-008] (impl) Rellenar `exactKcal` y `exactTargetKcal` con valores reales, calcular `share = exactKcal / target`, gramos desde kcal sin redondear, y sustituir los comentarios provisionales por comentarios de la spec 007 — `frontend/src/features/macros/calculations.ts`
+- [x] T-024 [REQ-001, REQ-002, REQ-003] (impl) Verificar que conversión de unidades, edad, Mifflin-St Jeor y factores de actividad y meta cumplen los AC (comportamiento ya existente; solo ajustar si algún test falla) — `frontend/src/features/macros/calculations.ts`
+- [x] T-025 [REQ-010] (impl) Sustituir el párrafo de la nota informativa por el texto literal de la sección 6 de la spec, manteniendo "Mifflin-St Jeor" resaltado — `frontend/src/features/macros/pages/MacrosPage.tsx`
+- [x] T-026 [REQ-009] (impl) Confirmar que `MacrosPage` y `HomePage` consumen el nuevo `MacrosSummary` sin cambios de lógica (kJ sobre kcal redondeadas, porcentaje entero); sin edición salvo fallo de test — `frontend/src/features/home/pages/HomePage.tsx`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |
