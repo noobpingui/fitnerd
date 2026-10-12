@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react"
-import { Dumbbell, Heart, LineChart, Sparkles } from "lucide-react"
+import { Dumbbell, Heart, LineChart, PieChart, Sparkles } from "lucide-react"
 import { homeCardImages } from "@/features/home/images"
 import { useSupportsHover } from "@/features/home/useSupportsHover"
 import { ShortcutCard } from "@/features/home/components/ShortcutCard"
 import { HomeSlideshowBox } from "@/features/home/components/HomeSlideshowBox"
 import { AddToHomeScreen } from "@/features/home/components/AddToHomeScreen"
+import { CATALOG_ENABLED } from "@/app/sections"
 
 // Fisher-Yates: mezcla el array SIN mutar el original (copia primero con
 // [...array]) - devuelve un array nuevo en un orden aleatorio distinto
@@ -25,19 +26,30 @@ function shuffle<T>(array: T[]): T[] {
 // "slug" es el nombre de la carpeta en src/assets/home/ de donde salen las
 // imagenes del slideshow compartido (ver images.ts).
 const shortcuts = [
+  ...(CATALOG_ENABLED
+    ? [
+        {
+          to: "/categories",
+          label: "Catálogo",
+          description: "Explora el catálogo de ejercicios",
+          icon: Dumbbell,
+          slug: "categories",
+        },
+        {
+          to: "/favorites",
+          label: "Favoritos",
+          description: "Tus ejercicios guardados",
+          icon: Heart,
+          slug: "favorites",
+        },
+      ]
+    : []),
   {
-    to: "/categories",
-    label: "Catálogo",
-    description: "Explora el catálogo de ejercicios",
-    icon: Dumbbell,
-    slug: "categories",
-  },
-  {
-    to: "/favorites",
-    label: "Favoritos",
-    description: "Tus ejercicios guardados",
-    icon: Heart,
-    slug: "favorites",
+    to: "/macros",
+    label: "Macros",
+    description: "Tus calorías y macronutrientes",
+    icon: PieChart,
+    slug: "macros",
   },
   {
     to: "/body-metrics",
