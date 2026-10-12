@@ -11,8 +11,8 @@
   "branch": "feat/006-user-profile",
   "base_branch": "chore/frontend-redesign",
   "created_at": "2026-10-12T04:13:25.965Z",
-  "stage": "docs",
-  "status": "awaiting_approval",
+  "stage": "done",
+  "status": "done",
   "approvals": {
     "spec": {
       "at": "2026-10-12T04:38:57.472Z",
@@ -46,7 +46,10 @@
       "at": "2026-10-12T08:15:06.115Z",
       "note": "1,2 sí"
     },
-    "close": null
+    "close": {
+      "at": "2026-10-12T08:17:38.622Z",
+      "note": "1. Si. 2. Si 3. Integracion con merge local."
+    }
   },
   "commits": {
     "spec": "3b754c9",
@@ -54,7 +57,8 @@
     "tasks": "d8529aa",
     "tests": "bbf1387",
     "implement": "ab5f8a3",
-    "review": "05b7f17"
+    "review": "05b7f17",
+    "docs": "31fdc4c"
   },
   "iterations": {
     "tests": 1,
@@ -351,6 +355,24 @@
       "stage": "docs",
       "event": "approved",
       "note": "Etapa docs y commit aprobados"
+    },
+    {
+      "at": "2026-10-12T08:15:06.481Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "31fdc4c"
+    },
+    {
+      "at": "2026-10-12T08:15:06.481Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Checklist de hecho (Art. 9)"
+    },
+    {
+      "at": "2026-10-12T08:17:38.622Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Cierre aprobado; integración por merge local en chore/frontend-redesign"
     }
   ],
   "tests_snapshot": {
