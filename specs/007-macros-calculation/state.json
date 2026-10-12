@@ -11,7 +11,7 @@
   "branch": "feat/007-macros-calculation",
   "base_branch": "chore/frontend-redesign",
   "created_at": "2026-10-12T08:40:24.490Z",
-  "stage": "review",
+  "stage": "docs",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
@@ -42,7 +42,10 @@
       "at": "2026-10-12T09:37:17.382Z",
       "note": "1. backlog 2. Si. 3. Si"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-12T20:27:53.963Z",
+      "note": "1,2 sí"
+    },
     "close": null
   },
   "commits": {
@@ -50,7 +53,8 @@
     "plan": "c86fc86",
     "tasks": "390c012",
     "tests": "7e0936a",
-    "implement": "624532e"
+    "implement": "624532e",
+    "review": "8cf9e62"
   },
   "iterations": {
     "tests": 0,
@@ -257,6 +261,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Etapa review y commit aprobados; F1-F3 al backlog"
+    },
+    {
+      "at": "2026-10-12T09:37:17.551Z",
+      "stage": "review",
+      "event": "commit",
+      "note": "8cf9e62"
+    },
+    {
+      "at": "2026-10-12T09:37:17.551Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegado al doc-keeper (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T09:37:44.671Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "README + CLAUDE.md (Proyecto) + docs-report.md"
+    },
+    {
+      "at": "2026-10-12T20:27:53.963Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "Etapa docs y commit aprobados"
     }
   ],
   "tests_snapshot": {
