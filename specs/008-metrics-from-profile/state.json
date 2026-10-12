@@ -11,11 +11,11 @@
   "branch": "feat/008-metrics-from-profile",
   "base_branch": "chore/frontend-redesign",
   "created_at": "2026-10-12T21:12:29.004Z",
-  "stage": "spec",
+  "stage": "plan",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-12T23:10:09.240Z",
-    "plan": null,
+    "plan": "2026-10-12T23:29:01.796Z",
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -24,7 +24,9 @@
     "docs": null,
     "close": null
   },
-  "commits": {},
+  "commits": {
+    "spec": "47adfab"
+  },
   "iterations": {
     "tests": 0,
     "implement": 0,
@@ -74,6 +76,24 @@
       "stage": "spec",
       "event": "approved",
       "note": "Spec y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-12T23:10:12.645Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegado al planner (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T23:16:24.706Z",
+      "stage": "plan",
+      "event": "completed",
+      "note": "plan.md + ADR-0020 (Propuesta); migración con consolidación + restricción única"
+    },
+    {
+      "at": "2026-10-12T23:29:01.796Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "Plan, commit y ADR-0020 (Aceptada) aprobados por el usuario"
     }
   ]
 }
