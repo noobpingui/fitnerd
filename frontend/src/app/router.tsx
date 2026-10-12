@@ -20,6 +20,7 @@ import { BodyMetricsPage } from "@/features/body-metrics/pages/BodyMetricsPage"
 import { HomePage } from "@/features/home/pages/HomePage"
 import { CoachPage } from "@/features/coach/pages/CoachPage"
 import { StorePage } from "@/features/store/pages/StorePage"
+import { ProfilePage } from "@/features/profile/pages/ProfilePage"
 import { PrivacyPolicyPage } from "@/features/legal/pages/PrivacyPolicyPage"
 import { TermsOfServicePage } from "@/features/legal/pages/TermsOfServicePage"
 
@@ -121,6 +122,7 @@ function AnimatedRoutes() {
               <Route path="/body-metrics" element={<BodyMetricsPage />} />
               <Route path="/coach" element={<CoachPage />} />
               <Route path="/store" element={<StorePage />} />
+              <Route path="/profile" element={<ProfilePage />} />
             </Route>
           </Route>
         </Route>

@@ -3,9 +3,9 @@ import { useNavigate } from "react-router"
 import { AnimatePresence, motion } from "motion/react"
 import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Logo } from "@/components/layout/Logo"
 import { ChoiceList } from "@/features/onboarding/components/ChoiceList"
+import { NumberField } from "@/features/onboarding/components/NumberField"
 import { UnitToggle } from "@/features/onboarding/components/UnitToggle"
 import {
   ACTIVITY_OPTIONS,
@@ -14,19 +14,13 @@ import {
   GOAL_OPTIONS,
 } from "@/features/onboarding/constants"
 import { saveOnboardingAnswers } from "@/features/onboarding/storage"
-import type {
-  HeightUnit,
-  OnboardingAnswers,
-  WeightUnit,
-} from "@/features/onboarding/types"
+import type { OnboardingAnswers } from "@/features/onboarding/types"
+import { convertHeight, convertWeight } from "@/features/onboarding/units"
 import {
   isAgeValid,
   isHeightValid,
   isWeightValid,
 } from "@/features/onboarding/validation"
-
-const KG_PER_LB = 0.45359237
-const CM_PER_IN = 2.54
 
 type Step = {
   id: string
@@ -57,39 +51,6 @@ export function OnboardingPage() {
 
   function update(patch: Partial<OnboardingAnswers>) {
     setAnswers((current) => ({ ...current, ...patch }))
-  }
-
-  // Al cambiar de unidad se convierte el valor ya escrito, para que el
-  // usuario no tenga que volver a calcularlo.
-  function changeHeightUnit(unit: HeightUnit) {
-    if (unit === answers.heightUnit) return
-    if (unit === "ft" && isHeightValid(answers)) {
-      const totalIn = Number(answers.heightCm) / CM_PER_IN
-      const ft = Math.floor(totalIn / 12)
-      const inches = Math.round(totalIn - ft * 12)
-      update({
-        heightUnit: unit,
-        heightFt: String(inches === 12 ? ft + 1 : ft),
-        heightIn: String(inches === 12 ? 0 : inches),
-      })
-    } else if (unit === "cm" && isHeightValid(answers)) {
-      const totalIn =
-        Number(answers.heightFt) * 12 + Number(answers.heightIn || 0)
-      update({ heightUnit: unit, heightCm: String(Math.round(totalIn * CM_PER_IN)) })
-    } else {
-      update({ heightUnit: unit })
-    }
-  }
-
-  function changeWeightUnit(unit: WeightUnit) {
-    if (unit === answers.weightUnit) return
-    if (isWeightValid(answers)) {
-      const w = Number(answers.weight)
-      const converted = unit === "lb" ? w / KG_PER_LB : w * KG_PER_LB
-      update({ weightUnit: unit, weight: String(Math.round(converted * 10) / 10) })
-    } else {
-      update({ weightUnit: unit })
-    }
   }
 
   // Elegir una opción guarda la respuesta y, tras una pausa corta para que
@@ -128,6 +89,8 @@ export function OnboardingPage() {
       autoAdvance: false,
       content: (
         <NumberField
+          large
+          autoFocus
           value={answers.age}
           onChange={(age) => update({ age })}
           suffix="años"
@@ -149,10 +112,12 @@ export function OnboardingPage() {
               { value: "ft", label: "ft / in" },
             ]}
             value={answers.heightUnit}
-            onChange={changeHeightUnit}
+            onChange={(unit) => update(convertHeight(answers, unit))}
           />
           {answers.heightUnit === "cm" ? (
             <NumberField
+              large
+              autoFocus
               key="cm"
               value={answers.heightCm}
               onChange={(heightCm) => update({ heightCm })}
@@ -162,6 +127,8 @@ export function OnboardingPage() {
           ) : (
             <div key="ft" className="flex w-full gap-3">
               <NumberField
+                large
+                autoFocus
                 value={answers.heightFt}
                 onChange={(heightFt) => update({ heightFt })}
                 suffix="ft"
@@ -169,12 +136,12 @@ export function OnboardingPage() {
                 placeholder="5"
               />
               <NumberField
+                large
                 value={answers.heightIn}
                 onChange={(heightIn) => update({ heightIn })}
                 suffix="in"
                 inputMode="numeric"
                 placeholder="9"
-                autoFocus={false}
               />
             </div>
           )}
@@ -194,9 +161,11 @@ export function OnboardingPage() {
               { value: "lb", label: "lb" },
             ]}
             value={answers.weightUnit}
-            onChange={changeWeightUnit}
+            onChange={(unit) => update(convertWeight(answers, unit))}
           />
           <NumberField
+            large
+            autoFocus
             value={answers.weight}
             onChange={(weight) => update({ weight })}
             suffix={answers.weightUnit}
@@ -343,41 +312,6 @@ export function OnboardingPage() {
           </div>
         </form>
       </div>
-    </div>
-  )
-}
-
-// Campo numérico grande con la unidad a la derecha. autoFocus por defecto
-// para que, al llegar a la pregunta, se pueda escribir sin hacer clic.
-function NumberField({
-  value,
-  onChange,
-  suffix,
-  placeholder,
-  inputMode = "decimal",
-  autoFocus = true,
-}: {
-  value: string
-  onChange: (value: string) => void
-  suffix: string
-  placeholder?: string
-  inputMode?: "numeric" | "decimal"
-  autoFocus?: boolean
-}) {
-  return (
-    <div className="relative w-full">
-      <Input
-        type="number"
-        inputMode={inputMode}
-        autoFocus={autoFocus}
-        value={value}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-14 pr-16 text-center text-2xl font-semibold md:text-2xl [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-      />
-      <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-        {suffix}
-      </span>
     </div>
   )
 }

@@ -3,13 +3,12 @@ import type {
   Goal,
   OnboardingAnswers,
 } from "@/features/onboarding/types"
+import { CM_PER_IN, KG_PER_LB } from "@/features/onboarding/units"
 
 // TEMPORAL (fase de diseño): el cálculo vive en el frontend para poder ver
 // la pantalla con datos reales del onboarding. En la fase funcional se
 // decidirá si se queda aquí o lo devuelve el backend.
 
-const KG_PER_LB = 0.45359237
-const CM_PER_IN = 2.54
 export const KJ_PER_KCAL = 4.184
 
 // Factores de actividad estándar para Mifflin-St Jeor.

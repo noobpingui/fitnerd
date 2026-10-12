@@ -62,7 +62,7 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          aria-label="Menu de usuario"
+          aria-label="Menú de usuario"
           // hover: se agranda un poco + le aparece un anillo de color -
           // asi se lee como un boton "vivo", no solo una foto de perfil
           // decorativa. active: se achica levemente al clickear, el
@@ -106,9 +106,14 @@ export function UserMenu() {
             <DropdownMenuSeparator />
           </>
         )}
+        <DropdownMenuItem onClick={() => navigate("/profile")}>
+          <UserIcon className="h-4 w-4" />
+          Mi perfil
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="h-4 w-4" />
-          Cerrar sesion
+          Cerrar sesión
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

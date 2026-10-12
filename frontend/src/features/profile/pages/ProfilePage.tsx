@@ -1,0 +1,83 @@
+import { useMemo } from "react"
+import { useNavigate } from "react-router"
+import { KeyRound, LogOut } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { clearToken } from "@/lib/authToken"
+import {
+  useCurrentUser,
+  useRequestPasswordReset,
+} from "@/features/auth/hooks"
+import { getOnboardingAnswers } from "@/features/onboarding/storage"
+import { ProfileSection } from "@/features/profile/components/ProfileSection"
+import { PhysicalDataForm } from "@/features/profile/components/PhysicalDataForm"
+
+export function ProfilePage() {
+  const navigate = useNavigate()
+  const { data: user } = useCurrentUser()
+  const passwordReset = useRequestPasswordReset()
+  const answers = useMemo(() => getOnboardingAnswers(), [])
+
+  function handleLogout() {
+    clearToken()
+    navigate("/login", { replace: true })
+  }
+
+  return (
+    <div className="mx-auto max-w-2xl p-4 sm:p-8">
+      <h1 className="mb-1 text-2xl font-bold">Mi perfil</h1>
+      <p className="mb-6 text-muted-foreground">
+        Gestiona tus datos y tu cuenta.
+      </p>
+
+      <div className="flex flex-col gap-4">
+        <ProfileSection
+          title="Datos físicos"
+          description="Se usan para calcular tus calorías y macros. Al guardarlos, tu objetivo se recalcula."
+        >
+          {answers && <PhysicalDataForm initial={answers} />}
+        </ProfileSection>
+
+        <ProfileSection title="Cuenta">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="text-sm text-muted-foreground">Correo</div>
+              <div className="font-medium">{user?.email ?? "—"}</div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {/* Reutiliza la recuperación por correo (ADR-0014): para
+                  cambiar la contraseña hace falta acceso al correo, así que
+                  una sesión abierta en un equipo ajeno no basta. También
+                  sirve a quien entró con Google y aún no tiene contraseña. */}
+              <Button
+                variant="outline"
+                disabled={!user?.email || passwordReset.isPending}
+                onClick={() =>
+                  user?.email && passwordReset.mutate({ email: user.email })
+                }
+              >
+                <KeyRound className="h-4 w-4" />
+                {passwordReset.isPending ? "Enviando…" : "Cambiar contraseña"}
+              </Button>
+              <Button variant="outline" onClick={handleLogout}>
+                <LogOut className="h-4 w-4" />
+                Cerrar sesión
+              </Button>
+            </div>
+          </div>
+
+          {passwordReset.isSuccess && (
+            <p role="status" className="text-sm text-muted-foreground">
+              Te enviamos un enlace a {user?.email} para cambiar tu
+              contraseña. Caduca en 5 minutos.
+            </p>
+          )}
+          {passwordReset.isError && (
+            <p role="alert" className="text-sm text-destructive">
+              No se pudo enviar el correo. Inténtalo de nuevo en unos minutos.
+            </p>
+          )}
+        </ProfileSection>
+      </div>
+    </div>
+  )
+}
