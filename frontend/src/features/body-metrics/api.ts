@@ -2,6 +2,7 @@ import { apiFetch } from "@/lib/apiClient"
 import type {
   BodyMetric,
   CreateBodyMetricPayload,
+  UpdateBodyMetricPayload,
 } from "@/features/body-metrics/types"
 
 export function listBodyMetrics() {
@@ -13,6 +14,13 @@ export function createBodyMetric(payload: CreateBodyMetricPayload) {
     method: "POST",
     body: payload,
   })
+}
+
+export function updateBodyMetric(
+  _id: string,
+  _payload: UpdateBodyMetricPayload,
+): Promise<BodyMetric> {
+  throw new Error("not implemented")
 }
 
 export function deleteBodyMetric(id: string) {

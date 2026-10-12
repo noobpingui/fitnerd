@@ -11,13 +11,13 @@
   "branch": "feat/008-metrics-from-profile",
   "base_branch": "chore/frontend-redesign",
   "created_at": "2026-10-12T21:12:29.004Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-12T23:10:09.240Z",
     "plan": "2026-10-12T23:29:01.796Z",
     "tasks": "2026-10-12T23:35:56.780Z",
-    "tests": null,
+    "tests": "2026-10-12T23:54:47.272Z",
     "implement": null,
     "verify": null,
     "review": null,
@@ -26,17 +26,18 @@
   },
   "commits": {
     "spec": "47adfab",
-    "plan": "ba0dd26"
+    "plan": "ba0dd26",
+    "tasks": "8aa597c"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 2,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-12T23:53:05.171Z"
   },
   "verify": {
     "result": null,
@@ -113,6 +114,61 @@
       "stage": "tasks",
       "event": "approved",
       "note": "Tareas y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-12T23:35:56.923Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Delegado al implementer en modo scaffold (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T23:36:52.842Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Scaffold T-001..T-004 hecho; delegado al test-author (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T23:44:58.693Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests T-010..T-036 escritos; delegado al verifier en modo red (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T23:47:44.442Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL: 11 tests backend y 1 frontend pasan sin implementación; vuelve al test-author (iteración 2)"
+    },
+    {
+      "at": "2026-10-12T23:49:59.844Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "test-author corrigió los 12 tests en verde; red check de nuevo (iteración 2)"
+    },
+    {
+      "at": "2026-10-12T23:53:36.472Z",
+      "stage": "tests",
+      "event": "completed",
+      "note": "Red check PASS (iteración 2): 147 backend + 46 frontend en rojo legítimo"
+    },
+    {
+      "at": "2026-10-12T23:54:47.272Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "Etapa tests y commit aprobados por el usuario; tests_snapshot guardado"
     }
-  ]
+  ],
+  "tests_snapshot": {
+    "at": "2026-10-12T23:54:47.272Z",
+    "sha256": {
+      "backend/tests/test_routes/test_body_metric_routes.py": "eb1b91eebe516e8161eccc986e3257cd9650ce24f7a5b88852a55285cd8f18d0",
+      "backend/tests/test_services/test_body_metric_consolidation.py": "35d08bfbdd891599c422e1712ae1e5bf395094ff42d9b0f001dbb431c15ec757",
+      "backend/tests/test_services/test_body_metric_service.py": "7f962bf6dd4ecb0eb94e0a3039e265415c912a3637fe6cf58534b38acd8a03fb",
+      "backend/tests/fakes.py": "3e002acbe74ca804675597790f4720592e39e3c8fdee5ee2ae55dc73e621a8e6",
+      "frontend/src/features/body-metrics/schemas.test.ts": "9abfbb108aab3a55ecfde6f72fc2bb296b1924b092ba820e575cc23d798edb8b",
+      "frontend/src/features/body-metrics/components/MetricsHistory.test.tsx": "640eddb696f64e05018e390737430e981148cc97a8b869939aea36f81291c007",
+      "frontend/src/features/body-metrics/pages/BodyMetricsPage.test.tsx": "6428c2cf3ecbcda52e22ba8638102fad0aa320fa405655d0d524cc94ee23192a",
+      "frontend/src/features/profile/pages/ProfilePage.test.tsx": "3a645da62dffcc941b6bb1d0c6097362840d9babb3ff19fc2de0e394269fe4ea"
+    }
+  }
 }

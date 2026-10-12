@@ -20,3 +20,10 @@ export type CreateBodyMetricPayload = {
   notes?: string
   recorded_at?: string
 }
+
+// Lo que le mandamos a PUT /api/body-metrics/<id>.
+export type UpdateBodyMetricPayload = {
+  weight: number | null
+  body_fat_percentage: number | null
+  muscle_mass_percentage: number | null
+}
