@@ -11,15 +11,21 @@
   "branch": "feat/006-user-profile",
   "base_branch": "chore/frontend-redesign",
   "created_at": "2026-10-12T04:13:25.965Z",
-  "stage": "spec",
+  "stage": "tasks",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
       "at": "2026-10-12T04:38:57.472Z",
       "note": "aprobado, y el commit también. El alcance incluye metricas ademas de lo que listaba mi idea."
     },
-    "plan": null,
-    "tasks": null,
+    "plan": {
+      "at": "2026-10-12T04:58:04.358Z",
+      "note": "1. Pero lo de react-hook-form queda anotado en el backlog"
+    },
+    "tasks": {
+      "at": "2026-10-12T05:03:52.306Z",
+      "note": "1,2 Si"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -27,7 +33,9 @@
     "docs": null,
     "close": null
   },
-  "commits": {},
+  "commits": {
+    "spec": "3b754c9"
+  },
   "iterations": {
     "tests": 0,
     "implement": 0,
@@ -77,6 +85,48 @@
       "stage": "spec",
       "event": "approved",
       "note": "Etapa spec y commit aprobados"
+    },
+    {
+      "at": "2026-10-12T04:39:01.403Z",
+      "stage": "spec",
+      "event": "commit",
+      "note": "3b754c9"
+    },
+    {
+      "at": "2026-10-12T04:39:01.403Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegado al planner (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T04:44:58.299Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md + ADR-0019"
+    },
+    {
+      "at": "2026-10-12T04:58:04.358Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "Etapa plan aprobada (ADR-0019 y desviación Art. 6.8; refactor a react-hook-form anotado en backlog). Commit no aprobado aún: cambios acumulados"
+    },
+    {
+      "at": "2026-10-12T04:58:04.358Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegado al task-breaker (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T04:59:40.037Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks.md con 65 tareas"
+    },
+    {
+      "at": "2026-10-12T05:03:52.306Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "Etapa tasks y commit (plan + tasks) aprobados"
     }
   ]
 }
