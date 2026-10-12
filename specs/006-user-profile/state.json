@@ -1,0 +1,82 @@
+{
+  "$comment": "Única fuente de verdad del flujo SDD de una feature. Lo escriben solo el orquestador (/sdd-*) y el verifier (secciones red_check y verify). Etapas: spec, plan, tasks, tests, implement, verify, review, docs, close, done.",
+  "schema_version": 1,
+  "feature": "006-user-profile",
+  "title": "Perfil de usuario persistido en el backend",
+  "type": "feature",
+  "scope": {
+    "backend": true,
+    "frontend": true
+  },
+  "branch": "feat/006-user-profile",
+  "base_branch": "chore/frontend-redesign",
+  "created_at": "2026-10-12T04:13:25.965Z",
+  "stage": "spec",
+  "status": "awaiting_approval",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-12T04:38:57.472Z",
+      "note": "aprobado, y el commit también. El alcance incluye metricas ademas de lo que listaba mi idea."
+    },
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
+    "verify": null,
+    "review": null,
+    "docs": null,
+    "close": null
+  },
+  "commits": {},
+  "iterations": {
+    "tests": 0,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": null,
+    "at": null
+  },
+  "verify": {
+    "result": null,
+    "at": null
+  },
+  "review": {
+    "verdict": null,
+    "at": null
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-12T04:13:25.965Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "Feature creada desde chore/frontend-redesign (aprobado por el usuario)"
+    },
+    {
+      "at": "2026-10-12T04:13:57.725Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegado al spec-writer (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T04:25:49.444Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Respuestas Q1-Q8 copiadas en spec.md; Q2 cambia edad por fecha de nacimiento (users.date_of_birth). Re-delegado al spec-writer"
+    },
+    {
+      "at": "2026-10-12T04:28:30.250Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec.md con 13 REQ / 2 NFR, Q1-Q8 resueltas"
+    },
+    {
+      "at": "2026-10-12T04:38:57.472Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Etapa spec y commit aprobados"
+    }
+  ]
+}
