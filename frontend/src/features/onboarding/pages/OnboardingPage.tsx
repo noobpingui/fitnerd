@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/layout/Logo"
 import { ChoiceList } from "@/features/onboarding/components/ChoiceList"
+import { Input } from "@/components/ui/input"
 import { NumberField } from "@/features/onboarding/components/NumberField"
 import { UnitToggle } from "@/features/onboarding/components/UnitToggle"
 import {
@@ -13,14 +14,15 @@ import {
   GENDER_OPTIONS,
   GOAL_OPTIONS,
 } from "@/features/onboarding/constants"
-import { saveOnboardingAnswers } from "@/features/onboarding/storage"
 import type { OnboardingAnswers } from "@/features/onboarding/types"
 import { convertHeight, convertWeight } from "@/features/onboarding/units"
 import {
-  isAgeValid,
+  dateOfBirthError,
   isHeightValid,
   isWeightValid,
 } from "@/features/onboarding/validation"
+import { useSaveProfile } from "@/features/profile/hooks"
+import { payloadFromAnswers } from "@/features/profile/mappers"
 
 type Step = {
   id: string
@@ -41,13 +43,31 @@ const slide = {
   exit: (direction: number) => ({ opacity: 0, x: direction * -40 }),
 }
 
-export function OnboardingPage() {
+// Fecha de hoy en local como "YYYY-MM-DD", para el atributo max del campo.
+function todayIso() {
+  const now = new Date()
+  const month = String(now.getMonth() + 1).padStart(2, "0")
+  const day = String(now.getDate()).padStart(2, "0")
+  return `${now.getFullYear()}-${month}-${day}`
+}
+
+export function OnboardingPage({
+  initialDateOfBirth,
+}: {
+  initialDateOfBirth: string | null
+}) {
   const navigate = useNavigate()
-  const [answers, setAnswers] = useState<OnboardingAnswers>(EMPTY_ANSWERS)
+  const saveProfile = useSaveProfile()
+  const [answers, setAnswers] = useState<OnboardingAnswers>({
+    ...EMPTY_ANSWERS,
+    dateOfBirth: initialDateOfBirth ?? "",
+  })
   const [stepIndex, setStepIndex] = useState(0)
   const [direction, setDirection] = useState(1)
   // Evita que un doble clic rápido en una opción salte dos preguntas.
   const advancing = useRef(false)
+  // Evita un segundo envío antes de que isPending se refleje en pantalla.
+  const submitting = useRef(false)
 
   function update(patch: Partial<OnboardingAnswers>) {
     setAnswers((current) => ({ ...current, ...patch }))
@@ -67,6 +87,8 @@ export function OnboardingPage() {
     }, 250)
   }
 
+  const dobError = dateOfBirthError(answers)
+
   const steps: Step[] = [
     {
       id: "gender",
@@ -83,20 +105,26 @@ export function OnboardingPage() {
       ),
     },
     {
-      id: "age",
-      title: "¿Cuántos años tienes?",
-      isValid: isAgeValid(answers),
+      id: "date-of-birth",
+      title: "¿Cuál es tu fecha de nacimiento?",
+      isValid: dobError === null,
       autoAdvance: false,
       content: (
-        <NumberField
-          large
-          autoFocus
-          value={answers.age}
-          onChange={(age) => update({ age })}
-          suffix="años"
-          inputMode="numeric"
-          placeholder="Ej. 28"
-        />
+        <div className="flex flex-col gap-2">
+          <Input
+            type="date"
+            aria-label="Fecha de nacimiento"
+            autoFocus
+            max={todayIso()}
+            value={answers.dateOfBirth}
+            aria-invalid={dobError ? true : undefined}
+            onChange={(e) => update({ dateOfBirth: e.target.value })}
+            className="h-14 text-center text-xl"
+          />
+          {dobError && (
+            <p className="text-center text-sm text-destructive">{dobError}</p>
+          )}
+        </div>
       ),
     },
     {
@@ -210,8 +238,14 @@ export function OnboardingPage() {
   function goNext() {
     if (!step.isValid) return
     if (isLast) {
-      saveOnboardingAnswers(answers)
-      navigate("/home", { replace: true })
+      if (submitting.current) return
+      submitting.current = true
+      saveProfile.mutate(payloadFromAnswers(answers), {
+        onSuccess: () => navigate("/home", { replace: true }),
+        onError: () => {
+          submitting.current = false
+        },
+      })
       return
     }
     setDirection(1)
@@ -300,13 +334,22 @@ export function OnboardingPage() {
               <ArrowLeft className="h-4 w-4" />
               Atrás
             </Button>
+            {saveProfile.isError && (
+              <p role="alert" className="text-sm text-destructive">
+                No se pudo guardar tu perfil. Inténtalo de nuevo.
+              </p>
+            )}
             {(!step.autoAdvance || step.isValid) && (
               <Button
                 type="submit"
                 className="ml-auto min-w-32"
-                disabled={!step.isValid}
+                disabled={!step.isValid || saveProfile.isPending}
               >
-                {isLast ? "Comenzar" : "Siguiente"}
+                {saveProfile.isPending
+                  ? "Guardando…"
+                  : isLast
+                    ? "Comenzar"
+                    : "Siguiente"}
               </Button>
             )}
           </div>

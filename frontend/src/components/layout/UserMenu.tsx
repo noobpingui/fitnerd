@@ -9,9 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { clearToken } from "@/lib/authToken"
 import { cn } from "@/lib/utils"
-import { useCurrentUser } from "@/features/auth/hooks"
+import { useCurrentUser, useLogout } from "@/features/auth/hooks"
 
 // Paleta fija de colores reales (no la escala de grises del tema) para el
 // fondo del avatar cuando se muestra la inicial. "Random" pero
@@ -46,10 +45,7 @@ export function UserMenu() {
   const navigate = useNavigate()
   const { data: user } = useCurrentUser()
 
-  function handleLogout() {
-    clearToken()
-    navigate("/login", { replace: true })
-  }
+  const handleLogout = useLogout()
 
   // Mientras no haya foto real: mostramos la inicial del email en vez de
   // un icono 100% generico - es "gratis" (el dato ya esta disponible via

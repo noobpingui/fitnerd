@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { UnitToggle } from "@/features/onboarding/components/UnitToggle"
 import { GOAL_OPTIONS } from "@/features/onboarding/constants"
-import { getOnboardingAnswers } from "@/features/onboarding/storage"
+import { useProfile } from "@/features/profile/hooks"
+import { answersFromProfile } from "@/features/profile/mappers"
 import { Pie3D } from "@/features/macros/components/Pie3D"
 import { MACRO_META } from "@/features/macros/constants"
 import {
@@ -24,9 +25,12 @@ export function MacrosPage() {
   // el ratón por una porción ilumina su tarjeta y viceversa.
   const [activeKey, setActiveKey] = useState<MacroKey | null>(null)
 
-  // OnboardingGuard garantiza que las respuestas existen antes de llegar
-  // aquí; el "?? null" solo cubre el caso de que alguien las borre a mano.
-  const answers = useMemo(() => getOnboardingAnswers(), [])
+  // OnboardingGuard garantiza que el perfil existe antes de llegar aquí.
+  const { data: profile } = useProfile()
+  const answers = useMemo(
+    () => (profile ? answersFromProfile(profile) : null),
+    [profile]
+  )
   const summary = useMemo(
     () => (answers ? calculateMacros(answers) : null),
     [answers]

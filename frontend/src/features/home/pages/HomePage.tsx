@@ -5,7 +5,8 @@ import { Activity, ArrowRight, Quote, Scale } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { AddToHomeScreen } from "@/features/home/components/AddToHomeScreen"
 import { useRandomQuote } from "@/features/home/useRandomQuote"
-import { getOnboardingAnswers } from "@/features/onboarding/storage"
+import { useProfile } from "@/features/profile/hooks"
+import { answersFromProfile } from "@/features/profile/mappers"
 import {
   ACTIVITY_OPTIONS,
   GOAL_OPTIONS,
@@ -29,7 +30,11 @@ function fadeIn(index: number) {
 // navegar ya están la barra superior y la inferior).
 export function HomePage() {
   const quote = useRandomQuote()
-  const answers = useMemo(() => getOnboardingAnswers(), [])
+  const { data: profile } = useProfile()
+  const answers = useMemo(
+    () => (profile ? answersFromProfile(profile) : null),
+    [profile]
+  )
   const summary = useMemo(
     () => (answers ? calculateMacros(answers) : null),
     [answers]

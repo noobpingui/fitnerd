@@ -64,36 +64,36 @@ Los tests importan símbolos nuevos; cada uno se crea con su firma y lanza "not 
 ## Fase B — Implementación (implementer)
 
 ### Backend (models → migration → repositories → services → routes)
-- [ ] T-100 [REQ-001, REQ-003] (impl) Añadir la columna `onboarding_completed_at` (`DateTime`, nullable) al modelo `User` — `backend/models/user.py`
-- [ ] T-101 [REQ-001, REQ-002] (impl) Crear el modelo `UserProfile` (PK `user_id`, nueve columnas, `created_at`, `updated_at`) y registrarlo — `backend/models/user_profile.py`, `backend/models/__init__.py`
-- [ ] T-102 [REQ-001, REQ-002, REQ-003] (migration) Migración `c6a1f0d2e9b4` (`down_revision = 'b7c1d9e4a2f3'`): añade `users.onboarding_completed_at` y crea `public.user_profiles`, con `downgrade`; generada con `FLASK_ENV=development` y revisada a mano — `backend/migrations/versions/c6a1f0d2e9b4_add_user_profiles_and_onboarding_.py`
-- [ ] T-103 [REQ-003] (impl) Añadir `get_by_id_for_update` (`select … with_for_update()`) — `backend/repositories/user_repository.py`
-- [ ] T-104 [REQ-001, REQ-002] (impl) Crear `UserProfileRepository` con `get_by_user_id` — `backend/repositories/user_profile_repository.py`
-- [ ] T-105 [REQ-004] (impl) Implementar `_validate` pura y `age_on` en el servicio, con los mensajes exactos, el orden fijo de validación, el regex de fecha, rechazo de `bool`, texto y no finitos, y redondeo `ROUND_HALF_UP` — `backend/services/profile_service.py`
-- [ ] T-106 [REQ-001, REQ-002, REQ-003] (impl) Implementar `get_profile` y `save_profile` (validar, bloquear usuario, actualizar fecha, crear o reemplazar perfil, fijar `onboarding_completed_at` una vez, commit o rollback) — `backend/services/profile_service.py`
-- [ ] T-107 [REQ-001, REQ-002, REQ-005, NFR-001] (impl) Blueprint `profile_bp` con `GET` y `PUT /api/profile`, `@require_auth`, `_build_profile_service()`, `_serialize` y registro del blueprint — `backend/routes/profile_routes.py`, `backend/routes/__init__.py`
+- [x] T-100 [REQ-001, REQ-003] (impl) Añadir la columna `onboarding_completed_at` (`DateTime`, nullable) al modelo `User` — `backend/models/user.py`
+- [x] T-101 [REQ-001, REQ-002] (impl) Crear el modelo `UserProfile` (PK `user_id`, nueve columnas, `created_at`, `updated_at`) y registrarlo — `backend/models/user_profile.py`, `backend/models/__init__.py`
+- [x] T-102 [REQ-001, REQ-002, REQ-003] (migration) Migración `c6a1f0d2e9b4` (`down_revision = 'b7c1d9e4a2f3'`): añade `users.onboarding_completed_at` y crea `public.user_profiles`, con `downgrade`; generada con `FLASK_ENV=development` y revisada a mano — `backend/migrations/versions/c6a1f0d2e9b4_add_user_profiles_and_onboarding_.py`
+- [x] T-103 [REQ-003] (impl) Añadir `get_by_id_for_update` (`select … with_for_update()`) — `backend/repositories/user_repository.py`
+- [x] T-104 [REQ-001, REQ-002] (impl) Crear `UserProfileRepository` con `get_by_user_id` — `backend/repositories/user_profile_repository.py`
+- [x] T-105 [REQ-004] (impl) Implementar `_validate` pura y `age_on` en el servicio, con los mensajes exactos, el orden fijo de validación, el regex de fecha, rechazo de `bool`, texto y no finitos, y redondeo `ROUND_HALF_UP` — `backend/services/profile_service.py`
+- [x] T-106 [REQ-001, REQ-002, REQ-003] (impl) Implementar `get_profile` y `save_profile` (validar, bloquear usuario, actualizar fecha, crear o reemplazar perfil, fijar `onboarding_completed_at` una vez, commit o rollback) — `backend/services/profile_service.py`
+- [x] T-107 [REQ-001, REQ-002, REQ-005, NFR-001] (impl) Blueprint `profile_bp` con `GET` y `PUT /api/profile`, `@require_auth`, `_build_profile_service()`, `_serialize` y registro del blueprint — `backend/routes/profile_routes.py`, `backend/routes/__init__.py`
 
 ### Frontend (types → schemas → api → hooks → components → pages)
-- [ ] T-110 [REQ-009, REQ-013] (impl) Sustituir `age` por `dateOfBirth` en `OnboardingAnswers` y en `EMPTY_ANSWERS` — `frontend/src/features/onboarding/types.ts`, `frontend/src/features/onboarding/constants.ts`
-- [ ] T-111 [REQ-001, REQ-002, REQ-004] (impl) Esquemas zod `profileResponseSchema` y `saveProfilePayloadSchema` (`.strict()`, mismos rangos) — `frontend/src/features/profile/schemas.ts`
-- [ ] T-112 [REQ-001, REQ-002, REQ-008] (impl) Implementar `getProfile` y `saveProfile` con `apiFetch` y validación zod — `frontend/src/features/profile/api.ts`
-- [ ] T-113 [REQ-006, REQ-008, REQ-011] (impl) `profileKeys`, `useProfile` y `useSaveProfile` (con `setQueryData` en `onSuccess`) — `frontend/src/features/profile/hooks.ts`
-- [ ] T-114 [REQ-009, REQ-012] (impl) Implementar `ageFromIsoDate` con fecha local — `frontend/src/lib/age.ts`
-- [ ] T-115 [REQ-009, REQ-011] (impl) Implementar `dateOfBirthError` e `isDateOfBirthValid` y eliminar `isAgeValid` — `frontend/src/features/onboarding/validation.ts`
-- [ ] T-116 [REQ-008, REQ-010] (impl) Implementar `answersFromProfile` y `payloadFromAnswers` — `frontend/src/features/profile/mappers.ts`
-- [ ] T-117 [REQ-006] (impl) Componentes `ProfileLoading` y `ProfileLoadError` — `frontend/src/features/profile/components/ProfileLoadState.tsx`
-- [ ] T-118 [REQ-012] (impl) `calculateMacros(a, today)` calcula la edad con `ageFromIsoDate` — `frontend/src/features/macros/calculations.ts`
-- [ ] T-119 [NFR-002] (impl) `useLogout` y `queryClient.clear()` antes de `setToken` en `useLogin`, `useGoogleLogin` y `useRegister` — `frontend/src/features/auth/hooks.ts`
-- [ ] T-120 [NFR-002] (impl) `UserMenu` y `ProfilePage` usan `useLogout` en lugar de su `handleLogout` local — `frontend/src/components/layout/UserMenu.tsx`
-- [ ] T-121 [REQ-006, REQ-013] (impl) `OnboardingGuard` decide según `useProfile` (carga, error con reintento, redirección, `Outlet`) — `frontend/src/app/OnboardingGuard.tsx`
-- [ ] T-122 [REQ-007] (impl) Implementar `OnboardingRoute` y usarlo en el router — `frontend/src/app/OnboardingRoute.tsx`, `frontend/src/app/router.tsx`
-- [ ] T-123 [REQ-008, REQ-009, REQ-013] (impl) `OnboardingPage`: paso de fecha de nacimiento prerrellenada, guardado con `useSaveProfile`, protección contra doble envío, "Guardando…" y mensaje de error — `frontend/src/features/onboarding/pages/OnboardingPage.tsx`
-- [ ] T-124 [REQ-010, REQ-011] (impl) `PhysicalDataForm`: campo "Fecha de nacimiento" con error, secuencia `PUT` perfil → `POST` medición y mensajes de error — `frontend/src/features/profile/components/PhysicalDataForm.tsx`
-- [ ] T-125 [REQ-010, REQ-013, NFR-002] (impl) `ProfilePage` con `useProfile` y `answersFromProfile`, y `useLogout` — `frontend/src/features/profile/pages/ProfilePage.tsx`
-- [ ] T-126 [REQ-012] (impl) `HomePage` usa `useProfile` — `frontend/src/features/home/pages/HomePage.tsx`
-- [ ] T-127 [REQ-012] (impl) `MacrosPage` usa `useProfile` — `frontend/src/features/macros/pages/MacrosPage.tsx`
-- [ ] T-128 [REQ-012] (impl) `BodyMetricsPage` usa `useProfile` para unidad, altura y meta — `frontend/src/features/body-metrics/pages/BodyMetricsPage.tsx`
-- [ ] T-129 [REQ-013] (impl) Eliminar `storage.ts` y sus imports restantes — `frontend/src/features/onboarding/storage.ts`
+- [x] T-110 [REQ-009, REQ-013] (impl) Sustituir `age` por `dateOfBirth` en `OnboardingAnswers` y en `EMPTY_ANSWERS` — `frontend/src/features/onboarding/types.ts`, `frontend/src/features/onboarding/constants.ts`
+- [x] T-111 [REQ-001, REQ-002, REQ-004] (impl) Esquemas zod `profileResponseSchema` y `saveProfilePayloadSchema` (`.strict()`, mismos rangos) — `frontend/src/features/profile/schemas.ts`
+- [x] T-112 [REQ-001, REQ-002, REQ-008] (impl) Implementar `getProfile` y `saveProfile` con `apiFetch` y validación zod — `frontend/src/features/profile/api.ts`
+- [x] T-113 [REQ-006, REQ-008, REQ-011] (impl) `profileKeys`, `useProfile` y `useSaveProfile` (con `setQueryData` en `onSuccess`) — `frontend/src/features/profile/hooks.ts`
+- [x] T-114 [REQ-009, REQ-012] (impl) Implementar `ageFromIsoDate` con fecha local — `frontend/src/lib/age.ts`
+- [x] T-115 [REQ-009, REQ-011] (impl) Implementar `dateOfBirthError` e `isDateOfBirthValid` y eliminar `isAgeValid` — `frontend/src/features/onboarding/validation.ts`
+- [x] T-116 [REQ-008, REQ-010] (impl) Implementar `answersFromProfile` y `payloadFromAnswers` — `frontend/src/features/profile/mappers.ts`
+- [x] T-117 [REQ-006] (impl) Componentes `ProfileLoading` y `ProfileLoadError` — `frontend/src/features/profile/components/ProfileLoadState.tsx`
+- [x] T-118 [REQ-012] (impl) `calculateMacros(a, today)` calcula la edad con `ageFromIsoDate` — `frontend/src/features/macros/calculations.ts`
+- [x] T-119 [NFR-002] (impl) `useLogout` y `queryClient.clear()` antes de `setToken` en `useLogin`, `useGoogleLogin` y `useRegister` — `frontend/src/features/auth/hooks.ts`
+- [x] T-120 [NFR-002] (impl) `UserMenu` y `ProfilePage` usan `useLogout` en lugar de su `handleLogout` local — `frontend/src/components/layout/UserMenu.tsx`
+- [x] T-121 [REQ-006, REQ-013] (impl) `OnboardingGuard` decide según `useProfile` (carga, error con reintento, redirección, `Outlet`) — `frontend/src/app/OnboardingGuard.tsx`
+- [x] T-122 [REQ-007] (impl) Implementar `OnboardingRoute` y usarlo en el router — `frontend/src/app/OnboardingRoute.tsx`, `frontend/src/app/router.tsx`
+- [x] T-123 [REQ-008, REQ-009, REQ-013] (impl) `OnboardingPage`: paso de fecha de nacimiento prerrellenada, guardado con `useSaveProfile`, protección contra doble envío, "Guardando…" y mensaje de error — `frontend/src/features/onboarding/pages/OnboardingPage.tsx`
+- [x] T-124 [REQ-010, REQ-011] (impl) `PhysicalDataForm`: campo "Fecha de nacimiento" con error, secuencia `PUT` perfil → `POST` medición y mensajes de error — `frontend/src/features/profile/components/PhysicalDataForm.tsx`
+- [x] T-125 [REQ-010, REQ-013, NFR-002] (impl) `ProfilePage` con `useProfile` y `answersFromProfile`, y `useLogout` — `frontend/src/features/profile/pages/ProfilePage.tsx`
+- [x] T-126 [REQ-012] (impl) `HomePage` usa `useProfile` — `frontend/src/features/home/pages/HomePage.tsx`
+- [x] T-127 [REQ-012] (impl) `MacrosPage` usa `useProfile` — `frontend/src/features/macros/pages/MacrosPage.tsx`
+- [x] T-128 [REQ-012] (impl) `BodyMetricsPage` usa `useProfile` para unidad, altura y meta — `frontend/src/features/body-metrics/pages/BodyMetricsPage.tsx`
+- [x] T-129 [REQ-013] (impl) Eliminar `storage.ts` y sus imports restantes — `frontend/src/features/onboarding/storage.ts`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

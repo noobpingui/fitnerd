@@ -18,4 +18,8 @@ class UserRepository(BaseRepository): #Since BaseRepository already receives ses
         stmt = select(self.model).where(self.model.email == email) #Same as stmt = select(User).where(User.email == email)
 
         return self.session.scalars(stmt).first() #Execute the query and return the first user found or None if it does not exist
-    
+
+    # Bloquea la fila del usuario hasta el commit: serializa guardados simultáneos del perfil.
+    def get_by_id_for_update(self, user_id):
+        stmt = select(self.model).where(self.model.id == user_id).with_for_update()
+        return self.session.scalars(stmt).first()

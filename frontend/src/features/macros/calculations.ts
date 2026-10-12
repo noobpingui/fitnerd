@@ -3,6 +3,7 @@ import type {
   Goal,
   OnboardingAnswers,
 } from "@/features/onboarding/types"
+import { ageFromIsoDate } from "@/lib/age"
 import { CM_PER_IN, KG_PER_LB } from "@/features/onboarding/units"
 
 // TEMPORAL (fase de diseño): el cálculo vive en el frontend para poder ver
@@ -57,14 +58,17 @@ export type MacrosSummary = {
   macros: MacroResult[]
 }
 
-export function calculateMacros(a: OnboardingAnswers): MacrosSummary {
+export function calculateMacros(
+  a: OnboardingAnswers,
+  today: Date = new Date()
+): MacrosSummary {
   const kg =
     a.weightUnit === "kg" ? Number(a.weight) : Number(a.weight) * KG_PER_LB
   const cm =
     a.heightUnit === "cm"
       ? Number(a.heightCm)
       : (Number(a.heightFt) * 12 + Number(a.heightIn || 0)) * CM_PER_IN
-  const age = Number(a.age)
+  const age = ageFromIsoDate(a.dateOfBirth, today)
 
   // Mifflin-St Jeor: tasa metabólica basal (TMB) en kcal/día.
   const bmr = 10 * kg + 6.25 * cm - 5 * age + (a.gender === "male" ? 5 : -161)

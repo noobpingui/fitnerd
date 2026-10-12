@@ -81,7 +81,7 @@ export const LIMITS = {
 
 export const EMPTY_ANSWERS: OnboardingAnswers = {
   gender: null,
-  age: "",
+  dateOfBirth: "",
   heightUnit: "cm",
   heightCm: "",
   heightFt: "",

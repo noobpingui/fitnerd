@@ -12,3 +12,4 @@ from models.exercise_favorite import ExerciseFavorite
 from models.feedback import Feedback
 from models.weekly_plan_entry import WeeklyPlanEntry
 from models.password_reset_request import PasswordResetRequest  # noqa: F401
+from models.user_profile import UserProfile  # noqa: F401

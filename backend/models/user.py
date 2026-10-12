@@ -44,6 +44,10 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
     user_role: Mapped[UserRoles] = mapped_column(sqlAlchemyEnum(UserRoles), default=UserRoles.user)
 
+    # NULL = onboarding pendiente. Se fija en el primer guardado del perfil y no vuelve
+    # a cambiar (UTC sin zona, como password_reset_requests).
+    onboarding_completed_at: Mapped[datetime | None] = mapped_column(nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now(), nullable=False)
 
