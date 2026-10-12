@@ -23,3 +23,11 @@ export function isHeightValid(a: OnboardingAnswers) {
 export function isWeightValid(a: OnboardingAnswers) {
   return inRange(a.weight, a.weightUnit === "kg" ? LIMITS.kg : LIMITS.lb)
 }
+
+export function dateOfBirthError(_a: OnboardingAnswers, _today: Date = new Date()): string | null {
+  throw new Error("not implemented")
+}
+
+export function isDateOfBirthValid(_a: OnboardingAnswers, _today: Date = new Date()): boolean {
+  throw new Error("not implemented")
+}

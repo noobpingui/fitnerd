@@ -11,7 +11,7 @@
   "branch": "feat/006-user-profile",
   "base_branch": "chore/frontend-redesign",
   "created_at": "2026-10-12T04:13:25.965Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "awaiting_approval",
   "approvals": {
     "spec": {
@@ -26,7 +26,10 @@
       "at": "2026-10-12T05:03:52.306Z",
       "note": "1,2 Si"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-12T05:22:48.641Z",
+      "note": "ok, sigue"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -34,17 +37,19 @@
     "close": null
   },
   "commits": {
-    "spec": "3b754c9"
+    "spec": "3b754c9",
+    "plan": "d8529aa",
+    "tasks": "d8529aa"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 1,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-12T05:21:08.181Z"
   },
   "verify": {
     "result": null,
@@ -127,6 +132,74 @@
       "stage": "tasks",
       "event": "approved",
       "note": "Etapa tasks y commit (plan + tasks) aprobados"
+    },
+    {
+      "at": "2026-10-12T05:03:56.392Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "d8529aa (plan + tasks)"
+    },
+    {
+      "at": "2026-10-12T05:03:56.392Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Delegado al implementer en modo scaffold (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T05:05:03.369Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Scaffold DONE (T-001..T-007); delegado al test-author"
+    },
+    {
+      "at": "2026-10-12T05:15:33.131Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "test-author DONE (T-010..T-044); delegado al verifier modo red"
+    },
+    {
+      "at": "2026-10-12T05:18:01.164Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL: fallo 1 + observación KeyError -> test-author; fallo 2 (utc_now en scaffold) -> implementer scaffold. Iteración tests 1"
+    },
+    {
+      "at": "2026-10-12T05:19:17.668Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Correcciones de iteración 2 DONE (test-author + implementer scaffold); red check de nuevo"
+    },
+    {
+      "at": "2026-10-12T05:21:36.607Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS (iteración 2)"
+    },
+    {
+      "at": "2026-10-12T05:22:48.641Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "Etapa tests y commit aprobados (\"ok, sigue\"); tests_snapshot con 15 archivos"
     }
-  ]
+  ],
+  "tests_snapshot": {
+    "at": "2026-10-12T05:22:48.641Z",
+    "sha256": {
+      "backend/tests/test_routes/test_profile_routes.py": "c254d422c32c75e4995f064605a97f84534308274707c7c379c99d2933761415",
+      "backend/tests/test_services/test_profile_service.py": "bf82e9b337d5565bdec85d03ba095d57c714e8b943d5e936dca98f41f6b1036f",
+      "frontend/src/app/OnboardingGuard.test.tsx": "67930c013881c7dec781f9efe2235faedef0eb284e125f33c264bfb0cb564042",
+      "frontend/src/app/OnboardingRoute.test.tsx": "8b56d0539a7e37cc8620c7c216ebad92283529d6e925cdaf915f85738fe19cd9",
+      "frontend/src/app/accountSwitch.test.tsx": "e86e54299e71cc38bc729e6bfd3a91fd3bc68633bd14a5cdd9ae9909c04b79ef",
+      "frontend/src/features/body-metrics/pages/BodyMetricsPage.test.tsx": "c15b2a46eeab0e476d168422b5c5f5a51705ca8040eaa3ae534abb07f582dc96",
+      "frontend/src/features/home/pages/HomePage.test.tsx": "51547ebdd9a5135407e3fbc5ddfdb6a28df0a2f5370933d9d40f8b35c6ea9a84",
+      "frontend/src/features/macros/calculations.test.ts": "9d9cdadeb64e397db145c3c8b5a77551b399d9342057eb8f874e70680ddef710",
+      "frontend/src/features/macros/pages/MacrosPage.test.tsx": "19c52024efecea7b279d95458e7315c2d411974cef3cff5dbba9c8a75063872f",
+      "frontend/src/features/onboarding/pages/OnboardingPage.test.tsx": "722cc2cce5b6a83676b2ed741054396fbc33102115781db21e16247471cf93e2",
+      "frontend/src/features/onboarding/validation.test.ts": "f73368cbe4542eeaeb7d87ae50bbe216c8b6ea6e9f23bfa06887c150144f115b",
+      "frontend/src/features/profile/mappers.test.ts": "33a373865cd8e68ffa751542adcc10030d5a5d1064ae4c2d6b170b490163539f",
+      "frontend/src/features/profile/pages/ProfilePage.test.tsx": "7a9318b1862c0864bc21c53df1f6cc7db2204a4788ea29f2f172e5ab3cfb4825",
+      "frontend/src/lib/age.test.ts": "cbf1e48ab2af73fe05c753078788f711339038e538d62729fda6a86cc2d62d98",
+      "frontend/src/test/profileFixtures.ts": "38b9c1ae537e9ecf1ed4266fee76aafe316655833c1e9649ccf0ef9560bd6559"
+    }
+  }
 }
