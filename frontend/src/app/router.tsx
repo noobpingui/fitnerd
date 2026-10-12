@@ -5,8 +5,7 @@ import { AppLayout } from "@/app/AppLayout"
 import { PageTransition } from "@/app/PageTransition"
 import { CATALOG_ENABLED } from "@/app/sections"
 import { OnboardingGuard } from "@/app/OnboardingGuard"
-import { OnboardingPage } from "@/features/onboarding/pages/OnboardingPage"
-import { isOnboardingCompleted } from "@/features/onboarding/storage"
+import { OnboardingRoute } from "@/app/OnboardingRoute"
 import { LoginPage } from "@/features/auth/pages/LoginPage"
 import { RegisterPage } from "@/features/auth/pages/RegisterPage"
 import { ForgotPasswordPage } from "@/features/auth/pages/ForgotPasswordPage"
@@ -30,15 +29,6 @@ export function AppRouter() {
       <AnimatedRoutes />
     </BrowserRouter>
   )
-}
-
-// Quien ya completó el onboarding no tiene nada que hacer en /onboarding:
-// se le manda directo a /home.
-function OnboardingRoute() {
-  if (isOnboardingCompleted()) {
-    return <Navigate to="/home" replace />
-  }
-  return <OnboardingPage />
 }
 
 function AnimatedRoutes() {

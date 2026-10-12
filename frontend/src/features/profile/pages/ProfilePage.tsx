@@ -1,22 +1,35 @@
 import { useMemo } from "react"
-import { useNavigate } from "react-router"
 import { KeyRound, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { clearToken } from "@/lib/authToken"
 import {
   useCurrentUser,
+  useLogout,
   useRequestPasswordReset,
 } from "@/features/auth/hooks"
-import { getOnboardingAnswers } from "@/features/onboarding/storage"
 import { useBodyMetrics } from "@/features/body-metrics/hooks"
+import {
+  ProfileLoadError,
+  ProfileLoading,
+} from "@/features/profile/components/ProfileLoadState"
+import { useProfile } from "@/features/profile/hooks"
+import { answersFromProfile } from "@/features/profile/mappers"
 import { ProfileSection } from "@/features/profile/components/ProfileSection"
 import { PhysicalDataForm } from "@/features/profile/components/PhysicalDataForm"
 
 export function ProfilePage() {
-  const navigate = useNavigate()
   const { data: user } = useCurrentUser()
   const passwordReset = useRequestPasswordReset()
-  const answers = useMemo(() => getOnboardingAnswers(), [])
+  const {
+    data: profile,
+    isPending: profilePending,
+    isError: profileError,
+    refetch,
+  } = useProfile()
+  const answers = useMemo(
+    () => (profile ? answersFromProfile(profile) : null),
+    [profile]
+  )
+  const handleLogout = useLogout()
   const { data: metrics, isLoading: metricsLoading } = useBodyMetrics()
 
   // Último valor conocido de cada campo (pueden venir de mediciones
@@ -33,11 +46,6 @@ export function ProfilePage() {
     }
   }, [metrics])
 
-  function handleLogout() {
-    clearToken()
-    navigate("/login", { replace: true })
-  }
-
   return (
     <div className="mx-auto max-w-2xl p-4 sm:p-8">
       <h1 className="mb-1 text-2xl font-bold">Mi perfil</h1>
@@ -52,6 +60,10 @@ export function ProfilePage() {
         >
           {/* Se espera al historial para precargar la última grasa y
               músculo conocidos; si falla, el formulario arranca vacío. */}
+          {profilePending && <ProfileLoading className="min-h-40" />}
+          {profileError && (
+            <ProfileLoadError className="min-h-40" onRetry={() => refetch()} />
+          )}
           {answers && !metricsLoading && (
             <PhysicalDataForm initial={answers} initialBody={latestBody} />
           )}

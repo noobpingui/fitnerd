@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "react-router"
 import {
   getCurrentUser,
@@ -8,7 +8,7 @@ import {
   requestPasswordReset,
   resetPassword,
 } from "@/features/auth/api"
-import { setToken } from "@/lib/authToken"
+import { clearToken, setToken } from "@/lib/authToken"
 
 // useMutation es el otro lado de la moneda de useQuery: se usa para
 // operaciones que ESCRIBEN (POST/PUT/DELETE) y que dispara una accion del
@@ -18,10 +18,13 @@ import { setToken } from "@/lib/authToken"
 
 export function useLogin() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: login,
     onSuccess: (data) => {
+      // Caché de otra sesión (perfil, /me...) fuera antes de entrar.
+      queryClient.clear()
       setToken(data.token)
       navigate("/", { replace: true })
     },
@@ -42,10 +45,13 @@ export function useCurrentUser() {
 // el boton de Google, no un objeto de credenciales armado por un form.
 export function useGoogleLogin() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: loginWithGoogle,
     onSuccess: (data) => {
+      // Caché de otra sesión (perfil, /me...) fuera antes de entrar.
+      queryClient.clear()
       setToken(data.token)
       navigate("/", { replace: true })
     },
@@ -72,14 +78,30 @@ export function useResetPassword() {
 
 export function useRegister() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: register,
     onSuccess: (data) => {
       // /api/auth/register ya devuelve un token (igual que login) - el
       // backend loguea automaticamente al usuario recien creado.
+      // Caché de otra sesión (perfil, /me...) fuera antes de entrar.
+      queryClient.clear()
       setToken(data.token)
       navigate("/", { replace: true })
     },
   })
+}
+
+// Cerrar sesión vacía la caché de TanStack Query: si no, el perfil de esta
+// cuenta se vería en la siguiente sin recargar la página.
+export function useLogout() {
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+
+  return () => {
+    clearToken()
+    queryClient.clear()
+    navigate("/login", { replace: true })
+  }
 }

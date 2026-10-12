@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react"
 import { Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -17,7 +18,6 @@ import {
   GOAL_OPTIONS,
   LIMITS,
 } from "@/features/onboarding/constants"
-import { saveOnboardingAnswers } from "@/features/onboarding/storage"
 import type {
   ActivityLevel,
   ChoiceOption,
@@ -31,10 +31,13 @@ import {
 } from "@/features/onboarding/units"
 import { useCreateBodyMetric } from "@/features/body-metrics/hooks"
 import {
-  isAgeValid,
+  dateOfBirthError,
   isHeightValid,
   isWeightValid,
 } from "@/features/onboarding/validation"
+import { todayIsoDate } from "@/lib/dates"
+import { useSaveProfile } from "@/features/profile/hooks"
+import { payloadFromAnswers } from "@/features/profile/mappers"
 
 // Los mismos datos del onboarding, pero todos a la vista en un formulario:
 // aquí el usuario ya sabe qué es cada cosa y solo quiere cambiar una o dos.
@@ -64,6 +67,7 @@ export function PhysicalDataForm({
   const [body, setBody] = useState(initialBody)
   const [justSaved, setJustSaved] = useState(false)
   const createMetric = useCreateBodyMetric()
+  const saveProfile = useSaveProfile()
 
   // El aviso "Cambios guardados" desaparece solo a los 3 segundos.
   useEffect(() => {
@@ -82,12 +86,13 @@ export function PhysicalDataForm({
     setJustSaved(false)
   }
 
-  const ageOk = isAgeValid(draft)
+  const dobError = dateOfBirthError(draft)
+  const dobOk = dobError === null
   const heightOk = isHeightValid(draft)
   const weightOk = isWeightValid(draft)
   const fatOk = optionalInRange(body.fat, FAT_LIMITS)
   const muscleOk = optionalInRange(body.muscle, MUSCLE_LIMITS)
-  const allValid = ageOk && heightOk && weightOk && fatOk && muscleOk
+  const allValid = dobOk && heightOk && weightOk && fatOk && muscleOk
 
   const weightKg = (a: OnboardingAnswers) =>
     a.weightUnit === "kg" ? Number(a.weight) : Number(a.weight) * KG_PER_LB
@@ -103,35 +108,43 @@ export function PhysicalDataForm({
     JSON.stringify(draft) !== JSON.stringify(saved) || measurementChanged
 
   function commit() {
-    saveOnboardingAnswers(draft)
     setSaved(draft)
     setSavedBody(body)
     setJustSaved(true)
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!dirty || !allValid) return
-    if (!measurementChanged) {
-      commit()
+    createMetric.reset()
+    saveProfile.reset()
+    // 1. Perfil completo (PUT, idempotente). Si falla, no se toca `saved`.
+    try {
+      await saveProfile.mutateAsync(payloadFromAnswers(draft))
+    } catch {
       return
     }
-    // Cada cambio de peso o composición queda como medición de hoy en el
-    // historial (POST /api/body-metrics, que ya existe): es lo que alimenta
-    // los gráficos y la racha de Métricas. La grasa y el músculo solo se
-    // envían si se cambiaron ahora: si no, se copiaría a hoy una medición
-    // antigua como si fuera nueva.
-    const fatChanged = body.fat.trim() !== "" && body.fat !== savedBody.fat
-    const muscleChanged =
-      body.muscle.trim() !== "" && body.muscle !== savedBody.muscle
-    createMetric.mutate(
-      {
-        weight: Math.round(weightKg(draft) * 10) / 10,
-        ...(fatChanged && { body_fat_percentage: Number(body.fat) }),
-        ...(muscleChanged && { muscle_mass_percentage: Number(body.muscle) }),
-      },
-      { onSuccess: commit }
-    )
+    // 2. Cada cambio de peso o composición queda como medición de hoy en el
+    // historial (POST /api/body-metrics): es lo que alimenta los gráficos y
+    // la racha de Métricas. La grasa y el músculo solo se envían si se
+    // cambiaron ahora: si no, se copiaría a hoy una medición antigua como
+    // si fuera nueva. Si falla, `saved` no se actualiza: un reintento vuelve
+    // a detectar el cambio y registra la medición.
+    if (measurementChanged) {
+      const fatChanged = body.fat.trim() !== "" && body.fat !== savedBody.fat
+      const muscleChanged =
+        body.muscle.trim() !== "" && body.muscle !== savedBody.muscle
+      try {
+        await createMetric.mutateAsync({
+          weight: Math.round(weightKg(draft) * 10) / 10,
+          ...(fatChanged && { body_fat_percentage: Number(body.fat) }),
+          ...(muscleChanged && { muscle_mass_percentage: Number(body.muscle) }),
+        })
+      } catch {
+        return
+      }
+    }
+    commit()
   }
 
   function discard() {
@@ -153,21 +166,20 @@ export function PhysicalDataForm({
         </Field>
 
         <Field
-          label="Edad"
-          htmlFor="profile-age"
+          label="Fecha de nacimiento"
+          htmlFor="profile-dob"
           error={
-            ageOk
-              ? undefined
-              : `Entre ${LIMITS.age.min} y ${LIMITS.age.max} años`
+            dobError ||
+            (draft.dateOfBirth === "" ? "Indica tu fecha de nacimiento" : undefined)
           }
         >
-          <NumberField
-            id="profile-age"
-            value={draft.age}
-            onChange={(age) => update({ age })}
-            suffix="años"
-            inputMode="numeric"
-            invalid={!ageOk}
+          <Input
+            id="profile-dob"
+            type="date"
+            max={todayIsoDate()}
+            value={draft.dateOfBirth}
+            onChange={(e) => update({ dateOfBirth: e.target.value })}
+            aria-invalid={!dobOk || undefined}
           />
         </Field>
 
@@ -305,6 +317,11 @@ export function PhysicalDataForm({
             Cambios guardados
           </span>
         )}
+        {saveProfile.isError && (
+          <span role="alert" className="text-sm text-destructive">
+            No se pudieron guardar los cambios. Inténtalo de nuevo.
+          </span>
+        )}
         {createMetric.isError && (
           <span role="alert" className="text-sm text-destructive">
             No se pudo guardar la medición. Inténtalo de nuevo.
@@ -317,9 +334,12 @@ export function PhysicalDataForm({
         )}
         <Button
           type="submit"
-          disabled={!dirty || !allValid || createMetric.isPending}
+          disabled={
+            !dirty || !allValid || createMetric.isPending || saveProfile.isPending
+          }
         >
-          {createMetric.isPending ? "Guardando…" : "Guardar cambios"}
+          {createMetric.isPending || saveProfile.isPending
+            ? "Guardando…" : "Guardar cambios"}
         </Button>
       </div>
     </form>

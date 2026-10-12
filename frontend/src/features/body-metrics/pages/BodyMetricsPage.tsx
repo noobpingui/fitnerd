@@ -27,7 +27,8 @@ import {
   weeklyRate,
   type PaceStatus,
 } from "@/features/body-metrics/insights"
-import { getOnboardingAnswers } from "@/features/onboarding/storage"
+import { useProfile } from "@/features/profile/hooks"
+import { answersFromProfile } from "@/features/profile/mappers"
 import { CM_PER_IN, KG_PER_LB } from "@/features/onboarding/units"
 
 const one = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 1 })
@@ -52,7 +53,11 @@ function fadeIn(index: number) {
 
 export function BodyMetricsPage() {
   const { data: metrics, isLoading, isError, error } = useBodyMetrics()
-  const profile = useMemo(() => getOnboardingAnswers(), [])
+  const { data: profileResponse } = useProfile()
+  const profile = useMemo(
+    () => (profileResponse ? answersFromProfile(profileResponse) : null),
+    [profileResponse]
+  )
 
   // El backend guarda el peso en kg; se muestra en la unidad del perfil.
   const weightUnit = profile?.weightUnit ?? "kg"

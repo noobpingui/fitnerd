@@ -20,7 +20,8 @@ export type WeightUnit = "kg" | "lb"
 // validar cada paso.
 export type OnboardingAnswers = {
   gender: Gender | null
-  age: string
+  // "" o "YYYY-MM-DD"; la edad se calcula a partir de la fecha.
+  dateOfBirth: string
   heightUnit: HeightUnit
   heightCm: string
   heightFt: string
