@@ -2,8 +2,8 @@
 // salen del perfil del servidor, y el historial permite corregir y borrar
 // mediciones. La red se simula en api.ts (vi.mock); el gráfico y el análisis
 // de IA se sustituyen por stubs.
-import { beforeEach, describe, expect, it, vi } from "vitest"
-import { render, screen, waitFor, within } from "@testing-library/react"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { act, render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { Link, MemoryRouter, Route, Routes } from "react-router"
@@ -16,6 +16,8 @@ import {
 import { formatDate } from "@/features/body-metrics/dateUtils"
 import { HomePage } from "@/features/home/pages/HomePage"
 import { getProfile } from "@/features/profile/api"
+import { ApiError } from "@/lib/apiClient"
+import type { ProfileResponse } from "@/features/profile/types"
 import { ProfilePage } from "@/features/profile/pages/ProfilePage"
 import type { BodyMetric } from "@/features/body-metrics/types"
 import { BodyMetricsPage } from "./BodyMetricsPage"
@@ -113,6 +115,17 @@ async function deleteMetric(user: ReturnType<typeof userEvent.setup>, iso: strin
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
   )
 }
+
+// Reloj fijo (spec 009, plan §5.4): lunes 12 de octubre de 2026. Solo se
+// falsea Date, para que waitFor y userEvent sigan funcionando.
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"] })
+  vi.setSystemTime(new Date(2026, 9, 12, 12))
+})
+
+afterEach(() => {
+  vi.useRealTimers()
+})
 
 beforeEach(() => {
   getProfileMock.mockReset()
@@ -323,5 +336,610 @@ describe("BodyMetricsPage - las demás pantallas reflejan los cambios sin recarg
 
     const fat = await screen.findByLabelText(/% Grasa corporal/)
     expect(fat).toHaveValue(22)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Indicadores de progreso (spec 009)
+// ---------------------------------------------------------------------------
+
+// Un Stat (Composición, Constancia): se acota al contenedor de su etiqueta.
+function stat(label: string) {
+  const labelNode = screen.getByText(label, { selector: "span" })
+  return within(labelNode.parentElement as HTMLElement)
+}
+
+// Texto exacto, tolerante al separador decimal y al signo menos del ICU.
+function exact(text: string) {
+  const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  return new RegExp(`^${escaped.replace(/,/g, "[.,]").replace(/-/g, "[-−]")}$`)
+}
+
+const STATUS_LABELS = [
+  "En ritmo con tu meta",
+  "Más lento que tu meta",
+  "Más rápido que tu meta",
+  "Fuera del rango de tu meta",
+]
+
+function profileWith(profile: Parameters<typeof makeProfileResponse>[1] = {}) {
+  getProfileMock.mockResolvedValue(
+    makeProfileResponse({}, { weight_unit: "kg", height_cm: 175, goal: "lose", ...profile })
+  )
+}
+
+// Renderiza y espera a que la página y el perfil hayan llegado.
+async function renderLoaded(metrics: BodyMetric[]) {
+  listMock.mockResolvedValue(metrics)
+  const view = renderPage()
+  await screen.findByRole("heading", { name: "Constancia" })
+  await waitFor(() => expect(getProfileMock).toHaveBeenCalled())
+  // El mock resuelve en microtareas: se vacían dentro de act, sin temporizador real.
+  await act(async () => {
+    for (let i = 0; i < 5; i++) await Promise.resolve()
+  })
+  return view
+}
+
+function expectNoStatus() {
+  for (const label of STATUS_LABELS) {
+    expect(screen.queryByText(label)).not.toBeInTheDocument()
+  }
+}
+
+describe("BodyMetricsPage - indicadores (spec 009): KPI Peso", () => {
+  beforeEach(() => profileWith())
+
+  // SDD: REQ-001 AC-001.1
+  it("muestra el último peso y el cambio frente a la referencia de 30 días", async () => {
+    await renderLoaded([
+      metric("2026-09-01", 82),
+      metric("2026-09-10", 81),
+      metric("2026-10-11", 78.5),
+    ])
+
+    expect(kpi("Peso").getByText(exact("78,5 kg"))).toBeInTheDocument()
+    expect(kpi("Peso").getByText(exact("-2,5 kg en 30 días"))).toBeInTheDocument()
+  })
+
+  // SDD: REQ-001 AC-001.4
+  it("con una sola medición no muestra texto de cambio", async () => {
+    await renderLoaded([metric("2026-10-11", 78.5)])
+
+    expect(kpi("Peso").getByText(exact("78,5 kg"))).toBeInTheDocument()
+    expect(kpi("Peso").queryByText(/en 30 días/)).not.toBeInTheDocument()
+  })
+
+  // SDD: REQ-001 AC-001.5
+  it("con perfil en lb muestra el peso y el cambio en lb", async () => {
+    profileWith({ weight_unit: "lb", weight: 173 })
+    await renderLoaded([metric("2026-09-11", 80), metric("2026-10-11", 78.5)])
+
+    expect(kpi("Peso").getByText(exact("173,1 lb"))).toBeInTheDocument()
+    expect(kpi("Peso").getByText(exact("-3,3 lb en 30 días"))).toBeInTheDocument()
+  })
+
+  // SDD: REQ-001 AC-001.6
+  it("usa la última medición de peso, no la última medición", async () => {
+    await renderLoaded([metric("2026-10-05", 79), metric("2026-10-11", null, 20)])
+
+    expect(kpi("Peso").getByText(exact("79 kg"))).toBeInTheDocument()
+  })
+
+  // SDD: REQ-001 AC-001.7
+  it("sin mediciones de peso muestra — y ningún cambio", async () => {
+    await renderLoaded([metric("2026-10-11", null, 20)])
+
+    expect(kpi("Peso").getByText("—")).toBeInTheDocument()
+    expect(kpi("Peso").queryByText(/en 30 días/)).not.toBeInTheDocument()
+  })
+
+  // SDD: REQ-001 AC-001.8
+  it("muestra un cambio de 0 cuando el peso no varió", async () => {
+    await renderLoaded([metric("2026-09-10", 80), metric("2026-10-11", 80)])
+
+    expect(kpi("Peso").getByText(exact("80 kg"))).toBeInTheDocument()
+    expect(kpi("Peso").getByText(exact("0 kg en 30 días"))).toBeInTheDocument()
+  })
+
+  // SDD: REQ-001 AC-001.9
+  it("sigue mostrando el cambio aunque la última medición sea antigua", async () => {
+    await renderLoaded([
+      metric("2026-08-17", 80),
+      metric("2026-08-24", 79.5),
+      metric("2026-08-31", 79),
+      metric("2026-09-07", 78.5),
+    ])
+
+    expect(kpi("Peso").getByText(exact("78,5 kg"))).toBeInTheDocument()
+    expect(kpi("Peso").getByText(exact("-1,5 kg en 30 días"))).toBeInTheDocument()
+  })
+})
+
+describe("BodyMetricsPage - indicadores (spec 009): KPI % Grasa", () => {
+  beforeEach(() => profileWith())
+
+  // SDD: REQ-002 AC-002.1
+  it("muestra el % de grasa y su cambio en puntos", async () => {
+    await renderLoaded([metric("2026-09-10", null, 22), metric("2026-10-11", null, 20)])
+
+    expect(kpi("% Grasa").getByText(exact("20 %"))).toBeInTheDocument()
+    expect(kpi("% Grasa").getByText(exact("-2 pts en 30 días"))).toBeInTheDocument()
+  })
+
+  // SDD: REQ-002 AC-002.3
+  it("con una sola medición de grasa no muestra cambio", async () => {
+    await renderLoaded([metric("2026-10-11", 80, 20)])
+
+    expect(kpi("% Grasa").getByText(exact("20 %"))).toBeInTheDocument()
+    expect(kpi("% Grasa").queryByText(/en 30 días/)).not.toBeInTheDocument()
+  })
+
+  // SDD: REQ-002 AC-002.4
+  it("sin mediciones de grasa muestra — y ningún cambio", async () => {
+    await renderLoaded([metric("2026-10-05", 80), metric("2026-10-11", 79)])
+
+    expect(kpi("% Grasa").getByText("—")).toBeInTheDocument()
+    expect(kpi("% Grasa").queryByText(/en 30 días/)).not.toBeInTheDocument()
+  })
+
+  // SDD: REQ-002 AC-002.5
+  it("con perfil en lb el % de grasa no cambia de unidad", async () => {
+    profileWith({ weight_unit: "lb", weight: 173 })
+    await renderLoaded([metric("2026-09-10", null, 22), metric("2026-10-11", null, 20)])
+
+    expect(kpi("% Grasa").getByText(exact("20 %"))).toBeInTheDocument()
+    expect(kpi("% Grasa").getByText(exact("-2 pts en 30 días"))).toBeInTheDocument()
+  })
+})
+
+describe("BodyMetricsPage - indicadores (spec 009): KPI Ritmo", () => {
+  beforeEach(() => profileWith())
+
+  // SDD: REQ-003 AC-003.1
+  it("muestra el ritmo semanal en kg", async () => {
+    await renderLoaded(METRICS)
+
+    expect(kpi("Ritmo").getByText(exact("-0,5 kg/sem"))).toBeInTheDocument()
+  })
+
+  // SDD: REQ-003 AC-003.2
+  it("muestra el ritmo semanal en lb con perfil en lb", async () => {
+    profileWith({ weight_unit: "lb", weight: 173 })
+    await renderLoaded(METRICS)
+
+    expect(kpi("Ritmo").getByText(exact("-1,1 lb/sem"))).toBeInTheDocument()
+  })
+
+  // SDD: REQ-003 AC-003.4
+  it("con 3 mediciones que cubren 9 días pide más registros", async () => {
+    await renderLoaded([
+      metric("2026-10-02", 80),
+      metric("2026-10-06", 79.5),
+      metric("2026-10-11", 79),
+    ])
+
+    expect(kpi("Ritmo").getByText("—")).toBeInTheDocument()
+    expect(kpi("Ritmo").getByText("Faltan registros para calcularlo")).toBeInTheDocument()
+  })
+
+  // SDD: REQ-003 AC-003.5
+  it("con dos mediciones de peso pide más registros", async () => {
+    await renderLoaded([metric("2026-09-20", 80), metric("2026-10-11", 78.5)])
+
+    expect(kpi("Ritmo").getByText("—")).toBeInTheDocument()
+    expect(kpi("Ritmo").getByText("Faltan registros para calcularlo")).toBeInTheDocument()
+  })
+
+  // SDD: REQ-003 AC-003.9
+  it("las mediciones sin peso no cuentan para el ritmo", async () => {
+    await renderLoaded([...METRICS, metric("2026-10-12", null, 20)])
+
+    expect(kpi("Ritmo").getByText(exact("-0,5 kg/sem"))).toBeInTheDocument()
+  })
+
+  // SDD: REQ-003 AC-003.10
+  it("con la última medición de peso de hace más de 28 días muestra Sin registros recientes", async () => {
+    await renderLoaded([
+      metric("2026-08-17", 80),
+      metric("2026-08-24", 79.5),
+      metric("2026-08-31", 79),
+      metric("2026-09-07", 78.5),
+    ])
+
+    expect(kpi("Ritmo").getByText("—")).toBeInTheDocument()
+    expect(kpi("Ritmo").getByText("Sin registros recientes")).toBeInTheDocument()
+    expectNoStatus()
+  })
+
+  // SDD: REQ-003 AC-003.13
+  it("Sin registros recientes tiene prioridad sobre Faltan registros", async () => {
+    await renderLoaded([metric("2026-08-20", 80), metric("2026-09-07", 79)])
+
+    expect(kpi("Ritmo").getByText("Sin registros recientes")).toBeInTheDocument()
+    expect(screen.queryByText("Faltan registros para calcularlo")).not.toBeInTheDocument()
+  })
+
+  // SDD: REQ-003 AC-003.14
+  it("una medición reciente sin peso no evita Sin registros recientes", async () => {
+    await renderLoaded([
+      metric("2026-08-17", 80),
+      metric("2026-08-24", 79.5),
+      metric("2026-08-31", 79),
+      metric("2026-09-07", 78.5),
+      metric("2026-10-11", null, 20),
+    ])
+
+    expect(kpi("Ritmo").getByText("—")).toBeInTheDocument()
+    expect(kpi("Ritmo").getByText("Sin registros recientes")).toBeInTheDocument()
+  })
+})
+
+describe("BodyMetricsPage - indicadores (spec 009): ritmo frente a la meta", () => {
+  // SDD: REQ-004 AC-004.1
+  it("con meta lose el ritmo de -0,64 % semanal está en ritmo", async () => {
+    profileWith({ goal: "lose" })
+    await renderLoaded(METRICS)
+
+    expect(kpi("Ritmo").getByText("En ritmo con tu meta")).toBeInTheDocument()
+  })
+
+  // SDD: REQ-004 AC-004.2
+  it("con meta lose_slow el mismo ritmo es más rápido que la meta", async () => {
+    profileWith({ goal: "lose_slow" })
+    await renderLoaded(METRICS)
+
+    expect(kpi("Ritmo").getByText("Más rápido que tu meta")).toBeInTheDocument()
+  })
+
+  // SDD: REQ-004 AC-004.3
+  it("con meta gain el mismo ritmo es más lento que la meta", async () => {
+    profileWith({ goal: "gain" })
+    await renderLoaded(METRICS)
+
+    expect(kpi("Ritmo").getByText("Más lento que tu meta")).toBeInTheDocument()
+  })
+
+  // SDD: REQ-004 AC-004.5
+  it("con meta maintain y ritmo 0 está en ritmo", async () => {
+    profileWith({ goal: "maintain" })
+    await renderLoaded([
+      metric("2026-09-20", 80),
+      metric("2026-09-27", 80),
+      metric("2026-10-04", 80),
+      metric("2026-10-11", 80),
+    ])
+
+    expect(kpi("Ritmo").getByText("En ritmo con tu meta")).toBeInTheDocument()
+  })
+
+  // SDD: REQ-004 AC-004.10
+  it("sin datos suficientes muestra Faltan registros y ningún estado de meta", async () => {
+    profileWith({ goal: "lose" })
+    await renderLoaded([
+      metric("2026-10-02", 80),
+      metric("2026-10-06", 79.5),
+      metric("2026-10-11", 79),
+    ])
+
+    expect(kpi("Ritmo").getByText("Faltan registros para calcularlo")).toBeInTheDocument()
+    expectNoStatus()
+  })
+
+  // SDD: REQ-004 AC-004.13
+  it("con Sin registros recientes no hay ningún estado de meta", async () => {
+    profileWith({ goal: "lose" })
+    await renderLoaded([
+      metric("2026-08-17", 80),
+      metric("2026-08-24", 79.5),
+      metric("2026-08-31", 79),
+      metric("2026-09-07", 78.5),
+    ])
+
+    expect(kpi("Ritmo").getByText("Sin registros recientes")).toBeInTheDocument()
+    expectNoStatus()
+  })
+
+  // SDD: REQ-004 AC-004.4
+  it("con meta maintain un ritmo fuera de rango dice Fuera del rango de tu meta con el mismo aviso visual", async () => {
+    profileWith({ goal: "lose_slow" })
+    const first = await renderLoaded(METRICS)
+    const tooFastTone = kpi("Ritmo")
+      .getByText("Más rápido que tu meta")
+      .getAttribute("data-tone")
+    first.unmount()
+
+    profileWith({ goal: "maintain" })
+    await renderLoaded(METRICS)
+
+    const off = kpi("Ritmo").getByText("Fuera del rango de tu meta")
+    expect(off).toHaveAttribute("data-tone", "warn")
+    expect(off.getAttribute("data-tone")).toBe(tooFastTone)
+    expect(screen.queryByText("Más rápido que tu meta")).not.toBeInTheDocument()
+    expect(screen.queryByText("Más lento que tu meta")).not.toBeInTheDocument()
+  })
+})
+
+describe("BodyMetricsPage - indicadores (spec 009): composición corporal", () => {
+  const FULL = metric("2026-10-05", 80, 20)
+  const DESCRIPTION_EMPTY =
+    "Registra tu % de grasa en el perfil para ver tu masa grasa y magra."
+
+  beforeEach(() => profileWith())
+
+  // SDD: REQ-006 AC-006.1
+  it("muestra masa grasa, masa magra, FFMI y la fecha de la medición", async () => {
+    await renderLoaded([FULL])
+
+    expect(stat("Masa grasa").getByText(exact("16 kg"))).toBeInTheDocument()
+    expect(stat("Masa magra").getByText(exact("64 kg"))).toBeInTheDocument()
+    expect(stat("FFMI").getByText(exact("20,9"))).toBeInTheDocument()
+    expect(
+      screen.getByText(`Según tu medición del ${formatDate("2026-10-05")}.`)
+    ).toBeInTheDocument()
+  })
+
+  // SDD: REQ-006 AC-006.2
+  it("sigue usando la medición con peso y grasa aunque haya otra posterior solo con peso", async () => {
+    await renderLoaded([FULL, metric("2026-10-11", 78.5)])
+
+    expect(stat("Masa grasa").getByText(exact("16 kg"))).toBeInTheDocument()
+    expect(stat("Masa magra").getByText(exact("64 kg"))).toBeInTheDocument()
+    expect(stat("FFMI").getByText(exact("20,9"))).toBeInTheDocument()
+    expect(
+      screen.getByText(`Según tu medición del ${formatDate("2026-10-05")}.`)
+    ).toBeInTheDocument()
+  })
+
+  // SDD: REQ-006 AC-006.3
+  it("con perfil en lb muestra las masas en lb y el mismo FFMI", async () => {
+    profileWith({ weight_unit: "lb", weight: 176 })
+    await renderLoaded([FULL])
+
+    expect(stat("Masa grasa").getByText(exact("35,3 lb"))).toBeInTheDocument()
+    expect(stat("Masa magra").getByText(exact("141,1 lb"))).toBeInTheDocument()
+    expect(stat("FFMI").getByText(exact("20,9"))).toBeInTheDocument()
+  })
+
+  // SDD: REQ-006 AC-006.4
+  it("con altura de 5 ft 9 in el FFMI es 20,8", async () => {
+    profileWith({ height_unit: "ft", height_cm: null, height_ft: 5, height_in: 9 })
+    await renderLoaded([FULL])
+
+    expect(stat("FFMI").getByText(exact("20,8"))).toBeInTheDocument()
+  })
+
+  // SDD: REQ-006 AC-006.5
+  it("sin ninguna medición de grasa muestra — y pide registrar la grasa", async () => {
+    await renderLoaded([metric("2026-10-05", 80), metric("2026-10-11", 79)])
+
+    expect(stat("Masa grasa").getByText("—")).toBeInTheDocument()
+    expect(stat("Masa magra").getByText("—")).toBeInTheDocument()
+    expect(stat("FFMI").getByText("—")).toBeInTheDocument()
+    expect(screen.getByText(DESCRIPTION_EMPTY)).toBeInTheDocument()
+  })
+
+  // SDD: REQ-006 AC-006.6
+  it("no combina peso y grasa de mediciones distintas", async () => {
+    await renderLoaded([metric("2026-10-11", null, 20), metric("2026-10-05", 80)])
+
+    expect(stat("Masa grasa").getByText("—")).toBeInTheDocument()
+    expect(stat("Masa magra").getByText("—")).toBeInTheDocument()
+    expect(stat("FFMI").getByText("—")).toBeInTheDocument()
+  })
+})
+
+describe("BodyMetricsPage - indicadores (spec 009): IMC", () => {
+  beforeEach(() => profileWith())
+
+  // SDD: REQ-007 AC-007.1
+  it("calcula el IMC con la última medición de peso y la altura del perfil", async () => {
+    await renderLoaded([metric("2026-10-11", 78.5)])
+
+    expect(stat("IMC").getByText(exact("25,6"))).toBeInTheDocument()
+  })
+
+  // SDD: REQ-007 AC-007.2
+  it("usa la última medición de peso y no la de la composición", async () => {
+    await renderLoaded([metric("2026-10-05", 80, 20), metric("2026-10-11", 78.5)])
+
+    expect(stat("IMC").getByText(exact("25,6"))).toBeInTheDocument()
+  })
+
+  // SDD: REQ-007 AC-007.3
+  it("con altura de 5 ft 9 in y 80 kg el IMC es 26", async () => {
+    profileWith({ height_unit: "ft", height_cm: null, height_ft: 5, height_in: 9 })
+    await renderLoaded([metric("2026-10-11", 80)])
+
+    expect(stat("IMC").getByText(exact("26"))).toBeInTheDocument()
+  })
+
+  // SDD: REQ-007 AC-007.4
+  it("sin mediciones de peso el IMC es —", async () => {
+    await renderLoaded([metric("2026-10-11", null, 20)])
+
+    expect(stat("IMC").getByText("—")).toBeInTheDocument()
+  })
+
+  // SDD: REQ-007 AC-007.5
+  it("con perfil en lb el IMC no cambia", async () => {
+    profileWith({ weight_unit: "lb", weight: 173 })
+    await renderLoaded([metric("2026-10-11", 78.5)])
+
+    expect(stat("IMC").getByText(exact("25,6"))).toBeInTheDocument()
+  })
+})
+
+describe("BodyMetricsPage - indicadores (spec 009): racha", () => {
+  beforeEach(() => profileWith())
+
+  // SDD: REQ-008 AC-008.1
+  it("cuenta 3 semanas seguidas", async () => {
+    await renderLoaded([
+      metric("2026-10-12", 80),
+      metric("2026-10-05", 80),
+      metric("2026-09-28", 80),
+    ])
+
+    expect(stat("Racha").getByText("3 semanas")).toBeInTheDocument()
+  })
+
+  // SDD: REQ-008 AC-008.2
+  it("la semana actual sin mediciones no rompe la racha", async () => {
+    await renderLoaded([metric("2026-10-09", 80), metric("2026-10-01", 80)])
+
+    expect(stat("Racha").getByText("2 semanas")).toBeInTheDocument()
+  })
+
+  // SDD: REQ-008 AC-008.3
+  it("un hueco corta la racha y se escribe 1 semana en singular", async () => {
+    await renderLoaded([metric("2026-10-12", 80), metric("2026-09-28", 80)])
+
+    expect(stat("Racha").getByText("1 semana")).toBeInTheDocument()
+  })
+
+  // SDD: REQ-008 AC-008.4
+  it("sin mediciones esta semana ni la pasada la racha es 0 semanas", async () => {
+    await renderLoaded([metric("2026-09-30", 80)])
+
+    expect(stat("Racha").getByText("0 semanas")).toBeInTheDocument()
+  })
+
+  // SDD: REQ-008 AC-008.5
+  it("el domingo cuenta en la misma semana que el lunes", async () => {
+    vi.setSystemTime(new Date(2026, 9, 18, 12)) // domingo
+    await renderLoaded([metric("2026-10-12", 80), metric("2026-10-05", 80)])
+
+    expect(stat("Racha").getByText("2 semanas")).toBeInTheDocument()
+  })
+
+  // SDD: REQ-008 AC-008.6
+  it("varias mediciones en la misma semana cuentan una vez", async () => {
+    await renderLoaded([
+      metric("2026-10-06", 80),
+      metric("2026-10-08", 80),
+      metric("2026-10-11", 80),
+    ])
+
+    expect(stat("Racha").getByText("1 semana")).toBeInTheDocument()
+  })
+})
+
+describe("BodyMetricsPage - indicadores (spec 009): registros y último registro", () => {
+  beforeEach(() => profileWith())
+
+  // SDD: REQ-009 AC-009.1
+  it("cuenta las mediciones desde 30 días antes de hoy, ambos días incluidos", async () => {
+    await renderLoaded([
+      metric("2026-09-11", 80),
+      metric("2026-09-12", 80),
+      metric("2026-10-12", 80),
+    ])
+
+    expect(stat("Últimos 30 días").getByText("2 registros")).toBeInTheDocument()
+    expect(stat("Últimos 30 días").getByText("3 en total")).toBeInTheDocument()
+  })
+
+  // SDD: REQ-009 AC-009.2
+  it("escribe 1 registro en singular", async () => {
+    await renderLoaded([
+      metric("2026-05-01", 80),
+      metric("2026-05-08", 80),
+      metric("2026-05-15", 80),
+      metric("2026-05-22", 80),
+      metric("2026-10-11", 80),
+    ])
+
+    expect(stat("Últimos 30 días").getByText("1 registro")).toBeInTheDocument()
+    expect(stat("Últimos 30 días").queryByText("1 registros")).not.toBeInTheDocument()
+    expect(stat("Últimos 30 días").getByText("5 en total")).toBeInTheDocument()
+  })
+
+  // SDD: REQ-009 AC-009.3
+  it("con todas las mediciones antiguas muestra 0 registros", async () => {
+    await renderLoaded([metric("2026-09-11", 80), metric("2026-08-01", 80)])
+
+    expect(stat("Últimos 30 días").getByText("0 registros")).toBeInTheDocument()
+  })
+
+  // SDD: REQ-009 AC-009.4
+  it("cuenta mediciones con cualquier valor y muestra la fecha de la última", async () => {
+    await renderLoaded([metric("2026-10-05", 80), metric("2026-10-11", null, 20)])
+
+    expect(stat("Últimos 30 días").getByText("2 registros")).toBeInTheDocument()
+    expect(stat("Último registro").getByText(formatDate("2026-10-11"))).toBeInTheDocument()
+  })
+
+  // SDD: REQ-009 AC-009.5
+  it("con una sola medición muestra 1 registro, 1 en total y su fecha", async () => {
+    await renderLoaded([metric("2026-10-11", 80)])
+
+    expect(stat("Últimos 30 días").getByText("1 registro")).toBeInTheDocument()
+    expect(stat("Últimos 30 días").getByText("1 en total")).toBeInTheDocument()
+    expect(stat("Último registro").getByText(formatDate("2026-10-11"))).toBeInTheDocument()
+  })
+})
+
+describe("BodyMetricsPage - indicadores (spec 009): perfil no disponible", () => {
+  beforeEach(() => {
+    getProfileMock.mockRejectedValue(new ApiError(500, "Error"))
+  })
+
+  // SDD: REQ-010 AC-010.1
+  it("muestra los pesos en kg y — en IMC y FFMI", async () => {
+    await renderLoaded([metric("2026-10-11", 80, 20)])
+
+    expect(kpi("Peso").getByText(exact("80 kg"))).toBeInTheDocument()
+    expect(stat("Masa grasa").getByText(exact("16 kg"))).toBeInTheDocument()
+    expect(stat("Masa magra").getByText(exact("64 kg"))).toBeInTheDocument()
+    for (const label of ["IMC", "FFMI"]) {
+      expect(stat(label).getByText("—")).toBeInTheDocument()
+      expect(stat(label).queryByText(/∞|NaN|^0$/)).not.toBeInTheDocument()
+    }
+  })
+
+  // SDD: REQ-010 AC-010.2
+  it("el ritmo se muestra en kg sin estado de meta", async () => {
+    await renderLoaded(METRICS)
+
+    expect(kpi("Ritmo").getByText(exact("-0,5 kg/sem"))).toBeInTheDocument()
+    expectNoStatus()
+  })
+
+  // SDD: REQ-004 AC-004.11
+  it("sin perfil el ritmo no lleva estado de meta ni Faltan registros", async () => {
+    await renderLoaded(METRICS)
+
+    expectNoStatus()
+    expect(screen.queryByText("Faltan registros para calcularlo")).not.toBeInTheDocument()
+  })
+
+  // SDD: REQ-010 AC-010.3
+  it("al llegar el perfil en lb los indicadores pasan a lb sin recargar", async () => {
+    let resolveProfile!: (value: ProfileResponse) => void
+    getProfileMock.mockReset()
+    getProfileMock.mockReturnValue(
+      new Promise<ProfileResponse>((resolve) => {
+        resolveProfile = resolve
+      })
+    )
+    listMock.mockResolvedValue([metric("2026-10-11", 78.5)])
+    renderPage()
+
+    await waitFor(() =>
+      expect(kpi("Peso").getByText(exact("78,5 kg"))).toBeInTheDocument()
+    )
+    expect(stat("IMC").getByText("—")).toBeInTheDocument()
+
+    await act(async () => {
+      resolveProfile(
+        makeProfileResponse({}, { weight_unit: "lb", weight: 173, height_cm: 175, goal: "lose" })
+      )
+    })
+
+    await waitFor(() =>
+      expect(kpi("Peso").getByText(exact("173,1 lb"))).toBeInTheDocument()
+    )
+    expect(stat("IMC").getByText(exact("25,6"))).toBeInTheDocument()
   })
 })

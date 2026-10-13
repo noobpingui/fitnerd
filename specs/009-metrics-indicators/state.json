@@ -1,0 +1,296 @@
+{
+  "$comment": "Única fuente de verdad del flujo SDD de una feature. Lo escriben solo el orquestador (/sdd-*) y el verifier (secciones red_check y verify). Etapas: spec, plan, tasks, tests, implement, verify, review, docs, close, done.",
+  "schema_version": 1,
+  "feature": "009-metrics-indicators",
+  "title": "Indicadores de progreso de Métricas especificados y con tests",
+  "type": "feature",
+  "scope": {
+    "backend": false,
+    "frontend": true
+  },
+  "branch": "feat/009-metrics-indicators",
+  "base_branch": "chore/frontend-redesign",
+  "created_at": "2026-10-13T00:41:46.208Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": "2026-10-13T00:59:48.413Z",
+    "plan": "2026-10-13T01:29:08.427Z",
+    "tasks": "2026-10-13T01:35:43.921Z",
+    "tests": "2026-10-13T03:47:40.986Z",
+    "implement": "2026-10-13T03:50:46.681Z",
+    "verify": "2026-10-13T04:14:11.341Z",
+    "review": "2026-10-13T04:32:24.850Z",
+    "docs": "2026-10-13T04:34:30.617Z",
+    "close": "2026-10-13T04:36:01.940Z"
+  },
+  "commits": {
+    "spec": "497bce0",
+    "plan": "df55e43",
+    "tasks": "5b61f52",
+    "tests": "9bb35ae",
+    "implement": "63d590d",
+    "verify": "6c1718d",
+    "review": "b69e962",
+    "docs": "f264279"
+  },
+  "iterations": {
+    "tests": 2,
+    "implement": 1,
+    "review": 2
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-10-13T01:48:22.012Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-10-13T04:26:26.996Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-10-13T04:28:37.986Z"
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-13T00:41:46.208Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "Feature creada desde chore/frontend-redesign (aprobado por el usuario); bloque B separado de la 008 (Q14)"
+    },
+    {
+      "at": "2026-10-13T00:42:41.058Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegado al spec-writer (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T00:52:00.053Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Respuestas Q4–Q6 copiadas en spec.md; re-delegado al spec-writer (iteración 2)"
+    },
+    {
+      "at": "2026-10-13T00:53:24.028Z",
+      "stage": "spec",
+      "event": "completed",
+      "note": "spec.md iteración 2: 10 REQ, 72 AC; Q1–Q6 resueltas"
+    },
+    {
+      "at": "2026-10-13T00:59:48.413Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Spec y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-13T00:59:48.562Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegado al planner (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T01:03:43.257Z",
+      "stage": "plan",
+      "event": "completed",
+      "note": "plan.md: solo frontend, funciones puras nuevas en insights.ts, sin ADR; caracterización declarada en §5"
+    },
+    {
+      "at": "2026-10-13T01:29:08.427Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "Plan y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-13T01:29:08.572Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegado al task-breaker (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T01:30:22.432Z",
+      "stage": "tasks",
+      "event": "completed",
+      "note": "tasks.md: 44 tareas (5 scaffold, 27 test, 12 impl)"
+    },
+    {
+      "at": "2026-10-13T01:35:43.921Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "Tareas y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-13T01:35:44.074Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Delegado al implementer en modo scaffold (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T01:36:20.005Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Scaffold T-001..T-005 hecho (más entrada off_range en PACE_COPY para tsc); delegado al test-author (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T01:42:27.640Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests T-010..T-036 escritos; delegado al verifier en modo red (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T01:47:28.876Z",
+      "stage": "tests",
+      "event": "user_decision",
+      "note": "Red check FAIL (iteración 1) solo por 87 tests de caracterización (plan §5.6). El usuario los acepta como caracterización (respuesta: \"A\"); los 47 restantes son rojo legítimo. Red check de nuevo con esa aceptación."
+    },
+    {
+      "at": "2026-10-13T01:48:50.718Z",
+      "stage": "tests",
+      "event": "completed",
+      "note": "Red check PASS (iteración 2) con 87 tests de caracterización aceptados por el usuario; 47 en rojo legítimo"
+    },
+    {
+      "at": "2026-10-13T03:47:40.986Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "Tests y commit aprobados por el usuario; tests_snapshot guardado (5 archivos)"
+    },
+    {
+      "at": "2026-10-13T03:47:44.405Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegado al implementer (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T03:50:13.107Z",
+      "stage": "implement",
+      "event": "completed",
+      "note": "T-040..T-051 implementadas; npm test 339/339, tsc y lint sin errores; tests_snapshot intacto"
+    },
+    {
+      "at": "2026-10-13T03:50:46.681Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "Implementación y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-13T03:50:46.859Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier en modo full (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T03:52:20.229Z",
+      "stage": "verify",
+      "event": "completed",
+      "note": "Verify full PASS (iteración 1): 339/339, lint, tsc y build OK; trazabilidad 72/72 AC"
+    },
+    {
+      "at": "2026-10-13T04:14:11.341Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "Verify y commit aprobados; el usuario lo probó en local (\"Se ve bien\")"
+    },
+    {
+      "at": "2026-10-13T04:14:11.483Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado al reviewer (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T04:17:15.814Z",
+      "stage": "review",
+      "event": "completed",
+      "note": "Review CHANGES_REQUESTED (iteración 1): F1 MAYOR nombres de tests en inglés (Art. 5.6); F2 MENOR; F3–F6 NIT"
+    },
+    {
+      "at": "2026-10-13T04:23:55.437Z",
+      "stage": "review",
+      "event": "user_decision",
+      "note": "El usuario aprueba corregir F1, F3 y F5 (test-author) y llevar F2, F4 y F6 al backlog"
+    },
+    {
+      "at": "2026-10-13T04:23:55.437Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Corrección autorizada de tests tras review (F1, F3, F5): delegado al test-author (iteración 2)"
+    },
+    {
+      "at": "2026-10-13T04:25:26.647Z",
+      "stage": "tests",
+      "event": "authorized_test_change",
+      "note": "test-author corrigió F1 (66 nombres de test traducidos al español), F3 (cast obsoleto) y F5 (espera con waitFor en vez de setTimeout); sin cambios en aserciones ni marcadores SDD (revisado por el orquestador); tests_snapshot actualizado"
+    },
+    {
+      "at": "2026-10-13T04:25:26.647Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier en modo full (iteración 2)"
+    },
+    {
+      "at": "2026-10-13T04:26:55.290Z",
+      "stage": "verify",
+      "event": "completed",
+      "note": "Verify full PASS (iteración 2) tras la corrección autorizada de tests: 339/339, lint, tsc y build OK"
+    },
+    {
+      "at": "2026-10-13T04:26:55.290Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado al reviewer (iteración 2)"
+    },
+    {
+      "at": "2026-10-13T04:28:37.986Z",
+      "stage": "review",
+      "event": "completed",
+      "note": "Review APPROVED (iteración 2): F1, F3, F5 resueltos; F7 NIT nuevo (espera de microtareas en renderLoaded)"
+    },
+    {
+      "at": "2026-10-13T04:32:24.850Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Review y commit aprobados por el usuario; F7 al backlog"
+    },
+    {
+      "at": "2026-10-13T04:32:24.999Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegado al doc-keeper (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T04:32:50.669Z",
+      "stage": "docs",
+      "event": "completed",
+      "note": "README y fila Métricas de CLAUDE.md (Proyecto) actualizados; codificaciones verificadas"
+    },
+    {
+      "at": "2026-10-13T04:34:30.617Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "Docs y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-13T04:34:30.762Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Checklist de cierre por el orquestador"
+    },
+    {
+      "at": "2026-10-13T04:36:01.940Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Cierre y commit aprobados; integración (B) merge local en chore/frontend-redesign sin push"
+    }
+  ],
+  "tests_snapshot": {
+    "at": "2026-10-13T04:25:26.647Z",
+    "sha256": {
+      "frontend/src/features/body-metrics/insights.test.ts": "28d59e04a144c9ebd00bfad6bbc5732e49ccf19aef089eac02f27be764307bb6",
+      "frontend/src/features/body-metrics/dateUtils.test.ts": "2bde74139a508a0fe16a598c6fbb94c45b596c8f49c2297f41c48fc6f4f212c7",
+      "frontend/src/features/onboarding/units.test.ts": "3bb048524d22270963de22180e436b5ee92108795d2313f58fa1888f22aee4ee",
+      "frontend/src/features/body-metrics/components/TrendChart.test.tsx": "3949d5a74e495c4af06685ca5775d55aba4726622f077bddfa49d9303ebe679f",
+      "frontend/src/features/body-metrics/pages/BodyMetricsPage.test.tsx": "d4a5100247c440aee61da4f9377e67d870e442c99ca0b6984695b48797a36c38"
+    }
+  }
+}

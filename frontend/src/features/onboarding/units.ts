@@ -34,6 +34,15 @@ export function convertHeight(
   return { heightUnit: unit, heightCm: String(Math.round(totalIn * CM_PER_IN)) }
 }
 
+// Altura en cm a partir de las respuestas, o null si no es un valor válido.
+export function heightCmFromAnswers(a: OnboardingAnswers): number | null {
+  const cm =
+    a.heightUnit === "cm"
+      ? Number(a.heightCm)
+      : (Number(a.heightFt) * 12 + Number(a.heightIn || 0)) * CM_PER_IN
+  return Number.isFinite(cm) && cm > 0 ? cm : null
+}
+
 export function convertWeight(
   a: OnboardingAnswers,
   unit: WeightUnit
