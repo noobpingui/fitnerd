@@ -11,13 +11,13 @@
   "branch": "feat/009-metrics-indicators",
   "base_branch": "chore/frontend-redesign",
   "created_at": "2026-10-13T00:41:46.208Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-13T00:59:48.413Z",
     "plan": "2026-10-13T01:29:08.427Z",
     "tasks": "2026-10-13T01:35:43.921Z",
-    "tests": null,
+    "tests": "2026-10-13T03:47:40.986Z",
     "implement": null,
     "verify": null,
     "review": null,
@@ -26,17 +26,18 @@
   },
   "commits": {
     "spec": "497bce0",
-    "plan": "df55e43"
+    "plan": "df55e43",
+    "tasks": "5b61f52"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 1,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-13T01:48:22.012Z"
   },
   "verify": {
     "result": null,
@@ -113,6 +114,52 @@
       "stage": "tasks",
       "event": "approved",
       "note": "Tareas y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-13T01:35:44.074Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Delegado al implementer en modo scaffold (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T01:36:20.005Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Scaffold T-001..T-005 hecho (más entrada off_range en PACE_COPY para tsc); delegado al test-author (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T01:42:27.640Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests T-010..T-036 escritos; delegado al verifier en modo red (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T01:47:28.876Z",
+      "stage": "tests",
+      "event": "user_decision",
+      "note": "Red check FAIL (iteración 1) solo por 87 tests de caracterización (plan §5.6). El usuario los acepta como caracterización (respuesta: \"A\"); los 47 restantes son rojo legítimo. Red check de nuevo con esa aceptación."
+    },
+    {
+      "at": "2026-10-13T01:48:50.718Z",
+      "stage": "tests",
+      "event": "completed",
+      "note": "Red check PASS (iteración 2) con 87 tests de caracterización aceptados por el usuario; 47 en rojo legítimo"
+    },
+    {
+      "at": "2026-10-13T03:47:40.986Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "Tests y commit aprobados por el usuario; tests_snapshot guardado (5 archivos)"
     }
-  ]
+  ],
+  "tests_snapshot": {
+    "at": "2026-10-13T03:47:40.986Z",
+    "sha256": {
+      "frontend/src/features/body-metrics/insights.test.ts": "d5b59504e93457abc906c1bc5014bfac3b43ea9e4047d0ea7d684b5f60228d6a",
+      "frontend/src/features/body-metrics/dateUtils.test.ts": "38759ab250d739540ae7539406ffafe4de950c2545dd78bc3c4d55b49cfdce72",
+      "frontend/src/features/onboarding/units.test.ts": "2207e1f18abcb8b6117876d6eac1a30b40cc75be99156f1bd76527db204474a0",
+      "frontend/src/features/body-metrics/components/TrendChart.test.tsx": "3949d5a74e495c4af06685ca5775d55aba4726622f077bddfa49d9303ebe679f",
+      "frontend/src/features/body-metrics/pages/BodyMetricsPage.test.tsx": "ed0cf34c46776b616165f74be50533a57b2ddcf737aea12e0bda173f05276a5c"
+    }
+  }
 }

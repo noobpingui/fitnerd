@@ -8,6 +8,7 @@ import {
   formatDate,
   todayIsoDate,
   isWithinLastMonths,
+  periodStart,
 } from "./dateUtils"
 
 describe("parseLocalDate", () => {
@@ -71,5 +72,36 @@ describe("isWithinLastMonths", () => {
     vi.setSystemTime(new Date(2026, 5, 15))
 
     expect(isWithinLastMonths("2025-01-01", 2)).toBe(false)
+  })
+})
+
+describe("periodStart", () => {
+  // SDD: REQ-005 AC-005.1
+  it("returns the same date 1, 3 and 12 months earlier", () => {
+    expect(periodStart("2026-10-12", 1)).toBe("2026-09-12")
+    expect(periodStart("2026-10-12", 3)).toBe("2026-07-12")
+    expect(periodStart("2026-10-12", 12)).toBe("2025-10-12")
+  })
+
+  // SDD: REQ-005 AC-005.1
+  it("uses the last day of the month when the day does not exist", () => {
+    expect(periodStart("2026-03-31", 1)).toBe("2026-02-28")
+    expect(periodStart("2024-03-31", 1)).toBe("2024-02-29")
+    expect(periodStart("2026-05-31", 3)).toBe("2026-02-28")
+  })
+})
+
+describe("isWithinLastMonths - límite inferior", () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  // SDD: REQ-005 AC-005.1
+  it("includes a measurement exactly one month ago even in the afternoon", () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 9, 12, 15)) // 12 de octubre, 15:00
+
+    expect(isWithinLastMonths("2026-09-12", 1)).toBe(true)
+    expect(isWithinLastMonths("2026-09-11", 1)).toBe(false)
   })
 })

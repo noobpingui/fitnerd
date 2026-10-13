@@ -34,6 +34,10 @@ export function convertHeight(
   return { heightUnit: unit, heightCm: String(Math.round(totalIn * CM_PER_IN)) }
 }
 
+export function heightCmFromAnswers(_answers: OnboardingAnswers): number | null {
+  throw new Error("not implemented")
+}
+
 export function convertWeight(
   a: OnboardingAnswers,
   unit: WeightUnit

@@ -89,7 +89,38 @@ const EXPECTED_RATE: Record<Goal, [number, number]> = {
   gain: [0.25, 0.5],
 }
 
-export type PaceStatus = "on_track" | "too_slow" | "too_fast"
+export type PaceStatus = "on_track" | "too_slow" | "too_fast" | "off_range"
+
+export type RateIndicator =
+  | { kind: "stale" }
+  | { kind: "insufficient" }
+  | { kind: "ok"; kgPerWeek: number; latestKg: number }
+
+export function rateIndicator(
+  _weightSeries: SeriesPoint[],
+  _today: string
+): RateIndicator {
+  throw new Error("not implemented")
+}
+
+export function ratePercent(_kgPerWeek: number, _latestKg: number): number {
+  throw new Error("not implemented")
+}
+
+export function paceStatusFromPercent(_pct: number, _goal: Goal): PaceStatus {
+  throw new Error("not implemented")
+}
+
+export type ChartPoint = { date: string; value: number; trend?: number }
+
+export function trendChartData(
+  _metrics: BodyMetric[],
+  _field: NumericField,
+  _fromIso: string,
+  _toDisplayWeight: (kg: number) => number
+): ChartPoint[] {
+  throw new Error("not implemented")
+}
 
 export function paceStatus(
   rateKgPerWeek: number,

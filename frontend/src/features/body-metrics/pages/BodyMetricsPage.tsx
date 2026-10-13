@@ -42,6 +42,7 @@ const PACE_COPY: Record<PaceStatus, { label: string; tone: "good" | "warn" }> = 
   on_track: { label: "En ritmo con tu meta", tone: "good" },
   too_slow: { label: "Más lento que tu meta", tone: "warn" },
   too_fast: { label: "Más rápido que tu meta", tone: "warn" },
+  off_range: { label: "Fuera del rango de tu meta", tone: "warn" },
 }
 
 function fadeIn(index: number) {

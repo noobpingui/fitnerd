@@ -20,6 +20,10 @@ export function formatShortDate(isoDate: string) {
   })
 }
 
+export function periodStart(_today: string, _months: number): string {
+  throw new Error("not implemented")
+}
+
 // true si isoDate cae dentro de los ultimos `months` meses contando desde
 // hoy (inclusive). Usado para recortar el historial completo a la ventana
 // que muestran los charts de progreso.
