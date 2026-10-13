@@ -11,13 +11,13 @@
   "branch": "feat/010-progress-analysis-context",
   "base_branch": "chore/frontend-redesign",
   "created_at": "2026-10-13T07:58:08.214Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-13T19:01:52.092Z",
     "plan": "2026-10-13T19:16:58.719Z",
     "tasks": "2026-10-13T19:53:19.140Z",
-    "tests": null,
+    "tests": "2026-10-13T20:30:22.365Z",
     "implement": null,
     "verify": null,
     "review": null,
@@ -26,17 +26,18 @@
   },
   "commits": {
     "spec": "0426837",
-    "plan": "e357588"
+    "plan": "e357588",
+    "tasks": "901a55d"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 2,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-13T20:18:53.806Z"
   },
   "verify": {
     "result": null,
@@ -119,6 +120,68 @@
       "stage": "tasks",
       "event": "approved",
       "note": "Tareas y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-13T19:53:19.290Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Delegado al implementer en modo scaffold (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T19:54:20.057Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Scaffold T-001..T-005 hecho; delegado al test-author (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T20:02:21.757Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests T-010..T-030 escritos (62 backend, 5 archivos frontend); delegado al verifier en modo red (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T20:05:12.786Z",
+      "stage": "tests",
+      "event": "red_check_failed",
+      "note": "Red check FAIL (iteración 1): 5 tests pasan sin implementación (2 de conservación de ruta: 401 y 429; 3 vacíos en ProgressAnalysis.test.tsx). Devuelto al test-author (iteración 2) para reforzar los 3 de ProgressAnalysis"
+    },
+    {
+      "at": "2026-10-13T20:17:19.117Z",
+      "stage": "tests",
+      "event": "user_decision",
+      "note": "El usuario acepta como caracterización (respuesta: \"A\") los 2 tests de conservación de ruta que pasan hoy: test_analysis_without_a_token_is_unauthorized (AC-010.4) y test_with_the_quota_exhausted_it_returns_too_many_requests (AC-010.1). Los 3 de ProgressAnalysis.test.tsx se reforzaron en la iteración 2."
+    },
+    {
+      "at": "2026-10-13T20:17:19.117Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Delegado al verifier en modo red (iteración 2)"
+    },
+    {
+      "at": "2026-10-13T20:19:19.346Z",
+      "stage": "tests",
+      "event": "completed",
+      "note": "Red check PASS (iteración 2): backend 60/62 en rojo legítimo + 2 de caracterización aceptados; frontend 36/36 en rojo"
+    },
+    {
+      "at": "2026-10-13T20:30:22.365Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "Tests y commit aprobados por el usuario; tests_snapshot guardado (9 archivos)"
     }
-  ]
+  ],
+  "tests_snapshot": {
+    "at": "2026-10-13T20:30:22.365Z",
+    "sha256": {
+      "backend/tests/fakes.py": "92b46e43b7f60c69befa986798447b3d2ff16d27b208ad36f39771e82424f5c9",
+      "backend/tests/test_services/test_progress_analysis_service.py": "58114e8d788daa3f412b1ebc35cab167653b5190621d38b79094ee47c5e68483",
+      "backend/tests/test_services/test_calorie_suggestion.py": "a3bd3e87c4de257c1032a1872c32d8a335e0d4ceb629cfd3b65ee5c4571200f6",
+      "backend/tests/test_routes/test_progress_analysis_routes.py": "cfe8b39da2a4ac901bb9b6ed16457b90ca73461acdc29f61fc00c9cbe0dcaff5",
+      "frontend/src/features/body-metrics/insightsView.test.ts": "0d3434152663461ba67379afc444ed0f65932a3c3366c7690b87364e038cccff",
+      "frontend/src/features/body-metrics/analysisRequest.test.ts": "f555b0cda4e8db770d20f1c430d01461e1024a35dca161879cd1d706ba93563f",
+      "frontend/src/features/body-metrics/components/CalorieSuggestionBlock.test.tsx": "23d43c16d63b4cf86899755cb97695c8dc72ade8def2046671bfdf63eb0fd9e0",
+      "frontend/src/features/body-metrics/components/ProgressAnalysis.test.tsx": "8c2624ed80cf34ae901b528d72a171c1f2b0fcc49ec1b2f0c8425e8c1f4b7048",
+      "frontend/src/features/body-metrics/pages/BodyMetricsPage.analysis.test.tsx": "a1eb44f7077cce415f6a57d20e791c097bf7f777150b77cc1ee7557ff6f834fb"
+    }
+  }
 }
