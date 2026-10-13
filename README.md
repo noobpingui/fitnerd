@@ -14,7 +14,10 @@ I built it as a personal project - both because I wanted exactly this tool for m
 
 - **Exercise catalog** (body region -> category -> exercise) with correct-technique videos
 - **Favorites** and a **weekly workout plan**
-- **Body metrics tracking** - weight, body-fat %, muscle-mass % with progress charts over time
+- **Body metrics tracking** - weight, body-fat %, muscle-mass % with progress charts over time; one measurement per day (saving again the same day updates it), editable and deletable from a history list, and the profile weight always follows the latest measurement; progress indicators on top (30-day change, weekly pace checked against the profile goal, 7-day trend, body composition, logging streak)
+- **Onboarding and profile** - physical data, birth date, activity level and goal are saved per account on the server, so they follow the user across devices
+- **Calories and macros** - daily target from Mifflin-St Jeor with a calorie floor, a protein cap for high body weights and a 100 g carb minimum, computed in the frontend
+- **AI progress analysis** - on the metrics screen, the coach reads the measurements together with the profile (sex, age, height, activity, goal), the progress indicators and the calorie target, and when the weekly pace does not fit the goal it shows a suggested calorie adjustment (midpoint of the goal's pace range, 7700 kcal/kg, steps of 50, capped at 500 kcal/day, never below the calorie floor); the figure is computed by the server with a fixed rule, not by the model, which only explains it
 - **AI Coach** - a RAG-grounded chat that only answers from real fitness content, with multi-turn conversation memory and a thumbs up/down rating on every answer
 - Email/password auth **and** Google Sign-In
 - **Password recovery by email** - a reset link (valid 5 minutes, single use) sent through Resend, with per-email and per-IP rate limits

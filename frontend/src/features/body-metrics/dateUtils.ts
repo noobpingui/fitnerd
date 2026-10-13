@@ -1,12 +1,7 @@
-// new Date("YYYY-MM-DD") interpreta el string como medianoche UTC - en un
-// huso horario negativo (como Costa Rica, UTC-6) eso puede mostrar el dia
-// ANTERIOR al formatear o comparar. Partimos el string a mano y
-// construimos la fecha en hora LOCAL para evitar ese corrimiento en toda
-// la feature.
-export function parseLocalDate(isoDate: string) {
-  const [year, month, day] = isoDate.split("-").map(Number)
-  return new Date(year, month - 1, day)
-}
+import { parseLocalDate, todayIsoDate } from "@/lib/dates"
+
+// Se reexportan desde src/lib/dates.ts para no romper a quien las importa de aquí.
+export { parseLocalDate, todayIsoDate }
 
 export function formatDate(isoDate: string) {
   return parseLocalDate(isoDate).toLocaleDateString("es-CR", {
@@ -25,21 +20,21 @@ export function formatShortDate(isoDate: string) {
   })
 }
 
-// Fecha de hoy en formato "YYYY-MM-DD", en hora LOCAL - mismo motivo que
-// arriba: new Date().toISOString() siempre convierte a UTC primero.
-export function todayIsoDate() {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, "0")
-  const day = String(now.getDate()).padStart(2, "0")
-  return `${year}-${month}-${day}`
+// Inicio del periodo: la misma fecha de hace `months` meses. Si ese día no
+// existe (31 de marzo menos 1 mes), se usa el último día de ese mes.
+export function periodStart(today: string, months: number): string {
+  const [y, m, d] = today.split("-").map(Number)
+  const total = y * 12 + (m - 1) - months
+  const year = Math.floor(total / 12)
+  const month = total - year * 12
+  const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate()
+  const pad = (n: number, len = 2) => String(n).padStart(len, "0")
+  return `${pad(year, 4)}-${pad(month + 1)}-${pad(Math.min(d, lastDay))}`
 }
 
 // true si isoDate cae dentro de los ultimos `months` meses contando desde
 // hoy (inclusive). Usado para recortar el historial completo a la ventana
 // que muestran los charts de progreso.
 export function isWithinLastMonths(isoDate: string, months: number) {
-  const cutoff = new Date()
-  cutoff.setMonth(cutoff.getMonth() - months)
-  return parseLocalDate(isoDate) >= cutoff
+  return isoDate >= periodStart(todayIsoDate(), months)
 }

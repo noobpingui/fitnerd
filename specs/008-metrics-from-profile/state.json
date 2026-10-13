@@ -1,0 +1,286 @@
+{
+  "$comment": "Única fuente de verdad del flujo SDD de una feature. Lo escriben solo el orquestador (/sdd-*) y el verifier (secciones red_check y verify). Etapas: spec, plan, tasks, tests, implement, verify, review, docs, close, done.",
+  "schema_version": 1,
+  "feature": "008-metrics-from-profile",
+  "title": "Mediciones de Métricas coherentes con el perfil",
+  "type": "feature",
+  "scope": {
+    "backend": true,
+    "frontend": true
+  },
+  "branch": "feat/008-metrics-from-profile",
+  "base_branch": "chore/frontend-redesign",
+  "created_at": "2026-10-12T21:12:29.004Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": "2026-10-12T23:10:09.240Z",
+    "plan": "2026-10-12T23:29:01.796Z",
+    "tasks": "2026-10-12T23:35:56.780Z",
+    "tests": "2026-10-12T23:54:47.272Z",
+    "implement": "2026-10-13T00:05:52.645Z",
+    "verify": "2026-10-13T00:15:43.632Z",
+    "review": "2026-10-13T00:30:45.232Z",
+    "docs": "2026-10-13T00:32:18.660Z",
+    "close": "2026-10-13T00:33:58.541Z"
+  },
+  "commits": {
+    "spec": "47adfab",
+    "plan": "ba0dd26",
+    "tasks": "8aa597c",
+    "tests": "96e3347",
+    "implement": "d69bbb5",
+    "review": "52c7b91",
+    "docs": "a671815"
+  },
+  "iterations": {
+    "tests": 3,
+    "implement": 1,
+    "review": 1
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-10-12T23:53:05.171Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-10-13T00:12:28.166Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-10-13T00:27:52.377Z"
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-12T21:12:29.004Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "Feature creada desde chore/frontend-redesign (aprobado por el usuario)"
+    },
+    {
+      "at": "2026-10-12T21:13:06.497Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegado al spec-writer (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T23:03:22.053Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Respuestas Q1–Q14 copiadas en spec.md (división: 008 = bloque A, REQ-012..016 a otra feature); re-delegado al spec-writer (iteración 2)"
+    },
+    {
+      "at": "2026-10-12T23:05:07.184Z",
+      "stage": "spec",
+      "event": "completed",
+      "note": "spec.md iteración 2: solo bloque A, 11 REQ, 66 AC + NFR-001 (3 AC); Q1–Q14 resueltas"
+    },
+    {
+      "at": "2026-10-12T23:10:09.240Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Spec y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-12T23:10:12.645Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegado al planner (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T23:16:24.706Z",
+      "stage": "plan",
+      "event": "completed",
+      "note": "plan.md + ADR-0020 (Propuesta); migración con consolidación + restricción única"
+    },
+    {
+      "at": "2026-10-12T23:29:01.796Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "Plan, commit y ADR-0020 (Aceptada) aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-12T23:29:05.410Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegado al task-breaker (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T23:30:25.131Z",
+      "stage": "tasks",
+      "event": "completed",
+      "note": "tasks.md: 44 tareas (4 scaffold, 23 test, 16 impl, 1 migration)"
+    },
+    {
+      "at": "2026-10-12T23:35:56.780Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "Tareas y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-12T23:35:56.923Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Delegado al implementer en modo scaffold (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T23:36:52.842Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Scaffold T-001..T-004 hecho; delegado al test-author (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T23:44:58.693Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests T-010..T-036 escritos; delegado al verifier en modo red (iteración 1)"
+    },
+    {
+      "at": "2026-10-12T23:47:44.442Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL: 11 tests backend y 1 frontend pasan sin implementación; vuelve al test-author (iteración 2)"
+    },
+    {
+      "at": "2026-10-12T23:49:59.844Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "test-author corrigió los 12 tests en verde; red check de nuevo (iteración 2)"
+    },
+    {
+      "at": "2026-10-12T23:53:36.472Z",
+      "stage": "tests",
+      "event": "completed",
+      "note": "Red check PASS (iteración 2): 147 backend + 46 frontend en rojo legítimo"
+    },
+    {
+      "at": "2026-10-12T23:54:47.272Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "Etapa tests y commit aprobados por el usuario; tests_snapshot guardado"
+    },
+    {
+      "at": "2026-10-12T23:54:47.496Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegado al implementer (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T00:00:45.705Z",
+      "stage": "implement",
+      "event": "completed",
+      "note": "T-050..T-066 hechas; pytest 596 OK, vitest 220 OK; 8 E501 nuevos en tests; 2 desviaciones del plan"
+    },
+    {
+      "at": "2026-10-13T00:05:52.645Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "Implementación, desviaciones (PUT 404 antes de 400; diálogo de borrado se cierra al fallar) y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-13T00:05:52.894Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier en modo full (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T00:08:24.953Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Verify FAIL: 8 E501 nuevos en tests (ruff-new); vuelve al test-author para partir líneas sin cambiar aserciones (iteración 3)"
+    },
+    {
+      "at": "2026-10-13T00:09:01.714Z",
+      "stage": "tests",
+      "event": "authorized_test_change",
+      "note": "test-author partió 8 líneas E501 en 3 tests backend (solo formato, revisado por el orquestador); tests_snapshot actualizado"
+    },
+    {
+      "at": "2026-10-13T00:09:01.714Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier en modo full (iteración 2)"
+    },
+    {
+      "at": "2026-10-13T00:12:39.947Z",
+      "stage": "verify",
+      "event": "completed",
+      "note": "Verify full PASS (iteración 2)"
+    },
+    {
+      "at": "2026-10-13T00:15:43.632Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "Verify aprobado por el usuario; prueba manual en local antes de review"
+    },
+    {
+      "at": "2026-10-13T00:24:27.062Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Usuario probó en local (\"Funciona bien\"); delegado al reviewer (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T00:27:45.825Z",
+      "stage": "review",
+      "event": "completed",
+      "note": "Review APPROVED: 0 bloqueantes, 0 mayores, 2 menores (F1, F2), 4 NIT (F3–F6)"
+    },
+    {
+      "at": "2026-10-13T00:30:45.232Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Review y commit aprobados; F1–F5 al backlog (F2 como limitación conocida), F6 ya estaba"
+    },
+    {
+      "at": "2026-10-13T00:30:45.445Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegado al doc-keeper (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T00:31:14.898Z",
+      "stage": "docs",
+      "event": "completed",
+      "note": "README.md y fila de Métricas en CLAUDE.md actualizados; docs-report.md"
+    },
+    {
+      "at": "2026-10-13T00:32:18.660Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "Docs y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-13T00:32:18.808Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Checklist de hecho (orquestador)"
+    },
+    {
+      "at": "2026-10-13T00:32:26.829Z",
+      "stage": "close",
+      "event": "completed",
+      "note": "Checklist de hecho (Art. 9) completo"
+    },
+    {
+      "at": "2026-10-13T00:33:58.541Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Cierre y commit aprobados; integración: merge local en chore/frontend-redesign"
+    }
+  ],
+  "tests_snapshot": {
+    "at": "2026-10-13T00:09:01.714Z",
+    "sha256": {
+      "backend/tests/test_routes/test_body_metric_routes.py": "2d89a0161da94c8a331c66cc5714539031f04c066a385528ea1f3c43d68fae3d",
+      "backend/tests/test_services/test_body_metric_consolidation.py": "a01064f04fa812598e169be174d5a9ef52aa71082b23d050dae965132276dc06",
+      "backend/tests/test_services/test_body_metric_service.py": "b796538c0a21a3e6c1888f377362d1bb1cc6f0c4fe3443e0d7d9b56fe6d9e488",
+      "backend/tests/fakes.py": "3e002acbe74ca804675597790f4720592e39e3c8fdee5ee2ae55dc73e621a8e6",
+      "frontend/src/features/body-metrics/schemas.test.ts": "9abfbb108aab3a55ecfde6f72fc2bb296b1924b092ba820e575cc23d798edb8b",
+      "frontend/src/features/body-metrics/components/MetricsHistory.test.tsx": "640eddb696f64e05018e390737430e981148cc97a8b869939aea36f81291c007",
+      "frontend/src/features/body-metrics/pages/BodyMetricsPage.test.tsx": "6428c2cf3ecbcda52e22ba8638102fad0aa320fa405655d0d524cc94ee23192a",
+      "frontend/src/features/profile/pages/ProfilePage.test.tsx": "3a645da62dffcc941b6bb1d0c6097362840d9babb3ff19fc2de0e394269fe4ea"
+    }
+  }
+}

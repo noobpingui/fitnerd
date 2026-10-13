@@ -1,7 +1,14 @@
 import { apiFetch } from "@/lib/apiClient"
+import {
+  analysisRequestSchema,
+  analysisResponseSchema,
+} from "@/features/body-metrics/schemas"
 import type {
+  AnalysisRequest,
+  AnalysisResponse,
   BodyMetric,
   CreateBodyMetricPayload,
+  UpdateBodyMetricPayload,
 } from "@/features/body-metrics/types"
 
 export function listBodyMetrics() {
@@ -15,14 +22,33 @@ export function createBodyMetric(payload: CreateBodyMetricPayload) {
   })
 }
 
+export function updateBodyMetric(
+  id: string,
+  payload: UpdateBodyMetricPayload
+) {
+  return apiFetch<BodyMetric>(`/api/body-metrics/${id}`, {
+    method: "PUT",
+    body: payload,
+  })
+}
+
 export function deleteBodyMetric(id: string) {
   return apiFetch<void>(`/api/body-metrics/${id}`, { method: "DELETE" })
 }
 
 // POST porque dispara una accion real (llama a Claude del lado del
-// backend) - no es un simple GET idempotente/cacheable.
-export function analyzeBodyMetrics() {
-  return apiFetch<{ analysis: string }>("/api/body-metrics/analysis", {
-    method: "POST",
-  })
+// backend) - no es un simple GET idempotente/cacheable. El cuerpo lleva el
+// contexto que ya calcula la pantalla; sin perfil se envia sin cuerpo y el
+// servidor responde 409.
+export async function analyzeBodyMetrics(
+  request: AnalysisRequest | null
+): Promise<AnalysisResponse> {
+  const body =
+    request === null ? undefined : analysisRequestSchema.parse(request)
+  return analysisResponseSchema.parse(
+    await apiFetch<unknown>("/api/body-metrics/analysis", {
+      method: "POST",
+      body,
+    })
+  )
 }

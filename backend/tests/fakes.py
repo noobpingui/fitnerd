@@ -176,3 +176,111 @@ class FakeLogger:
 
     def error(self, msg, *args, **kwargs):
         self._log(msg, *args)
+
+
+class FakeBodyMetricRepository:
+    """Doble de BodyMetricRepository en memoria (spec 008). Guarda instancias
+    reales de `BodyMetric`; `create` les asigna `id` y `created_at` porque los
+    valores por defecto del modelo solo se aplican al hacer flush. `created` y
+    `deleted` quedan para las aserciones. `metrics` permite precargar."""
+
+    def __init__(self, metrics=None):
+        self.metrics = list(metrics or [])
+        self.created = []
+        self.deleted = []
+
+    def create(self, metric):
+        from datetime import datetime
+        from uuid import uuid4
+
+        if getattr(metric, "id", None) is None:
+            metric.id = uuid4()
+        if getattr(metric, "created_at", None) is None:
+            metric.created_at = datetime(2026, 10, 12, 12, 0)
+        self.metrics.append(metric)
+        self.created.append(metric)
+        return metric
+
+    def delete(self, metric):
+        self.metrics.remove(metric)
+        self.deleted.append(metric)
+
+    def list_by_user(self, user_id):
+        own = [m for m in self.metrics if str(m.user_id) == str(user_id)]
+        return sorted(own, key=lambda m: m.recorded_at, reverse=True)
+
+    def get_by_id_and_user(self, metric_id, user_id):
+        for metric in self.metrics:
+            if str(metric.id) == str(metric_id) and str(metric.user_id) == str(user_id):
+                return metric
+        return None
+
+    def get_by_user_and_date(self, user_id, recorded_at):
+        for metric in self.metrics:
+            if str(metric.user_id) == str(user_id) and metric.recorded_at == recorded_at:
+                return metric
+        return None
+
+    def get_latest_with_weight(self, user_id):
+        with_weight = [
+            m
+            for m in self.metrics
+            if str(m.user_id) == str(user_id) and m.weight is not None
+        ]
+        if not with_weight:
+            return None
+        return max(with_weight, key=lambda m: m.recorded_at)
+
+
+class FakeUserProfileRepository:
+    """Doble de UserProfileRepository: `profiles` es un dict user_id -> perfil
+    (`UserProfile` sin sesion o `SimpleNamespace`)."""
+
+    def __init__(self, profiles=None):
+        self.profiles = dict(profiles or {})
+
+    def get_by_user_id(self, user_id):
+        return self.profiles.get(user_id)
+
+
+class FakeLockingUserRepository:
+    """Doble de UserRepository con `get_by_id_for_update`: registra cada
+    llamada en `for_update_calls`. Si `known_ids` es None, todo usuario
+    existe; si no, solo los ids indicados (los demas devuelven None)."""
+
+    def __init__(self, known_ids=None):
+        self.known_ids = None if known_ids is None else set(known_ids)
+        self.for_update_calls = []
+
+    def get_by_id_for_update(self, user_id):
+        from types import SimpleNamespace
+
+        self.for_update_calls.append(user_id)
+        if self.known_ids is not None and user_id not in self.known_ids:
+            return None
+        return SimpleNamespace(id=user_id)
+
+
+class FakeUserRepository:
+    """Doble de UserRepository en memoria (spec 010): `users` es un dict
+    user_id -> dict con los campos del usuario (`first_name`, `last_name`,
+    `email`, `date_of_birth`; los que falten valen None). `get_by_id`
+    devuelve un `SimpleNamespace` con `id` y esos campos, o None si el
+    usuario no existe."""
+
+    def __init__(self, users=None):
+        self.users = dict(users or {})
+
+    def get_by_id(self, user_id):
+        from types import SimpleNamespace
+
+        fields = self.users.get(user_id)
+        if fields is None:
+            return None
+        return SimpleNamespace(
+            id=user_id,
+            first_name=fields.get("first_name"),
+            last_name=fields.get("last_name"),
+            email=fields.get("email"),
+            date_of_birth=fields.get("date_of_birth"),
+        )

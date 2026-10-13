@@ -9,9 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { clearToken } from "@/lib/authToken"
 import { cn } from "@/lib/utils"
-import { useCurrentUser } from "@/features/auth/hooks"
+import { useCurrentUser, useLogout } from "@/features/auth/hooks"
 
 // Paleta fija de colores reales (no la escala de grises del tema) para el
 // fondo del avatar cuando se muestra la inicial. "Random" pero
@@ -46,10 +45,7 @@ export function UserMenu() {
   const navigate = useNavigate()
   const { data: user } = useCurrentUser()
 
-  function handleLogout() {
-    clearToken()
-    navigate("/login", { replace: true })
-  }
+  const handleLogout = useLogout()
 
   // Mientras no haya foto real: mostramos la inicial del email en vez de
   // un icono 100% generico - es "gratis" (el dato ya esta disponible via
@@ -62,7 +58,7 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          aria-label="Menu de usuario"
+          aria-label="Menú de usuario"
           // hover: se agranda un poco + le aparece un anillo de color -
           // asi se lee como un boton "vivo", no solo una foto de perfil
           // decorativa. active: se achica levemente al clickear, el
@@ -106,9 +102,14 @@ export function UserMenu() {
             <DropdownMenuSeparator />
           </>
         )}
+        <DropdownMenuItem onClick={() => navigate("/profile")}>
+          <UserIcon className="h-4 w-4" />
+          Mi perfil
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="h-4 w-4" />
-          Cerrar sesion
+          Cerrar sesión
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
