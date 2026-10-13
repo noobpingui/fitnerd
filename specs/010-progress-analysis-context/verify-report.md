@@ -1,61 +1,63 @@
 # Verify report 010 — Análisis de progreso con IA con contexto del perfil y sugerencia de calorías
 
-- **Modo:** red (tras la etapa tests), iteración 2
-- **Fecha:** 2026-10-13T20:18:53.806Z · **Rama:** `feat/010-progress-analysis-context` @ `901a55d`
-- **Resultado:** PASS (con 2 tests de conservación aceptados como caracterización por el usuario, ver sección 4)
+- **Modo:** full (tras la etapa implement), iteración 1
+- **Fecha:** 2026-10-13T20:46:08.970Z · **Rama:** `feat/010-progress-analysis-context` @ `b8d019b`
+- **Base de comparación:** `chore/frontend-redesign` (`state.json.base_branch`)
+- **Resultado:** PASS
 
 ## 1. Comandos ejecutados
 
-Solo los tests nuevos o modificados de la feature con marcador `SDD:` (62 tests de backend, 36 de frontend).
-
 | Ámbito | Comando | Resultado | Resumen de la salida |
 |---|---|---|---|
-| backend | `backend/.venv/Scripts/python.exe -m pytest -q` sobre `tests/test_services/test_calorie_suggestion.py`, `tests/test_services/test_progress_analysis_service.py` y `tests/test_routes/test_progress_analysis_routes.py` | ⚠️ | 60 failed, 2 passed (62 tests). Los 2 que pasan son los aceptados por el usuario. |
-| frontend | `npx vitest run` sobre `analysisRequest.test.ts`, `insightsView.test.ts`, `CalorieSuggestionBlock.test.tsx`, `ProgressAnalysis.test.tsx` y `BodyMetricsPage.analysis.test.tsx` | ✅ | 36 failed, 0 passed (36 tests), todos por comportamiento ausente |
+| backend | `backend/.venv/Scripts/python.exe -m pytest -q` | ✅ | 654 passed (suite completa, incluidos los 62 tests nuevos) |
+| backend | `node .claude/sdd/scripts/ruff-new.mjs chore/frontend-redesign` | ✅ | ruff-new: sin violaciones nuevas (8 .py cambiados revisados; 2 violaciones previas toleradas en `body_metric_routes.py` y `progress_analysis_service.py`) |
+| frontend | `npm test` | ✅ | 32 ficheros, 375 passed |
+| frontend | `npm run lint` | ✅ | 0 errores (2 warnings preexistentes en `components/ui/button.tsx` y `components/ui/form.tsx`, fuera del diff) |
+| frontend | `npx tsc -b` | ✅ | Sin errores |
+| frontend | `npm run build` | ✅ | Build OK (aviso preexistente de chunk > 500 kB, no bloqueante) |
 
-Causas de los fallos del backend:
-- 14 `NotImplementedError` en `services/calorie_suggestion.py` (esqueleto `(scaffold)`): legítimos.
-- 41 `TypeError: ProgressAnalysisService.__init__() got an unexpected keyword argument 'user_repository'`: el test construye el servicio con la firma del plan (`user_repository`, `user_profile_repository`), que aún no existe (T-044). Rojo legítimo por firma planificada ausente, con nota (sección 5).
-- 5 aserciones de ruta (`assert 200 == 409`, `429 == 409`, `200 == 400`, texto de falta de datos sin corregir y sin `calorie_suggestion`): legítimas.
+Comprobaciones adicionales:
+- `git diff chore/frontend-redesign...HEAD` sin `skip`, `xfail`, `.only`, `.skip` ni `.todo` nuevos (grep sin coincidencias).
+- Los tests nuevos de backend no usan `unittest`, `mock` ni `monkeypatch`.
+- Esqueletos `(scaffold)`: ya implementados, no aplica el chequeo de "not implemented" en modo full.
 
-Causas de los fallos del frontend:
-- 19 `Error: not implemented` de los esqueletos `insightsView.ts`, `analysisRequest.ts` y `CalorieSuggestionBlock.tsx`: legítimos.
-- 5 `Unable to find ... "Ajuste de calorías sugerido"` y 1 `Unable to find ... "Completa tu perfil para poder generar un análisis."` en `ProgressAnalysis.test.tsx`: legítimos. Los 3 tests que en la iteración 1 pasaban vacíos (sin sugerencia, 503, 429) ahora fallan porque exigen ver el bloque o el mensaje antes de comprobar su ausencia.
-- `expected undefined to be null` / `to match object` / `to deeply equal`: el componente y la página aún no reciben ni envían `request`: legítimos.
-- `TypeError: Cannot read properties of undefined (reading 'parse')` en `analysisRequest.test.ts` (AC del cuerpo que pasa `analysisRequestSchema`): el esquema aún no existe en `schemas.ts` (T-047). Rojo legítimo, con nota (sección 5).
+## 2. Trazabilidad
 
-Ningún error de sintaxis, de fixture o de `conftest`, ni import de módulo fuera del plan. No hay typos en los tests.
+| REQ / NFR | Tareas (tasks.md) | Tests con `SDD:` (ficheros de la feature) | Estado |
+|---|---|---|---|
+| REQ-001 | T-015, T-041, T-042, T-044 | `test_progress_analysis_service.py` | ✅ |
+| REQ-002 | T-016, T-026, T-027, T-030, T-041, T-042, T-048 a T-050 | `test_progress_analysis_service.py`, `insightsView.test.ts`, `analysisRequest.test.ts`, `BodyMetricsPage.analysis.test.tsx` | ✅ |
+| REQ-003 | T-017, T-027, T-030, T-042, T-050, T-055 | `test_progress_analysis_service.py`, `analysisRequest.test.ts`, `BodyMetricsPage.analysis.test.tsx` | ✅ |
+| REQ-004 | T-011, T-012, T-018, T-040, T-044, T-045, T-053 | `test_calorie_suggestion.py`, `test_progress_analysis_service.py` | ✅ |
+| REQ-005 | T-013, T-018, T-040 | `test_calorie_suggestion.py`, `test_progress_analysis_service.py` | ✅ |
+| REQ-006 | T-014, T-018, T-040, T-042, T-044 | `test_calorie_suggestion.py`, `test_progress_analysis_service.py` | ✅ |
+| REQ-007 | T-028, T-029, T-046 a T-047, T-050, T-053, T-054 | `CalorieSuggestionBlock.test.tsx`, `ProgressAnalysis.test.tsx`, `analysisRequest.test.ts` | ✅ |
+| REQ-008 | T-018, T-019, T-042, T-043 | `test_progress_analysis_service.py` | ✅ |
+| REQ-009 | T-020, T-024, T-029, T-030, T-044, T-045, T-051, T-052, T-054, T-055 | `test_progress_analysis_service.py`, `test_progress_analysis_routes.py`, `ProgressAnalysis.test.tsx`, `BodyMetricsPage.analysis.test.tsx` | ✅ |
+| REQ-010 | T-021, T-024, T-025, T-043, T-044, T-045 | `test_progress_analysis_service.py`, `test_progress_analysis_routes.py` | ✅ |
+| NFR-001 | T-022, T-023, T-041, T-042 | `test_progress_analysis_service.py` | ✅ |
+| NFR-002 | T-022, T-044 | `test_progress_analysis_service.py` | ✅ |
 
-## 2. Esqueletos `(scaffold)`
+- ACs propios de la spec (49) sin test con marcador `SDD:` en los ficheros de la feature: ninguno.
+- Los IDs `AC-003.4` y `AC-003.10` aparecen en `spec.md` solo como referencias cruzadas a la spec 009 (no son ACs de esta feature).
+- REQs o NFRs sin tarea: ninguno.
+- Tareas sin marcar `[x]`: ninguna (42 de 42 marcadas).
+- Todos los tests con marcador de esta feature pasan (backend 654/654 en la suite completa, frontend 375/375).
 
-- `backend/services/calorie_suggestion.py`: solo `raise NotImplementedError`, sin lógica. OK.
-- `backend/services/progress_analysis_context.py`: solo `raise NotImplementedError` y la constante `INVALID_ANALYSIS_REQUEST_MESSAGE`. OK.
-- `frontend/src/features/body-metrics/insightsView.ts`, `analysisRequest.ts` y `components/CalorieSuggestionBlock.tsx`: solo `throw new Error("not implemented")`, con los parámetros prefijados por `_` (en los dos primeros, `..._args`). OK.
+Nota menor (no bloquea): `tasks.md` y el plan citan `frontend/src/pages/BodyMetricsPage.tsx`, pero la página vive en `frontend/src/features/body-metrics/pages/BodyMetricsPage.tsx` (así está en el repo y en la ruta de `router.tsx`). Los tests están en la ubicación real.
 
-## 3. Trazabilidad (red)
+Nota menor (no bloquea): el encabezado de `spec.md` dice "47 AC", y en el cuerpo hay 49 ACs propios (contando los dos NFR). Conviene corregir el número en la etapa docs o review.
 
-No se ejecutó la trazabilidad completa (solo aplica en modo full). Todos los tests nuevos llevan marcador `SDD:`.
+## 3. Criterios de aceptación
 
-## 4. Tests que pasan sin implementación
+Todos los ACs propios tienen al menos un test automático que pasa. No hay ACs que dependan de comprobación manual obligatoria.
 
-| # | Test | AC | Por qué pasa hoy | Estado |
-|---|---|---|---|---|
-| 1 | `backend/tests/test_routes/test_progress_analysis_routes.py::test_analysis_without_a_token_is_unauthorized` | AC-010.4 | Ya devuelve 401 sin token; comportamiento que se conserva. | Aceptado como caracterización por el usuario (state.json, historial 2026-10-13T20:17:19.117Z, respuesta "A"). |
-| 2 | `backend/tests/test_routes/test_progress_analysis_routes.py::test_with_the_quota_exhausted_it_returns_too_many_requests` | AC-010.1 | Ya devuelve 429 con dos análisis sembrados; comportamiento que se conserva. | Aceptado como caracterización por el usuario (mismo registro). |
+Revisión manual sugerida (no bloquea, el usuario decide): ver en pantalla el bloque "Ajuste de calorías sugerido" dentro de "Análisis del coach" (disposición y legibilidad). Los textos y cifras del bloque están cubiertos por tests de componente.
 
-Los tres tests de `ProgressAnalysis.test.tsx` que pasaban vacíos en la iteración 1 (`sin sugerencia`, `un error 503`, `el límite alcanzado (429)`) se han reforzado y ahora fallan por comportamiento ausente. Ya no cuentan como pasa sin implementación.
+## 4. Fallos (si los hay)
 
-## 5. Rojos legítimos con nota
+Ninguno.
 
-- **Firma del servicio (41 tests de `test_progress_analysis_service.py`):** `make_service` construye `ProgressAnalysisService` con `user_repository` y `user_profile_repository`, que son las dependencias que el plan define (plan.md, sección de `ProgressAnalysisService`, y T-044). Todos fallan en la construcción, así que todavía no ejercitan el comportamiento de cada AC. Cuando el implementer añada la firma, habrá que comprobar que los fallos pasan a ser aserciones.
-- **`analysisRequestSchema` (1 test de `analysisRequest.test.ts`):** el símbolo no está exportado todavía (T-047). Es un símbolo que el plan define, no un typo.
+## 5. Veredicto
 
-## 6. Fallos
-
-Ninguno bloqueante. Los dos tests de la sección 4 quedan como excepción aceptada por el usuario, no como incumplimiento de la regla de red.
-
-## 7. Veredicto
-
-PASS en modo red (iteración 2). Todos los tests nuevos fallan por comportamiento ausente o por símbolo o firma planificados aún sin implementar, y los dos que pasan hoy son de conservación aceptados por el usuario. Los esqueletos solo lanzan "not implemented".
-
-Pendiente para la etapa implement (no bloquea esta etapa): ver sección 5, que tendrá que pasar de rojo a verde la firma del servicio y `analysisRequestSchema`.
+PASS en modo full. Todos los comandos del ámbito backend y frontend están en verde, la trazabilidad es completa y no hay tests saltados ni marcados como `only`.
