@@ -2,9 +2,13 @@ import { Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ApiError } from "@/lib/apiClient"
+import { CalorieSuggestionBlock } from "@/features/body-metrics/components/CalorieSuggestionBlock"
 import { useAnalyzeBodyMetrics } from "@/features/body-metrics/hooks"
+import type { AnalysisRequest } from "@/features/body-metrics/types"
 
-export function ProgressAnalysis() {
+// `request` es el contexto que ya calcula la pantalla (null sin perfil: el
+// servidor responde 409 y se muestra el aviso).
+export function ProgressAnalysis({ request }: { request: AnalysisRequest | null }) {
   const { mutate, data, isPending, isError, error } = useAnalyzeBodyMetrics()
 
   return (
@@ -15,10 +19,7 @@ export function ProgressAnalysis() {
         // llamado a la accion mas protagonico, no un boton secundario mas.
         variant="default"
         size="lg"
-        // mutate() sin argumentos: analyzeBodyMetrics no necesita ningun
-        // dato del cliente, el backend ya sabe quien sos (por el JWT) y
-        // resuelve todo del lado del servidor.
-        onClick={() => mutate()}
+        onClick={() => mutate(request)}
         disabled={isPending}
         // Mismo lenguaje de "boton vivo" que ya usamos en el avatar/logo
         // del navbar: crece un poco en hover, se achica al clickear,
@@ -33,9 +34,10 @@ export function ProgressAnalysis() {
           : "Pídele al IA Coach que analice tu progreso"}
       </Button>
 
-      {isError && error instanceof ApiError && error.status === 429 ? (
-        // 429 (limite de analisis por dia) no es una falla real - es una
-        // respuesta esperada del sistema, no un error tecnico. Se muestra
+      {isError && error instanceof ApiError &&
+        (error.status === 429 || error.status === 409) ? (
+        // 429 (limite de analisis por dia) y 409 (falta el perfil) no son
+        // fallas reales - son respuestas esperadas del sistema, no errores tecnicos. Se muestra
         // en tono neutro (muted), sin el rojo de destructive ni el prefijo
         // "Error (xxx):", que hace que se lea como que algo se rompio.
         <p className="mt-3 text-sm text-muted-foreground">{error.message}</p>
@@ -57,6 +59,10 @@ export function ProgressAnalysis() {
             {data.analysis}
           </CardContent>
         </Card>
+      )}
+
+      {data?.calorie_suggestion && (
+        <CalorieSuggestionBlock suggestion={data.calorie_suggestion} />
       )}
     </div>
   )

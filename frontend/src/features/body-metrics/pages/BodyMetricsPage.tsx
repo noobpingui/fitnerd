@@ -19,32 +19,14 @@ import { ProgressAnalysis } from "@/features/body-metrics/components/ProgressAna
 import { TrendChart } from "@/features/body-metrics/components/TrendChart"
 import { formatDate, todayIsoDate } from "@/features/body-metrics/dateUtils"
 import { useBodyMetrics } from "@/features/body-metrics/hooks"
+import { buildAnalysisRequest } from "@/features/body-metrics/analysisRequest"
 import {
-  composition,
-  latestWithDelta,
-  paceStatusFromPercent,
-  ratePercent,
-  rateIndicator,
-  seriesOf,
-  streak,
-  type PaceStatus,
-} from "@/features/body-metrics/insights"
+  buildInsights,
+  formatInsights,
+} from "@/features/body-metrics/insightsView"
 import { useProfile } from "@/features/profile/hooks"
 import { answersFromProfile } from "@/features/profile/mappers"
-import { KG_PER_LB, heightCmFromAnswers } from "@/features/onboarding/units"
-
-const one = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 1 })
-const signed = new Intl.NumberFormat("es-ES", {
-  maximumFractionDigits: 1,
-  signDisplay: "exceptZero",
-})
-
-const PACE_COPY: Record<PaceStatus, { label: string; tone: "good" | "warn" }> = {
-  on_track: { label: "En ritmo con tu meta", tone: "good" },
-  too_slow: { label: "Más lento que tu meta", tone: "warn" },
-  too_fast: { label: "Más rápido que tu meta", tone: "warn" },
-  off_range: { label: "Fuera del rango de tu meta", tone: "warn" },
-}
+import { KG_PER_LB } from "@/features/onboarding/units"
 
 function fadeIn(index: number) {
   return {
@@ -66,34 +48,23 @@ export function BodyMetricsPage() {
   const weightUnit = profile?.weightUnit ?? "kg"
   const toDisplayWeight = (kg: number) =>
     weightUnit === "lb" ? Math.round((kg / KG_PER_LB) * 10) / 10 : kg
-  const heightCm = profile ? heightCmFromAnswers(profile) : null
   const today = todayIsoDate()
 
-  const insights = useMemo(() => {
-    if (!metrics || metrics.length === 0) return null
-    const weight = seriesOf(metrics, "weight")
-    const rate = rateIndicator(weight, today)
-    const goal = profile?.goal
-    let status: { label: string; tone: "good" | "warn" | "muted" } | undefined
-    if (rate.kind === "stale") {
-      status = { label: "Sin registros recientes", tone: "muted" }
-    } else if (rate.kind === "insufficient") {
-      status = { label: "Faltan registros para calcularlo", tone: "muted" }
-    } else if (goal) {
-      status =
-        PACE_COPY[
-          paceStatusFromPercent(ratePercent(rate.kgPerWeek, rate.latestKg), goal)
-        ]
-    }
-    return {
-      weight: latestWithDelta(weight),
-      fat: latestWithDelta(seriesOf(metrics, "body_fat_percentage")),
-      rate,
-      status,
-      composition: composition(metrics, heightCm),
-      streak: streak(metrics, today),
-    }
-  }, [metrics, profile, heightCm, today])
+  const insights = useMemo(
+    () =>
+      metrics && metrics.length > 0 ? buildInsights(metrics, profile, today) : null,
+    [metrics, profile, today]
+  )
+  const view = insights ? formatInsights(insights, weightUnit) : null
+
+  // Contexto del análisis del coach: null sin perfil (el servidor responde 409).
+  const analysisRequest = useMemo(
+    () =>
+      metrics && metrics.length > 0 && profile && profileResponse?.profile
+        ? buildAnalysisRequest(metrics, profile, today)
+        : null,
+    [metrics, profile, profileResponse, today]
+  )
 
   return (
     <div className="mx-auto max-w-4xl p-4 sm:p-8">
@@ -126,39 +97,35 @@ export function BodyMetricsPage() {
         </Card>
       )}
 
-      {insights && metrics && (
+      {insights && view && metrics && (
         <div className="flex flex-col gap-4">
           {/* Indicadores principales */}
           <motion.div {...fadeIn(0)} className="grid gap-4 sm:grid-cols-3">
             <KpiTile
               label="Peso"
-              value={
-                insights.weight
-                  ? `${one.format(toDisplayWeight(insights.weight.value))} ${weightUnit}`
-                  : "—"
-              }
+              value={view.weight ?? "—"}
               delta={
-                insights.weight?.delta != null
-                  ? `${signed.format(toDisplayWeight(insights.weight.delta))} ${weightUnit} en 30 días`
+                view.weightChange30d !== null
+                  ? `${view.weightChange30d} en 30 días`
                   : undefined
               }
               direction={insights.weight?.delta}
             />
             <KpiTile
               label="Ritmo"
-              value={
-                insights.rate.kind === "ok"
-                  ? `${signed.format(toDisplayWeight(insights.rate.kgPerWeek))} ${weightUnit}/sem`
-                  : "—"
+              value={view.rate ?? "—"}
+              status={
+                view.statusLabel !== null && view.tone !== null
+                  ? { label: view.statusLabel, tone: view.tone }
+                  : undefined
               }
-              status={insights.status}
             />
             <KpiTile
               label="% Grasa"
-              value={insights.fat ? `${one.format(insights.fat.value)} %` : "—"}
+              value={view.bodyFat ?? "—"}
               delta={
-                insights.fat?.delta != null
-                  ? `${signed.format(insights.fat.delta)} pts en 30 días`
+                view.bodyFatChange30d !== null
+                  ? `${view.bodyFatChange30d} en 30 días`
                   : undefined
               }
               direction={insights.fat?.delta}
@@ -187,36 +154,20 @@ export function BodyMetricsPage() {
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 <Stat
                   label="Masa grasa"
-                  value={
-                    insights.composition.fatKg !== null
-                      ? `${one.format(toDisplayWeight(insights.composition.fatKg))} ${weightUnit}`
-                      : "—"
-                  }
+                  value={view.fatMass ?? "—"}
                 />
                 <Stat
                   label="Masa magra"
-                  value={
-                    insights.composition.leanKg !== null
-                      ? `${one.format(toDisplayWeight(insights.composition.leanKg))} ${weightUnit}`
-                      : "—"
-                  }
+                  value={view.leanMass ?? "—"}
                 />
                 <Stat
                   label="IMC"
-                  value={
-                    insights.composition.bmi !== null
-                      ? one.format(insights.composition.bmi)
-                      : "—"
-                  }
+                  value={view.bmi ?? "—"}
                 />
                 <Stat
                   label="FFMI"
                   hint="Índice de masa libre de grasa"
-                  value={
-                    insights.composition.ffmi !== null
-                      ? one.format(insights.composition.ffmi)
-                      : "—"
-                  }
+                  value={view.ffmi ?? "—"}
                 />
               </div>
             </Section>
@@ -227,7 +178,7 @@ export function BodyMetricsPage() {
               title="Análisis del coach"
               description="Una lectura de tu progreso hecha por el IA Coach a partir de tus mediciones."
             >
-              <ProgressAnalysis />
+              <ProgressAnalysis request={analysisRequest} />
             </Section>
           </motion.div>
 

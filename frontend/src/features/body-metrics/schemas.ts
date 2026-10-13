@@ -121,3 +121,52 @@ export function correctionPayload(
     muscle_mass_percentage: orNull(values.muscle),
   }
 }
+
+const nullableText = z.string().nullable()
+const counter = z.number().int().min(0)
+
+export const analysisRequestSchema = z.object({
+  today: z.string(),
+  indicators: z.object({
+    weight: nullableText,
+    weight_change_30d: nullableText,
+    body_fat: nullableText,
+    body_fat_change_30d: nullableText,
+    rate: nullableText,
+    pace_status: z.enum([
+      "on_track",
+      "too_slow",
+      "too_fast",
+      "off_range",
+      "insufficient",
+      "stale",
+    ]),
+    fat_mass: nullableText,
+    lean_mass: nullableText,
+    bmi: nullableText,
+    ffmi: nullableText,
+    streak_weeks: counter,
+    records_last_30_days: counter,
+    total_records: counter,
+    last_record_date: nullableText,
+  }),
+  rate_kg_per_week: z.number().finite().nullable(),
+  latest_weight_kg: z.number().finite().nullable(),
+  calories: z.object({
+    maintenance_kcal: z.number().int().positive(),
+    target_kcal: z.number().int().positive(),
+  }),
+})
+
+export const analysisResponseSchema = z.object({
+  analysis: z.string(),
+  calorie_suggestion: z
+    .object({
+      kind: z.enum(["adjust", "floor_limited", "at_floor", "on_track"]),
+      target_kcal: z.number(),
+      suggested_kcal: z.number(),
+      adjustment_kcal: z.number(),
+      floor_kcal: z.number(),
+    })
+    .nullable(),
+})

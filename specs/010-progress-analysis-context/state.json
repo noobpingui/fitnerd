@@ -1,0 +1,276 @@
+{
+  "$comment": "Única fuente de verdad del flujo SDD de una feature. Lo escriben solo el orquestador (/sdd-*) y el verifier (secciones red_check y verify). Etapas: spec, plan, tasks, tests, implement, verify, review, docs, close, done.",
+  "schema_version": 1,
+  "feature": "010-progress-analysis-context",
+  "title": "Análisis de progreso con IA con contexto del perfil y sugerencia de calorías",
+  "type": "feature",
+  "scope": {
+    "backend": true,
+    "frontend": true
+  },
+  "branch": "feat/010-progress-analysis-context",
+  "base_branch": "chore/frontend-redesign",
+  "created_at": "2026-10-13T07:58:08.214Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": "2026-10-13T19:01:52.092Z",
+    "plan": "2026-10-13T19:16:58.719Z",
+    "tasks": "2026-10-13T19:53:19.140Z",
+    "tests": "2026-10-13T20:30:22.365Z",
+    "implement": "2026-10-13T20:44:01.673Z",
+    "verify": "2026-10-13T20:49:27.482Z",
+    "review": "2026-10-13T21:10:59.774Z",
+    "docs": "2026-10-13T21:15:09.629Z",
+    "close": "2026-10-13T21:16:09.116Z"
+  },
+  "commits": {
+    "spec": "0426837",
+    "plan": "e357588",
+    "tasks": "901a55d",
+    "tests": "a469bb9",
+    "implement": "b8d019b",
+    "verify": "59ccae7",
+    "review": "8cca041",
+    "docs": "7651717"
+  },
+  "iterations": {
+    "tests": 2,
+    "implement": 1,
+    "review": 1
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-10-13T20:18:53.806Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-10-13T20:46:08.970Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-10-13T20:52:28.036Z"
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-13T07:58:08.214Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "Feature creada desde chore/frontend-redesign (aprobado por el usuario)"
+    },
+    {
+      "at": "2026-10-13T07:58:27.769Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegado al spec-writer (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T08:02:24.251Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "spec.md iteración 1: 10 REQ, 41 AC, 2 NFR; Q1–Q10 abiertas"
+    },
+    {
+      "at": "2026-10-13T18:53:11.678Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Respuestas Q1–Q10 copiadas en spec.md (Q7 alternativa); re-delegado al spec-writer (iteración 2)"
+    },
+    {
+      "at": "2026-10-13T18:54:16.368Z",
+      "stage": "spec",
+      "event": "completed",
+      "note": "spec.md iteración 2: 10 REQ, 47 AC, 2 NFR; Q1–Q10 resueltas (Q7 alternativa: 409 sin perfil)"
+    },
+    {
+      "at": "2026-10-13T19:01:52.092Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Spec y commit aprobados por el usuario, incluidos los tres detalles del 409 (REQ-009)"
+    },
+    {
+      "at": "2026-10-13T19:01:52.250Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegado al planner (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T19:08:38.485Z",
+      "stage": "plan",
+      "event": "completed",
+      "note": "plan.md: híbrido (indicadores formateados desde el cliente, perfil y sugerencia en el servidor); ADR-0021 propuesta; sin migración"
+    },
+    {
+      "at": "2026-10-13T19:16:58.719Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "Plan, detalles de contrato (400, 409 neutro, coma decimal), ADR-0021 (Aceptada) y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-13T19:16:58.881Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegado al task-breaker (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T19:17:58.201Z",
+      "stage": "tasks",
+      "event": "completed",
+      "note": "tasks.md: 42 tareas (5 scaffold, 21 test, 16 impl)"
+    },
+    {
+      "at": "2026-10-13T19:53:19.140Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "Tareas y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-13T19:53:19.290Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Delegado al implementer en modo scaffold (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T19:54:20.057Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Scaffold T-001..T-005 hecho; delegado al test-author (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T20:02:21.757Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests T-010..T-030 escritos (62 backend, 5 archivos frontend); delegado al verifier en modo red (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T20:05:12.786Z",
+      "stage": "tests",
+      "event": "red_check_failed",
+      "note": "Red check FAIL (iteración 1): 5 tests pasan sin implementación (2 de conservación de ruta: 401 y 429; 3 vacíos en ProgressAnalysis.test.tsx). Devuelto al test-author (iteración 2) para reforzar los 3 de ProgressAnalysis"
+    },
+    {
+      "at": "2026-10-13T20:17:19.117Z",
+      "stage": "tests",
+      "event": "user_decision",
+      "note": "El usuario acepta como caracterización (respuesta: \"A\") los 2 tests de conservación de ruta que pasan hoy: test_analysis_without_a_token_is_unauthorized (AC-010.4) y test_with_the_quota_exhausted_it_returns_too_many_requests (AC-010.1). Los 3 de ProgressAnalysis.test.tsx se reforzaron en la iteración 2."
+    },
+    {
+      "at": "2026-10-13T20:17:19.117Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Delegado al verifier en modo red (iteración 2)"
+    },
+    {
+      "at": "2026-10-13T20:19:19.346Z",
+      "stage": "tests",
+      "event": "completed",
+      "note": "Red check PASS (iteración 2): backend 60/62 en rojo legítimo + 2 de caracterización aceptados; frontend 36/36 en rojo"
+    },
+    {
+      "at": "2026-10-13T20:30:22.365Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "Tests y commit aprobados por el usuario; tests_snapshot guardado (9 archivos)"
+    },
+    {
+      "at": "2026-10-13T20:30:22.597Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegado al implementer (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T20:38:33.686Z",
+      "stage": "implement",
+      "event": "completed",
+      "note": "T-040..T-055 implementadas; pytest 654 passed, npm test 375/375, tsc y lint OK; tests_snapshot intacto"
+    },
+    {
+      "at": "2026-10-13T20:44:01.673Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "Implementación y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-13T20:44:01.883Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier en modo full (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T20:46:34.442Z",
+      "stage": "verify",
+      "event": "completed",
+      "note": "Verify full PASS (iteración 1): pytest 654, ruff-new OK, npm test 375, lint, tsc y build OK; trazabilidad 49/49 AC"
+    },
+    {
+      "at": "2026-10-13T20:49:27.482Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "Verify y commit aprobados; el usuario hará prueba manual en local"
+    },
+    {
+      "at": "2026-10-13T20:49:27.633Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado al reviewer (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T20:52:28.036Z",
+      "stage": "review",
+      "event": "completed",
+      "note": "Review APPROVED (iteración 1): 0 bloqueantes, 0 mayores; F1–F2 MENOR, F3–F7 NIT"
+    },
+    {
+      "at": "2026-10-13T21:10:59.774Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Review y commit aprobados; F1–F6 al backlog, F7 al runbook de despliegue; prueba manual en local OK (\"Parece que funcione como se espera\")"
+    },
+    {
+      "at": "2026-10-13T21:10:59.957Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegado al doc-keeper (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T21:11:29.554Z",
+      "stage": "docs",
+      "event": "completed",
+      "note": "README (viñeta nueva) y fila Métricas de CLAUDE.md (Proyecto) actualizados; codificaciones verificadas"
+    },
+    {
+      "at": "2026-10-13T21:15:09.629Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "Docs y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-13T21:15:09.811Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Checklist de cierre por el orquestador"
+    },
+    {
+      "at": "2026-10-13T21:16:09.116Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Cierre y commit aprobados; integración (B) merge local en chore/frontend-redesign sin push"
+    }
+  ],
+  "tests_snapshot": {
+    "at": "2026-10-13T20:30:22.365Z",
+    "sha256": {
+      "backend/tests/fakes.py": "92b46e43b7f60c69befa986798447b3d2ff16d27b208ad36f39771e82424f5c9",
+      "backend/tests/test_services/test_progress_analysis_service.py": "58114e8d788daa3f412b1ebc35cab167653b5190621d38b79094ee47c5e68483",
+      "backend/tests/test_services/test_calorie_suggestion.py": "a3bd3e87c4de257c1032a1872c32d8a335e0d4ceb629cfd3b65ee5c4571200f6",
+      "backend/tests/test_routes/test_progress_analysis_routes.py": "cfe8b39da2a4ac901bb9b6ed16457b90ca73461acdc29f61fc00c9cbe0dcaff5",
+      "frontend/src/features/body-metrics/insightsView.test.ts": "0d3434152663461ba67379afc444ed0f65932a3c3366c7690b87364e038cccff",
+      "frontend/src/features/body-metrics/analysisRequest.test.ts": "f555b0cda4e8db770d20f1c430d01461e1024a35dca161879cd1d706ba93563f",
+      "frontend/src/features/body-metrics/components/CalorieSuggestionBlock.test.tsx": "23d43c16d63b4cf86899755cb97695c8dc72ade8def2046671bfdf63eb0fd9e0",
+      "frontend/src/features/body-metrics/components/ProgressAnalysis.test.tsx": "8c2624ed80cf34ae901b528d72a171c1f2b0fcc49ec1b2f0c8425e8c1f4b7048",
+      "frontend/src/features/body-metrics/pages/BodyMetricsPage.analysis.test.tsx": "a1eb44f7077cce415f6a57d20e791c097bf7f777150b77cc1ee7557ff6f834fb"
+    }
+  }
+}

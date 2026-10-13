@@ -259,3 +259,28 @@ class FakeLockingUserRepository:
         if self.known_ids is not None and user_id not in self.known_ids:
             return None
         return SimpleNamespace(id=user_id)
+
+
+class FakeUserRepository:
+    """Doble de UserRepository en memoria (spec 010): `users` es un dict
+    user_id -> dict con los campos del usuario (`first_name`, `last_name`,
+    `email`, `date_of_birth`; los que falten valen None). `get_by_id`
+    devuelve un `SimpleNamespace` con `id` y esos campos, o None si el
+    usuario no existe."""
+
+    def __init__(self, users=None):
+        self.users = dict(users or {})
+
+    def get_by_id(self, user_id):
+        from types import SimpleNamespace
+
+        fields = self.users.get(user_id)
+        if fields is None:
+            return None
+        return SimpleNamespace(
+            id=user_id,
+            first_name=fields.get("first_name"),
+            last_name=fields.get("last_name"),
+            email=fields.get("email"),
+            date_of_birth=fields.get("date_of_birth"),
+        )

@@ -27,3 +27,51 @@ export type UpdateBodyMetricPayload = {
   body_fat_percentage: number | null
   muscle_mass_percentage: number | null
 }
+
+// Estado del ritmo que viaja al servidor: los cuatro de la meta más los dos
+// casos sin ritmo calculable.
+export type PaceStatusCode =
+  | "on_track"
+  | "too_slow"
+  | "too_fast"
+  | "off_range"
+  | "insufficient"
+  | "stale"
+
+// Cuerpo de POST /api/body-metrics/analysis (spec 010, ADR-0021): los textos
+// son exactamente los que ve el usuario en Métricas, `null` donde se pinta "—".
+export type AnalysisRequest = {
+  today: string // "YYYY-MM-DD"
+  indicators: {
+    weight: string | null
+    weight_change_30d: string | null
+    body_fat: string | null
+    body_fat_change_30d: string | null
+    rate: string | null
+    pace_status: PaceStatusCode
+    fat_mass: string | null
+    lean_mass: string | null
+    bmi: string | null
+    ffmi: string | null
+    streak_weeks: number
+    records_last_30_days: number
+    total_records: number
+    last_record_date: string | null
+  }
+  rate_kg_per_week: number | null
+  latest_weight_kg: number | null
+  calories: { maintenance_kcal: number; target_kcal: number }
+}
+
+export type CalorieSuggestion = {
+  kind: "adjust" | "floor_limited" | "at_floor" | "on_track"
+  target_kcal: number
+  suggested_kcal: number
+  adjustment_kcal: number
+  floor_kcal: number
+}
+
+export type AnalysisResponse = {
+  analysis: string
+  calorie_suggestion: CalorieSuggestion | null
+}

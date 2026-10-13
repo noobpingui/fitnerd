@@ -11,7 +11,10 @@ import {
   listBodyMetrics,
   updateBodyMetric,
 } from "@/features/body-metrics/api"
-import type { UpdateBodyMetricPayload } from "@/features/body-metrics/types"
+import type {
+  AnalysisRequest,
+  UpdateBodyMetricPayload,
+} from "@/features/body-metrics/types"
 import { profileKeys } from "@/features/profile/hooks"
 
 export const bodyMetricsKeys = {
@@ -80,6 +83,7 @@ export function useDeleteBodyMetric() {
 // distinta, aunque los datos no hayan cambiado) generada por Claude.
 export function useAnalyzeBodyMetrics() {
   return useMutation({
-    mutationFn: analyzeBodyMetrics,
+    mutationFn: (request: AnalysisRequest | null) =>
+      analyzeBodyMetrics(request),
   })
 }
