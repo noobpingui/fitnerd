@@ -1,6 +1,6 @@
 from models.base import Base
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import ForeignKey, Text, Date, func
+from sqlalchemy import ForeignKey, Text, Date, UniqueConstraint, func
 import uuid
 from datetime import date, datetime
 
@@ -26,5 +26,6 @@ class BodyMetric(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
 
     __table_args__ = (
+        UniqueConstraint("user_id", "recorded_at", name="uq_body_metrics_user_id_recorded_at"),
         {"schema": "public"},
     )

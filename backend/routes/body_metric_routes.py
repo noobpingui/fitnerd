@@ -1,10 +1,10 @@
-from datetime import date
-
 from flask import Blueprint, request, jsonify, g, current_app
 
 from extensions import db
 from repositories.body_metric_repository import BodyMetricRepository
 from repositories.progress_analysis_repository import ProgressAnalysisRepository
+from repositories.user_profile_repository import UserProfileRepository
+from repositories.user_repository import UserRepository
 from unit_of_work.unit_of_work import UnitOfWork
 from services.body_metric_service import BodyMetricService
 from services.progress_analysis_service import ProgressAnalysisService
@@ -20,8 +20,12 @@ body_metric_bp = Blueprint(
 
 def _build_body_metric_service():
     body_metric_repository = BodyMetricRepository(db.session)
+    user_repository = UserRepository(db.session)
+    user_profile_repository = UserProfileRepository(db.session)
     unit_of_work = UnitOfWork(db.session)
-    return BodyMetricService(body_metric_repository, unit_of_work)
+    return BodyMetricService(
+        body_metric_repository, user_repository, user_profile_repository, unit_of_work
+    )
 
 
 #Mismo patron que _build_coach_service() en coach_routes.py.
@@ -52,23 +56,25 @@ def _serialize(metric):
 @body_metric_bp.route("", methods=["POST"])
 @require_auth
 def create():
-    data = request.get_json()
+    data = request.get_json(silent=True)
     user_id = g.decoded_token["id"]
 
-    recorded_at_str = data.get("recorded_at")
-    recorded_at = date.fromisoformat(recorded_at_str) if recorded_at_str else date.today()
+    body_metric_service = _build_body_metric_service()
+    result = body_metric_service.save_metric(user_id, data)
+
+    return jsonify(_serialize(result.metric)), (201 if result.created else 200)
+
+
+@body_metric_bp.route("/<uuid:metric_id>", methods=["PUT"])
+@require_auth
+def update(metric_id):
+    data = request.get_json(silent=True)
+    user_id = g.decoded_token["id"]
 
     body_metric_service = _build_body_metric_service()
-    metric = body_metric_service.create_metric(
-        user_id=user_id,
-        weight=data.get("weight"),
-        body_fat_percentage=data.get("body_fat_percentage"),
-        muscle_mass_percentage=data.get("muscle_mass_percentage"),
-        notes=data.get("notes"),
-        recorded_at=recorded_at,
-    )
+    metric = body_metric_service.update_metric(user_id, metric_id, data)
 
-    return jsonify(_serialize(metric)), 201
+    return jsonify(_serialize(metric)), 200
 
 
 @body_metric_bp.route("", methods=["GET"])

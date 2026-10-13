@@ -30,6 +30,7 @@ import {
   KG_PER_LB,
 } from "@/features/onboarding/units"
 import { useCreateBodyMetric } from "@/features/body-metrics/hooks"
+import { FAT_LIMITS, MUSCLE_LIMITS } from "@/features/body-metrics/schemas"
 import {
   dateOfBirthError,
   isHeightValid,
@@ -43,9 +44,6 @@ import { payloadFromAnswers } from "@/features/profile/mappers"
 // aquí el usuario ya sabe qué es cada cosa y solo quiere cambiar una o dos.
 // Composición corporal opcional (texto mientras se edita, "" = sin dato).
 export type BodyComposition = { fat: string; muscle: string }
-
-const FAT_LIMITS = { min: 3, max: 60 }
-const MUSCLE_LIMITS = { min: 10, max: 70 }
 
 // Opcional: vacío es válido; si hay algo escrito, debe estar en rango.
 function optionalInRange(value: string, { min, max }: { min: number; max: number }) {
@@ -137,6 +135,7 @@ export function PhysicalDataForm({
       try {
         await createMetric.mutateAsync({
           weight: Math.round(weightKg(draft) * 10) / 10,
+          recorded_at: todayIsoDate(),
           ...(fatChanged && { body_fat_percentage: Number(body.fat) }),
           ...(muscleChanged && { muscle_mass_percentage: Number(body.muscle) }),
         })

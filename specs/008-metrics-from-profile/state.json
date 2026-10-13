@@ -11,14 +11,14 @@
   "branch": "feat/008-metrics-from-profile",
   "base_branch": "chore/frontend-redesign",
   "created_at": "2026-10-12T21:12:29.004Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-12T23:10:09.240Z",
     "plan": "2026-10-12T23:29:01.796Z",
     "tasks": "2026-10-12T23:35:56.780Z",
     "tests": "2026-10-12T23:54:47.272Z",
-    "implement": null,
+    "implement": "2026-10-13T00:05:52.645Z",
     "verify": null,
     "review": null,
     "docs": null,
@@ -27,11 +27,12 @@
   "commits": {
     "spec": "47adfab",
     "plan": "ba0dd26",
-    "tasks": "8aa597c"
+    "tasks": "8aa597c",
+    "tests": "96e3347"
   },
   "iterations": {
     "tests": 2,
-    "implement": 0,
+    "implement": 1,
     "review": 0
   },
   "max_iterations": 3,
@@ -156,6 +157,24 @@
       "stage": "tests",
       "event": "approved",
       "note": "Etapa tests y commit aprobados por el usuario; tests_snapshot guardado"
+    },
+    {
+      "at": "2026-10-12T23:54:47.496Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegado al implementer (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T00:00:45.705Z",
+      "stage": "implement",
+      "event": "completed",
+      "note": "T-050..T-066 hechas; pytest 596 OK, vitest 220 OK; 8 E501 nuevos en tests; 2 desviaciones del plan"
+    },
+    {
+      "at": "2026-10-13T00:05:52.645Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "Implementación, desviaciones (PUT 404 antes de 400; diálogo de borrado se cierra al fallar) y commit aprobados por el usuario"
     }
   ],
   "tests_snapshot": {

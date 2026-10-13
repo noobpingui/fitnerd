@@ -17,10 +17,13 @@ export function createBodyMetric(payload: CreateBodyMetricPayload) {
 }
 
 export function updateBodyMetric(
-  _id: string,
-  _payload: UpdateBodyMetricPayload,
-): Promise<BodyMetric> {
-  throw new Error("not implemented")
+  id: string,
+  payload: UpdateBodyMetricPayload
+) {
+  return apiFetch<BodyMetric>(`/api/body-metrics/${id}`, {
+    method: "PUT",
+    body: payload,
+  })
 }
 
 export function deleteBodyMetric(id: string) {

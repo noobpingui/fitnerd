@@ -1,10 +1,18 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query"
 import {
   analyzeBodyMetrics,
   createBodyMetric,
   deleteBodyMetric,
   listBodyMetrics,
+  updateBodyMetric,
 } from "@/features/body-metrics/api"
+import type { UpdateBodyMetricPayload } from "@/features/body-metrics/types"
+import { profileKeys } from "@/features/profile/hooks"
 
 export const bodyMetricsKeys = {
   list: ["body-metrics"] as const,
@@ -32,14 +40,37 @@ export function useCreateBodyMetric() {
   })
 }
 
+// Corregir o borrar una medición cambia también el peso del perfil (lo
+// sincroniza el servidor). Se devuelve la promesa para que la mutación siga
+// pendiente hasta que las queries activas se recarguen.
+function invalidateMetricsAndProfile(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: bodyMetricsKeys.list }),
+    queryClient.invalidateQueries({ queryKey: profileKeys.detail }),
+  ])
+}
+
+export function useUpdateBodyMetric() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string
+      payload: UpdateBodyMetricPayload
+    }) => updateBodyMetric(id, payload),
+    onSuccess: () => invalidateMetricsAndProfile(queryClient),
+  })
+}
+
 export function useDeleteBodyMetric() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: deleteBodyMetric,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: bodyMetricsKeys.list })
-    },
+    onSuccess: () => invalidateMetricsAndProfile(queryClient),
   })
 }
 
