@@ -1,0 +1,85 @@
+{
+  "$comment": "Única fuente de verdad del flujo SDD de una feature. Lo escriben solo el orquestador (/sdd-*) y el verifier (secciones red_check y verify). Etapas: spec, plan, tasks, tests, implement, verify, review, docs, close, done.",
+  "schema_version": 1,
+  "feature": "010-progress-analysis-context",
+  "title": "Análisis de progreso con IA con contexto del perfil y sugerencia de calorías",
+  "type": "feature",
+  "scope": {
+    "backend": true,
+    "frontend": true
+  },
+  "branch": "feat/010-progress-analysis-context",
+  "base_branch": "chore/frontend-redesign",
+  "created_at": "2026-10-13T07:58:08.214Z",
+  "stage": "spec",
+  "status": "awaiting_approval",
+  "approvals": {
+    "spec": "2026-10-13T19:01:52.092Z",
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
+    "verify": null,
+    "review": null,
+    "docs": null,
+    "close": null
+  },
+  "commits": {},
+  "iterations": {
+    "tests": 0,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": null,
+    "at": null
+  },
+  "verify": {
+    "result": null,
+    "at": null
+  },
+  "review": {
+    "verdict": null,
+    "at": null
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-13T07:58:08.214Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "Feature creada desde chore/frontend-redesign (aprobado por el usuario)"
+    },
+    {
+      "at": "2026-10-13T07:58:27.769Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegado al spec-writer (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T08:02:24.251Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "spec.md iteración 1: 10 REQ, 41 AC, 2 NFR; Q1–Q10 abiertas"
+    },
+    {
+      "at": "2026-10-13T18:53:11.678Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Respuestas Q1–Q10 copiadas en spec.md (Q7 alternativa); re-delegado al spec-writer (iteración 2)"
+    },
+    {
+      "at": "2026-10-13T18:54:16.368Z",
+      "stage": "spec",
+      "event": "completed",
+      "note": "spec.md iteración 2: 10 REQ, 47 AC, 2 NFR; Q1–Q10 resueltas (Q7 alternativa: 409 sin perfil)"
+    },
+    {
+      "at": "2026-10-13T19:01:52.092Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Spec y commit aprobados por el usuario, incluidos los tres detalles del 409 (REQ-009)"
+    }
+  ]
+}
