@@ -2,6 +2,7 @@ import { apiFetch } from "@/lib/apiClient"
 import type {
   BodyMetric,
   CreateBodyMetricPayload,
+  UpdateBodyMetricPayload,
 } from "@/features/body-metrics/types"
 
 export function listBodyMetrics() {
@@ -11,6 +12,16 @@ export function listBodyMetrics() {
 export function createBodyMetric(payload: CreateBodyMetricPayload) {
   return apiFetch<BodyMetric>("/api/body-metrics", {
     method: "POST",
+    body: payload,
+  })
+}
+
+export function updateBodyMetric(
+  id: string,
+  payload: UpdateBodyMetricPayload
+) {
+  return apiFetch<BodyMetric>(`/api/body-metrics/${id}`, {
+    method: "PUT",
     body: payload,
   })
 }

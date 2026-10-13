@@ -1,7 +1,7 @@
 // Test de PÁGINA del perfil (feature 006): el formulario de datos físicos
 // lee y guarda en el servidor. La red se simula en los api.ts (vi.mock).
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { fireEvent, render, screen } from "@testing-library/react"
+import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { Link, MemoryRouter, Route, Routes } from "react-router"
@@ -20,6 +20,7 @@ vi.mock("@/features/profile/api", () => ({
 vi.mock("@/features/body-metrics/api", () => ({
   listBodyMetrics: vi.fn(),
   createBodyMetric: vi.fn(),
+  updateBodyMetric: vi.fn(),
   deleteBodyMetric: vi.fn(),
   analyzeBodyMetrics: vi.fn(),
 }))
@@ -350,5 +351,97 @@ describe("ProfilePage - las cifras de otras pantallas se actualizan sin recargar
     expect(await screen.findByText("Meta: Aumentar peso")).toBeInTheDocument()
     expect(screen.getByText(/2\.?778/)).toBeInTheDocument()
     expect(getProfileMock).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe("ProfilePage - medición del día del usuario (spec 008)", () => {
+  beforeEach(() => {
+    getProfileMock.mockReset()
+    saveMock.mockReset()
+    listMetricsMock.mockReset()
+    createMetricMock.mockReset()
+    getCurrentUserMock.mockReset()
+    listMetricsMock.mockResolvedValue([])
+    getCurrentUserMock.mockResolvedValue({
+      email: "ana@example.com",
+    } as Awaited<ReturnType<typeof getCurrentUser>>)
+    Element.prototype.hasPointerCapture = vi.fn(() => false)
+    Element.prototype.setPointerCapture = vi.fn()
+    Element.prototype.releasePointerCapture = vi.fn()
+    Element.prototype.scrollIntoView = vi.fn()
+    // 20:00 locales del 12-10-2026: en husos negativos (Costa Rica, UTC-6) la
+    // fecha UTC ya sería la del 13, así que distingue "hoy del dispositivo".
+    vi.useFakeTimers({ toFake: ["Date"] })
+    vi.setSystemTime(new Date(2026, 9, 12, 20, 0))
+    createMetricMock.mockResolvedValue({
+      id: "m1",
+      weight: 80,
+      body_fat_percentage: null,
+      muscle_mass_percentage: null,
+      notes: null,
+      recorded_at: "2026-10-12",
+    })
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  // SDD: REQ-007 AC-007.1
+  it("registra la medición con la fecha actual del dispositivo", async () => {
+    const user = userEvent.setup()
+    getProfileMock.mockResolvedValue(CM_KG_RESPONSE)
+    saveMock.mockResolvedValue(CM_KG_RESPONSE)
+    renderPage()
+    await dobInput()
+
+    await typeInto(user, spinbuttons()[1], "80")
+    await user.click(saveButton())
+
+    expect(await screen.findByText("Cambios guardados")).toBeInTheDocument()
+    expect(createMetricMock).toHaveBeenCalledTimes(1)
+    expect(createMetricMock.mock.calls[0][0]).toMatchObject({
+      weight: 80,
+      recorded_at: "2026-10-12",
+    })
+  })
+
+  // SDD: REQ-007 AC-007.2
+  it("un segundo guardado el mismo día envía otra medición con la fecha de hoy y el peso nuevo", async () => {
+    const user = userEvent.setup()
+    getProfileMock.mockResolvedValue(CM_KG_RESPONSE)
+    saveMock.mockResolvedValue(CM_KG_RESPONSE)
+    renderPage()
+    await dobInput()
+
+    await typeInto(user, spinbuttons()[1], "80")
+    await user.click(saveButton())
+    await screen.findByText("Cambios guardados")
+    await typeInto(user, spinbuttons()[1], "79.5")
+    await user.click(saveButton())
+
+    await waitFor(() => expect(createMetricMock).toHaveBeenCalledTimes(2))
+    expect(createMetricMock.mock.calls[0][0]).toMatchObject({
+      weight: 80,
+      recorded_at: "2026-10-12",
+    })
+    expect(createMetricMock.mock.calls[1][0]).toMatchObject({
+      weight: 79.5,
+      recorded_at: "2026-10-12",
+    })
+    expect(await screen.findByText("Cambios guardados")).toBeInTheDocument()
+  })
+
+  // SDD: REQ-007 AC-007.3
+  it("la descripción de 'Datos físicos' explica que se guarda la medición de hoy", async () => {
+    getProfileMock.mockResolvedValue(CM_KG_RESPONSE)
+    renderPage()
+    await dobInput()
+
+    expect(
+      screen.getByText(
+        "Se usan para calcular tus calorías y macros. Cada cambio de peso o composición se guarda como la medición de hoy en tu progreso; si ya hay una de hoy, se actualiza."
+      )
+    ).toBeInTheDocument()
   })
 })

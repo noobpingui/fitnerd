@@ -56,7 +56,7 @@ export function ProfilePage() {
       <div className="flex flex-col gap-4">
         <ProfileSection
           title="Datos físicos"
-          description="Se usan para calcular tus calorías y macros. Cada cambio de peso o composición se guarda como una medición de hoy en tu progreso."
+          description="Se usan para calcular tus calorías y macros. Cada cambio de peso o composición se guarda como la medición de hoy en tu progreso; si ya hay una de hoy, se actualiza."
         >
           {/* Se espera al historial para precargar la última grasa y
               músculo conocidos; si falla, el formulario arranca vacío. */}

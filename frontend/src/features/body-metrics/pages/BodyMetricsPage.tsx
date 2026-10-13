@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ApiError } from "@/lib/apiClient"
 import { cn } from "@/lib/utils"
+import { MetricsHistory } from "@/features/body-metrics/components/MetricsHistory"
 import { ProgressAnalysis } from "@/features/body-metrics/components/ProgressAnalysis"
 import { TrendChart } from "@/features/body-metrics/components/TrendChart"
 import { formatDate, todayIsoDate } from "@/features/body-metrics/dateUtils"
@@ -230,9 +231,17 @@ export function BodyMetricsPage() {
             </Section>
           </motion.div>
 
-          {/* "Historial" reducido a la racha: los registros se gestionan
-              en el perfil; aquí solo interesa la constancia. */}
           <motion.div {...fadeIn(4)}>
+            <Section title="Historial">
+              <MetricsHistory
+                metrics={metrics}
+                weightUnit={weightUnit}
+                toDisplayWeight={toDisplayWeight}
+              />
+            </Section>
+          </motion.div>
+
+          <motion.div {...fadeIn(5)}>
             <Section title="Constancia">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <Stat
