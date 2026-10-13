@@ -11,7 +11,7 @@
   "branch": "feat/008-metrics-from-profile",
   "base_branch": "chore/frontend-redesign",
   "created_at": "2026-10-12T21:12:29.004Z",
-  "stage": "review",
+  "stage": "docs",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-12T23:10:09.240Z",
@@ -21,7 +21,7 @@
     "implement": "2026-10-13T00:05:52.645Z",
     "verify": "2026-10-13T00:15:43.632Z",
     "review": "2026-10-13T00:30:45.232Z",
-    "docs": null,
+    "docs": "2026-10-13T00:32:18.660Z",
     "close": null
   },
   "commits": {
@@ -29,7 +29,8 @@
     "plan": "ba0dd26",
     "tasks": "8aa597c",
     "tests": "96e3347",
-    "implement": "d69bbb5"
+    "implement": "d69bbb5",
+    "review": "52c7b91"
   },
   "iterations": {
     "tests": 3,
@@ -230,6 +231,24 @@
       "stage": "review",
       "event": "approved",
       "note": "Review y commit aprobados; F1–F5 al backlog (F2 como limitación conocida), F6 ya estaba"
+    },
+    {
+      "at": "2026-10-13T00:30:45.445Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegado al doc-keeper (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T00:31:14.898Z",
+      "stage": "docs",
+      "event": "completed",
+      "note": "README.md y fila de Métricas en CLAUDE.md actualizados; docs-report.md"
+    },
+    {
+      "at": "2026-10-13T00:32:18.660Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "Docs y commit aprobados por el usuario"
     }
   ],
   "tests_snapshot": {
