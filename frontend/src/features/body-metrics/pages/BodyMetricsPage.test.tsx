@@ -373,8 +373,10 @@ async function renderLoaded(metrics: BodyMetric[]) {
   listMock.mockResolvedValue(metrics)
   const view = renderPage()
   await screen.findByRole("heading", { name: "Constancia" })
+  await waitFor(() => expect(getProfileMock).toHaveBeenCalled())
+  // El mock resuelve en microtareas: se vacían dentro de act, sin temporizador real.
   await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 20))
+    for (let i = 0; i < 5; i++) await Promise.resolve()
   })
   return view
 }

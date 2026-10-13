@@ -77,14 +77,14 @@ describe("isWithinLastMonths", () => {
 
 describe("periodStart", () => {
   // SDD: REQ-005 AC-005.1
-  it("returns the same date 1, 3 and 12 months earlier", () => {
+  it("devuelve la misma fecha 1, 3 y 12 meses antes", () => {
     expect(periodStart("2026-10-12", 1)).toBe("2026-09-12")
     expect(periodStart("2026-10-12", 3)).toBe("2026-07-12")
     expect(periodStart("2026-10-12", 12)).toBe("2025-10-12")
   })
 
   // SDD: REQ-005 AC-005.1
-  it("uses the last day of the month when the day does not exist", () => {
+  it("usa el último día del mes cuando el día no existe", () => {
     expect(periodStart("2026-03-31", 1)).toBe("2026-02-28")
     expect(periodStart("2024-03-31", 1)).toBe("2024-02-29")
     expect(periodStart("2026-05-31", 3)).toBe("2026-02-28")
@@ -97,7 +97,7 @@ describe("isWithinLastMonths - límite inferior", () => {
   })
 
   // SDD: REQ-005 AC-005.1
-  it("includes a measurement exactly one month ago even in the afternoon", () => {
+  it("incluye una medición de exactamente un mes atrás incluso por la tarde", () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date(2026, 9, 12, 15)) // 12 de octubre, 15:00
 
