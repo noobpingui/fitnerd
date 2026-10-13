@@ -11,7 +11,7 @@
   "branch": "feat/010-progress-analysis-context",
   "base_branch": "chore/frontend-redesign",
   "created_at": "2026-10-13T07:58:08.214Z",
-  "stage": "review",
+  "stage": "docs",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-13T19:01:52.092Z",
@@ -21,7 +21,7 @@
     "implement": "2026-10-13T20:44:01.673Z",
     "verify": "2026-10-13T20:49:27.482Z",
     "review": "2026-10-13T21:10:59.774Z",
-    "docs": null,
+    "docs": "2026-10-13T21:15:09.629Z",
     "close": null
   },
   "commits": {
@@ -30,7 +30,8 @@
     "tasks": "901a55d",
     "tests": "a469bb9",
     "implement": "b8d019b",
-    "verify": "59ccae7"
+    "verify": "59ccae7",
+    "review": "8cca041"
   },
   "iterations": {
     "tests": 2,
@@ -225,6 +226,24 @@
       "stage": "review",
       "event": "approved",
       "note": "Review y commit aprobados; F1–F6 al backlog, F7 al runbook de despliegue; prueba manual en local OK (\"Parece que funcione como se espera\")"
+    },
+    {
+      "at": "2026-10-13T21:10:59.957Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegado al doc-keeper (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T21:11:29.554Z",
+      "stage": "docs",
+      "event": "completed",
+      "note": "README (viñeta nueva) y fila Métricas de CLAUDE.md (Proyecto) actualizados; codificaciones verificadas"
+    },
+    {
+      "at": "2026-10-13T21:15:09.629Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "Docs y commit aprobados por el usuario"
     }
   ],
   "tests_snapshot": {
