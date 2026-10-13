@@ -11,11 +11,11 @@
   "branch": "feat/010-progress-analysis-context",
   "base_branch": "chore/frontend-redesign",
   "created_at": "2026-10-13T07:58:08.214Z",
-  "stage": "spec",
+  "stage": "plan",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-13T19:01:52.092Z",
-    "plan": null,
+    "plan": "2026-10-13T19:16:58.719Z",
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -24,7 +24,9 @@
     "docs": null,
     "close": null
   },
-  "commits": {},
+  "commits": {
+    "spec": "0426837"
+  },
   "iterations": {
     "tests": 0,
     "implement": 0,
@@ -80,6 +82,24 @@
       "stage": "spec",
       "event": "approved",
       "note": "Spec y commit aprobados por el usuario, incluidos los tres detalles del 409 (REQ-009)"
+    },
+    {
+      "at": "2026-10-13T19:01:52.250Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegado al planner (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T19:08:38.485Z",
+      "stage": "plan",
+      "event": "completed",
+      "note": "plan.md: híbrido (indicadores formateados desde el cliente, perfil y sugerencia en el servidor); ADR-0021 propuesta; sin migración"
+    },
+    {
+      "at": "2026-10-13T19:16:58.719Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "Plan, detalles de contrato (400, 409 neutro, coma decimal), ADR-0021 (Aceptada) y commit aprobados por el usuario"
     }
   ]
 }
