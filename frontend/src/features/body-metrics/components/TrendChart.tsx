@@ -10,11 +10,11 @@ import { UnitToggle } from "@/features/onboarding/components/UnitToggle"
 import {
   formatDate,
   formatShortDate,
-  isWithinLastMonths,
+  periodStart,
+  todayIsoDate,
 } from "@/features/body-metrics/dateUtils"
 import {
-  movingAverage,
-  seriesOf,
+  trendChartData,
   type NumericField,
 } from "@/features/body-metrics/insights"
 import type { BodyMetric } from "@/features/body-metrics/types"
@@ -51,17 +51,10 @@ export function TrendChart({
   const unit = isWeight ? ` ${weightUnit}` : "%"
   const label = FIELDS.find((f) => f.value === field)!.label
 
-  const raw = seriesOf(metrics, field)
-    .filter((p) => isWithinLastMonths(p.date, Number(range)))
-    .map((p) => ({ ...p, value: isWeight ? toDisplayWeight(p.value) : p.value }))
   // La tendencia solo tiene sentido en el peso, que fluctúa a diario; la
   // grasa y el músculo se miden con menos frecuencia.
-  const trend = isWeight ? movingAverage(raw) : []
-  const data = raw.map((p, i) => ({
-    date: p.date,
-    value: p.value,
-    trend: trend[i]?.value,
-  }))
+  const from = periodStart(todayIsoDate(), Number(range))
+  const data = trendChartData(metrics, field, from, toDisplayWeight)
 
   const config = {
     value: { label, color: "var(--muted-foreground)" },

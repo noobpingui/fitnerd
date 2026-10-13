@@ -22,15 +22,16 @@ import { useBodyMetrics } from "@/features/body-metrics/hooks"
 import {
   composition,
   latestWithDelta,
-  paceStatus,
+  paceStatusFromPercent,
+  ratePercent,
+  rateIndicator,
   seriesOf,
   streak,
-  weeklyRate,
   type PaceStatus,
 } from "@/features/body-metrics/insights"
 import { useProfile } from "@/features/profile/hooks"
 import { answersFromProfile } from "@/features/profile/mappers"
-import { CM_PER_IN, KG_PER_LB } from "@/features/onboarding/units"
+import { KG_PER_LB, heightCmFromAnswers } from "@/features/onboarding/units"
 
 const one = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 1 })
 const signed = new Intl.NumberFormat("es-ES", {
@@ -65,30 +66,34 @@ export function BodyMetricsPage() {
   const weightUnit = profile?.weightUnit ?? "kg"
   const toDisplayWeight = (kg: number) =>
     weightUnit === "lb" ? Math.round((kg / KG_PER_LB) * 10) / 10 : kg
-  const heightCm = profile
-    ? profile.heightUnit === "cm"
-      ? Number(profile.heightCm)
-      : (Number(profile.heightFt) * 12 + Number(profile.heightIn || 0)) *
-        CM_PER_IN
-    : 0
+  const heightCm = profile ? heightCmFromAnswers(profile) : null
+  const today = todayIsoDate()
 
   const insights = useMemo(() => {
     if (!metrics || metrics.length === 0) return null
     const weight = seriesOf(metrics, "weight")
-    const latestWeight = latestWithDelta(weight)
-    const rate = weeklyRate(weight)
+    const rate = rateIndicator(weight, today)
+    const goal = profile?.goal
+    let status: { label: string; tone: "good" | "warn" | "muted" } | undefined
+    if (rate.kind === "stale") {
+      status = { label: "Sin registros recientes", tone: "muted" }
+    } else if (rate.kind === "insufficient") {
+      status = { label: "Faltan registros para calcularlo", tone: "muted" }
+    } else if (goal) {
+      status =
+        PACE_COPY[
+          paceStatusFromPercent(ratePercent(rate.kgPerWeek, rate.latestKg), goal)
+        ]
+    }
     return {
-      weight: latestWeight,
+      weight: latestWithDelta(weight),
       fat: latestWithDelta(seriesOf(metrics, "body_fat_percentage")),
       rate,
-      pace:
-        rate !== null && latestWeight && profile?.goal
-          ? paceStatus(rate, latestWeight.value, profile.goal)
-          : null,
+      status,
       composition: composition(metrics, heightCm),
-      streak: streak(metrics, todayIsoDate()),
+      streak: streak(metrics, today),
     }
-  }, [metrics, profile, heightCm])
+  }, [metrics, profile, heightCm, today])
 
   return (
     <div className="mx-auto max-w-4xl p-4 sm:p-8">
@@ -142,17 +147,11 @@ export function BodyMetricsPage() {
             <KpiTile
               label="Ritmo"
               value={
-                insights.rate !== null
-                  ? `${signed.format(toDisplayWeight(insights.rate))} ${weightUnit}/sem`
+                insights.rate.kind === "ok"
+                  ? `${signed.format(toDisplayWeight(insights.rate.kgPerWeek))} ${weightUnit}/sem`
                   : "—"
               }
-              status={
-                insights.pace
-                  ? PACE_COPY[insights.pace]
-                  : insights.rate === null
-                    ? { label: "Faltan registros para calcularlo", tone: "muted" }
-                    : undefined
-              }
+              status={insights.status}
             />
             <KpiTile
               label="% Grasa"
@@ -258,7 +257,11 @@ export function BodyMetricsPage() {
                 <Stat
                   icon={CalendarCheck}
                   label="Últimos 30 días"
-                  value={`${insights.streak.last30} registros`}
+                  value={
+                    insights.streak.last30 === 1
+                      ? "1 registro"
+                      : `${insights.streak.last30} registros`
+                  }
                   hint={`${insights.streak.total} en total`}
                 />
                 <Stat
@@ -333,6 +336,7 @@ function KpiTile({
         )}
         {status && (
           <span
+            data-tone={status.tone}
             className={cn(
               "flex items-center gap-1 text-sm",
               status.tone === "good" && "text-emerald-500",

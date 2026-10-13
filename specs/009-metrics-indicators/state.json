@@ -11,14 +11,14 @@
   "branch": "feat/009-metrics-indicators",
   "base_branch": "chore/frontend-redesign",
   "created_at": "2026-10-13T00:41:46.208Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-13T00:59:48.413Z",
     "plan": "2026-10-13T01:29:08.427Z",
     "tasks": "2026-10-13T01:35:43.921Z",
     "tests": "2026-10-13T03:47:40.986Z",
-    "implement": null,
+    "implement": "2026-10-13T03:50:46.681Z",
     "verify": null,
     "review": null,
     "docs": null,
@@ -27,11 +27,12 @@
   "commits": {
     "spec": "497bce0",
     "plan": "df55e43",
-    "tasks": "5b61f52"
+    "tasks": "5b61f52",
+    "tests": "9bb35ae"
   },
   "iterations": {
     "tests": 1,
-    "implement": 0,
+    "implement": 1,
     "review": 0
   },
   "max_iterations": 3,
@@ -150,6 +151,24 @@
       "stage": "tests",
       "event": "approved",
       "note": "Tests y commit aprobados por el usuario; tests_snapshot guardado (5 archivos)"
+    },
+    {
+      "at": "2026-10-13T03:47:44.405Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegado al implementer (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T03:50:13.107Z",
+      "stage": "implement",
+      "event": "completed",
+      "note": "T-040..T-051 implementadas; npm test 339/339, tsc y lint sin errores; tests_snapshot intacto"
+    },
+    {
+      "at": "2026-10-13T03:50:46.681Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "Implementación y commit aprobados por el usuario"
     }
   ],
   "tests_snapshot": {
