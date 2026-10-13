@@ -347,12 +347,22 @@ def test_post_accepts_the_exact_limits(client, registered_user):
     low = post(
         client,
         headers,
-        {"weight": 29.9, "body_fat_percentage": 3, "muscle_mass_percentage": 10, "recorded_at": day(0)},
+        {
+            "weight": 29.9,
+            "body_fat_percentage": 3,
+            "muscle_mass_percentage": 10,
+            "recorded_at": day(0),
+        },
     )
     high = post(
         client,
         headers,
-        {"weight": 300, "body_fat_percentage": 60, "muscle_mass_percentage": 70, "recorded_at": day(0)},
+        {
+            "weight": 300,
+            "body_fat_percentage": 60,
+            "muscle_mass_percentage": 70,
+            "recorded_at": day(0),
+        },
     )
 
     assert low.status_code == 201
@@ -415,7 +425,12 @@ def test_put_replaces_the_three_values(client, registered_user):
     metric = post(
         client,
         headers,
-        {"weight": 80, "body_fat_percentage": 20, "muscle_mass_percentage": 40, "recorded_at": day(-3)},
+        {
+            "weight": 80,
+            "body_fat_percentage": 20,
+            "muscle_mass_percentage": 40,
+            "recorded_at": day(-3),
+        },
     ).get_json()
 
     response = put(client, headers, metric["id"], {"weight": 79, "body_fat_percentage": 19})

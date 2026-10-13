@@ -11,7 +11,7 @@
   "branch": "feat/008-metrics-from-profile",
   "base_branch": "chore/frontend-redesign",
   "created_at": "2026-10-12T21:12:29.004Z",
-  "stage": "implement",
+  "stage": "review",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-12T23:10:09.240Z",
@@ -19,8 +19,8 @@
     "tasks": "2026-10-12T23:35:56.780Z",
     "tests": "2026-10-12T23:54:47.272Z",
     "implement": "2026-10-13T00:05:52.645Z",
-    "verify": null,
-    "review": null,
+    "verify": "2026-10-13T00:15:43.632Z",
+    "review": "2026-10-13T00:30:45.232Z",
     "docs": null,
     "close": null
   },
@@ -28,12 +28,13 @@
     "spec": "47adfab",
     "plan": "ba0dd26",
     "tasks": "8aa597c",
-    "tests": "96e3347"
+    "tests": "96e3347",
+    "implement": "d69bbb5"
   },
   "iterations": {
-    "tests": 2,
+    "tests": 3,
     "implement": 1,
-    "review": 0
+    "review": 1
   },
   "max_iterations": 3,
   "red_check": {
@@ -41,12 +42,12 @@
     "at": "2026-10-12T23:53:05.171Z"
   },
   "verify": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-13T00:12:28.166Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-10-13T00:27:52.377Z"
   },
   "bypass": false,
   "history": [
@@ -175,14 +176,68 @@
       "stage": "implement",
       "event": "approved",
       "note": "Implementación, desviaciones (PUT 404 antes de 400; diálogo de borrado se cierra al fallar) y commit aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-13T00:05:52.894Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier en modo full (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T00:08:24.953Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Verify FAIL: 8 E501 nuevos en tests (ruff-new); vuelve al test-author para partir líneas sin cambiar aserciones (iteración 3)"
+    },
+    {
+      "at": "2026-10-13T00:09:01.714Z",
+      "stage": "tests",
+      "event": "authorized_test_change",
+      "note": "test-author partió 8 líneas E501 en 3 tests backend (solo formato, revisado por el orquestador); tests_snapshot actualizado"
+    },
+    {
+      "at": "2026-10-13T00:09:01.714Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier en modo full (iteración 2)"
+    },
+    {
+      "at": "2026-10-13T00:12:39.947Z",
+      "stage": "verify",
+      "event": "completed",
+      "note": "Verify full PASS (iteración 2)"
+    },
+    {
+      "at": "2026-10-13T00:15:43.632Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "Verify aprobado por el usuario; prueba manual en local antes de review"
+    },
+    {
+      "at": "2026-10-13T00:24:27.062Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Usuario probó en local (\"Funciona bien\"); delegado al reviewer (iteración 1)"
+    },
+    {
+      "at": "2026-10-13T00:27:45.825Z",
+      "stage": "review",
+      "event": "completed",
+      "note": "Review APPROVED: 0 bloqueantes, 0 mayores, 2 menores (F1, F2), 4 NIT (F3–F6)"
+    },
+    {
+      "at": "2026-10-13T00:30:45.232Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Review y commit aprobados; F1–F5 al backlog (F2 como limitación conocida), F6 ya estaba"
     }
   ],
   "tests_snapshot": {
-    "at": "2026-10-12T23:54:47.272Z",
+    "at": "2026-10-13T00:09:01.714Z",
     "sha256": {
-      "backend/tests/test_routes/test_body_metric_routes.py": "eb1b91eebe516e8161eccc986e3257cd9650ce24f7a5b88852a55285cd8f18d0",
-      "backend/tests/test_services/test_body_metric_consolidation.py": "35d08bfbdd891599c422e1712ae1e5bf395094ff42d9b0f001dbb431c15ec757",
-      "backend/tests/test_services/test_body_metric_service.py": "7f962bf6dd4ecb0eb94e0a3039e265415c912a3637fe6cf58534b38acd8a03fb",
+      "backend/tests/test_routes/test_body_metric_routes.py": "2d89a0161da94c8a331c66cc5714539031f04c066a385528ea1f3c43d68fae3d",
+      "backend/tests/test_services/test_body_metric_consolidation.py": "a01064f04fa812598e169be174d5a9ef52aa71082b23d050dae965132276dc06",
+      "backend/tests/test_services/test_body_metric_service.py": "b796538c0a21a3e6c1888f377362d1bb1cc6f0c4fe3443e0d7d9b56fe6d9e488",
       "backend/tests/fakes.py": "3e002acbe74ca804675597790f4720592e39e3c8fdee5ee2ae55dc73e621a8e6",
       "frontend/src/features/body-metrics/schemas.test.ts": "9abfbb108aab3a55ecfde6f72fc2bb296b1924b092ba820e575cc23d798edb8b",
       "frontend/src/features/body-metrics/components/MetricsHistory.test.tsx": "640eddb696f64e05018e390737430e981148cc97a8b869939aea36f81291c007",

@@ -89,7 +89,9 @@ def test_consolidation_of_three_rows_prefers_the_latest_value_of_each_field(db_s
             db_session, user, datetime(2026, 10, 10, 8, 0),
             weight=82, body_fat_percentage=22, muscle_mass_percentage=40,
         )
-        add_metric(db_session, user, datetime(2026, 10, 10, 12, 0), weight=81, body_fat_percentage=21)
+        add_metric(
+            db_session, user, datetime(2026, 10, 10, 12, 0), weight=81, body_fat_percentage=21,
+        )
         add_metric(db_session, user, datetime(2026, 10, 10, 20, 0), weight=80)
 
         run_consolidation(db_session)
@@ -133,7 +135,9 @@ def test_consolidation_does_not_mix_users(db_session):
         drop_unique_constraint(db_session)
         user_a = make_user(db_session, "a@example.com")
         user_b = make_user(db_session, "b@example.com")
-        add_metric(db_session, user_a, datetime(2026, 10, 10, 9, 0), weight=80, body_fat_percentage=20)
+        add_metric(
+            db_session, user_a, datetime(2026, 10, 10, 9, 0), weight=80, body_fat_percentage=20,
+        )
         add_metric(db_session, user_b, datetime(2026, 10, 10, 10, 0), weight=70)
 
         run_consolidation(db_session)

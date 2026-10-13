@@ -98,13 +98,19 @@ def make_env(metrics=None, profiles=None):
 
 def assert_save_rejected(data, message, metrics=None):
     env = make_env(metrics)
-    before = [(m.id, m.weight, m.body_fat_percentage, m.muscle_mass_percentage) for m in env.metrics.metrics]
+    before = [
+        (m.id, m.weight, m.body_fat_percentage, m.muscle_mass_percentage)
+        for m in env.metrics.metrics
+    ]
     with pytest.raises(ValidationError) as excinfo:
         env.service.save_metric(USER, data)
     assert excinfo.value.message == message
     assert env.metrics.created == []
     assert env.uow.committed is False
-    after = [(m.id, m.weight, m.body_fat_percentage, m.muscle_mass_percentage) for m in env.metrics.metrics]
+    after = [
+        (m.id, m.weight, m.body_fat_percentage, m.muscle_mass_percentage)
+        for m in env.metrics.metrics
+    ]
     assert after == before
 
 
@@ -357,7 +363,10 @@ def test_save_accepts_the_exact_limits(data):
 
 
 # SDD: REQ-002 AC-002.5
-@pytest.mark.parametrize("recorded_at", ["2026-02-30", "20261012", "2026/10/12", "12-10-2026", "hoy", 123, 20261012.0, ["2026-10-12"]])
+@pytest.mark.parametrize(
+    "recorded_at",
+    ["2026-02-30", "20261012", "2026/10/12", "12-10-2026", "hoy", 123, 20261012.0, ["2026-10-12"]],
+)
 def test_save_rejects_an_invalid_date(recorded_at):
     """Fecha que no es texto AAAA-MM-DD de una fecha real."""
     assert_save_rejected({"weight": 80, "recorded_at": recorded_at}, DATE_INVALID)
