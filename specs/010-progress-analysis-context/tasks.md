@@ -33,22 +33,22 @@
 - [x] T-030 [REQ-002, REQ-003, REQ-009, AC-002.1, AC-003.1, AC-009.4] (test) La página envía a `analyzeBodyMetrics` el cuerpo con "79,4 kg", "too_slow" y `target_kcal` 2200, o `null` sin perfil — `frontend/src/pages/BodyMetricsPage.analysis.test.tsx`
 
 ## Fase B — Implementación (implementer)
-- [ ] T-040 [REQ-004, REQ-005, REQ-006] (impl) Implementar `round_adjustment` y `suggest_calories` con constantes, `at_floor`, `floor_limited`, `on_track` y `None` sin ritmo — `backend/services/calorie_suggestion.py`
-- [ ] T-041 [REQ-001, REQ-002, REQ-003, NFR-001] (impl) Implementar `parse_analysis_request` con la validación del plan (400, lista blanca de caracteres, rangos y `today`) — `backend/services/progress_analysis_context.py`
-- [ ] T-042 [REQ-001, REQ-002, REQ-003, REQ-004, REQ-006, NFR-001] (impl) Implementar etiquetas, formateadores (`format_decimal`, `to_display_weight`, `format_height`) y `build_user_message` con los cuatro bloques e historial — `backend/services/progress_analysis_context.py`
-- [ ] T-043 [REQ-008, REQ-010] (impl) Reescribir `PROGRESS_ANALYSIS_SYSTEM_PROMPT` en español neutro sin voseo con las frases fijas y corregir `NO_DATA_MESSAGE` — `backend/services/progress_analysis_service.py`
-- [ ] T-044 [REQ-001, REQ-004, REQ-009, REQ-010, NFR-002] (impl) `ProgressAnalysisService.analyze(user_id, data)`: nuevas dependencias, orden 409, sin datos, validación, límite, sugerencia y `AnalysisResult` — `backend/services/progress_analysis_service.py`
-- [ ] T-045 [REQ-004, REQ-007, REQ-009] (impl) Ruta `analyze()`: inyectar `UserRepository` y `UserProfileRepository`, pasar el cuerpo y serializar `calorie_suggestion` — `backend/routes/body_metric_routes.py`
-- [ ] T-046 [REQ-002, REQ-004, REQ-007] (impl) Añadir tipos `PaceStatusCode`, `AnalysisRequest`, `CalorieSuggestion` y `AnalysisResponse` — `frontend/src/features/body-metrics/types.ts`
-- [ ] T-047 [REQ-002, REQ-004, REQ-007] (impl) Añadir `analysisRequestSchema` y `analysisResponseSchema` (zod) — `frontend/src/features/body-metrics/schemas.ts`
-- [ ] T-048 [REQ-002] (impl) Implementar `buildInsights` y `formatInsights` extrayendo el cálculo y el formato de la página — `frontend/src/features/body-metrics/insightsView.ts`
-- [ ] T-049 [REQ-002] (impl) Hacer que la página pinte las tarjetas desde `formatInsights` conservando sus textos exactos — `frontend/src/pages/BodyMetricsPage.tsx`
-- [ ] T-050 [REQ-002, REQ-003] (impl) Implementar `buildAnalysisRequest` con `buildInsights`, `formatInsights` y `calculateMacros` — `frontend/src/features/body-metrics/analysisRequest.ts`
-- [ ] T-051 [REQ-004, REQ-007, REQ-009] (impl) `analyzeBodyMetrics(request | null)` valida el cuerpo y la respuesta con zod — `frontend/src/features/body-metrics/api.ts`
-- [ ] T-052 [REQ-007, REQ-009] (impl) `useAnalyzeBodyMetrics` recibe `AnalysisRequest | null` en `mutate` — `frontend/src/features/body-metrics/hooks.ts`
-- [ ] T-053 [REQ-007] (impl) Implementar `CalorieSuggestionBlock` con los cuatro casos y el texto de estimación — `frontend/src/features/body-metrics/components/CalorieSuggestionBlock.tsx`
-- [ ] T-054 [REQ-007, REQ-009] (impl) `ProgressAnalysis` recibe `request`, muestra el 409 en tono neutro y pinta el bloque con la sugerencia — `frontend/src/features/body-metrics/components/ProgressAnalysis.tsx`
-- [ ] T-055 [REQ-002, REQ-003, REQ-009] (impl) Calcular `analysisRequest` con `useMemo` (nulo sin perfil) y pasarlo a `ProgressAnalysis` — `frontend/src/pages/BodyMetricsPage.tsx`
+- [x] T-040 [REQ-004, REQ-005, REQ-006] (impl) Implementar `round_adjustment` y `suggest_calories` con constantes, `at_floor`, `floor_limited`, `on_track` y `None` sin ritmo — `backend/services/calorie_suggestion.py`
+- [x] T-041 [REQ-001, REQ-002, REQ-003, NFR-001] (impl) Implementar `parse_analysis_request` con la validación del plan (400, lista blanca de caracteres, rangos y `today`) — `backend/services/progress_analysis_context.py`
+- [x] T-042 [REQ-001, REQ-002, REQ-003, REQ-004, REQ-006, NFR-001] (impl) Implementar etiquetas, formateadores (`format_decimal`, `to_display_weight`, `format_height`) y `build_user_message` con los cuatro bloques e historial — `backend/services/progress_analysis_context.py`
+- [x] T-043 [REQ-008, REQ-010] (impl) Reescribir `PROGRESS_ANALYSIS_SYSTEM_PROMPT` en español neutro sin voseo con las frases fijas y corregir `NO_DATA_MESSAGE` — `backend/services/progress_analysis_service.py`
+- [x] T-044 [REQ-001, REQ-004, REQ-009, REQ-010, NFR-002] (impl) `ProgressAnalysisService.analyze(user_id, data)`: nuevas dependencias, orden 409, sin datos, validación, límite, sugerencia y `AnalysisResult` — `backend/services/progress_analysis_service.py`
+- [x] T-045 [REQ-004, REQ-007, REQ-009] (impl) Ruta `analyze()`: inyectar `UserRepository` y `UserProfileRepository`, pasar el cuerpo y serializar `calorie_suggestion` — `backend/routes/body_metric_routes.py`
+- [x] T-046 [REQ-002, REQ-004, REQ-007] (impl) Añadir tipos `PaceStatusCode`, `AnalysisRequest`, `CalorieSuggestion` y `AnalysisResponse` — `frontend/src/features/body-metrics/types.ts`
+- [x] T-047 [REQ-002, REQ-004, REQ-007] (impl) Añadir `analysisRequestSchema` y `analysisResponseSchema` (zod) — `frontend/src/features/body-metrics/schemas.ts`
+- [x] T-048 [REQ-002] (impl) Implementar `buildInsights` y `formatInsights` extrayendo el cálculo y el formato de la página — `frontend/src/features/body-metrics/insightsView.ts`
+- [x] T-049 [REQ-002] (impl) Hacer que la página pinte las tarjetas desde `formatInsights` conservando sus textos exactos — `frontend/src/pages/BodyMetricsPage.tsx`
+- [x] T-050 [REQ-002, REQ-003] (impl) Implementar `buildAnalysisRequest` con `buildInsights`, `formatInsights` y `calculateMacros` — `frontend/src/features/body-metrics/analysisRequest.ts`
+- [x] T-051 [REQ-004, REQ-007, REQ-009] (impl) `analyzeBodyMetrics(request | null)` valida el cuerpo y la respuesta con zod — `frontend/src/features/body-metrics/api.ts`
+- [x] T-052 [REQ-007, REQ-009] (impl) `useAnalyzeBodyMetrics` recibe `AnalysisRequest | null` en `mutate` — `frontend/src/features/body-metrics/hooks.ts`
+- [x] T-053 [REQ-007] (impl) Implementar `CalorieSuggestionBlock` con los cuatro casos y el texto de estimación — `frontend/src/features/body-metrics/components/CalorieSuggestionBlock.tsx`
+- [x] T-054 [REQ-007, REQ-009] (impl) `ProgressAnalysis` recibe `request`, muestra el 409 en tono neutro y pinta el bloque con la sugerencia — `frontend/src/features/body-metrics/components/ProgressAnalysis.tsx`
+- [x] T-055 [REQ-002, REQ-003, REQ-009] (impl) Calcular `analysisRequest` con `useMemo` (nulo sin perfil) y pasarlo a `ProgressAnalysis` — `frontend/src/pages/BodyMetricsPage.tsx`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

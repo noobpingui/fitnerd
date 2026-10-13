@@ -1,12 +1,22 @@
 import logging
+from dataclasses import dataclass
 from datetime import date, timedelta
 
 from repositories.body_metric_repository import BodyMetricRepository
 from repositories.progress_analysis_repository import ProgressAnalysisRepository
+from repositories.user_profile_repository import UserProfileRepository
+from repositories.user_repository import UserRepository
 from models.progress_analysis import ProgressAnalysis
+from services.calorie_suggestion import CalorieSuggestion, suggest_calories
+from services.profile_service import age_on, utc_now
+from services.progress_analysis_context import build_user_message, parse_analysis_request
 from unit_of_work.unit_of_work import UnitOfWork
 from utils.llm_client import LLMClient
-from exceptions.custom_exceptions import RateLimitError, ServiceUnavailableError
+from exceptions.custom_exceptions import (
+    ConflictError,
+    RateLimitError,
+    ServiceUnavailableError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -16,32 +26,45 @@ logger = logging.getLogger(__name__)
 MAX_ANALYSES_PER_WINDOW = 2
 RATE_LIMIT_WINDOW = timedelta(hours=24)
 
+NO_PROFILE_MESSAGE = "Completa tu perfil para poder generar un análisis."
+NO_DATA_MESSAGE = (
+    "Todavía no hay registros de métricas en los últimos 12 meses. "
+    "Registra al menos uno para poder generar un análisis."
+)
 
-#Mismo espiritu que el SYSTEM_PROMPT de CoachService (separar reglas de CONTENIDO de reglas
-#de ESTILO), pero para una tarea distinta: acá no hay retrieval de transcripciones, el
-#"contexto" es el propio historial de metricas corporales del usuario.
-PROGRESS_ANALYSIS_SYSTEM_PROMPT = """Sos un entrenador personal experto en fitness, analizando el
-historial de metricas corporales (peso, porcentaje de grasa corporal, porcentaje de masa muscular)
-de un usuario, correspondiente a los ultimos 12 meses.
 
-Reglas de contenido:
-- Basate EXCLUSIVAMENTE en los datos que se te dan - nunca inventes valores, fechas ni tendencias
-  que no esten reflejados en la informacion proporcionada.
-- Identifica tendencias reales (subida, bajada, estancamiento, consistencia o falta de consistencia
-  en el registro) solo si los datos concretamente las respaldan.
-- Si hay pocos registros, estan muy espaciados en el tiempo, o faltan campos (por ejemplo, solo hay
-  peso pero nunca se cargo % de grasa), decilo explicitamente y aclara que las conclusiones son
-  limitadas - nunca fuerces una lectura firme con datos insuficientes.
-- No receta rutinas de ejercicio, dietas ni consejos nutricionales genericos que no se desprendan
-  directamente de los numeros - esto es una LECTURA de los datos, no un plan de entrenamiento.
+@dataclass(frozen=True)
+class AnalysisResult:
+    analysis: str
+    calorie_suggestion: CalorieSuggestion | None
 
-Reglas de estilo:
-- Respondes como un entrenador que ya reviso los datos, con un tono profesional y alentador, no
-  clinico ni frio.
-- Se conciso: un par de parrafos como mucho, no una lista exhaustiva de cada numero registrado.
-- En tu comunicacion, utiliza un español con acentro neutro y NO utilices cosas como 'che', 'mae', 'parce' o ese tipo de cosas.
-  Emplea un tono profesional."""
 
+# Separa las reglas de CONTENIDO de las de ESTILO. El "contexto" es el perfil, los
+# indicadores, las calorías y el historial de métricas del propio usuario.
+PROGRESS_ANALYSIS_SYSTEM_PROMPT = (
+    "Eres un entrenador personal experto en fitness. Analizas el perfil, los indicadores de "
+    "progreso, las calorías y el historial de métricas corporales (peso, porcentaje de grasa "
+    "corporal y porcentaje de masa muscular) de un usuario, correspondiente a los últimos "
+    "12 meses.\n\n"
+    "Reglas de contenido:\n"
+    "- Básate exclusivamente en los datos que se te dan. Nunca inventes valores, fechas ni "
+    "tendencias que no estén reflejados en la información proporcionada.\n"
+    "- Puedes comentar el perfil, la meta, los indicadores y las calorías recibidos.\n"
+    "- Identifica tendencias reales (subida, bajada, estancamiento, constancia o falta de "
+    "constancia en el registro) solo si los datos las respaldan.\n"
+    "- Si hay pocos registros, están muy espaciados en el tiempo o faltan campos, dilo "
+    "explícitamente y aclara que las conclusiones son limitadas. Nunca fuerces una lectura "
+    "firme con datos insuficientes.\n"
+    "- Usa solo las cifras de calorías que recibes y no propongas otras cifras de calorías.\n"
+    "- Si no recibes un ajuste de calorías porque no hay ritmo, di que faltan datos recientes "
+    "para ajustar las calorías.\n"
+    "- Sé coherente con el estado del ritmo que recibes.\n"
+    "- No recetes dietas, alimentos concretos ni rutinas de ejercicio.\n\n"
+    "Reglas de estilo:\n"
+    "- Responde como un entrenador que ya revisó los datos, con un tono profesional y "
+    "alentador, no clínico ni frío.\n"
+    "- Responde en español neutro, sin voseo ni regionalismos, en un par de párrafos como mucho."
+)
 
 
 class ProgressAnalysisService:
@@ -49,40 +72,66 @@ class ProgressAnalysisService:
         self,
         body_metric_repository: BodyMetricRepository,
         progress_analysis_repository: ProgressAnalysisRepository,
+        user_repository: UserRepository,
+        user_profile_repository: UserProfileRepository,
         unit_of_work: UnitOfWork,
         llm_client: LLMClient,
+        clock=utc_now,
     ):
         self.body_metric_repository = body_metric_repository
         self.progress_analysis_repository = progress_analysis_repository
+        self.user_repository = user_repository
+        self.user_profile_repository = user_profile_repository
         self.unit_of_work = unit_of_work
         self.llm_client = llm_client
+        self.clock = clock
 
-    def analyze(self, user_id, months: int = 12) -> str:
+    def analyze(self, user_id, data, months: int = 12) -> AnalysisResult:
+        # Sin perfil no hay contexto: se rechaza antes de mirar datos o el límite,
+        # para que ese intento no consuma nada (REQ-009).
+        profile = self.user_profile_repository.get_by_user_id(user_id)
+        if profile is None:
+            raise ConflictError(NO_PROFILE_MESSAGE)
+
+        today = self.clock().date()
         metrics = self.body_metric_repository.list_by_user(user_id)
-
-        cutoff = self._months_ago(months)
+        cutoff = self._months_ago(months, today)
         recent = [m for m in metrics if m.recorded_at >= cutoff]
 
         if not recent:
-            #Sin nada que analizar, ni llamamos a Claude - mismo criterio que
-            #CoachService.ask() cuando el retrieval no encuentra contexto relevante.
-            #A proposito ANTES del chequeo de limite: esto no gasta tokens, no tiene
-            #sentido que le cueste una de las 2 corridas del dia al usuario.
-            return ("Todavia no hay registros de metricas en los ultimos 12 meses. "
-                    "Carga al menos uno para poder generar un analisis.")
+            # Sin nada que analizar no se llama a Claude ni se cuenta contra el límite
+            # (mismo criterio que CoachService.ask() sin contexto relevante).
+            return AnalysisResult(NO_DATA_MESSAGE, None)
+
+        request = parse_analysis_request(data, today)
 
         self._check_rate_limit(user_id)
 
-        #El repositorio devuelve mas nuevo -> mas viejo (para la lista del historial) - para
-        #el prompt conviene orden cronologico, mismo criterio que usan los charts del frontend.
+        user = self.user_repository.get_by_id(user_id)
+        date_of_birth = user.date_of_birth if user is not None else None
+        age = (
+            age_on(date_of_birth, date.fromisoformat(request.today))
+            if date_of_birth is not None
+            else None
+        )
+
+        suggestion = suggest_calories(
+            request.pace_status,
+            request.rate_kg_per_week,
+            request.latest_weight_kg,
+            profile.goal,
+            profile.gender,
+            request.calories.target_kcal,
+        )
+
+        # El repositorio devuelve del más nuevo al más viejo; el mensaje usa orden cronológico.
         recent_chronological = sorted(recent, key=lambda m: m.recorded_at)
-        context = self._format_metrics(recent_chronological)
+        user_message = build_user_message(
+            profile, age, request, recent_chronological, suggestion, months
+        )
 
-        user_message = f"Historial de metricas corporales (ultimos {months} meses):\n{context}"
-
-        #Logueamos el intento ANTES de llamar a Claude, no despues de una respuesta
-        #exitosa - si la llamada falla a mitad de camino igual pudo haber consumido
-        #tokens del lado de Anthropic, asi que cuenta como una de las 2 del dia.
+        # El intento se registra ANTES de llamar a Claude: si la llamada falla a mitad de
+        # camino igual pudo consumir tokens, así que cuenta contra el límite.
         self.progress_analysis_repository.create(ProgressAnalysis(user_id=user_id))
         self.unit_of_work.commit()
 
@@ -92,19 +141,16 @@ class ProgressAnalysisService:
                 [{"role": "user", "content": user_message}],
             )
         except Exception:
-            #Mismo criterio que CoachService.ask(): una falla de Anthropic (rate limit,
-            #timeout, etc.) se traduce a un 503 prolijo en vez de un 500 pelado. El intento
-            #ya quedo logueado arriba (cuenta contra el limite de 2/dia igual, ver el
-            #comentario de mas arriba sobre por que).
+            # Una falla de Anthropic se traduce a un 503 prolijo en vez de un 500.
             logger.exception("Fallo Anthropic al generar el analisis de progreso")
             raise ServiceUnavailableError(
                 "No se pudo generar el analisis en este momento. Intenta de nuevo en unos minutos."
             )
 
         if answer is None:
-            return "No pude generar un analisis en este momento."
+            return AnalysisResult("No pude generar un analisis en este momento.", suggestion)
 
-        return answer
+        return AnalysisResult(answer, suggestion)
 
     def _check_rate_limit(self, user_id):
         count = self.progress_analysis_repository.count_since(user_id, RATE_LIMIT_WINDOW)
@@ -115,29 +161,10 @@ class ProgressAnalysisService:
                 "Vuelve a intentarlo más tarde."
             )
 
-    def _format_metrics(self, metrics) -> str:
-        lines = []
-        for metric in metrics:
-            parts = []
-            if metric.weight is not None:
-                parts.append(f"peso {metric.weight}kg")
-            if metric.body_fat_percentage is not None:
-                parts.append(f"grasa corporal {metric.body_fat_percentage}%")
-            if metric.muscle_mass_percentage is not None:
-                parts.append(f"masa muscular {metric.muscle_mass_percentage}%")
-            if metric.notes:
-                parts.append(f'notas: "{metric.notes}"')
-
-            lines.append(f"{metric.recorded_at.isoformat()}: {', '.join(parts)}")
-
-        return "\n".join(lines)
-
     #Equivalente en Python a "restale N meses a hoy", manejando el rollover de anio/mes a
     #mano (Python no tiene un metodo built-in para esto sin la libreria dateutil, que no
     #esta entre las dependencias del proyecto - no vale la pena agregarla solo por esto).
-    def _months_ago(self, months: int) -> date:
-        today = date.today()
-
+    def _months_ago(self, months: int, today: date) -> date:
         total_months = today.month - 1 - months
         year = today.year + total_months // 12
         month = total_months % 12 + 1

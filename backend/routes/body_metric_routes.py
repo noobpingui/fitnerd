@@ -32,11 +32,15 @@ def _build_body_metric_service():
 def _build_progress_analysis_service():
     body_metric_repository = BodyMetricRepository(db.session)
     progress_analysis_repository = ProgressAnalysisRepository(db.session)
+    user_repository = UserRepository(db.session)
+    user_profile_repository = UserProfileRepository(db.session)
     unit_of_work = UnitOfWork(db.session)
     llm_client = LLMClient(model=current_app.config["ANTHROPIC_MODEL"])
     return ProgressAnalysisService(
         body_metric_repository,
         progress_analysis_repository,
+        user_repository,
+        user_profile_repository,
         unit_of_work,
         llm_client,
     )
@@ -50,6 +54,18 @@ def _serialize(metric):
         "muscle_mass_percentage": metric.muscle_mass_percentage,
         "notes": metric.notes,
         "recorded_at": metric.recorded_at.isoformat(),
+    }
+
+
+def _serialize_suggestion(suggestion):
+    if suggestion is None:
+        return None
+    return {
+        "kind": suggestion.kind,
+        "target_kcal": suggestion.target_kcal,
+        "suggested_kcal": suggestion.suggested_kcal,
+        "adjustment_kcal": suggestion.adjustment_kcal,
+        "floor_kcal": suggestion.floor_kcal,
     }
 
 
@@ -93,10 +109,18 @@ def list_metrics():
 def analyze():
     user_id = g.decoded_token["id"]
 
-    progress_analysis_service = _build_progress_analysis_service()
-    analysis = progress_analysis_service.analyze(user_id)
+    data = request.get_json(silent=True)
 
-    return jsonify(analysis=analysis), 200
+    progress_analysis_service = _build_progress_analysis_service()
+    result = progress_analysis_service.analyze(user_id, data)
+
+    return (
+        jsonify(
+            analysis=result.analysis,
+            calorie_suggestion=_serialize_suggestion(result.calorie_suggestion),
+        ),
+        200,
+    )
 
 
 @body_metric_bp.route("/<uuid:metric_id>", methods=["DELETE"])
