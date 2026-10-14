@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react"
+import { CircleAlert, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ApiError } from "@/lib/apiClient"
@@ -8,11 +8,26 @@ import type { AnalysisRequest } from "@/features/body-metrics/types"
 
 // `request` es el contexto que ya calcula la pantalla (null sin perfil: el
 // servidor responde 409 y se muestra el aviso).
-export function ProgressAnalysis({ request }: { request: AnalysisRequest | null }) {
+export function ProgressAnalysis({
+  request,
+  warning = null,
+}: {
+  request: AnalysisRequest | null
+  warning?: string | null
+}) {
   const { mutate, data, isPending, isError, error } = useAnalyzeBodyMetrics()
 
   return (
     <div>
+      {warning && (
+        <p
+          data-tone="warn"
+          className="mb-3 flex items-start gap-2 text-sm text-amber-500"
+        >
+          <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          {warning}
+        </p>
+      )}
       <Button
         type="button"
         // default (relleno, con el color primario) en vez de outline - un

@@ -178,7 +178,7 @@ export function BodyMetricsPage() {
               title="Análisis del coach"
               description="Una lectura de tu progreso hecha por el IA Coach a partir de tus mediciones."
             >
-              <ProgressAnalysis request={analysisRequest} />
+              <ProgressAnalysis request={analysisRequest} warning={view.paceWarning} />
             </Section>
           </motion.div>
 
@@ -188,6 +188,7 @@ export function BodyMetricsPage() {
                 metrics={metrics}
                 weightUnit={weightUnit}
                 toDisplayWeight={toDisplayWeight}
+                suspiciousDate={insights.suspiciousDate}
               />
             </Section>
           </motion.div>

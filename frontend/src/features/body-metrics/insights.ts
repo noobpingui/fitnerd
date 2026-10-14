@@ -70,6 +70,15 @@ function weeklySlope(points: SeriesPoint[]) {
   return den === 0 ? null : (num / den) * 7
 }
 
+// Puntos a 28 días o menos de la última medición de peso (incluida esta).
+export function rateWindow(weightSeries: SeriesPoint[]): SeriesPoint[] {
+  if (weightSeries.length === 0) return []
+  const last = weightSeries[weightSeries.length - 1]
+  return weightSeries.filter(
+    (p) => daysBetween(p.date, last.date) <= RATE_WINDOW_DAYS
+  )
+}
+
 export type RateIndicator =
   | { kind: "stale" }
   | { kind: "insufficient" }
@@ -85,9 +94,7 @@ export function rateIndicator(
   if (weightSeries.length === 0) return { kind: "insufficient" }
   const last = weightSeries[weightSeries.length - 1]
   if (daysBetween(last.date, today) > RATE_WINDOW_DAYS) return { kind: "stale" }
-  const recent = weightSeries.filter(
-    (p) => daysBetween(p.date, last.date) <= RATE_WINDOW_DAYS
-  )
+  const recent = rateWindow(weightSeries)
   if (recent.length < 3 || daysBetween(recent[0].date, last.date) < 10) {
     return { kind: "insufficient" }
   }
@@ -212,4 +219,26 @@ export function streak(metrics: BodyMetric[], today: string) {
   )
 
   return { weeks: count, last30, total: metrics.length, lastDate }
+}
+
+export const UNREALISTIC_RATE_PCT = 2
+
+// Más del 2 % del peso por semana; el 2 % exacto no cuenta.
+export function isUnrealisticRate(kgPerWeek: number, latestKg: number): boolean {
+  return Math.abs(ratePercent(kgPerWeek, latestKg)) > UNREALISTIC_RATE_PCT + EPS
+}
+
+export function median(values: number[]): number {
+  const sorted = [...values].sort((a, b) => a - b)
+  const mid = Math.floor(sorted.length / 2)
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid]
+}
+
+// Medición más alejada de la mediana; en un empate, la más reciente.
+export function suspiciousPoint(window: SeriesPoint[]): SeriesPoint | null {
+  if (window.length === 0) return null
+  const m = median(window.map((p) => p.value))
+  const maxDev = Math.max(...window.map((p) => Math.abs(p.value - m)))
+  const candidates = window.filter((p) => Math.abs(p.value - m) >= maxDev - EPS)
+  return candidates[candidates.length - 1]
 }

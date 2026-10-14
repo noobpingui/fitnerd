@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { Pencil, Trash2 } from "lucide-react"
+import { CircleAlert, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DeleteMetricDialog } from "@/features/body-metrics/components/DeleteMetricDialog"
 import { MetricEditForm } from "@/features/body-metrics/components/MetricEditForm"
@@ -14,12 +14,14 @@ type MetricsHistoryProps = {
   metrics: BodyMetric[]
   weightUnit: WeightUnit
   toDisplayWeight: (kg: number) => number
+  suspiciousDate?: string | null
 }
 
 export function MetricsHistory({
   metrics,
   weightUnit,
   toDisplayWeight,
+  suspiciousDate = null,
 }: MetricsHistoryProps) {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -72,6 +74,16 @@ export function MetricsHistory({
                     {metric.weight === null
                       ? "—"
                       : `${one.format(toDisplayWeight(metric.weight))} ${weightUnit}`}
+                    {metric.weight !== null &&
+                      metric.recorded_at === suspiciousDate && (
+                        <span
+                          data-tone="warn"
+                          className="ml-2 inline-flex items-center gap-1 text-xs text-amber-500"
+                        >
+                          <CircleAlert className="h-3.5 w-3.5" aria-hidden="true" />
+                          Revisa este peso
+                        </span>
+                      )}
                   </td>
                   <td className="py-2 pr-3 tabular-nums">
                     {metric.body_fat_percentage === null

@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { analyzeBodyMetrics } from "@/features/body-metrics/api"
 import { ApiError } from "@/lib/apiClient"
 import { ProgressAnalysis } from "./ProgressAnalysis"
+import type { AnalysisRequest } from "@/features/body-metrics/types"
 
 vi.mock("@/features/body-metrics/api", () => ({
   listBodyMetrics: vi.fn(),
@@ -202,3 +203,106 @@ describe("ProgressAnalysis", () => {
     expect(firstArg()).toBeNull()
   })
 })
+
+// --- Spec 011: ritmo poco realista ---
+
+const WARNING =
+  "Tu ritmo de las últimas 4 semanas (+12,6 kg/sem) no es realista: puede que la medición del 11 oct 2026 esté mal. Revísala en el Historial y corrígela o bórrala para recibir una sugerencia de calorías."
+
+function renderWithWarning(warning?: string | null) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  })
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <ProgressAnalysis request={REQUEST as unknown as AnalysisRequest} warning={warning} />
+    </QueryClientProvider>
+  )
+}
+
+describe("ProgressAnalysis - ritmo poco realista", () => {
+  // SDD: REQ-003 AC-003.1
+  it("muestra el aviso antes de pedir el análisis y el botón sigue habilitado", () => {
+    renderWithWarning(WARNING)
+
+    expect(screen.getByText(WARNING)).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: BUTTON })).toBeEnabled()
+  })
+
+  // SDD: REQ-003 AC-003.3
+  it("el aviso sigue visible junto al texto del análisis", async () => {
+    const user = userEvent.setup()
+    resolveWith(null)
+    renderWithWarning(WARNING)
+
+    await clickAnalyze(user)
+
+    expect(
+      await screen.findByText("Tu progreso va más lento que tu meta.")
+    ).toBeInTheDocument()
+    expect(screen.getByText(WARNING)).toBeInTheDocument()
+  })
+
+  // SDD: REQ-004 AC-004.1
+  it("una respuesta sin sugerencia muestra el texto y ni el bloque ni un error", async () => {
+    const user = userEvent.setup()
+    resolveWith(null)
+    renderWithWarning(WARNING)
+
+    await clickAnalyze(user)
+
+    expect(
+      await screen.findByText("Tu progreso va más lento que tu meta.")
+    ).toBeInTheDocument()
+    expect(screen.queryByText(TITLE)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Error \(/)).not.toBeInTheDocument()
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument()
+    // El aviso del ritmo poco realista sigue visible junto al texto.
+    expect(screen.getByText(WARNING)).toBeInTheDocument()
+  })
+
+  // SDD: REQ-007 AC-007.5
+  it("el 400 muestra el mensaje nuevo y no el antiguo", async () => {
+    const user = userEvent.setup()
+    analyzeMock.mockRejectedValueOnce(
+      new ApiError(
+        400,
+        "No se pudo preparar el análisis. Recarga la página e inténtalo de nuevo."
+      )
+    )
+    renderWithWarning(WARNING)
+
+    await clickAnalyze(user)
+
+    expect(
+      await screen.findByText(
+        /No se pudo preparar el análisis\. Recarga la página e inténtalo de nuevo\./
+      )
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByText(/Los datos del análisis no son válidos\./)
+    ).not.toBeInTheDocument()
+    // El error no oculta el aviso del ritmo.
+    expect(screen.getByText(WARNING)).toBeInTheDocument()
+  })
+
+  // SDD: REQ-003 AC-003.1
+  it("sin aviso no se pinta ningún elemento con tono de advertencia", () => {
+    const { container, unmount } = renderWithWarning(null)
+
+    expect(container.querySelector('[data-tone="warn"]')).toBeNull()
+
+    // Contraste: con aviso sí aparece el tono de advertencia.
+    unmount()
+    const withWarning = renderWithWarning(WARNING)
+    expect(withWarning.container.querySelector('[data-tone="warn"]')).not.toBeNull()
+  })
+
+  // SDD: REQ-003 AC-003.1
+  it("el aviso se pinta con tono de advertencia", () => {
+    const { container } = renderWithWarning(WARNING)
+
+    expect(container.querySelector('[data-tone="warn"]')).not.toBeNull()
+  })
+})
+

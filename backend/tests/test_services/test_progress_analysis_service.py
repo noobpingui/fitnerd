@@ -42,7 +42,13 @@ NO_DATA_MESSAGE = (
     "Todavía no hay registros de métricas en los últimos 12 meses. "
     "Registra al menos uno para poder generar un análisis."
 )
-INVALID_MESSAGE = "Los datos del análisis no son válidos."
+INVALID_MESSAGE = (
+    "No se pudo preparar el análisis. Recarga la página e inténtalo de nuevo."
+)
+UNREALISTIC_TEXT = (
+    "No se sugiere un ajuste de calorías: el ritmo no es realista y "
+    "probablemente alguna medición de peso es errónea."
+)
 RATE_LIMIT_MESSAGE = (
     "Alcanzaste el límite de 2 análisis cada 24 horas. "
     "Vuelve a intentarlo más tarde."
@@ -826,3 +832,289 @@ def test_non_integer_calories_are_rejected():
     """Las kcal deben ser enteros: 2200,5 y '2200' se rechazan."""
     assert_invalid(make_body(calories={"target_kcal": 2200.5}))
     assert_invalid(make_body(calories={"target_kcal": "2200"}))
+
+
+# --- Spec 011: ritmo poco realista ---
+
+
+def unrealistic_body(rate=12.6, latest=98.0, rate_text="+12,6 kg/sem", **indicators):
+    """Cuerpo con el ritmo marcado como poco realista por el cliente."""
+    return make_body(
+        indicators=dict(rate=rate_text, pace_status="unrealistic", **indicators),
+        rate_kg_per_week=rate,
+        latest_weight_kg=latest,
+    )
+
+
+def goal_status_body(status, rate, latest, rate_text):
+    """Cuerpo con un estado frente a la meta (sin marca de poco realista)."""
+    return make_body(
+        indicators={"rate": rate_text, "pace_status": status},
+        rate_kg_per_week=rate,
+        latest_weight_kg=latest,
+    )
+
+
+def assert_no_suggestion_in_message(message):
+    assert "Ajuste:" not in message
+    assert "Calorías sugeridas" not in message
+    assert "mantener" not in message
+
+
+# SDD: REQ-004 AC-004.1
+def test_unrealistic_pace_is_analyzed_without_a_calorie_suggestion():
+    """Ritmo 'unrealistic' +12,6/98: se genera el análisis y no hay sugerencia."""
+    ctx = make_service()
+
+    result, _ = analyze_message(ctx, unrealistic_body())
+
+    assert result.analysis
+    assert result.calorie_suggestion is None
+
+
+# SDD: REQ-004 AC-004.2
+def test_unrealistic_pace_message_has_the_rate_the_label_and_the_fixed_text():
+    """El modelo recibe el ritmo, 'Revisa tus mediciones' y el texto fijo, sin ajuste."""
+    ctx = make_service()
+
+    _, message = analyze_message(ctx, unrealistic_body())
+
+    assert "Ritmo semanal: +12,6 kg/sem (Revisa tus mediciones)" in message
+    assert UNREALISTIC_TEXT in message
+    assert_no_suggestion_in_message(message)
+    for label in PACE_LABELS:
+        assert label not in message
+
+
+# SDD: REQ-004 AC-004.3
+def test_unrealistic_pace_counts_against_the_limit():
+    """El intento se registra y se confirma; con la cuota agotada da 429."""
+    ctx = make_service()
+
+    analyze_message(ctx, unrealistic_body())
+
+    assert len(ctx.analyses.created) == 1
+    assert ctx.uow.committed is True
+
+    exhausted = make_service(count_since_value=MAX_ANALYSES_PER_WINDOW)
+    with pytest.raises(RateLimitError):
+        exhausted.service.analyze(USER_ID, unrealistic_body())
+    assert exhausted.llm.calls == []
+
+
+# SDD: REQ-004 AC-004.4
+def test_unrealistic_loss_is_analyzed_without_a_calorie_suggestion():
+    """Ritmo 'unrealistic' -12,6/80: sin sugerencia y con la etiqueta de revisión."""
+    ctx = make_service()
+
+    result, message = analyze_message(
+        ctx, unrealistic_body(-12.6, 80.0, "-12,6 kg/sem")
+    )
+
+    assert result.calorie_suggestion is None
+    assert "Revisa tus mediciones" in message
+    assert_no_suggestion_in_message(message)
+
+
+# SDD: REQ-005 AC-005.1
+def test_system_prompt_has_the_rules_for_an_unrealistic_pace():
+    """Las instrucciones cubren el estado 'Revisa tus mediciones'."""
+    ctx = make_service()
+
+    analyze_message(ctx)
+    system_prompt = ctx.llm.calls[0][0]
+
+    assert (
+        'Si el estado del ritmo es "Revisa tus mediciones", no interpretes ese '
+        "ritmo ni el cambio de peso asociado como un progreso real." in system_prompt
+    )
+    assert (
+        "En ese caso, explica que alguna medición de peso parece errónea y "
+        "recomienda revisarla en el Historial para corregirla o borrarla."
+        in system_prompt
+    )
+    assert "En ese caso, no propongas ninguna cifra de calorías." in system_prompt
+
+
+# SDD: REQ-005 AC-005.2
+def test_system_prompt_keeps_the_previous_content_rules():
+    """Se conservan la prohibición de recetar y el español neutro sin voseo."""
+    ctx = make_service()
+
+    analyze_message(ctx)
+    system_prompt = ctx.llm.calls[0][0]
+
+    assert (
+        "No recetes dietas, alimentos concretos ni rutinas de ejercicio."
+        in system_prompt
+    )
+    assert "Responde en español neutro, sin voseo ni regionalismos" in system_prompt
+    voseo = r"\b(sos|vos|basate|decilo|tenés|podés|fijate|mirá)\b"
+    assert re.search(voseo, system_prompt, flags=re.IGNORECASE) is None
+    # Y conviven con la regla nueva del estado 'Revisa tus mediciones'.
+    assert "Revisa tus mediciones" in system_prompt
+
+
+# SDD: REQ-006 AC-006.1
+def test_server_normalizes_a_too_fast_status_with_an_unrealistic_pace():
+    """'too_fast' +5 kg/sem con 80 kg (6,25 %) se trata como poco realista."""
+    ctx = make_service()
+
+    result, message = analyze_message(
+        ctx, goal_status_body("too_fast", 5.0, 80.0, "+5 kg/sem")
+    )
+
+    assert result.calorie_suggestion is None
+    assert "Revisa tus mediciones" in message
+    assert UNREALISTIC_TEXT in message
+    assert "Más rápido que tu meta" not in message
+    assert_no_suggestion_in_message(message)
+
+
+# SDD: REQ-006 AC-006.2
+def test_server_normalizes_an_on_track_status_with_an_unrealistic_pace():
+    """'on_track' +5 kg/sem tampoco recibe la sugerencia de mantener."""
+    ctx = make_service()
+
+    result, message = analyze_message(
+        ctx, goal_status_body("on_track", 5.0, 80.0, "+5 kg/sem")
+    )
+
+    assert result.calorie_suggestion is None
+    assert "Revisa tus mediciones" in message
+    assert_no_suggestion_in_message(message)
+
+
+# SDD: REQ-006 AC-006.3
+def test_exactly_two_percent_keeps_the_calorie_suggestion():
+    """'too_fast' +1,6 kg/sem con 80 kg (2 % exacto) calcula la sugerencia como siempre."""
+    ctx = make_service()
+
+    result, message = analyze_message(
+        ctx, goal_status_body("too_fast", 1.6, 80.0, "+1,6 kg/sem")
+    )
+
+    assert result.calorie_suggestion is not None
+    assert "Revisa tus mediciones" not in message
+
+    # Contraste: un poco por encima del 2 % (+1,7 kg/sem con 80 kg) sí se anula.
+    ctx = make_service()
+    result, message = analyze_message(
+        ctx, goal_status_body("too_fast", 1.7, 80.0, "+1,7 kg/sem")
+    )
+
+    assert result.calorie_suggestion is None
+    assert "Revisa tus mediciones" in message
+
+
+# SDD: REQ-006 AC-006.4
+def test_unrealistic_mark_above_ten_kg_per_week_is_accepted():
+    """Marcado 'unrealistic' con +12,6 y 98 kg: 200 sin sugerencia y con la etiqueta."""
+    ctx = make_service()
+
+    result, message = analyze_message(ctx, unrealistic_body())
+
+    assert result.calorie_suggestion is None
+    assert "Revisa tus mediciones" in message
+
+
+# SDD: REQ-006 AC-006.5
+def test_unrealistic_mark_is_accepted_with_any_number():
+    """Marcado 'unrealistic', -45 kg/sem se acepta sin excepción."""
+    ctx = make_service()
+
+    result, _ = analyze_message(ctx, unrealistic_body(-45.0, 80.0, "-45 kg/sem"))
+
+    assert result.calorie_suggestion is None
+
+
+# SDD: REQ-006 AC-006.6
+def test_unrealistic_mark_is_respected_even_below_two_percent():
+    """Marcado 'unrealistic' con -0,5 kg/sem y 80 kg: se respeta la marca."""
+    ctx = make_service()
+
+    result, message = analyze_message(
+        ctx, unrealistic_body(-0.5, 80.0, "-0,5 kg/sem")
+    )
+
+    assert result.calorie_suggestion is None
+    assert "Revisa tus mediciones" in message
+
+
+# SDD: REQ-007 AC-007.1
+def test_a_goal_status_with_a_pace_above_ten_kg_per_week_is_rejected():
+    """'too_fast' sin marca y +12,6 kg/sem: 400, sin modelo ni fila."""
+    assert_invalid(goal_status_body("too_fast", 12.6, 98.0, "+12,6 kg/sem"))
+
+
+# SDD: REQ-007 AC-007.2
+def test_a_non_numeric_pace_is_rejected():
+    """Un ritmo que no es número con 'too_slow' es un 400."""
+    assert_invalid(goal_status_body("too_slow", "rápido", 80.0, "-0,2 kg/sem"))
+
+
+# SDD: REQ-007 AC-007.3
+def test_a_non_numeric_pace_marked_unrealistic_is_rejected():
+    """Marcado 'unrealistic' pero con ritmo no numérico (o nulo): 400 sin llamada."""
+    assert_invalid(unrealistic_body("x", 98.0))
+    assert_invalid(unrealistic_body(None, 98.0))
+
+
+# SDD: REQ-007 AC-007.3
+def test_non_finite_pace_values_are_rejected():
+    """NaN e Infinity no son números finitos: 400."""
+    assert_invalid(unrealistic_body(float("nan"), 98.0))
+    assert_invalid(unrealistic_body(float("inf"), 98.0))
+    assert_invalid(goal_status_body("too_slow", float("nan"), 80.0, "-0,2 kg/sem"))
+
+
+# SDD: REQ-007 AC-007.3
+def test_unrealistic_with_a_latest_weight_out_of_range_is_rejected():
+    """El peso de la última medición debe estar en [20, 400] también con 'unrealistic'."""
+    assert_invalid(unrealistic_body(12.6, 19.0))
+    assert_invalid(unrealistic_body(12.6, 401.0))
+
+
+# SDD: REQ-007 AC-007.4
+def test_a_malformed_body_without_a_profile_is_a_conflict():
+    """Sin perfil, un cuerpo mal formado da 409 y no 400."""
+    ctx = make_service(profile=None)
+
+    with pytest.raises(ConflictError) as exc_info:
+        ctx.service.analyze(USER_ID, {"indicators": 1})
+
+    assert exc_info.value.message == NO_PROFILE_MESSAGE
+    assert ctx.llm.calls == []
+    assert ctx.analyses.created == []
+
+    # Contraste: con perfil, el mismo cuerpo da el 400 con el mensaje nuevo.
+    ctx = make_service()
+    with pytest.raises(ValidationError) as exc_info:
+        ctx.service.analyze(USER_ID, {"indicators": 1})
+
+    assert exc_info.value.message == INVALID_MESSAGE
+
+
+# SDD: REQ-008 AC-008.3
+def test_after_correcting_the_measurement_the_suggestion_is_calculated():
+    """Con 80, 80 y 79,5 kg y un ritmo normal 'too_slow' se calcula la sugerencia."""
+    metrics = [
+        make_metric(weight=80.0, recorded_at=date(2026, 10, 1)),
+        make_metric(weight=80.0, recorded_at=date(2026, 10, 6)),
+        make_metric(weight=79.5, recorded_at=date(2026, 10, 11)),
+    ]
+    ctx = make_service(metrics=metrics)
+
+    result, message = analyze_message(
+        ctx, goal_status_body("too_slow", -0.35, 79.5, "-0,4 kg/sem")
+    )
+
+    assert result.calorie_suggestion is not None
+    assert "Revisa tus mediciones" not in message
+
+    # Contraste: antes de corregir (98 kg, ritmo marcado) no había sugerencia.
+    before = make_service()
+    result, message = analyze_message(before, unrealistic_body())
+
+    assert result.calorie_suggestion is None
+    assert "Revisa tus mediciones" in message

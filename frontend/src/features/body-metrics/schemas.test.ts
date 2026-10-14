@@ -2,6 +2,7 @@
 // medición (spec 008). Funciones puras: no hay red ni DOM.
 import { describe, expect, it } from "vitest"
 import {
+  analysisRequestSchema,
   correctionPayload,
   makeMetricCorrectionSchema,
 } from "@/features/body-metrics/schemas"
@@ -214,5 +215,43 @@ describe("correctionPayload", () => {
     )
 
     expect(payload.weight).toBeNull()
+  })
+})
+
+// --- Spec 011 ---
+
+describe("analysisRequestSchema - ritmo poco realista", () => {
+  const request = (pace_status: string) => ({
+    today: "2026-10-12",
+    indicators: {
+      weight: "98 kg",
+      weight_change_30d: "+18 kg",
+      body_fat: null,
+      body_fat_change_30d: null,
+      rate: "+12,6 kg/sem",
+      pace_status,
+      fat_mass: null,
+      lean_mass: null,
+      bmi: "30,2",
+      ffmi: null,
+      streak_weeks: 1,
+      records_last_30_days: 3,
+      total_records: 3,
+      last_record_date: "2026-10-11",
+    },
+    rate_kg_per_week: 12.6,
+    latest_weight_kg: 98,
+    calories: { maintenance_kcal: 2750, target_kcal: 2200 },
+  })
+
+  // SDD: REQ-004 AC-004.2
+  it("acepta pace_status 'unrealistic'", () => {
+    expect(() => analysisRequestSchema.parse(request("unrealistic"))).not.toThrow()
+  })
+
+  // SDD: REQ-004 AC-004.2
+  it("acepta el estado unrealistic y sigue rechazando un estado desconocido", () => {
+    expect(() => analysisRequestSchema.parse(request("unrealistic"))).not.toThrow()
+    expect(() => analysisRequestSchema.parse(request("mágico"))).toThrow()
   })
 })

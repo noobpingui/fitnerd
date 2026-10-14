@@ -4,7 +4,11 @@
 import { describe, expect, it } from "vitest"
 import {
   composition,
+  isUnrealisticRate,
   latestWithDelta,
+  median,
+  rateWindow,
+  suspiciousPoint,
   paceStatusFromPercent,
   ratePercent,
   rateIndicator,
@@ -578,5 +582,113 @@ describe("streak - registros", () => {
 
     expect(result.last30).toBe(2)
     expect(result.lastDate).toBe("2026-10-11")
+  })
+})
+
+// --- Spec 011: ritmo poco realista y medición sospechosa ---
+
+// Fixtures de la spec 011 (hoy = 2026-10-12).
+const JUMP_UP = [m("2026-10-01", 80), m("2026-10-06", 80), m("2026-10-11", 98)]
+const JUMP_DOWN = [m("2026-10-01", 98), m("2026-10-06", 80), m("2026-10-11", 80)]
+const LIMIT = [m("2026-09-27", 96), m("2026-10-04", 98), m("2026-10-11", 100)]
+const JUST_ABOVE = [m("2026-09-27", 96), m("2026-10-04", 98), m("2026-10-11", 100.2)]
+const TIE = [
+  m("2026-09-27", 80),
+  m("2026-10-02", 80),
+  m("2026-10-07", 98),
+  m("2026-10-11", 98),
+]
+
+function unrealistic(metrics: BodyMetric[]) {
+  const rate = rateOf(metrics)
+  expect(rate.kind).toBe("ok")
+  if (rate.kind !== "ok") return null
+  return isUnrealisticRate(rate.kgPerWeek, rate.latestKg)
+}
+
+describe("ritmo poco realista (spec 011)", () => {
+  // SDD: REQ-001 AC-001.1
+  it("el salto de 80, 80 a 98 kg es un ritmo poco realista", () => {
+    expect(unrealistic(JUMP_UP)).toBe(true)
+  })
+
+  // SDD: REQ-001 AC-001.2
+  it("el salto de 98 a 80, 80 kg es un ritmo poco realista", () => {
+    expect(unrealistic(JUMP_DOWN)).toBe(true)
+  })
+
+  // SDD: REQ-001 AC-001.3
+  it("exactamente el 2 % por semana no es poco realista", () => {
+    expect(unrealistic(LIMIT)).toBe(false)
+    expect(isUnrealisticRate(1.6, 80)).toBe(false)
+  })
+
+  // SDD: REQ-001 AC-001.4
+  it("justo por encima del 2 % por semana es poco realista", () => {
+    expect(unrealistic(JUST_ABOVE)).toBe(true)
+  })
+
+  // SDD: REQ-001 AC-001.6
+  it("un ritmo de -0,5 kg/sem no es poco realista", () => {
+    expect(unrealistic(WEEKLY)).toBe(false)
+  })
+})
+
+describe("median", () => {
+  // SDD: REQ-009 AC-009.3
+  it("con un número par de valores es la media de los dos centrales", () => {
+    expect(median([80, 80, 98, 98])).toBe(89)
+  })
+
+  // SDD: REQ-009 AC-009.1
+  it("con un número impar de valores es el central, sin importar el orden", () => {
+    expect(median([80, 80, 98])).toBe(80)
+    expect(median([98, 80, 80])).toBe(80)
+  })
+})
+
+describe("rateWindow y suspiciousPoint", () => {
+  const dateOf = (metrics: BodyMetric[]) =>
+    suspiciousPoint(rateWindow(seriesOf(metrics, "weight")))?.date
+
+  // SDD: REQ-009 AC-009.1
+  it("en el salto hacia arriba señala la medición del 2026-10-11", () => {
+    expect(dateOf(JUMP_UP)).toBe("2026-10-11")
+  })
+
+  // SDD: REQ-009 AC-009.2
+  it("en el salto hacia abajo señala la medición del 2026-10-01", () => {
+    expect(dateOf(JUMP_DOWN)).toBe("2026-10-01")
+  })
+
+  // SDD: REQ-009 AC-009.3
+  it("en un empate señala la más reciente", () => {
+    expect(dateOf(TIE)).toBe("2026-10-11")
+  })
+
+  // SDD: REQ-009 AC-009.4
+  it("la ventana excluye las mediciones de hace más de 28 días", () => {
+    const series = seriesOf([m("2026-09-01", 120), ...JUMP_UP], "weight")
+
+    const window = rateWindow(series)
+
+    expect(window.map((p) => p.date)).not.toContain("2026-09-01")
+    expect(suspiciousPoint(window)?.date).toBe("2026-10-11")
+  })
+
+  // SDD: REQ-009 AC-009.4
+  it("la ventana incluye la última medición de peso", () => {
+    const window = rateWindow(seriesOf(JUMP_UP, "weight"))
+
+    expect(window.map((p) => p.date)).toEqual([
+      "2026-10-01",
+      "2026-10-06",
+      "2026-10-11",
+    ])
+  })
+
+  // SDD: REQ-009 AC-009.1
+  it("con una ventana vacía no hay medición sospechosa", () => {
+    expect(suspiciousPoint([])).toBeNull()
   })
 })

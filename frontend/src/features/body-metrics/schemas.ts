@@ -140,6 +140,7 @@ export const analysisRequestSchema = z.object({
       "off_range",
       "insufficient",
       "stale",
+      "unrealistic",
     ]),
     fat_mass: nullableText,
     lean_mass: nullableText,

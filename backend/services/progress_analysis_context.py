@@ -12,9 +12,11 @@ from datetime import date, timedelta
 from typing import Any
 
 from exceptions.custom_exceptions import ValidationError
-from services.calorie_suggestion import CalorieSuggestion
+from services.calorie_suggestion import CalorieSuggestion, is_unrealistic_rate
 
-INVALID_ANALYSIS_REQUEST_MESSAGE = "Los datos del análisis no son válidos."
+INVALID_ANALYSIS_REQUEST_MESSAGE = (
+    "No se pudo preparar el análisis. Recarga la página e inténtalo de nuevo."
+)
 
 LB_PER_KG_FACTOR = 0.45359237
 MAX_TEXT_LENGTH = 32
@@ -22,7 +24,16 @@ MAX_COUNTER = 100000
 MAX_KCAL = 10000
 UNAVAILABLE = "no disponible"
 
-PACE_STATUSES = ("on_track", "too_slow", "too_fast", "off_range", "insufficient", "stale")
+UNREALISTIC = "unrealistic"
+PACE_STATUSES = (
+    "on_track",
+    "too_slow",
+    "too_fast",
+    "off_range",
+    "insufficient",
+    "stale",
+    UNREALISTIC,
+)
 PACE_STATUSES_WITH_RATE = ("on_track", "too_slow", "too_fast", "off_range")
 
 # Lista blanca: dígitos, letras, puntuación numérica, signos, espacios y "%" o "/".
@@ -52,7 +63,12 @@ PACE_LABELS = {
     "off_range": "Fuera del rango de tu meta",
     "insufficient": "Faltan registros para calcularlo",
     "stale": "Sin registros recientes",
+    UNREALISTIC: "Revisa tus mediciones",
 }
+UNREALISTIC_SUGGESTION_TEXT = (
+    "No se sugiere un ajuste de calorías: el ritmo no es realista y "
+    "probablemente alguna medición de peso es errónea."
+)
 
 _TEXT_INDICATORS = (
     "weight",
@@ -135,11 +151,16 @@ def parse_analysis_request(data: Any, server_today: date) -> AnalysisRequest:
 
     rate = data.get("rate_kg_per_week")
     latest = data.get("latest_weight_kg")
-    if pace_status in PACE_STATUSES_WITH_RATE:
+    if pace_status == UNREALISTIC:
+        if not _is_number(rate) or not _is_number(latest) or not 20 <= latest <= 400:
+            raise _invalid()
+    elif pace_status in PACE_STATUSES_WITH_RATE:
         if not _is_number(rate) or not -10 <= rate <= 10:
             raise _invalid()
         if not _is_number(latest) or not 20 <= latest <= 400:
             raise _invalid()
+        if is_unrealistic_rate(rate, latest):
+            pace_status = UNREALISTIC
     elif rate is not None or latest is not None:
         raise _invalid()
 
@@ -200,7 +221,9 @@ def _plural(count: int, singular: str, plural: str) -> str:
     return f"{count} {singular if count == 1 else plural}"
 
 
-def _suggestion_block(suggestion: CalorieSuggestion | None) -> str:
+def _suggestion_block(suggestion: CalorieSuggestion | None, pace_status: str) -> str:
+    if pace_status == UNREALISTIC:
+        return UNREALISTIC_SUGGESTION_TEXT
     if suggestion is None:
         return "No hay datos recientes suficientes para sugerir un ajuste de calorías."
     if suggestion.kind == "on_track":
@@ -249,7 +272,7 @@ def build_user_message(
     ind = request.indicators
     age_text = f"{age} años" if age is not None else UNAVAILABLE
 
-    if request.pace_status in PACE_STATUSES_WITH_RATE:
+    if request.pace_status in PACE_STATUSES_WITH_RATE or request.pace_status == UNREALISTIC:
         rate_text = _or_unavailable(ind["rate"])
     else:
         rate_text = UNAVAILABLE
@@ -290,7 +313,7 @@ def build_user_message(
     ]
     suggestion_block = [
         "Ajuste de calorías sugerido (calculado por la app):",
-        _suggestion_block(suggestion),
+        _suggestion_block(suggestion, request.pace_status),
     ]
     history_block = [
         f"Historial de métricas corporales (últimos {months} meses):",

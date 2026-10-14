@@ -37,6 +37,7 @@ export type PaceStatusCode =
   | "off_range"
   | "insufficient"
   | "stale"
+  | "unrealistic"
 
 // Cuerpo de POST /api/body-metrics/analysis (spec 010, ADR-0021): los textos
 // son exactamente los que ve el usuario en Métricas, `null` donde se pinta "—".
