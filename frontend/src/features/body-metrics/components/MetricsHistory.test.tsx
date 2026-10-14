@@ -510,3 +510,117 @@ describe("MetricsHistory - borrar", () => {
     expect(deleteMock).toHaveBeenCalledTimes(1)
   })
 })
+
+// --- Spec 011: medición sospechosa ---
+
+// La prop `suspiciousDate` la crea el implementer (plan §3.4); se tipa aquí
+// para que el archivo compile antes de que exista.
+const HistoryWithMark = MetricsHistory as unknown as (props: {
+  metrics: BodyMetric[]
+  weightUnit: WeightUnit
+  toDisplayWeight: (kg: number) => number
+  suspiciousDate?: string | null
+}) => React.JSX.Element
+
+const JUMP_UP = [
+  metric("2026-10-01", 80),
+  metric("2026-10-06", 80),
+  metric("2026-10-11", 98),
+]
+
+function renderMarked(
+  metrics: BodyMetric[],
+  suspiciousDate: string | null,
+  weightUnit: WeightUnit = "kg"
+) {
+  const toDisplayWeight = (kg: number) =>
+    weightUnit === "lb" ? Math.round((kg / KG_PER_LB) * 10) / 10 : kg
+  return render(
+    <QueryClientProvider
+      client={
+        new QueryClient({
+          defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+        })
+      }
+    >
+      <HistoryWithMark
+        metrics={metrics}
+        weightUnit={weightUnit}
+        toDisplayWeight={toDisplayWeight}
+        suspiciousDate={suspiciousDate}
+      />
+    </QueryClientProvider>
+  )
+}
+
+function rowOf(iso: string) {
+  return screen
+    .getAllByRole("row")
+    .find((row) => row.textContent?.includes(formatDate(iso))) as HTMLElement
+}
+
+describe("MetricsHistory - medición sospechosa", () => {
+  // SDD: REQ-009 AC-009.1
+  it("marca con 'Revisa este peso' solo la fila de la fecha sospechosa", () => {
+    renderMarked(JUMP_UP, "2026-10-11")
+
+    const mark = within(rowOf("2026-10-11")).getByText("Revisa este peso")
+    expect(mark.closest('[data-tone="warn"]')).not.toBeNull()
+    expect(
+      within(rowOf("2026-10-01")).queryByText("Revisa este peso")
+    ).not.toBeInTheDocument()
+    expect(
+      within(rowOf("2026-10-06")).queryByText("Revisa este peso")
+    ).not.toBeInTheDocument()
+    expect(screen.getAllByText("Revisa este peso")).toHaveLength(1)
+  })
+
+  // SDD: REQ-009 AC-009.5
+  it("una fila sin peso no lleva la marca aunque sea la fecha sospechosa", () => {
+    // Control positivo: con peso en la fila sospechosa la marca sí aparece.
+    const first = renderMarked(JUMP_UP, "2026-10-11")
+    expect(screen.getAllByText("Revisa este peso")).toHaveLength(1)
+    first.unmount()
+
+    renderMarked([...JUMP_UP, metric("2026-10-09", null, 20)], "2026-10-09")
+
+    expect(screen.queryByText("Revisa este peso")).not.toBeInTheDocument()
+  })
+
+  // SDD: REQ-009 AC-009.8
+  it("con el peso en lb la fila sospechosa también lleva la marca", () => {
+    renderMarked(JUMP_UP, "2026-10-11", "lb")
+
+    expect(
+      within(rowOf("2026-10-11")).getByText("Revisa este peso")
+    ).toBeInTheDocument()
+  })
+
+  // SDD: REQ-009 AC-009.9
+  it("la fila marcada conserva los botones de corregir y borrar", () => {
+    renderMarked(JUMP_UP, "2026-10-11")
+
+    const row = rowOf("2026-10-11")
+    // Control positivo: la fila es la marcada.
+    expect(within(row).getByText("Revisa este peso")).toBeInTheDocument()
+    expect(
+      within(row).getByRole("button", { name: editName("2026-10-11") })
+    ).toBeInTheDocument()
+    expect(
+      within(row).getByRole("button", { name: deleteName("2026-10-11") })
+    ).toBeInTheDocument()
+  })
+
+  // SDD: REQ-009 AC-009.6
+  it("sin fecha sospechosa ninguna fila lleva la marca", () => {
+    // Control positivo: la misma lista con fecha sospechosa sí lleva la marca.
+    const first = renderMarked(JUMP_UP, "2026-10-11")
+    expect(screen.getAllByText("Revisa este peso")).toHaveLength(1)
+    first.unmount()
+
+    renderMarked(JUMP_UP, null)
+
+    expect(screen.queryByText("Revisa este peso")).not.toBeInTheDocument()
+  })
+})
+

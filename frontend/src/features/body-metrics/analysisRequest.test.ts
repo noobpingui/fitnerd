@@ -238,3 +238,32 @@ describe("buildAnalysisRequest", () => {
     ).not.toThrow()
   })
 })
+
+// --- Spec 011 ---
+
+describe("buildAnalysisRequest - ritmo poco realista", () => {
+  const JUMP_UP = [m("2026-10-01", 80), m("2026-10-06", 80), m("2026-10-11", 98)]
+
+  // SDD: REQ-004 AC-004.2
+  it("con el salto hacia arriba envía 'unrealistic' con el ritmo y el peso", () => {
+    const request = build(JUMP_UP)
+
+    expect(request.indicators.pace_status).toBe("unrealistic")
+    expect(request.indicators.rate).toBe("+12,6 kg/sem")
+    expect(request.rate_kg_per_week).toBeCloseTo(12.6, 6)
+    expect(request.latest_weight_kg).toBe(98)
+  })
+
+  // SDD: REQ-007 AC-007.6
+  it("el cuerpo con 'unrealistic' pasa analysisRequestSchema", async () => {
+    const schemas = (await import(
+      "@/features/body-metrics/schemas"
+    )) as unknown as {
+      analysisRequestSchema: { parse: (value: unknown) => unknown }
+    }
+
+    expect(build(JUMP_UP).indicators.pace_status).toBe("unrealistic")
+    expect(() => schemas.analysisRequestSchema.parse(build(JUMP_UP))).not.toThrow()
+  })
+})
+

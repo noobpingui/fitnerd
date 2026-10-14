@@ -104,6 +104,12 @@ function kpi(label: string) {
   return within(labelNode.parentElement as HTMLElement)
 }
 
+// Como kpi, pero espera a que la página haya cargado y pintado la tarjeta.
+async function kpiLoaded(label: string) {
+  const labelNode = await screen.findByText(label, { selector: "span" })
+  return within(labelNode.parentElement as HTMLElement)
+}
+
 const editName = (iso: string) => `Corregir medición del ${formatDate(iso)}`
 const deleteName = (iso: string) => `Borrar medición del ${formatDate(iso)}`
 
@@ -941,5 +947,285 @@ describe("BodyMetricsPage - indicadores (spec 009): perfil no disponible", () =>
       expect(kpi("Peso").getByText(exact("173,1 lb"))).toBeInTheDocument()
     )
     expect(stat("IMC").getByText(exact("25,6"))).toBeInTheDocument()
+  })
+})
+
+// --- Spec 011: ritmo poco realista ---
+
+describe("BodyMetricsPage - ritmo poco realista", () => {
+  const JUMP_UP = [
+    metric("2026-10-01", 80),
+    metric("2026-10-06", 80),
+    metric("2026-10-11", 98),
+  ]
+  const JUMP_DOWN = [
+    metric("2026-10-01", 98),
+    metric("2026-10-06", 80),
+    metric("2026-10-11", 80),
+  ]
+  const LIMIT = [
+    metric("2026-09-27", 96),
+    metric("2026-10-04", 98),
+    metric("2026-10-11", 100),
+  ]
+  const TIE = [
+    metric("2026-09-27", 80),
+    metric("2026-10-02", 80),
+    metric("2026-10-07", 98),
+    metric("2026-10-11", 98),
+  ]
+  const STALE = [
+    metric("2026-08-20", 80),
+    metric("2026-08-25", 80),
+    metric("2026-08-30", 98),
+  ]
+  const GOAL_LABELS = [
+    "En ritmo con tu meta",
+    "Más lento que tu meta",
+    "Más rápido que tu meta",
+    "Fuera del rango de tu meta",
+  ]
+
+  function useProfile(weightUnit: "kg" | "lb" = "kg") {
+    getProfileMock.mockResolvedValue(
+      makeProfileResponse(
+        { date_of_birth: "1996-10-12" },
+        {
+          gender: "male",
+          height_unit: "cm",
+          height_cm: 180,
+          weight_unit: weightUnit,
+          weight: weightUnit === "kg" ? 98 : 216,
+          activity_level: "high",
+          goal: "lose",
+        }
+      )
+    )
+  }
+
+  const rowOf = (iso: string) =>
+    screen
+      .getAllByRole("row")
+      .find((row) => row.textContent?.includes(formatDate(iso))) as HTMLElement
+  const marks = () => screen.queryAllByText("Revisa este peso")
+
+  // SDD: REQ-002 AC-002.1
+  it("la tarjeta Ritmo muestra el valor y 'Revisa tus mediciones' con tono de advertencia", async () => {
+    useProfile()
+    listMock.mockResolvedValue(JUMP_UP)
+    renderPage()
+
+    const status = await (await kpiLoaded("Ritmo")).findByText("Revisa tus mediciones")
+
+    expect(status.closest("[data-tone]")).toHaveAttribute("data-tone", "warn")
+    expect(kpi("Ritmo").getByText("+12,6 kg/sem")).toBeInTheDocument()
+    for (const label of GOAL_LABELS) {
+      expect(kpi("Ritmo").queryByText(label)).not.toBeInTheDocument()
+    }
+  })
+
+  // SDD: REQ-002 AC-002.2
+  it("con el perfil en lb la tarjeta Ritmo muestra -27,8 lb/sem", async () => {
+    useProfile("lb")
+    listMock.mockResolvedValue(JUMP_DOWN)
+    renderPage()
+
+    await (await kpiLoaded("Ritmo")).findByText("Revisa tus mediciones")
+
+    await waitFor(() =>
+      expect(kpi("Ritmo").getByText("-27,8 lb/sem")).toBeInTheDocument()
+    )
+  })
+
+  // SDD: REQ-002 AC-002.3
+  it("con el límite del 2 % la tarjeta Ritmo conserva el estado frente a la meta", async () => {
+    useProfile()
+    listMock.mockResolvedValue(JUMP_UP)
+    const jump = renderPage()
+    await (await kpiLoaded("Ritmo")).findByText("Revisa tus mediciones")
+    jump.unmount()
+
+    listMock.mockResolvedValue(LIMIT)
+    renderPage()
+
+    expect(await (await kpiLoaded("Ritmo")).findByText("Más lento que tu meta")).toBeInTheDocument()
+    expect(kpi("Ritmo").getByText("+2 kg/sem")).toBeInTheDocument()
+    expect(screen.queryByText("Revisa tus mediciones")).not.toBeInTheDocument()
+  })
+
+  // SDD: REQ-009 AC-009.1
+  it("marca la fila del 2026-10-11 en el salto hacia arriba y no las otras", async () => {
+    useProfile()
+    listMock.mockResolvedValue(JUMP_UP)
+    renderPage()
+    await (await kpiLoaded("Ritmo")).findByText("Revisa tus mediciones")
+
+    const mark = within(rowOf("2026-10-11")).getByText("Revisa este peso")
+    expect(mark.closest("[data-tone]")).toHaveAttribute("data-tone", "warn")
+    expect(marks()).toHaveLength(1)
+  })
+
+  // SDD: REQ-009 AC-009.2
+  it("marca la fila del 2026-10-01 en el salto hacia abajo", async () => {
+    useProfile()
+    listMock.mockResolvedValue(JUMP_DOWN)
+    renderPage()
+    await (await kpiLoaded("Ritmo")).findByText("Revisa tus mediciones")
+
+    expect(
+      within(rowOf("2026-10-01")).getByText("Revisa este peso")
+    ).toBeInTheDocument()
+    expect(marks()).toHaveLength(1)
+  })
+
+  // SDD: REQ-009 AC-009.3
+  it("en un empate marca solo la fila del 2026-10-11", async () => {
+    useProfile()
+    listMock.mockResolvedValue(TIE)
+    renderPage()
+    await (await kpiLoaded("Ritmo")).findByText("Revisa tus mediciones")
+
+    expect(
+      within(rowOf("2026-10-11")).getByText("Revisa este peso")
+    ).toBeInTheDocument()
+    expect(marks()).toHaveLength(1)
+  })
+
+  // SDD: REQ-009 AC-009.4
+  it("una medición de hace más de 28 días no se marca", async () => {
+    useProfile()
+    listMock.mockResolvedValue([metric("2026-09-01", 120), ...JUMP_UP])
+    renderPage()
+    await (await kpiLoaded("Ritmo")).findByText("Revisa tus mediciones")
+
+    expect(
+      within(rowOf("2026-10-11")).getByText("Revisa este peso")
+    ).toBeInTheDocument()
+    expect(
+      within(rowOf("2026-09-01")).queryByText("Revisa este peso")
+    ).not.toBeInTheDocument()
+    expect(marks()).toHaveLength(1)
+  })
+
+  // SDD: REQ-009 AC-009.5
+  it("una medición sin peso no se marca y la del 2026-10-11 sí", async () => {
+    useProfile()
+    listMock.mockResolvedValue([...JUMP_UP, metric("2026-10-09", null, 20)])
+    renderPage()
+    await (await kpiLoaded("Ritmo")).findByText("Revisa tus mediciones")
+
+    expect(
+      within(rowOf("2026-10-09")).queryByText("Revisa este peso")
+    ).not.toBeInTheDocument()
+    expect(
+      within(rowOf("2026-10-11")).getByText("Revisa este peso")
+    ).toBeInTheDocument()
+  })
+
+  // SDD: REQ-009 AC-009.6
+  it("con el límite del 2 % ninguna fila lleva la marca", async () => {
+    useProfile()
+    listMock.mockResolvedValue(JUMP_UP)
+    // Contraste: con el salto la marca sí aparece (el caso nuevo).
+    const jump = renderPage()
+    await (await kpiLoaded("Ritmo")).findByText("Revisa tus mediciones")
+    expect(marks()).toHaveLength(1)
+    jump.unmount()
+    listMock.mockResolvedValue(LIMIT)
+    renderPage()
+    await (await kpiLoaded("Ritmo")).findByText("Más lento que tu meta")
+
+    expect(marks()).toHaveLength(0)
+  })
+
+  // SDD: REQ-009 AC-009.7
+  it("sin registros recientes ninguna fila lleva la marca", async () => {
+    useProfile()
+    listMock.mockResolvedValue(JUMP_UP)
+    // Contraste: con el salto la marca sí aparece (el caso nuevo).
+    const jump = renderPage()
+    await (await kpiLoaded("Ritmo")).findByText("Revisa tus mediciones")
+    expect(marks()).toHaveLength(1)
+    jump.unmount()
+    listMock.mockResolvedValue(STALE)
+    renderPage()
+    await (await kpiLoaded("Ritmo")).findByText("Sin registros recientes")
+
+    expect(marks()).toHaveLength(0)
+    expect(screen.queryByText("Revisa tus mediciones")).not.toBeInTheDocument()
+  })
+
+  // SDD: REQ-009 AC-009.8
+  it("con el perfil en lb también se marca la fila del 2026-10-11", async () => {
+    useProfile("lb")
+    listMock.mockResolvedValue(JUMP_UP)
+    renderPage()
+    await (await kpiLoaded("Ritmo")).findByText("Revisa tus mediciones")
+
+    expect(
+      within(rowOf("2026-10-11")).getByText("Revisa este peso")
+    ).toBeInTheDocument()
+  })
+
+  // SDD: REQ-009 AC-009.9
+  it("la fila marcada conserva los botones de corregir y borrar", async () => {
+    useProfile()
+    listMock.mockResolvedValue(JUMP_UP)
+    renderPage()
+    await (await kpiLoaded("Ritmo")).findByText("Revisa tus mediciones")
+
+    const row = rowOf("2026-10-11")
+    expect(
+      within(row).getByRole("button", { name: editName("2026-10-11") })
+    ).toBeInTheDocument()
+    expect(
+      within(row).getByRole("button", { name: deleteName("2026-10-11") })
+    ).toBeInTheDocument()
+  })
+
+  // SDD: REQ-008 AC-008.1
+  it("al corregir la medición a 79,5 kg desaparecen el estado y la marca", async () => {
+    const user = userEvent.setup()
+    useProfile()
+    listMock
+      .mockReset()
+      .mockResolvedValueOnce(JUMP_UP)
+      .mockResolvedValue([...JUMP_UP.slice(0, 2), metric("2026-10-11", 79.5)])
+    updateMock.mockResolvedValue(metric("2026-10-11", 79.5))
+    renderPage()
+    await (await kpiLoaded("Ritmo")).findByText("Revisa tus mediciones")
+
+    await user.click(await screen.findByRole("button", { name: editName("2026-10-11") }))
+    const weight = await screen.findByLabelText("Peso (kg)")
+    await user.clear(weight)
+    await user.type(weight, "79.5")
+    await user.click(screen.getByRole("button", { name: "Guardar" }))
+
+    await waitFor(() =>
+      expect(screen.queryByText("Revisa tus mediciones")).not.toBeInTheDocument()
+    )
+    expect(marks()).toHaveLength(0)
+  })
+
+  // SDD: REQ-008 AC-008.2
+  it("al borrar la medición errónea el Ritmo vuelve a 'Faltan registros' y sin marca", async () => {
+    const user = userEvent.setup()
+    useProfile()
+    listMock
+      .mockReset()
+      .mockResolvedValueOnce(JUMP_UP)
+      .mockResolvedValue(JUMP_UP.slice(0, 2))
+    deleteMock.mockResolvedValue(undefined)
+    renderPage()
+    await (await kpiLoaded("Ritmo")).findByText("Revisa tus mediciones")
+
+    await deleteMetric(user, "2026-10-11")
+
+    expect(
+      await (await kpiLoaded("Ritmo")).findByText("Faltan registros para calcularlo")
+    ).toBeInTheDocument()
+    expect(kpi("Ritmo").getByText("—")).toBeInTheDocument()
+    expect(screen.queryByText("Revisa tus mediciones")).not.toBeInTheDocument()
+    expect(marks()).toHaveLength(0)
   })
 })

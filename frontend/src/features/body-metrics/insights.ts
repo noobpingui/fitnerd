@@ -213,3 +213,21 @@ export function streak(metrics: BodyMetric[], today: string) {
 
   return { weeks: count, last30, total: metrics.length, lastDate }
 }
+
+export const UNREALISTIC_RATE_PCT = 2
+
+export function rateWindow(_weightSeries: SeriesPoint[]): SeriesPoint[] {
+  throw new Error("not implemented")
+}
+
+export function isUnrealisticRate(_kgPerWeek: number, _latestKg: number): boolean {
+  throw new Error("not implemented")
+}
+
+export function median(_values: number[]): number {
+  throw new Error("not implemented")
+}
+
+export function suspiciousPoint(_window: SeriesPoint[]): SeriesPoint | null {
+  throw new Error("not implemented")
+}
