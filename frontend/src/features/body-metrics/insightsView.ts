@@ -119,7 +119,7 @@ export function formatInsights(input: InsightsInput, weightUnit: WeightUnit) {
     insights.rate.kind === "ok"
       ? `${signed.format(toDisplayWeight(insights.rate.kgPerWeek))} ${weightUnit}/sem`
       : null
-  const suspiciousDate = (insights as { suspiciousDate?: string | null }).suspiciousDate ?? null
+  const suspiciousDate = insights.suspiciousDate
   const paceWarning =
     status === "unrealistic" && suspiciousDate
       ? `Tu ritmo de las últimas 4 semanas (${rate}) no es realista: puede que la medición del ${formatDate(suspiciousDate)} esté mal. Revísala en el Historial y corrígela o bórrala para recibir una sugerencia de calorías.`

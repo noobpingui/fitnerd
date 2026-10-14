@@ -11,16 +11,16 @@
   "branch": "fix/011-analysis-extreme-pace",
   "base_branch": "main",
   "created_at": "2026-10-14T03:11:27.051Z",
-  "stage": "implement",
-  "status": "in_progress",
+  "stage": "review",
+  "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-14T03:36:18.232Z",
     "plan": "2026-10-14T03:45:22.633Z",
     "tasks": "2026-10-14T03:48:29.581Z",
     "tests": "2026-10-14T09:29:48.672Z",
     "implement": "2026-10-14T09:50:24.237Z",
-    "verify": null,
-    "review": null,
+    "verify": "2026-10-14T10:07:12.522Z",
+    "review": "2026-10-14T18:58:19.035Z",
     "docs": null,
     "close": null
   },
@@ -28,12 +28,13 @@
     "spec": "a7d7d59",
     "plan": "102262b",
     "tasks": "c907a5d",
-    "tests": "3b50e54"
+    "tests": "3b50e54",
+    "implement": "ee87ea4"
   },
   "iterations": {
     "tests": 5,
     "implement": 1,
-    "review": 0
+    "review": 2
   },
   "max_iterations": 5,
   "red_check": {
@@ -41,12 +42,12 @@
     "at": "2026-10-14T04:40:09.798Z"
   },
   "verify": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-14T18:37:35.777Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-10-14T18:39:14.949Z"
   },
   "bypass": false,
   "history": [
@@ -247,19 +248,151 @@
       "stage": "implement",
       "event": "approved",
       "note": "Etapa implement y commit aprobados por el usuario (\"1,2 sí\")"
+    },
+    {
+      "at": "2026-10-14T09:50:27.878Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier en modo full (iteración 1)"
+    },
+    {
+      "at": "2026-10-14T09:52:59.322Z",
+      "stage": "verify",
+      "event": "verify_failed",
+      "note": "Verify FAIL (iteración 1): todo en verde (pytest 687, vitest 440, lint, tsc, build, 45/45 AC); único motivo: NFR-001/NFR-002 (spec 010, sin cambios) sin ID en tasks.md. Escalado al usuario para decidir"
+    },
+    {
+      "at": "2026-10-14T10:02:16.537Z",
+      "stage": "tasks",
+      "event": "user_decision",
+      "note": "Usuario elige A: el task-breaker nombra NFR-001/NFR-002 por ID en la trazabilidad de tasks.md; retroceso a tasks desde verify"
+    },
+    {
+      "at": "2026-10-14T10:02:52.965Z",
+      "stage": "tasks",
+      "event": "tasks_fixed",
+      "note": "task-breaker: filas NFR-001 (T-101, T-102) y NFR-002 (sin tareas en 011) en la trazabilidad de tasks.md"
+    },
+    {
+      "at": "2026-10-14T10:02:52.965Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier en modo full (iteración 2)"
+    },
+    {
+      "at": "2026-10-14T10:05:05.664Z",
+      "stage": "verify",
+      "event": "completed",
+      "note": "Verify PASS (iteración 2): pytest 687, vitest 440, lint, tsc, build; 45/45 AC; REQ y NFR trazados"
+    },
+    {
+      "at": "2026-10-14T10:07:12.522Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "Etapa verify aprobada por el usuario (\"sí, aprobado\")"
+    },
+    {
+      "at": "2026-10-14T10:07:12.522Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado al reviewer (iteración 1)"
+    },
+    {
+      "at": "2026-10-14T10:10:03.187Z",
+      "stage": "review",
+      "event": "completed",
+      "note": "Review APPROVED (iteración 1): 0 bloqueantes, 0 mayores, 1 menor (F1), 3 NIT. F1: la regresión del caso empate da 10,808 → \"+10,8 kg/sem\"; la spec es correcta y se anula la corrección +10,8 → +10,9 prevista para docs"
+    },
+    {
+      "at": "2026-10-14T18:18:18.541Z",
+      "stage": "review",
+      "event": "user_decision",
+      "note": "Usuario: \"No. Vamos a arreglar de na ves f1,f2,f3 y f4\" — no aprueba review; se corrigen F1–F4 ahora (review iteración 2)"
+    },
+    {
+      "at": "2026-10-14T18:18:18.541Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Retroceso a tests: test-author corrige F1 (fijar +10,8 en insightsView.test.ts) y F3 (quitar cast en ProgressAnalysis.test.tsx)"
+    },
+    {
+      "at": "2026-10-14T18:20:29.981Z",
+      "stage": "review",
+      "event": "user_decision",
+      "note": "F4: usuario elige A — cambiar la convención de marcadores (prefijo de spec, p. ej. \"SDD: 011 REQ-006 AC-006.1\") con ADR en una rama chore aparte tras cerrar la 011; después se aplica a la 011"
+    },
+    {
+      "at": "2026-10-14T18:20:36.633Z",
+      "stage": "tests",
+      "event": "test_fixed",
+      "note": "Cambio autorizado (review F1, F3): insightsView.test.ts fija \"+10,8 kg/sem\"; ProgressAnalysis.test.tsx sin el alias del scaffold (cast solo en el objeto REQUEST de prueba). tests_snapshot actualizado para esos 2 archivos"
+    },
+    {
+      "at": "2026-10-14T18:20:36.633Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementer corrige review F2 (cast redundante en insightsView.ts)"
+    },
+    {
+      "at": "2026-10-14T18:22:49.195Z",
+      "stage": "implement",
+      "event": "completed",
+      "note": "F2 corregido: insightsView.ts lee insights.suspiciousDate sin cast"
+    },
+    {
+      "at": "2026-10-14T18:22:49.195Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier en modo full (iteración 3, tras correcciones F1–F3 de review)"
+    },
+    {
+      "at": "2026-10-14T18:28:06.671Z",
+      "stage": "verify",
+      "event": "blocked",
+      "note": "Verify BLOCKED (entorno, iteración 3): Docker Desktop parado, Postgres no responde en 5433; frontend todo en verde (440), trazabilidad OK. Se pide al usuario levantar Postgres"
+    },
+    {
+      "at": "2026-10-14T18:35:36.103Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Usuario levantó Postgres; delegado al verifier en modo full (iteración 4)"
+    },
+    {
+      "at": "2026-10-14T18:38:03.930Z",
+      "stage": "verify",
+      "event": "completed",
+      "note": "Verify PASS (iteración 4): pytest 687, vitest 440, lint, tsc, build; trazabilidad completa"
+    },
+    {
+      "at": "2026-10-14T18:38:03.930Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado al reviewer (iteración 2, tras corregir F1–F3; F4 diferido a ADR aparte por decisión del usuario)"
+    },
+    {
+      "at": "2026-10-14T18:39:14.949Z",
+      "stage": "review",
+      "event": "completed",
+      "note": "Review APPROVED (iteración 2): F1–F3 resueltos, 0 hallazgos nuevos; F4 fuera de la 011 (ADR aparte)"
+    },
+    {
+      "at": "2026-10-14T18:58:19.035Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Etapa review y commit aprobados por el usuario (\"1,2 sí\")"
     }
   ],
   "tests_snapshot": {
-    "at": "2026-10-14T09:47:47.733Z",
+    "at": "2026-10-14T18:20:36.633Z",
     "sha256": {
       "backend/tests/test_routes/test_progress_analysis_routes.py": "1f0229314f5aae9df69c50e829ae3eaad62805f38893794da8d6967f01b71115",
       "backend/tests/test_services/test_calorie_suggestion.py": "6a1b0fdd21cf8337236a696d2a4ef8485dc74e86302eb57c35545bb93a408eec",
       "backend/tests/test_services/test_progress_analysis_service.py": "6c9df5c6ae2cc17f43e1d01d6ed3d9c80b3d28ab7d472bf852452c7464073a6a",
       "frontend/src/features/body-metrics/analysisRequest.test.ts": "21609f4d67b84d9b8b541ba4eb4444653d5fc696808b42ab08cd582e7fa1a513",
       "frontend/src/features/body-metrics/components/MetricsHistory.test.tsx": "388af3d669d647b6e474afcb1883888bd1dd3270c2c8880def77f7c6b703de66",
-      "frontend/src/features/body-metrics/components/ProgressAnalysis.test.tsx": "23d71c7d9aec69e46d7c10b0087c1b3dc0a82a28fb6a46fa8b9710ad486554b1",
+      "frontend/src/features/body-metrics/components/ProgressAnalysis.test.tsx": "9302806514d0c7c237fd419e68fe3e46262c8f299ed07304bfad7c26a1781be8",
       "frontend/src/features/body-metrics/insights.test.ts": "7512cf047c735880abd6985fc8f7bab4b7e4e13e5fafe05decc90b5a2551606c",
-      "frontend/src/features/body-metrics/insightsView.test.ts": "b544fde5962b684e0c9fb34eb7bae1d582819cfe1bb26893ea2a48f0703c11aa",
+      "frontend/src/features/body-metrics/insightsView.test.ts": "42d7dd5449110e2cf6f226982ea43b7b200d52f5b72dae9f1481bdf4f4121014",
       "frontend/src/features/body-metrics/pages/BodyMetricsPage.analysis.test.tsx": "0ffc93151c2f930ede6233b4209c91b08c2bb3ff59454f573095f9dcf44eaf03",
       "frontend/src/features/body-metrics/pages/BodyMetricsPage.test.tsx": "443b57f8e3a77c80ac99a9ef1b9257a9de8c0240e16e4656f53fcddf17d90dc0",
       "frontend/src/features/body-metrics/schemas.test.ts": "dbf5dbb5211be56ebd0a4e4620dea2fb84e8a662e6fe1fd1759191f851d22eb6"

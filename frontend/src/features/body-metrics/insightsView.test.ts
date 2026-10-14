@@ -336,10 +336,9 @@ describe("insightsView - ritmo poco realista (spec 011)", () => {
   it("en un empate el aviso lleva la fecha del 2026-10-11", () => {
     const { text } = view011(TIE)
 
-    // El ritmo exacto sale de la regresión (≈ +10,9 kg/sem; la spec lo
-    // redondea a 10,8): se compara contra lo que muestra la tarjeta.
-    expect(text.paceWarning).toBe(warningFor(text.rate as string, "2026-10-11"))
-    expect(text.rate).toMatch(/^\+10,[89] kg\/sem$/)
+    // La regresión da 10,808 kg/sem, que se muestra como +10,8 kg/sem.
+    expect(text.rate).toBe("+10,8 kg/sem")
+    expect(text.paceWarning).toBe(warningFor("+10,8 kg/sem", "2026-10-11"))
   })
 
   // SDD: REQ-003 AC-003.6

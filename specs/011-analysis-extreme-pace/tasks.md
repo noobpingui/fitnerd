@@ -93,4 +93,5 @@ Frontend, en orden `types → schemas → lógica pura → api → componentes �
 | REQ-009 | AC-009.7 | T-023 | T-113, T-117 |
 | REQ-009 | AC-009.8 | T-022, T-023 | T-117, T-118 |
 | REQ-009 | AC-009.9 | T-022, T-023 | T-117 |
-| NFR (spec 010) | sin AC nuevos | — | sin cambios |
+| NFR-001 (spec 010) | sin AC nuevos | — | T-101, T-102 (validación/lista blanca del cuerpo y texto fijo del mensaje) |
+| NFR-002 (spec 010) | sin AC nuevos | — | sin cambios (lectura por user_id del token, sin tareas en 011) |

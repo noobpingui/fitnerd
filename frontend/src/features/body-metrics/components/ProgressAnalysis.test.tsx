@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { analyzeBodyMetrics } from "@/features/body-metrics/api"
 import { ApiError } from "@/lib/apiClient"
 import { ProgressAnalysis } from "./ProgressAnalysis"
+import type { AnalysisRequest } from "@/features/body-metrics/types"
 
 vi.mock("@/features/body-metrics/api", () => ({
   listBodyMetrics: vi.fn(),
@@ -205,13 +206,6 @@ describe("ProgressAnalysis", () => {
 
 // --- Spec 011: ritmo poco realista ---
 
-// La prop `warning` la crea el implementer (plan §3.4); se tipa aquí para que
-// el archivo compile antes de que exista.
-const AnalysisWithWarning = ProgressAnalysis as unknown as (props: {
-  request: unknown
-  warning?: string | null
-}) => React.JSX.Element
-
 const WARNING =
   "Tu ritmo de las últimas 4 semanas (+12,6 kg/sem) no es realista: puede que la medición del 11 oct 2026 esté mal. Revísala en el Historial y corrígela o bórrala para recibir una sugerencia de calorías."
 
@@ -221,7 +215,7 @@ function renderWithWarning(warning?: string | null) {
   })
   return render(
     <QueryClientProvider client={queryClient}>
-      <AnalysisWithWarning request={REQUEST} warning={warning} />
+      <ProgressAnalysis request={REQUEST as unknown as AnalysisRequest} warning={warning} />
     </QueryClientProvider>
   )
 }

@@ -1,56 +1,51 @@
 # Verify report 011 — Ritmo poco realista por una medición errónea sin bloquear el análisis con IA
 
-- **Modo:** red (tras la etapa tests), iteración 4
-- **Fecha:** 2026-10-14T04:40:09.798Z · **Rama:** `fix/011-analysis-extreme-pace` @ `c907a5d`
+- **Modo:** full (tras la etapa implement), iteración 4 (repetición de la 3, BLOCKED por entorno; Postgres levantado en Docker, puerto 5433)
+- **Fecha:** 2026-10-14T18:37:35.777Z · **Rama:** `fix/011-analysis-extreme-pace` @ `ee87ea4` (cambios sin commit: solo frontend y specs; sin cambios en `backend/` respecto a `ee87ea4`)
 - **Resultado:** PASS
 
 ## 1. Comandos ejecutados
-
-Solo los tests nuevos (marcador `SDD:`) de los archivos modificados por la feature. Los tests que ya existían en esos archivos y que siguen pasando se cuentan en el total, pero no se analizan.
-
 | Ámbito | Comando | Resultado | Resumen de la salida |
 |---|---|---|---|
-| backend | `backend/.venv/Scripts/python.exe -m pytest -q` sobre `tests/test_services/test_calorie_suggestion.py`, `tests/test_services/test_progress_analysis_service.py`, `tests/test_routes/test_progress_analysis_routes.py` | ✅ rojo legítimo | 56 passed, 39 failed. Los 33 tests nuevos fallan (legítimo). Ninguno pasa. Los 6 tests existentes modificados fallan por el mensaje nuevo (legítimo). |
-| frontend | `npx vitest run` sobre `analysisRequest.test.ts`, `components/MetricsHistory.test.tsx`, `components/ProgressAnalysis.test.tsx`, `insights.test.ts`, `insightsView.test.ts`, `pages/BodyMetricsPage.analysis.test.tsx`, `pages/BodyMetricsPage.test.tsx`, `schemas.test.ts` | ✅ rojo legítimo | 187 passed, 65 failed (252 tests). Los 65 fallidos son tests nuevos. Ninguno nuevo pasa. |
-
-No se ejecutaron `ruff`, `npm run lint`, `npx tsc -b` ni `npm run build`: en modo red no aplican.
+| backend | `backend/.venv/Scripts/python.exe -m pytest -q` | ✅ | 687 passed in 41.02s (Postgres en 5433 operativo) |
+| backend | `node .claude/sdd/scripts/ruff-new.mjs main` | ✅ | "ruff-new: sin violaciones nuevas. OK" (exit 0) |
+| frontend | `npm test` | ✅ | 32 files, 440 passed (0 fallidos) |
+| frontend | `npm run lint` | ✅ | exit 0; 0 errores. 2 warnings preexistentes fuera del diff: `components/ui/button.tsx:64` y `components/ui/form.tsx:159` |
+| frontend | `npx tsc -b` | ✅ | exit 0, sin errores |
+| frontend | `npm run build` | ✅ | exit 0; aviso preexistente de chunk > 500 kB |
 
 ## 2. Trazabilidad
+| REQ / NFR | AC | Tareas | Tests con `SDD:` | Estado del test |
+|---|---|---|---|---|
+| REQ-001 | AC-001.1 a 001.6 | T-000, T-001, T-010, T-017, T-018, T-100, T-112, T-113 | `test_calorie_suggestion.py`, `insights.test.ts`, `insightsView.test.ts` | ✅ |
+| REQ-002 | AC-002.1 a 002.3 | T-018, T-023, T-114, T-118 | `insightsView.test.ts`, `BodyMetricsPage.test.tsx` | ✅ |
+| REQ-003 | AC-003.1 a 003.6 | T-018, T-021, T-024, T-113, T-114, T-116, T-118 | `insightsView.test.ts`, `ProgressAnalysis.test.tsx`, `BodyMetricsPage.analysis.test.tsx` | ✅ |
+| REQ-004 | AC-004.1 a 004.4 | T-011, T-019, T-020, T-021, T-024, T-101, T-102, T-110, T-111, T-115 | `test_progress_analysis_service.py`, `analysisRequest.test.ts`, `schemas.test.ts`, `ProgressAnalysis.test.tsx` | ✅ |
+| REQ-005 | AC-005.1, 005.2 | T-013, T-103 | `test_progress_analysis_service.py` | ✅ |
+| REQ-006 | AC-006.1 a 006.6 | T-010, T-012, T-016, T-100, T-101, T-102 | `test_progress_analysis_service.py`, `test_progress_analysis_routes.py`, `test_calorie_suggestion.py` | ✅ |
+| REQ-007 | AC-007.1 a 007.6 | T-014, T-016, T-019, T-021, T-024, T-101, T-116 | `test_progress_analysis_routes.py`, `test_progress_analysis_service.py`, `ProgressAnalysis.test.tsx` | ✅ |
+| REQ-008 | AC-008.1 a 008.3 | T-015, T-023, T-024, T-101, T-113, T-114, T-115, T-118 | `test_progress_analysis_service.py`, `BodyMetricsPage.test.tsx`, `BodyMetricsPage.analysis.test.tsx` | ✅ |
+| REQ-009 | AC-009.1 a 009.9 | T-017, T-022, T-023, T-112, T-113, T-117, T-118 | `insights.test.ts`, `MetricsHistory.test.tsx`, `BodyMetricsPage.test.tsx` | ✅ |
+| NFR-001 (spec 010) | sin AC nuevos | T-101, T-102 | — | ✅ |
+| NFR-002 (spec 010) | sin AC nuevos | ninguna (sin cambios en 011) | — | — |
 
-No se evalúa en modo red (se comprueba en modo full). Como comprobación informativa: los 45 AC de `spec.md` aparecen en al menos un marcador `SDD:` de los tests. Todas las REQ aparecen en `tasks.md`.
+Comprobaciones mecánicas (grep sobre `spec.md` y los tests tocados por la 011):
+- ACs de `spec.md`: 45. ACs sin marcador `SDD:` en los tests: ninguno (45/45 cubiertos; todos los tests con marcador pasan en las suites anteriores).
+- REQs de `spec.md` (REQ-001 a REQ-009) con tarea en `tasks.md`: 9/9. NFR-001 y NFR-002 aparecen por ID en `tasks.md`.
+- Tareas en `tasks.md`: 30; marcadas `[x]`: 30; sin `[ ]` pendientes.
+- `skip`, `xfail`, `.only`, `.skip`, `xit`, `xdescribe` nuevos en el código del diff (`git diff main...HEAD` y diff de trabajo): ninguno. Las únicas coincidencias están en el texto de `verify-report.md`/`review.md`, no en código.
+- Migraciones: ningún modelo cambia en la 011; no hay migración que revisar.
+- Observación (no bloquea): los marcadores de la 011 reutilizan IDs de la 010 y no llevan prefijo de spec. Es el hallazgo F4 de `review.md`, decidido por el usuario como ADR aparte tras cerrar la 011.
 
 ## 3. Criterios de aceptación
+- **Automáticos (pasan):** los 45 AC tienen al menos un test con `SDD:` y los tests pasan (backend 687 passed, frontend 440 passed).
+- **Manual** (para revisión del usuario en el gate; no comprobable automáticamente): AC-002.1, AC-002.2 (aspecto de la tarjeta "Ritmo" con tono de advertencia); AC-003.1, AC-003.2 (aspecto del aviso; el DOM tiene `data-tone="warn"`); AC-003.3 (disposición visual del aviso junto al texto del análisis); AC-007.5 (texto del 400 visible en pantalla); AC-009.1, AC-009.8 (marca "Revisa este peso" en la fila; el DOM tiene `data-tone="warn"`).
 
-No se evalúan en modo red.
+## 4. Fallos (si los hay)
+Ninguno. Iteraciones anteriores ya resueltas: la 3 quedó BLOCKED por entorno (Postgres parado) y en esta iteración Postgres responde y todas las comprobaciones se ejecutaron.
 
-## 4. Fallos
-
-Ninguno.
-
-### 4.1 Rojo legítimo (verificado por tipo de error)
-
-- **Backend, esqueleto `is_unrealistic_rate`:** 7 tests fallan con `NotImplementedError: not implemented` del esqueleto (ADR-0012).
-- **Backend, comportamiento ausente:** `AssertionError` (400 donde se espera 200 o 429, sugerencia calculada donde se espera `None`, mensaje antiguo donde se espera el nuevo, prompt sin las frases nuevas). Hay 3 tests de servicio que fallan con `ValidationError` lanzado por `progress_analysis_context.py:134`: el código actual rechaza el estado `unrealistic` porque aún no existe. El error sale del código de producción, no de un import, una fixture ni el propio test.
-- **Frontend, esqueleto de `insights.ts`:** 13 tests fallan con `Error: not implemented` (`median`, `rateWindow`, `suspiciousPoint`, `isUnrealisticRate`).
-- **Frontend, comportamiento ausente:** `too_slow` donde se espera `unrealistic`, `undefined` donde se espera la fecha del aviso, aviso "Tu ritmo de las últimas 4 semanas…" ausente, marca "Revisa este peso" ausente, "Revisa tus mediciones" ausente, schema que rechaza `unrealistic`.
-
-### 4.2 Rojo ilegítimo
-
-Ninguno. No hay `SyntaxError`, `ModuleNotFoundError`, errores de fixture ni de `conftest`, ni errores de TypeScript en los tests.
-
-### 4.3 Test nuevo que pasa sin implementación
-
-Ninguno. Se cruzaron los nombres de los tests añadidos en el diff (`git diff HEAD`) con los resultados de la ejecución: ninguno pasa.
-
-La iteración 4 corrige el caso anterior de AC-009.9 (`MetricsHistory.test.tsx`): ahora falla por la ausencia de "Revisa este peso".
-
-### 4.4 Escaneo de scaffolds (Art. 5.7)
-
-- `backend/services/calorie_suggestion.py`: `is_unrealistic_rate` lanza `NotImplementedError("not implemented")`. Constantes `UNREALISTIC_RATE_PCT = 2.0` y `RATE_EPS = 1e-9`. Sin lógica. OK.
-- `frontend/src/features/body-metrics/insights.ts`: `rateWindow`, `isUnrealisticRate`, `median` y `suspiciousPoint` lanzan `Error("not implemented")` con parámetros prefijados con `_`. Constante `UNREALISTIC_RATE_PCT = 2`. Sin lógica. OK.
-
-### 4.5 Otros
-
-- No hay `skip`, `xfail`, `.only` ni `.skip` nuevos en el diff.
-- Aviso para la etapa full (no bloquea): varios tests de backend reutilizan IDs de la spec 010 (por ejemplo, `SDD: REQ-005 AC-005.1`, `REQ-006 AC-006.1`, `REQ-008 AC-008.3`). Una búsqueda por AC también encontrará tests de la 010. Conviene revisarlo en verify full.
-- Las tareas de scaffold y de tests están marcadas `[x]`. Las de implementación (Fase B) están en `[ ]`, como corresponde a este punto.
+## 5. Resumen de ejecución
+- Backend: pytest 687 passed; ruff ratchet sin violaciones nuevas.
+- Frontend: `npm test` 440 passed; lint sin errores (2 warnings preexistentes); `tsc -b` y `build` correctos.
+- Trazabilidad: 45/45 AC con marcador `SDD:`; 9/9 REQ y 2/2 NFR con tarea; 30/30 tareas `[x]`; sin skip/xfail/only nuevos.
+- Resultado global: **PASS**.
