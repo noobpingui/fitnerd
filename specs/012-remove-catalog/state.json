@@ -11,11 +11,11 @@
   "branch": "feat/012-remove-catalog",
   "base_branch": "main",
   "created_at": "2026-10-14T20:51:28.634Z",
-  "stage": "spec",
+  "stage": "plan",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-14T21:43:44.312Z",
-    "plan": null,
+    "plan": "2026-10-14T21:46:15.444Z",
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -25,7 +25,8 @@
     "close": null
   },
   "commits": {
-    "spec": "e1c5894"
+    "spec": "e1c5894",
+    "spec_rework": "eee07d2"
   },
   "iterations": {
     "tests": 0,
@@ -130,6 +131,24 @@
       "stage": "spec",
       "event": "approved",
       "note": "Spec (iteración 3) y commit aprobados por el usuario (\"1,2 sí\")"
+    },
+    {
+      "at": "2026-10-14T21:43:44.459Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegado al planner (iteración 2): revisar plan.md contra la spec corregida (Q8)"
+    },
+    {
+      "at": "2026-10-14T21:45:12.902Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md iteración 2: alineado con la spec tras Q8 y con red_check_exception; pregunta: ampliar la excepción a AC-007.6"
+    },
+    {
+      "at": "2026-10-14T21:46:15.444Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "Plan y commit aprobados por el usuario (\"1,2,3 sí\"); excepción del red check ampliada a AC-007.6"
     }
   ],
   "red_check_exception": {
@@ -140,7 +159,8 @@
       "AC-004.*",
       "AC-005.*",
       "AC-006.*",
-      "AC-008.*"
+      "AC-008.*",
+      "AC-007.6"
     ]
   }
 }
