@@ -1,0 +1,103 @@
+{
+  "$comment": "Única fuente de verdad del flujo SDD de una feature. Lo escriben solo el orquestador (/sdd-*) y el verifier (secciones red_check y verify). Etapas: spec, plan, tasks, tests, implement, verify, review, docs, close, done.",
+  "schema_version": 1,
+  "feature": "011-analysis-extreme-pace",
+  "title": "Ritmo extremo por una medición errónea sin bloquear el análisis con IA",
+  "type": "fix",
+  "scope": {
+    "backend": true,
+    "frontend": true
+  },
+  "branch": "fix/011-analysis-extreme-pace",
+  "base_branch": "main",
+  "created_at": "2026-10-14T03:11:27.051Z",
+  "stage": "spec",
+  "status": "awaiting_approval",
+  "approvals": {
+    "spec": "2026-10-14T03:36:18.232Z",
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
+    "verify": null,
+    "review": null,
+    "docs": null,
+    "close": null
+  },
+  "commits": {},
+  "iterations": {
+    "tests": 0,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": null,
+    "at": null
+  },
+  "verify": {
+    "result": null,
+    "at": null
+  },
+  "review": {
+    "verdict": null,
+    "at": null
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-14T03:11:27.051Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "Feature creada desde main (aprobado por el usuario); origen: hallazgo F1 de la review de la 010"
+    },
+    {
+      "at": "2026-10-14T03:12:15.400Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegado al spec-writer (iteración 1)"
+    },
+    {
+      "at": "2026-10-14T03:15:34.680Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "spec.md iteración 1: 8 REQ, 30 AC; Q1–Q6 abiertas"
+    },
+    {
+      "at": "2026-10-14T03:25:16.482Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Respuestas Q1–Q6 copiadas en spec.md (Q5 alternativa; Q6 con aclaración); re-delegado al spec-writer (iteración 2)"
+    },
+    {
+      "at": "2026-10-14T03:27:19.800Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "spec.md iteración 2: 9 REQ, 45 AC; Q7–Q8 nuevas (derivadas de Q5)"
+    },
+    {
+      "at": "2026-10-14T03:33:58.883Z",
+      "stage": "spec",
+      "event": "user_decision",
+      "note": "Usuario: \"Q7 si, Q8 propuesta y además la fecha en el aviso. AC-006.6 confirmado.\""
+    },
+    {
+      "at": "2026-10-14T03:33:58.883Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Respuestas Q7–Q8 copiadas en spec.md; re-delegado al spec-writer (iteración 3)"
+    },
+    {
+      "at": "2026-10-14T03:34:38.740Z",
+      "stage": "spec",
+      "event": "completed",
+      "note": "spec.md iteración 3: 9 REQ, 45 AC; Q1–Q8 resueltas"
+    },
+    {
+      "at": "2026-10-14T03:36:18.232Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Spec y commit aprobados por el usuario"
+    }
+  ]
+}
