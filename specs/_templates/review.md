@@ -17,7 +17,7 @@
 
 ## 4. Checklist de la constitución
 - [ ] Art. 2: cada agente se mantuvo en su rol (los tests no se tocaron durante implement; ver el historial de commits por etapa)
-- [ ] Art. 4: los marcadores `SDD:` son coherentes con los AC que prueban
+- [ ] Art. 4: los marcadores `SDD: NNN` llevan el número de esta spec y son coherentes con los AC que prueban
 - [ ] Art. 5: no hay tests borrados, saltados ni debilitados; fakes inyectados, sin llamadas externas reales
 - [ ] Art. 6: capas respetadas; excepciones de dominio; `apiFetch`; organización por feature
 - [ ] Art. 6.4: la migración está incluida si cambian los modelos

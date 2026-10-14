@@ -46,9 +46,10 @@
    - `NFR-NNN` para los no funcionales;
    - `AC-NNN.M` para cada criterio de aceptación de un REQ, y `AC-NNNN.M` con el prefijo `N` (ej. `AC-N001.1`) para los de un NFR.
 2. Cada tarea de `tasks.md` referencia al menos un REQ o NFR.
-3. Cada AC **DEBE** estar cubierto por al menos un test que lleve el marcador `SDD: <IDs>`:
-   - Python: `# SDD: REQ-001 AC-001.1` en la línea anterior a `def test_...`;
-   - TypeScript: `// SDD: REQ-001 AC-001.1` en la línea anterior a `it(...)`.
+3. Cada AC **DEBE** estar cubierto por al menos un test que lleve el marcador `SDD: NNN <IDs>`, donde `NNN` es el número de la spec (ADR-0022):
+   - Python: `# SDD: 011 REQ-001 AC-001.1` en la línea anterior a `def test_...`;
+   - TypeScript: `// SDD: 011 REQ-001 AC-001.1` en la línea anterior a `it(...)`.
+   - Los marcadores sin número (`SDD: REQ-001 AC-001.1`) de las specs 001–010 siguen siendo válidos; desde la 011, el número es obligatorio.
 4. Un AC sin test, o un REQ sin tarea, bloquea la verificación.
 
 ## Art. 5 — Testing (TDD estricto)
@@ -114,7 +115,7 @@ Una feature está **hecha** solo cuando se cumple todo esto:
 
 - [ ] `spec.md`, `plan.md` y `tasks.md` aprobados por el usuario.
 - [ ] Todas las tareas de `tasks.md` están marcadas `[x]`.
-- [ ] Cada AC tiene al menos un test con el marcador `SDD:` y todos pasan.
+- [ ] Cada AC tiene al menos un test con el marcador `SDD: NNN` de la spec y todos pasan.
 - [ ] La suite completa del ámbito tocado pasa: `pytest` en el backend y/o `npm test` en el frontend.
 - [ ] Lint (ratchet de ruff en el backend: sin violaciones nuevas; oxlint en el frontend: sin errores), typecheck (`tsc -b`) y build (`npm run build`, si se tocó el frontend) pasan.
 - [ ] `verify-report.md` tiene resultado **PASS**.

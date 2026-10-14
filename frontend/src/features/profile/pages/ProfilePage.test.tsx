@@ -264,7 +264,7 @@ describe("ProfilePage - datos del servidor", () => {
     expect(saveButton()).toBeDisabled()
   })
 
-  // SDD: REQ-011 AC-011.5
+  // SDD: 006 REQ-011 AC-011.5
   it("si falla el guardado del perfil muestra el error y conserva lo escrito", async () => {
     const user = userEvent.setup()
     getProfileMock.mockResolvedValue(CM_KG_RESPONSE)
@@ -283,7 +283,7 @@ describe("ProfilePage - datos del servidor", () => {
     expect(screen.getByLabelText("Fecha de nacimiento")).toHaveValue("1999-01-15")
   })
 
-  // SDD: REQ-011 AC-011.6
+  // SDD: 006 REQ-011 AC-011.6
   it("si el perfil se guarda pero falla la medición, muestra su error y no 'Cambios guardados'", async () => {
     const user = userEvent.setup()
     getProfileMock.mockResolvedValue(CM_KG_RESPONSE)
@@ -324,7 +324,7 @@ describe("ProfilePage - las cifras de otras pantallas se actualizan sin recargar
     vi.useRealTimers()
   })
 
-  // SDD: REQ-011 AC-011.7
+  // SDD: 006 REQ-011 AC-011.7
   it("tras guardar, /macros y /home muestran las cifras nuevas con una sola lectura del perfil", async () => {
     // Hombre, 28 años el 11-10-2026, 175 cm, 72,5 kg, moderado:
     // mantener = 2315 kcal; aumentar peso (x1,2) = 2778 kcal.

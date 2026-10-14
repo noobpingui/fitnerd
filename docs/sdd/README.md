@@ -98,7 +98,7 @@ docs/sdd/
 
 ## Trazabilidad
 
-La cadena es `REQ-001` (spec) → `AC-001.1` (spec) → `T-003 [REQ-001, AC-001.1]` (tasks) → `# SDD: REQ-001 AC-001.1` (test).
+La cadena es `REQ-001` (spec) → `AC-001.1` (spec) → `T-003 [REQ-001, AC-001.1]` (tasks) → `# SDD: 011 REQ-001 AC-001.1` (test, con el número de la spec; ADR-0022).
 
 El `verifier` comprueba de forma mecánica que cada AC tiene un test que pasa y que cada REQ tiene al menos una tarea. Ver [`specs/README.md`](../../specs/README.md).
 

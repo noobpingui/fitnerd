@@ -16,7 +16,7 @@ El orquestador te indica la feature (`specs/NNN-slug/`) y el **modo**: `red` o `
 3. Python del backend: usa `backend/.venv/Scripts/python.exe` si existe; si no, `backend/.venv/bin/python`; si no, `python`.
 
 ## Modo `red`, tras la etapa tests
-1. Ejecuta **solo los tests nuevos** de la feature, es decir, los que contienen el marcador `SDD:`.
+1. Ejecuta **solo los tests nuevos** de la feature, es decir, los que llevan el marcador `SDD: NNN` con el número de la feature (ADR-0022). Los marcadores sin número son de specs anteriores a la 011.
 2. Clasifica cada fallo:
    - **Rojo legítimo:** assert fallido, 404 o 405 de una ruta aún inexistente, `AttributeError`, `NotImplementedError` o `Error("not implemented")` lanzado por un esqueleto `(scaffold)` (ADR-0012), o un import de un módulo que el plan define y aún no existe (`ModuleNotFoundError` **del módulo de la feature**).
    - **Rojo ilegítimo:** `SyntaxError`, errores de fixture o `conftest`, imports de módulos que no existen **ni están en el plan**, typos o errores de TypeScript en el propio test.
@@ -36,7 +36,7 @@ Ejecuta las comprobaciones del ámbito tocado y anota el resultado de cada una:
 | frontend | `npm run build` (`frontend/`) |
 
 Después comprueba la **trazabilidad** con Grep:
-- Cada `AC-…` de `spec.md` aparece en al menos un marcador `SDD:` de un test, y ese test pasa.
+- Cada `AC-…` de `spec.md` aparece en al menos un marcador `SDD: NNN` de un test con el número de la feature, y ese test pasa. Un marcador de otra spec, o sin número, no cuenta.
 - Cada `REQ-…` o `NFR-…` aparece en al menos una tarea de `tasks.md`.
 - Todas las tareas están marcadas `[x]`.
 - No hay `skip`, `xfail`, `.only` ni `.skip` nuevos en el diff.

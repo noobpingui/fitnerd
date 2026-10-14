@@ -49,7 +49,7 @@ describe("PrivacyPolicyPage", () => {
     expect(within(section).getByText(/Voyage AI/)).toBeInTheDocument()
   })
 
-  // SDD: REQ-012 AC-012.3
+  // SDD: 005 REQ-012 AC-012.3
   it("menciona a Langfuse en 'Tus derechos'", () => {
     renderPage()
     const section = sectionOf("Tus derechos")

@@ -221,7 +221,7 @@ function renderWithWarning(warning?: string | null) {
 }
 
 describe("ProgressAnalysis - ritmo poco realista", () => {
-  // SDD: REQ-003 AC-003.1
+  // SDD: 011 REQ-003 AC-003.1
   it("muestra el aviso antes de pedir el análisis y el botón sigue habilitado", () => {
     renderWithWarning(WARNING)
 
@@ -229,7 +229,7 @@ describe("ProgressAnalysis - ritmo poco realista", () => {
     expect(screen.getByRole("button", { name: BUTTON })).toBeEnabled()
   })
 
-  // SDD: REQ-003 AC-003.3
+  // SDD: 011 REQ-003 AC-003.3
   it("el aviso sigue visible junto al texto del análisis", async () => {
     const user = userEvent.setup()
     resolveWith(null)
@@ -243,7 +243,7 @@ describe("ProgressAnalysis - ritmo poco realista", () => {
     expect(screen.getByText(WARNING)).toBeInTheDocument()
   })
 
-  // SDD: REQ-004 AC-004.1
+  // SDD: 011 REQ-004 AC-004.1
   it("una respuesta sin sugerencia muestra el texto y ni el bloque ni un error", async () => {
     const user = userEvent.setup()
     resolveWith(null)
@@ -261,7 +261,7 @@ describe("ProgressAnalysis - ritmo poco realista", () => {
     expect(screen.getByText(WARNING)).toBeInTheDocument()
   })
 
-  // SDD: REQ-007 AC-007.5
+  // SDD: 011 REQ-007 AC-007.5
   it("el 400 muestra el mensaje nuevo y no el antiguo", async () => {
     const user = userEvent.setup()
     analyzeMock.mockRejectedValueOnce(
@@ -286,7 +286,7 @@ describe("ProgressAnalysis - ritmo poco realista", () => {
     expect(screen.getByText(WARNING)).toBeInTheDocument()
   })
 
-  // SDD: REQ-003 AC-003.1
+  // SDD: 011 REQ-003 AC-003.1
   it("sin aviso no se pinta ningún elemento con tono de advertencia", () => {
     const { container, unmount } = renderWithWarning(null)
 
@@ -298,7 +298,7 @@ describe("ProgressAnalysis - ritmo poco realista", () => {
     expect(withWarning.container.querySelector('[data-tone="warn"]')).not.toBeNull()
   })
 
-  // SDD: REQ-003 AC-003.1
+  // SDD: 011 REQ-003 AC-003.1
   it("el aviso se pinta con tono de advertencia", () => {
     const { container } = renderWithWarning(WARNING)
 

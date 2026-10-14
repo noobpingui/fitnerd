@@ -231,7 +231,7 @@ describe("BodyMetricsPage - análisis con ritmo poco realista", () => {
     await user.click(screen.getByRole("button", { name: "Guardar" }))
   }
 
-  // SDD: REQ-003 AC-003.1
+  // SDD: 011 REQ-003 AC-003.1
   it("con el salto hacia arriba muestra el aviso con ritmo y fecha y el botón habilitado", async () => {
     useProfile()
     listMock.mockResolvedValue(JUMP_UP)
@@ -243,7 +243,7 @@ describe("BodyMetricsPage - análisis con ritmo poco realista", () => {
     expect(screen.getByRole("button", { name: BUTTON })).toBeEnabled()
   })
 
-  // SDD: REQ-003 AC-003.2
+  // SDD: 011 REQ-003 AC-003.2
   it("con el perfil en lb el aviso lleva -27,8 lb/sem y la fecha del 2026-10-01", async () => {
     useProfile("lb")
     listMock.mockResolvedValue(JUMP_DOWN)
@@ -254,7 +254,7 @@ describe("BodyMetricsPage - análisis con ritmo poco realista", () => {
     ).toBeInTheDocument()
   })
 
-  // SDD: REQ-003 AC-003.4
+  // SDD: 011 REQ-003 AC-003.4
   it("con el límite del 2 % no hay aviso", async () => {
     useProfile()
     // Contraste: con el salto sí hay aviso (el caso nuevo).
@@ -272,7 +272,7 @@ describe("BodyMetricsPage - análisis con ritmo poco realista", () => {
     expect(anyWarning()).not.toBeInTheDocument()
   })
 
-  // SDD: REQ-003 AC-003.5
+  // SDD: 011 REQ-003 AC-003.5
   it("en un empate el aviso lleva la fecha del 2026-10-11", async () => {
     useProfile()
     listMock.mockResolvedValue(TIE)
@@ -284,7 +284,7 @@ describe("BodyMetricsPage - análisis con ritmo poco realista", () => {
     )
   })
 
-  // SDD: REQ-003 AC-003.6
+  // SDD: 011 REQ-003 AC-003.6
   it("una medición de hace más de 28 días no cambia la fecha del aviso", async () => {
     useProfile()
     listMock.mockResolvedValue([metric("2026-09-01", 120), ...JUMP_UP])
@@ -297,7 +297,7 @@ describe("BodyMetricsPage - análisis con ritmo poco realista", () => {
     expect(node.textContent).not.toContain(formatDate("2026-09-01"))
   })
 
-  // SDD: REQ-004 AC-004.1
+  // SDD: 011 REQ-004 AC-004.1
   it("el clic envía 'unrealistic' y se ve el análisis sin bloque de ajuste ni error", async () => {
     const user = userEvent.setup()
     useProfile()
@@ -321,7 +321,7 @@ describe("BodyMetricsPage - análisis con ritmo poco realista", () => {
     expect(anyWarning()).toBeInTheDocument()
   })
 
-  // SDD: REQ-004 AC-004.4
+  // SDD: 011 REQ-004 AC-004.4
   it("con el salto hacia abajo el clic también envía 'unrealistic'", async () => {
     const user = userEvent.setup()
     useProfile()
@@ -336,7 +336,7 @@ describe("BodyMetricsPage - análisis con ritmo poco realista", () => {
     expect(screen.queryByText("Ajuste de calorías sugerido")).not.toBeInTheDocument()
   })
 
-  // SDD: REQ-007 AC-007.6
+  // SDD: 011 REQ-007 AC-007.6
   it("la petición de la versión actual con el salto hacia arriba se genera sin error", async () => {
     const user = userEvent.setup()
     useProfile()
@@ -350,7 +350,7 @@ describe("BodyMetricsPage - análisis con ritmo poco realista", () => {
     expect(analyzeMock).toHaveBeenCalledTimes(1)
   })
 
-  // SDD: REQ-008 AC-008.1
+  // SDD: 011 REQ-008 AC-008.1
   it("tras corregir la medición desaparece el aviso", async () => {
     const user = userEvent.setup()
     useProfile()
@@ -364,7 +364,7 @@ describe("BodyMetricsPage - análisis con ritmo poco realista", () => {
     await waitFor(() => expect(anyWarning()).not.toBeInTheDocument())
   })
 
-  // SDD: REQ-008 AC-008.3
+  // SDD: 011 REQ-008 AC-008.3
   it("tras corregir, el clic envía un estado normal y se ve el ajuste que da el servidor", async () => {
     const user = userEvent.setup()
     useProfile()

@@ -563,7 +563,7 @@ function rowOf(iso: string) {
 }
 
 describe("MetricsHistory - medición sospechosa", () => {
-  // SDD: REQ-009 AC-009.1
+  // SDD: 011 REQ-009 AC-009.1
   it("marca con 'Revisa este peso' solo la fila de la fecha sospechosa", () => {
     renderMarked(JUMP_UP, "2026-10-11")
 
@@ -578,7 +578,7 @@ describe("MetricsHistory - medición sospechosa", () => {
     expect(screen.getAllByText("Revisa este peso")).toHaveLength(1)
   })
 
-  // SDD: REQ-009 AC-009.5
+  // SDD: 011 REQ-009 AC-009.5
   it("una fila sin peso no lleva la marca aunque sea la fecha sospechosa", () => {
     // Control positivo: con peso en la fila sospechosa la marca sí aparece.
     const first = renderMarked(JUMP_UP, "2026-10-11")
@@ -590,7 +590,7 @@ describe("MetricsHistory - medición sospechosa", () => {
     expect(screen.queryByText("Revisa este peso")).not.toBeInTheDocument()
   })
 
-  // SDD: REQ-009 AC-009.8
+  // SDD: 011 REQ-009 AC-009.8
   it("con el peso en lb la fila sospechosa también lleva la marca", () => {
     renderMarked(JUMP_UP, "2026-10-11", "lb")
 
@@ -599,7 +599,7 @@ describe("MetricsHistory - medición sospechosa", () => {
     ).toBeInTheDocument()
   })
 
-  // SDD: REQ-009 AC-009.9
+  // SDD: 011 REQ-009 AC-009.9
   it("la fila marcada conserva los botones de corregir y borrar", () => {
     renderMarked(JUMP_UP, "2026-10-11")
 
@@ -614,7 +614,7 @@ describe("MetricsHistory - medición sospechosa", () => {
     ).toBeInTheDocument()
   })
 
-  // SDD: REQ-009 AC-009.6
+  // SDD: 011 REQ-009 AC-009.6
   it("sin fecha sospechosa ninguna fila lleva la marca", () => {
     // Control positivo: la misma lista con fecha sospechosa sí lleva la marca.
     const first = renderMarked(JUMP_UP, "2026-10-11")
