@@ -1,0 +1,91 @@
+{
+  "$comment": "Única fuente de verdad del flujo SDD de una feature. Lo escriben solo el orquestador (/sdd-*) y el verifier (secciones red_check y verify). Etapas: spec, plan, tasks, tests, implement, verify, review, docs, close, done.",
+  "schema_version": 1,
+  "feature": "012-remove-catalog",
+  "title": "Eliminar el catálogo de ejercicios, los favoritos y el plan semanal",
+  "type": "feature",
+  "scope": {
+    "backend": true,
+    "frontend": true
+  },
+  "branch": "feat/012-remove-catalog",
+  "base_branch": "main",
+  "created_at": "2026-10-14T20:51:28.634Z",
+  "stage": "spec",
+  "status": "awaiting_approval",
+  "approvals": {
+    "spec": "2026-10-14T21:28:05.194Z",
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
+    "verify": null,
+    "review": null,
+    "docs": null,
+    "close": null
+  },
+  "commits": {},
+  "iterations": {
+    "tests": 0,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": null,
+    "at": null
+  },
+  "verify": {
+    "result": null,
+    "at": null
+  },
+  "review": {
+    "verdict": null,
+    "at": null
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-14T20:51:28.634Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "Feature creada desde main (aprobado por el usuario); origen: ítem 3 del backlog (quitar el catálogo oculto desde el rediseño)"
+    },
+    {
+      "at": "2026-10-14T20:53:40.843Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegado al spec-writer (iteración 1)"
+    },
+    {
+      "at": "2026-10-14T20:56:00.829Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "spec.md iteración 1: 8 REQ, 26 AC, 1 NFR (3 AC); Q1–Q7 abiertas"
+    },
+    {
+      "at": "2026-10-14T21:26:10.549Z",
+      "stage": "spec",
+      "event": "user_decision",
+      "note": "Usuario: \"Todas las propuestas, en Q5 volcado completo\""
+    },
+    {
+      "at": "2026-10-14T21:26:10.549Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Respuestas Q1–Q7 copiadas en spec.md; re-delegado al spec-writer (iteración 2)"
+    },
+    {
+      "at": "2026-10-14T21:27:01.558Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec.md iteración 2: 8 REQ, 26 AC, 1 NFR (3 AC); Q1–Q7 resueltas"
+    },
+    {
+      "at": "2026-10-14T21:28:05.194Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Spec y commit aprobados por el usuario (\"1,2 sí\")"
+    }
+  ]
+}
