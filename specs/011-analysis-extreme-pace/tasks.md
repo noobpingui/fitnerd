@@ -28,22 +28,22 @@ Solo para los símbolos nuevos que los tests importan. Las constantes de texto y
 ## Fase B — Implementación (implementer)
 Backend (servicios), en orden de dependencia.
 
-- [ ] T-100 [REQ-001, REQ-006] (impl) Implementar `UNREALISTIC_RATE_PCT`, `RATE_EPS` e `is_unrealistic_rate` (2 % exacto no cuenta) — `backend/services/calorie_suggestion.py`
-- [ ] T-101 [REQ-006, REQ-007] (impl) `INVALID_ANALYSIS_REQUEST_MESSAGE` nuevo, `UNREALISTIC`, `PACE_LABELS["unrealistic"]` y `parse_analysis_request`: rama `unrealistic` sin rango de ritmo, rango [-10, 10] y normalización a `unrealistic` solo para estados de meta — `backend/services/progress_analysis_context.py`
-- [ ] T-102 [REQ-004] (impl) `UNREALISTIC_SUGGESTION_TEXT`, línea del ritmo con el estado `unrealistic` y `_suggestion_block` en `build_user_message` — `backend/services/progress_analysis_context.py`
-- [ ] T-103 [REQ-005] (impl) Añadir las tres frases nuevas al `PROGRESS_ANALYSIS_SYSTEM_PROMPT` sin quitar las existentes — `backend/services/progress_analysis_service.py`
+- [x] T-100 [REQ-001, REQ-006] (impl) Implementar `UNREALISTIC_RATE_PCT`, `RATE_EPS` e `is_unrealistic_rate` (2 % exacto no cuenta) — `backend/services/calorie_suggestion.py`
+- [x] T-101 [REQ-006, REQ-007] (impl) `INVALID_ANALYSIS_REQUEST_MESSAGE` nuevo, `UNREALISTIC`, `PACE_LABELS["unrealistic"]` y `parse_analysis_request`: rama `unrealistic` sin rango de ritmo, rango [-10, 10] y normalización a `unrealistic` solo para estados de meta — `backend/services/progress_analysis_context.py`
+- [x] T-102 [REQ-004] (impl) `UNREALISTIC_SUGGESTION_TEXT`, línea del ritmo con el estado `unrealistic` y `_suggestion_block` en `build_user_message` — `backend/services/progress_analysis_context.py`
+- [x] T-103 [REQ-005] (impl) Añadir las tres frases nuevas al `PROGRESS_ANALYSIS_SYSTEM_PROMPT` sin quitar las existentes — `backend/services/progress_analysis_service.py`
 
 Frontend, en orden `types → schemas → lógica pura → api → componentes → páginas`.
 
-- [ ] T-110 [REQ-004] (impl) Añadir `"unrealistic"` a `PaceStatusCode` — `frontend/src/features/body-metrics/types.ts`
-- [ ] T-111 [REQ-004] (impl) Añadir `"unrealistic"` al `z.enum` de `pace_status` en `analysisRequestSchema` — `frontend/src/features/body-metrics/schemas.ts`
-- [ ] T-112 [REQ-001, REQ-009] (impl) Implementar `rateWindow` (extraída de `rateIndicator`, sin cambiar su comportamiento), `isUnrealisticRate`, `median` y `suspiciousPoint` — `frontend/src/features/body-metrics/insights.ts`
-- [ ] T-113 [REQ-001, REQ-009] (impl) `buildInsights`: estado `unrealistic` tras `stale`/`insufficient` y antes de la meta, y campo `suspiciousDate` — `frontend/src/features/body-metrics/insightsView.ts`
-- [ ] T-114 [REQ-002, REQ-003] (impl) `formatInsights`: `UNREALISTIC_COPY` ("Revisa tus mediciones", tono warn) y `paceWarning` con `formatDate` — `frontend/src/features/body-metrics/insightsView.ts`
-- [ ] T-115 [REQ-004] (impl) Verificar que `buildAnalysisRequest` envía `pace_status: "unrealistic"` con ritmo y peso (sin cambios de lógica esperados; solo ajustar si el tipo lo exige) — `frontend/src/features/body-metrics/analysisRequest.ts`
-- [ ] T-116 [REQ-003, REQ-004, REQ-007] (impl) Prop `warning` en `ProgressAnalysis`, siempre visible encima del botón con `CircleAlert` y `data-tone="warn"` — `frontend/src/features/body-metrics/components/ProgressAnalysis.tsx`
-- [ ] T-117 [REQ-009] (impl) Prop `suspiciousDate` en `MetricsHistory` con la marca "Revisa este peso" junto al peso — `frontend/src/features/body-metrics/components/MetricsHistory.tsx`
-- [ ] T-118 [REQ-002, REQ-003, REQ-008, REQ-009] (impl) Pasar `warning={view.paceWarning}` a `ProgressAnalysis` y `suspiciousDate={insights.suspiciousDate}` a `MetricsHistory` — `frontend/src/features/body-metrics/pages/BodyMetricsPage.tsx`
+- [x] T-110 [REQ-004] (impl) Añadir `"unrealistic"` a `PaceStatusCode` — `frontend/src/features/body-metrics/types.ts`
+- [x] T-111 [REQ-004] (impl) Añadir `"unrealistic"` al `z.enum` de `pace_status` en `analysisRequestSchema` — `frontend/src/features/body-metrics/schemas.ts`
+- [x] T-112 [REQ-001, REQ-009] (impl) Implementar `rateWindow` (extraída de `rateIndicator`, sin cambiar su comportamiento), `isUnrealisticRate`, `median` y `suspiciousPoint` — `frontend/src/features/body-metrics/insights.ts`
+- [x] T-113 [REQ-001, REQ-009] (impl) `buildInsights`: estado `unrealistic` tras `stale`/`insufficient` y antes de la meta, y campo `suspiciousDate` — `frontend/src/features/body-metrics/insightsView.ts`
+- [x] T-114 [REQ-002, REQ-003] (impl) `formatInsights`: `UNREALISTIC_COPY` ("Revisa tus mediciones", tono warn) y `paceWarning` con `formatDate` — `frontend/src/features/body-metrics/insightsView.ts`
+- [x] T-115 [REQ-004] (impl) Verificar que `buildAnalysisRequest` envía `pace_status: "unrealistic"` con ritmo y peso (sin cambios de lógica esperados; solo ajustar si el tipo lo exige) — `frontend/src/features/body-metrics/analysisRequest.ts`
+- [x] T-116 [REQ-003, REQ-004, REQ-007] (impl) Prop `warning` en `ProgressAnalysis`, siempre visible encima del botón con `CircleAlert` y `data-tone="warn"` — `frontend/src/features/body-metrics/components/ProgressAnalysis.tsx`
+- [x] T-117 [REQ-009] (impl) Prop `suspiciousDate` en `MetricsHistory` con la marca "Revisa este peso" junto al peso — `frontend/src/features/body-metrics/components/MetricsHistory.tsx`
+- [x] T-118 [REQ-002, REQ-003, REQ-008, REQ-009] (impl) Pasar `warning={view.paceWarning}` a `ProgressAnalysis` y `suspiciousDate={insights.suspiciousDate}` a `MetricsHistory` — `frontend/src/features/body-metrics/pages/BodyMetricsPage.tsx`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

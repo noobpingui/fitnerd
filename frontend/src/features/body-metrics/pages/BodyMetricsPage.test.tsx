@@ -1006,7 +1006,10 @@ describe("BodyMetricsPage - ritmo poco realista", () => {
   const rowOf = (iso: string) =>
     screen
       .getAllByRole("row")
-      .find((row) => row.textContent?.includes(formatDate(iso))) as HTMLElement
+      .find(
+        (row) =>
+          row.querySelector("th, td")?.textContent?.trim() === formatDate(iso)
+      ) as HTMLElement
   const marks = () => screen.queryAllByText("Revisa este peso")
 
   // SDD: REQ-002 AC-002.1

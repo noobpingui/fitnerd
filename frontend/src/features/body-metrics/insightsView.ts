@@ -1,12 +1,16 @@
+import { formatDate } from "@/features/body-metrics/dateUtils"
 import type { BodyMetric, PaceStatusCode } from "@/features/body-metrics/types"
 import {
   composition,
+  isUnrealisticRate,
   latestWithDelta,
   paceStatusFromPercent,
   ratePercent,
   rateIndicator,
+  rateWindow,
   seriesOf,
   streak,
+  suspiciousPoint,
   type PaceStatus,
 } from "@/features/body-metrics/insights"
 import type {
@@ -33,6 +37,8 @@ export const PACE_COPY: Record<PaceStatus, { label: string; tone: "good" | "warn
   off_range: { label: "Fuera del rango de tu meta", tone: "warn" },
 }
 
+const UNREALISTIC_COPY = { label: "Revisa tus mediciones", tone: "warn" } as const
+
 const NO_RATE_COPY = {
   stale: "Sin registros recientes",
   insufficient: "Faltan registros para calcularlo",
@@ -53,6 +59,8 @@ export function buildInsights(
     paceStatus = "stale"
   } else if (rate.kind === "insufficient") {
     paceStatus = "insufficient"
+  } else if (isUnrealisticRate(rate.kgPerWeek, rate.latestKg)) {
+    paceStatus = "unrealistic"
   } else if (goal) {
     paceStatus = paceStatusFromPercent(
       ratePercent(rate.kgPerWeek, rate.latestKg),
@@ -60,7 +68,13 @@ export function buildInsights(
     )
   }
 
+  const suspiciousDate =
+    paceStatus === "unrealistic"
+      ? (suspiciousPoint(rateWindow(weight))?.date ?? null)
+      : null
+
   return {
+    suspiciousDate,
     weight: latestWithDelta(weight),
     fat: latestWithDelta(seriesOf(metrics, "body_fat_percentage")),
     rate,
@@ -93,10 +107,23 @@ export function formatInsights(input: InsightsInput, weightUnit: WeightUnit) {
   if (status === "stale" || status === "insufficient") {
     statusLabel = NO_RATE_COPY[status]
     tone = "muted"
+  } else if (status === "unrealistic") {
+    statusLabel = UNREALISTIC_COPY.label
+    tone = UNREALISTIC_COPY.tone
   } else if (status) {
     statusLabel = PACE_COPY[status].label
     tone = PACE_COPY[status].tone
   }
+
+  const rate =
+    insights.rate.kind === "ok"
+      ? `${signed.format(toDisplayWeight(insights.rate.kgPerWeek))} ${weightUnit}/sem`
+      : null
+  const suspiciousDate = (insights as { suspiciousDate?: string | null }).suspiciousDate ?? null
+  const paceWarning =
+    status === "unrealistic" && suspiciousDate
+      ? `Tu ritmo de las últimas 4 semanas (${rate}) no es realista: puede que la medición del ${formatDate(suspiciousDate)} esté mal. Revísala en el Historial y corrígela o bórrala para recibir una sugerencia de calorías.`
+      : null
 
   const weightDelta = insights.weight?.delta
   const fatDelta = insights.fat?.delta
@@ -107,10 +134,7 @@ export function formatInsights(input: InsightsInput, weightUnit: WeightUnit) {
       weightDelta != null
         ? `${signed.format(toDisplayWeight(weightDelta))} ${weightUnit}`
         : null,
-    rate:
-      insights.rate.kind === "ok"
-        ? `${signed.format(toDisplayWeight(insights.rate.kgPerWeek))} ${weightUnit}/sem`
-        : null,
+    rate,
     bodyFat: insights.fat ? `${one.format(insights.fat.value)} %` : null,
     bodyFatChange30d:
       fatDelta != null ? `${signed.format(fatDelta)} pts` : null,
@@ -120,6 +144,7 @@ export function formatInsights(input: InsightsInput, weightUnit: WeightUnit) {
     ffmi: decimal(insights.composition.ffmi),
     statusLabel,
     tone,
+    paceWarning,
   }
 }
 

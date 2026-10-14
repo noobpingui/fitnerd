@@ -74,5 +74,6 @@ UNREALISTIC_RATE_PCT = 2.0
 RATE_EPS = 1e-9
 
 
-def is_unrealistic_rate(_rate_kg_per_week: float, _latest_weight_kg: float) -> bool:
-    raise NotImplementedError("not implemented")
+def is_unrealistic_rate(rate_kg_per_week: float, latest_weight_kg: float) -> bool:
+    """Más del 2 % del peso por semana; el 2 % exacto no cuenta."""
+    return abs(rate_kg_per_week / latest_weight_kg * 100) > UNREALISTIC_RATE_PCT + RATE_EPS

@@ -556,7 +556,10 @@ function renderMarked(
 function rowOf(iso: string) {
   return screen
     .getAllByRole("row")
-    .find((row) => row.textContent?.includes(formatDate(iso))) as HTMLElement
+    .find(
+      (row) =>
+        row.querySelector("th, td")?.textContent?.trim() === formatDate(iso)
+    ) as HTMLElement
 }
 
 describe("MetricsHistory - medición sospechosa", () => {
