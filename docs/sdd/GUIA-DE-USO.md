@@ -58,7 +58,7 @@ flowchart TD
     G2 --> T["tasks · task-breaker<br/>tasks.md (scaffold → test → impl)"]
     T --> G3{{GATE tasks + commit}}
     G3 --> TS1["tests · implementer (scaffold)<br/>firmas que lanzan 'not implemented'"]
-    TS1 --> TS2["tests · test-author<br/>tests desde la spec con # SDD: REQ AC"]
+    TS1 --> TS2["tests · test-author<br/>tests desde la spec con # SDD: NNN REQ AC"]
     TS2 --> TS3["tests · verifier (red)<br/>¿fallan todos por comportamiento ausente?"]
     TS3 -->|"FAIL (≤3)"| TS2
     TS3 --> G4{{GATE tests + commit<br/>se guarda tests_snapshot}}
@@ -124,7 +124,7 @@ A partir de aquí, el orquestador ejecuta **una etapa**, te muestra un resumen, 
 ### Paso 5: tests (TDD)
 Aquí intervienen tres agentes seguidos:
 1. **`implementer` (modo scaffold):** crea las firmas nuevas, que solo lanzan `not implemented`.
-2. **`test-author`:** escribe los tests a partir de la spec. Cada uno va con el marcador `// SDD: REQ-001 AC-001.1`.
+2. **`test-author`:** escribe los tests a partir de la spec. Cada uno va con el marcador `// SDD: 011 REQ-001 AC-001.1`, con el número de la spec (ADR-0022).
 3. **`verifier` (modo red):** comprueba que **cada** test falla por comportamiento ausente, no por errores de sintaxis ni de import.
 
 **Qué revisar:** lee 2 o 3 tests y comprueba que prueban el criterio que dicen probar. Al aprobar, el orquestador guarda los hashes de los tests en `tests_snapshot`.

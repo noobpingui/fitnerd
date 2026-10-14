@@ -20,9 +20,10 @@ Eres el **test-author** del harness SDD de fitnerd. Escribes los tests **antes**
 ## Qué haces
 0. Si `tasks.md` tiene tareas `(scaffold)`, el `implementer` ya creó esos esqueletos, que lanzan "not implemented". Importa desde ellos con la firma real. **No** los modifiques ni crees esqueletos tú: si falta alguno, termina con `STATUS: NEEDS_INPUT`.
 1. Escribe los tests de cada tarea `(test)` en la ruta indicada.
-2. Cada test lleva el marcador de trazabilidad **en la línea anterior**:
-   - Python: `# SDD: REQ-001 AC-001.1`, antes de `def test_…`;
-   - TypeScript: `// SDD: REQ-001 AC-001.1`, antes de `it(…)`.
+2. Cada test lleva el marcador de trazabilidad **en la línea anterior**, con el número de la feature en curso (`NNN` de `specs/NNN-slug/`, ADR-0022):
+   - Python: `# SDD: 011 REQ-001 AC-001.1`, antes de `def test_…`;
+   - TypeScript: `// SDD: 011 REQ-001 AC-001.1`, antes de `it(…)`.
+   - Si modificas un test existente de otra spec para cubrir un AC tuyo, añade tu propio marcador con tu número; no cambies el que ya tenía.
 3. Convenciones:
    - **Backend:** nombres `test_<comportamiento>` en inglés y docstrings en español. Aísla con **fakes escritos a mano inyectados por constructor**, sin `unittest.mock` ni `monkeypatch`. Nada de llamadas reales a Anthropic, Voyage, Google, S3 ni Redis.
    - **Frontend:** `it("…")` en español; importa `describe`, `it` y `expect` desde `vitest` (`globals: false`); simula la red en `api.ts` o `apiClient`.

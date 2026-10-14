@@ -145,43 +145,43 @@ def test_stale_records_give_no_suggestion():
 # --- Spec 011: ritmo poco realista ---
 
 
-# SDD: REQ-001 AC-001.1
+# SDD: 011 REQ-001 AC-001.1
 def test_a_big_gain_is_an_unrealistic_rate():
     """+12,6 kg/sem con 98 kg (12,9 % por semana) es poco realista."""
     assert is_unrealistic_rate(12.6, 98) is True
 
 
-# SDD: REQ-001 AC-001.2
+# SDD: 011 REQ-001 AC-001.2
 def test_a_big_loss_is_an_unrealistic_rate():
     """-12,6 kg/sem con 80 kg (15,75 % por semana) es poco realista."""
     assert is_unrealistic_rate(-12.6, 80) is True
 
 
-# SDD: REQ-001 AC-001.3
+# SDD: 011 REQ-001 AC-001.3
 def test_exactly_two_percent_per_week_is_not_unrealistic():
     """+2 kg/sem con 100 kg es exactamente el 2 %: sigue siendo realista."""
     assert is_unrealistic_rate(2.0, 100) is False
 
 
-# SDD: REQ-001 AC-001.4
+# SDD: 011 REQ-001 AC-001.4
 def test_just_above_two_percent_per_week_is_unrealistic():
     """+2,1 kg/sem con 100,2 kg (2,096 %) supera el 2 %."""
     assert is_unrealistic_rate(2.1, 100.2) is True
 
 
-# SDD: REQ-006 AC-006.3
+# SDD: 011 REQ-006 AC-006.3
 def test_two_percent_with_floating_point_noise_is_not_unrealistic():
     """1,6 / 80 da 2,0000000000000004 en coma flotante; con la tolerancia no cuenta."""
     assert is_unrealistic_rate(1.6, 80) is False
 
 
-# SDD: REQ-001 AC-001.6
+# SDD: 011 REQ-001 AC-001.6
 def test_a_normal_pace_is_not_unrealistic():
     """-0,5 kg/sem con 79,4 kg (0,63 %) es un ritmo normal."""
     assert is_unrealistic_rate(-0.5, 79.4) is False
 
 
-# SDD: REQ-004 AC-004.1
+# SDD: 011 REQ-004 AC-004.1
 def test_unrealistic_pace_gives_no_suggestion():
     """Con el estado 'unrealistic' no se calcula ninguna sugerencia."""
     # El umbral es lo nuevo: con ese ritmo el estado correcto es 'unrealistic'.

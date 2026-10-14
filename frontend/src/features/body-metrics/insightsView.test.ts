@@ -239,17 +239,17 @@ const warningFor = (rate: string, iso: string) =>
   `Tu ritmo de las últimas 4 semanas (${rate}) no es realista: puede que la medición del ${formatDate(iso)} esté mal. Revísala en el Historial y corrígela o bórrala para recibir una sugerencia de calorías.`
 
 describe("insightsView - ritmo poco realista (spec 011)", () => {
-  // SDD: REQ-001 AC-001.1
+  // SDD: 011 REQ-001 AC-001.1
   it("el salto hacia arriba da el estado 'unrealistic'", () => {
     expect(view011(JUMP_UP).insights.paceStatus).toBe("unrealistic")
   })
 
-  // SDD: REQ-001 AC-001.2
+  // SDD: 011 REQ-001 AC-001.2
   it("el salto hacia abajo da el estado 'unrealistic'", () => {
     expect(view011(JUMP_DOWN).insights.paceStatus).toBe("unrealistic")
   })
 
-  // SDD: REQ-001 AC-001.3
+  // SDD: 011 REQ-001 AC-001.3
   it("el límite del 2 % sigue siendo 'too_slow' (subir con meta perder)", () => {
     const { insights, text } = view011(LIMIT)
 
@@ -260,12 +260,12 @@ describe("insightsView - ritmo poco realista (spec 011)", () => {
 
   })
 
-  // SDD: REQ-001 AC-001.4
+  // SDD: 011 REQ-001 AC-001.4
   it("justo por encima del 2 % da el estado 'unrealistic'", () => {
     expect(view011(JUST_ABOVE).insights.paceStatus).toBe("unrealistic")
   })
 
-  // SDD: REQ-001 AC-001.5
+  // SDD: 011 REQ-001 AC-001.5
   it("con el último peso de hace más de 28 días es 'stale' y no hay medición sospechosa", () => {
     const { insights, text } = view011(STALE_JUMP)
 
@@ -277,7 +277,7 @@ describe("insightsView - ritmo poco realista (spec 011)", () => {
     expect(view011(JUMP_UP).insights.paceStatus).toBe("unrealistic")
   })
 
-  // SDD: REQ-001 AC-001.6
+  // SDD: 011 REQ-001 AC-001.6
   it("el ritmo normal de -0,5 kg/sem sigue en 'on_track'", () => {
     const { insights, text } = view011(ON_TRACK)
 
@@ -288,7 +288,7 @@ describe("insightsView - ritmo poco realista (spec 011)", () => {
     expect(view011(JUMP_UP).insights.paceStatus).toBe("unrealistic")
   })
 
-  // SDD: REQ-002 AC-002.1
+  // SDD: 011 REQ-002 AC-002.1
   it("la tarjeta muestra el ritmo, 'Revisa tus mediciones' y el tono de advertencia", () => {
     const { text } = view011(JUMP_UP)
 
@@ -297,7 +297,7 @@ describe("insightsView - ritmo poco realista (spec 011)", () => {
     expect(text.tone).toBe("warn")
   })
 
-  // SDD: REQ-002 AC-002.2
+  // SDD: 011 REQ-002 AC-002.2
   it("con el perfil en lb el ritmo sale en lb", () => {
     const { text } = view011(JUMP_DOWN, PROFILE_LB, "lb")
 
@@ -305,7 +305,7 @@ describe("insightsView - ritmo poco realista (spec 011)", () => {
     expect(text.statusLabel).toBe("Revisa tus mediciones")
   })
 
-  // SDD: REQ-003 AC-003.1
+  // SDD: 011 REQ-003 AC-003.1
   it("el aviso lleva el ritmo y la fecha de la medición sospechosa", () => {
     const { insights, text } = view011(JUMP_UP)
 
@@ -313,14 +313,14 @@ describe("insightsView - ritmo poco realista (spec 011)", () => {
     expect(text.paceWarning).toBe(warningFor("+12,6 kg/sem", "2026-10-11"))
   })
 
-  // SDD: REQ-003 AC-003.2
+  // SDD: 011 REQ-003 AC-003.2
   it("con el perfil en lb el aviso lleva el ritmo en lb y la fecha del 2026-10-01", () => {
     const { text } = view011(JUMP_DOWN, PROFILE_LB, "lb")
 
     expect(text.paceWarning).toBe(warningFor("-27,8 lb/sem", "2026-10-01"))
   })
 
-  // SDD: REQ-003 AC-003.4
+  // SDD: 011 REQ-003 AC-003.4
   it("con el límite del 2 % no hay aviso", () => {
     const { insights, text } = view011(LIMIT)
 
@@ -332,7 +332,7 @@ describe("insightsView - ritmo poco realista (spec 011)", () => {
     )
   })
 
-  // SDD: REQ-003 AC-003.5
+  // SDD: 011 REQ-003 AC-003.5
   it("en un empate el aviso lleva la fecha del 2026-10-11", () => {
     const { text } = view011(TIE)
 
@@ -341,7 +341,7 @@ describe("insightsView - ritmo poco realista (spec 011)", () => {
     expect(text.paceWarning).toBe(warningFor("+10,8 kg/sem", "2026-10-11"))
   })
 
-  // SDD: REQ-003 AC-003.6
+  // SDD: 011 REQ-003 AC-003.6
   it("una medición fuera de los 28 días no entra en la elección de la fecha", () => {
     const { insights, text } = view011([m("2026-09-01", 120), ...JUMP_UP])
 

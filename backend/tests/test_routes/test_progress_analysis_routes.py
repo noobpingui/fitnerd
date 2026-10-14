@@ -213,7 +213,7 @@ def pace_body(status, rate, latest, rate_text="+12,6 kg/sem"):
     return body
 
 
-# SDD: REQ-006 AC-006.4
+# SDD: 011 REQ-006 AC-006.4
 def test_an_unrealistic_pace_is_accepted_not_rejected_as_bad_request(
     client, app, registered_user
 ):
@@ -229,7 +229,7 @@ def test_an_unrealistic_pace_is_accepted_not_rejected_as_bad_request(
     assert response.get_json() == {"error": RATE_LIMIT_MESSAGE}
 
 
-# SDD: REQ-006 AC-006.5
+# SDD: 011 REQ-006 AC-006.5
 def test_an_unrealistic_pace_above_ten_kg_per_week_is_accepted(
     client, app, registered_user
 ):
@@ -246,7 +246,7 @@ def test_an_unrealistic_pace_above_ten_kg_per_week_is_accepted(
     assert response.status_code == 429
 
 
-# SDD: REQ-007 AC-007.6
+# SDD: 011 REQ-007 AC-007.6
 def test_the_current_client_request_for_a_big_jump_is_not_a_bad_request(
     client, app, registered_user
 ):
@@ -261,7 +261,7 @@ def test_the_current_client_request_for_a_big_jump_is_not_a_bad_request(
     assert response.status_code != 400
 
 
-# SDD: REQ-007 AC-007.1
+# SDD: 011 REQ-007 AC-007.1
 def test_a_goal_status_with_a_pace_above_ten_kg_per_week_is_bad_request(
     client, app, registered_user
 ):
@@ -277,7 +277,7 @@ def test_a_goal_status_with_a_pace_above_ten_kg_per_week_is_bad_request(
     assert analysis_rows(app) == 0
 
 
-# SDD: REQ-007 AC-007.2
+# SDD: 011 REQ-007 AC-007.2
 def test_a_non_numeric_pace_is_bad_request(client, app, registered_user):
     """Un ritmo 'x' con 'too_slow' es un 400 con el mensaje nuevo."""
     headers = registered_user["headers"]
@@ -291,7 +291,7 @@ def test_a_non_numeric_pace_is_bad_request(client, app, registered_user):
     assert analysis_rows(app) == 0
 
 
-# SDD: REQ-007 AC-007.3
+# SDD: 011 REQ-007 AC-007.3
 def test_a_non_numeric_pace_marked_unrealistic_is_bad_request(
     client, app, registered_user
 ):
@@ -307,7 +307,7 @@ def test_a_non_numeric_pace_marked_unrealistic_is_bad_request(
     assert analysis_rows(app) == 0
 
 
-# SDD: REQ-007 AC-007.4
+# SDD: 011 REQ-007 AC-007.4
 def test_a_malformed_body_without_a_profile_is_conflict(client, app, registered_user):
     """Sin perfil, un cuerpo mal formado da 409 (el perfil va antes que el 400)."""
     headers = registered_user["headers"]

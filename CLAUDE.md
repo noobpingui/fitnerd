@@ -94,5 +94,5 @@ App de fitness full-stack con un **coach de IA basado en contenido real**: respo
 - **Ramas:** `feat/NNN-slug` o `fix/NNN-slug`; `chore/…` solo para cambios del harness, de documentación o de CI/CD (estos últimos sin SDD completo, con ADR si introducen una decisión nueva; ADR-0016). Nunca trabajes directamente en `main`.
 - **Commits:** en inglés e imperativo, sin prefijos convencionales.
 - **Idioma:** comentarios, docstrings y textos de la UI en español correcto, sin voseo. Los nombres de tests del backend van en inglés.
-- **Tests:** fakes escritos a mano en lugar de mocks, y cada test lleva un marcador de trazabilidad `SDD: REQ-… AC-…`.
+- **Tests:** fakes escritos a mano en lugar de mocks, y cada test lleva un marcador de trazabilidad `SDD: NNN REQ-… AC-…` con el número de la spec (ADR-0022; los anteriores a la 011 no llevan número).
 - **Mantenimiento de este archivo:** la sección **Proyecto** la actualiza el `doc-keeper` en la etapa `docs` cuando una feature la deja desactualizada (ADR-0013). Las demás secciones solo cambian mediante un ADR.

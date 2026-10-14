@@ -244,12 +244,12 @@ describe("analysisRequestSchema - ritmo poco realista", () => {
     calories: { maintenance_kcal: 2750, target_kcal: 2200 },
   })
 
-  // SDD: REQ-004 AC-004.2
+  // SDD: 011 REQ-004 AC-004.2
   it("acepta pace_status 'unrealistic'", () => {
     expect(() => analysisRequestSchema.parse(request("unrealistic"))).not.toThrow()
   })
 
-  // SDD: REQ-004 AC-004.2
+  // SDD: 011 REQ-004 AC-004.2
   it("acepta el estado unrealistic y sigue rechazando un estado desconocido", () => {
     expect(() => analysisRequestSchema.parse(request("unrealistic"))).not.toThrow()
     expect(() => analysisRequestSchema.parse(request("mágico"))).toThrow()

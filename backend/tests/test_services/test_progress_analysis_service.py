@@ -861,7 +861,7 @@ def assert_no_suggestion_in_message(message):
     assert "mantener" not in message
 
 
-# SDD: REQ-004 AC-004.1
+# SDD: 011 REQ-004 AC-004.1
 def test_unrealistic_pace_is_analyzed_without_a_calorie_suggestion():
     """Ritmo 'unrealistic' +12,6/98: se genera el análisis y no hay sugerencia."""
     ctx = make_service()
@@ -872,7 +872,7 @@ def test_unrealistic_pace_is_analyzed_without_a_calorie_suggestion():
     assert result.calorie_suggestion is None
 
 
-# SDD: REQ-004 AC-004.2
+# SDD: 011 REQ-004 AC-004.2
 def test_unrealistic_pace_message_has_the_rate_the_label_and_the_fixed_text():
     """El modelo recibe el ritmo, 'Revisa tus mediciones' y el texto fijo, sin ajuste."""
     ctx = make_service()
@@ -886,7 +886,7 @@ def test_unrealistic_pace_message_has_the_rate_the_label_and_the_fixed_text():
         assert label not in message
 
 
-# SDD: REQ-004 AC-004.3
+# SDD: 011 REQ-004 AC-004.3
 def test_unrealistic_pace_counts_against_the_limit():
     """El intento se registra y se confirma; con la cuota agotada da 429."""
     ctx = make_service()
@@ -902,7 +902,7 @@ def test_unrealistic_pace_counts_against_the_limit():
     assert exhausted.llm.calls == []
 
 
-# SDD: REQ-004 AC-004.4
+# SDD: 011 REQ-004 AC-004.4
 def test_unrealistic_loss_is_analyzed_without_a_calorie_suggestion():
     """Ritmo 'unrealistic' -12,6/80: sin sugerencia y con la etiqueta de revisión."""
     ctx = make_service()
@@ -916,7 +916,7 @@ def test_unrealistic_loss_is_analyzed_without_a_calorie_suggestion():
     assert_no_suggestion_in_message(message)
 
 
-# SDD: REQ-005 AC-005.1
+# SDD: 011 REQ-005 AC-005.1
 def test_system_prompt_has_the_rules_for_an_unrealistic_pace():
     """Las instrucciones cubren el estado 'Revisa tus mediciones'."""
     ctx = make_service()
@@ -936,7 +936,7 @@ def test_system_prompt_has_the_rules_for_an_unrealistic_pace():
     assert "En ese caso, no propongas ninguna cifra de calorías." in system_prompt
 
 
-# SDD: REQ-005 AC-005.2
+# SDD: 011 REQ-005 AC-005.2
 def test_system_prompt_keeps_the_previous_content_rules():
     """Se conservan la prohibición de recetar y el español neutro sin voseo."""
     ctx = make_service()
@@ -955,7 +955,7 @@ def test_system_prompt_keeps_the_previous_content_rules():
     assert "Revisa tus mediciones" in system_prompt
 
 
-# SDD: REQ-006 AC-006.1
+# SDD: 011 REQ-006 AC-006.1
 def test_server_normalizes_a_too_fast_status_with_an_unrealistic_pace():
     """'too_fast' +5 kg/sem con 80 kg (6,25 %) se trata como poco realista."""
     ctx = make_service()
@@ -971,7 +971,7 @@ def test_server_normalizes_a_too_fast_status_with_an_unrealistic_pace():
     assert_no_suggestion_in_message(message)
 
 
-# SDD: REQ-006 AC-006.2
+# SDD: 011 REQ-006 AC-006.2
 def test_server_normalizes_an_on_track_status_with_an_unrealistic_pace():
     """'on_track' +5 kg/sem tampoco recibe la sugerencia de mantener."""
     ctx = make_service()
@@ -985,7 +985,7 @@ def test_server_normalizes_an_on_track_status_with_an_unrealistic_pace():
     assert_no_suggestion_in_message(message)
 
 
-# SDD: REQ-006 AC-006.3
+# SDD: 011 REQ-006 AC-006.3
 def test_exactly_two_percent_keeps_the_calorie_suggestion():
     """'too_fast' +1,6 kg/sem con 80 kg (2 % exacto) calcula la sugerencia como siempre."""
     ctx = make_service()
@@ -1007,7 +1007,7 @@ def test_exactly_two_percent_keeps_the_calorie_suggestion():
     assert "Revisa tus mediciones" in message
 
 
-# SDD: REQ-006 AC-006.4
+# SDD: 011 REQ-006 AC-006.4
 def test_unrealistic_mark_above_ten_kg_per_week_is_accepted():
     """Marcado 'unrealistic' con +12,6 y 98 kg: 200 sin sugerencia y con la etiqueta."""
     ctx = make_service()
@@ -1018,7 +1018,7 @@ def test_unrealistic_mark_above_ten_kg_per_week_is_accepted():
     assert "Revisa tus mediciones" in message
 
 
-# SDD: REQ-006 AC-006.5
+# SDD: 011 REQ-006 AC-006.5
 def test_unrealistic_mark_is_accepted_with_any_number():
     """Marcado 'unrealistic', -45 kg/sem se acepta sin excepción."""
     ctx = make_service()
@@ -1028,7 +1028,7 @@ def test_unrealistic_mark_is_accepted_with_any_number():
     assert result.calorie_suggestion is None
 
 
-# SDD: REQ-006 AC-006.6
+# SDD: 011 REQ-006 AC-006.6
 def test_unrealistic_mark_is_respected_even_below_two_percent():
     """Marcado 'unrealistic' con -0,5 kg/sem y 80 kg: se respeta la marca."""
     ctx = make_service()
@@ -1041,26 +1041,26 @@ def test_unrealistic_mark_is_respected_even_below_two_percent():
     assert "Revisa tus mediciones" in message
 
 
-# SDD: REQ-007 AC-007.1
+# SDD: 011 REQ-007 AC-007.1
 def test_a_goal_status_with_a_pace_above_ten_kg_per_week_is_rejected():
     """'too_fast' sin marca y +12,6 kg/sem: 400, sin modelo ni fila."""
     assert_invalid(goal_status_body("too_fast", 12.6, 98.0, "+12,6 kg/sem"))
 
 
-# SDD: REQ-007 AC-007.2
+# SDD: 011 REQ-007 AC-007.2
 def test_a_non_numeric_pace_is_rejected():
     """Un ritmo que no es número con 'too_slow' es un 400."""
     assert_invalid(goal_status_body("too_slow", "rápido", 80.0, "-0,2 kg/sem"))
 
 
-# SDD: REQ-007 AC-007.3
+# SDD: 011 REQ-007 AC-007.3
 def test_a_non_numeric_pace_marked_unrealistic_is_rejected():
     """Marcado 'unrealistic' pero con ritmo no numérico (o nulo): 400 sin llamada."""
     assert_invalid(unrealistic_body("x", 98.0))
     assert_invalid(unrealistic_body(None, 98.0))
 
 
-# SDD: REQ-007 AC-007.3
+# SDD: 011 REQ-007 AC-007.3
 def test_non_finite_pace_values_are_rejected():
     """NaN e Infinity no son números finitos: 400."""
     assert_invalid(unrealistic_body(float("nan"), 98.0))
@@ -1068,14 +1068,14 @@ def test_non_finite_pace_values_are_rejected():
     assert_invalid(goal_status_body("too_slow", float("nan"), 80.0, "-0,2 kg/sem"))
 
 
-# SDD: REQ-007 AC-007.3
+# SDD: 011 REQ-007 AC-007.3
 def test_unrealistic_with_a_latest_weight_out_of_range_is_rejected():
     """El peso de la última medición debe estar en [20, 400] también con 'unrealistic'."""
     assert_invalid(unrealistic_body(12.6, 19.0))
     assert_invalid(unrealistic_body(12.6, 401.0))
 
 
-# SDD: REQ-007 AC-007.4
+# SDD: 011 REQ-007 AC-007.4
 def test_a_malformed_body_without_a_profile_is_a_conflict():
     """Sin perfil, un cuerpo mal formado da 409 y no 400."""
     ctx = make_service(profile=None)
@@ -1095,7 +1095,7 @@ def test_a_malformed_body_without_a_profile_is_a_conflict():
     assert exc_info.value.message == INVALID_MESSAGE
 
 
-# SDD: REQ-008 AC-008.3
+# SDD: 011 REQ-008 AC-008.3
 def test_after_correcting_the_measurement_the_suggestion_is_calculated():
     """Con 80, 80 y 79,5 kg y un ritmo normal 'too_slow' se calcula la sugerencia."""
     metrics = [

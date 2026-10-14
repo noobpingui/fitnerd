@@ -146,7 +146,7 @@ beforeEach(() => {
 })
 
 describe("BodyMetricsPage - perfil del servidor", () => {
-  // SDD: REQ-012 AC-012.3
+  // SDD: 006 REQ-012 AC-012.3
   it("muestra los pesos en lb si el perfil usa lb", async () => {
     getProfileMock.mockResolvedValue(
       makeProfileResponse({}, { weight_unit: "lb", weight: 173, goal: "lose_slow" })
@@ -162,7 +162,7 @@ describe("BodyMetricsPage - perfil del servidor", () => {
     expect(screen.getByText(/1[.,]1 lb\/sem/)).toBeInTheDocument()
   })
 
-  // SDD: REQ-012 AC-012.3
+  // SDD: 006 REQ-012 AC-012.3
   it("compara el ritmo con la meta del perfil", async () => {
     // -0,64 %/sem: dentro del rango de "perder peso" (-1,0 a -0,5) pero más
     // rápido que el de "perder peso lentamente" (-0,5 a -0,25).
@@ -174,7 +174,7 @@ describe("BodyMetricsPage - perfil del servidor", () => {
     expect(await screen.findByText("Más rápido que tu meta")).toBeInTheDocument()
   })
 
-  // SDD: REQ-012 AC-012.3
+  // SDD: 006 REQ-012 AC-012.3
   it("con otra meta en el perfil, el mismo ritmo está en objetivo", async () => {
     getProfileMock.mockResolvedValue(
       makeProfileResponse({}, { weight_unit: "kg", weight: 78.5, goal: "lose" })
@@ -1012,7 +1012,7 @@ describe("BodyMetricsPage - ritmo poco realista", () => {
       ) as HTMLElement
   const marks = () => screen.queryAllByText("Revisa este peso")
 
-  // SDD: REQ-002 AC-002.1
+  // SDD: 011 REQ-002 AC-002.1
   it("la tarjeta Ritmo muestra el valor y 'Revisa tus mediciones' con tono de advertencia", async () => {
     useProfile()
     listMock.mockResolvedValue(JUMP_UP)
@@ -1027,7 +1027,7 @@ describe("BodyMetricsPage - ritmo poco realista", () => {
     }
   })
 
-  // SDD: REQ-002 AC-002.2
+  // SDD: 011 REQ-002 AC-002.2
   it("con el perfil en lb la tarjeta Ritmo muestra -27,8 lb/sem", async () => {
     useProfile("lb")
     listMock.mockResolvedValue(JUMP_DOWN)
@@ -1040,7 +1040,7 @@ describe("BodyMetricsPage - ritmo poco realista", () => {
     )
   })
 
-  // SDD: REQ-002 AC-002.3
+  // SDD: 011 REQ-002 AC-002.3
   it("con el límite del 2 % la tarjeta Ritmo conserva el estado frente a la meta", async () => {
     useProfile()
     listMock.mockResolvedValue(JUMP_UP)
@@ -1056,7 +1056,7 @@ describe("BodyMetricsPage - ritmo poco realista", () => {
     expect(screen.queryByText("Revisa tus mediciones")).not.toBeInTheDocument()
   })
 
-  // SDD: REQ-009 AC-009.1
+  // SDD: 011 REQ-009 AC-009.1
   it("marca la fila del 2026-10-11 en el salto hacia arriba y no las otras", async () => {
     useProfile()
     listMock.mockResolvedValue(JUMP_UP)
@@ -1068,7 +1068,7 @@ describe("BodyMetricsPage - ritmo poco realista", () => {
     expect(marks()).toHaveLength(1)
   })
 
-  // SDD: REQ-009 AC-009.2
+  // SDD: 011 REQ-009 AC-009.2
   it("marca la fila del 2026-10-01 en el salto hacia abajo", async () => {
     useProfile()
     listMock.mockResolvedValue(JUMP_DOWN)
@@ -1081,7 +1081,7 @@ describe("BodyMetricsPage - ritmo poco realista", () => {
     expect(marks()).toHaveLength(1)
   })
 
-  // SDD: REQ-009 AC-009.3
+  // SDD: 011 REQ-009 AC-009.3
   it("en un empate marca solo la fila del 2026-10-11", async () => {
     useProfile()
     listMock.mockResolvedValue(TIE)
@@ -1094,7 +1094,7 @@ describe("BodyMetricsPage - ritmo poco realista", () => {
     expect(marks()).toHaveLength(1)
   })
 
-  // SDD: REQ-009 AC-009.4
+  // SDD: 011 REQ-009 AC-009.4
   it("una medición de hace más de 28 días no se marca", async () => {
     useProfile()
     listMock.mockResolvedValue([metric("2026-09-01", 120), ...JUMP_UP])
@@ -1110,7 +1110,7 @@ describe("BodyMetricsPage - ritmo poco realista", () => {
     expect(marks()).toHaveLength(1)
   })
 
-  // SDD: REQ-009 AC-009.5
+  // SDD: 011 REQ-009 AC-009.5
   it("una medición sin peso no se marca y la del 2026-10-11 sí", async () => {
     useProfile()
     listMock.mockResolvedValue([...JUMP_UP, metric("2026-10-09", null, 20)])
@@ -1125,7 +1125,7 @@ describe("BodyMetricsPage - ritmo poco realista", () => {
     ).toBeInTheDocument()
   })
 
-  // SDD: REQ-009 AC-009.6
+  // SDD: 011 REQ-009 AC-009.6
   it("con el límite del 2 % ninguna fila lleva la marca", async () => {
     useProfile()
     listMock.mockResolvedValue(JUMP_UP)
@@ -1141,7 +1141,7 @@ describe("BodyMetricsPage - ritmo poco realista", () => {
     expect(marks()).toHaveLength(0)
   })
 
-  // SDD: REQ-009 AC-009.7
+  // SDD: 011 REQ-009 AC-009.7
   it("sin registros recientes ninguna fila lleva la marca", async () => {
     useProfile()
     listMock.mockResolvedValue(JUMP_UP)
@@ -1158,7 +1158,7 @@ describe("BodyMetricsPage - ritmo poco realista", () => {
     expect(screen.queryByText("Revisa tus mediciones")).not.toBeInTheDocument()
   })
 
-  // SDD: REQ-009 AC-009.8
+  // SDD: 011 REQ-009 AC-009.8
   it("con el perfil en lb también se marca la fila del 2026-10-11", async () => {
     useProfile("lb")
     listMock.mockResolvedValue(JUMP_UP)
@@ -1170,7 +1170,7 @@ describe("BodyMetricsPage - ritmo poco realista", () => {
     ).toBeInTheDocument()
   })
 
-  // SDD: REQ-009 AC-009.9
+  // SDD: 011 REQ-009 AC-009.9
   it("la fila marcada conserva los botones de corregir y borrar", async () => {
     useProfile()
     listMock.mockResolvedValue(JUMP_UP)
@@ -1186,7 +1186,7 @@ describe("BodyMetricsPage - ritmo poco realista", () => {
     ).toBeInTheDocument()
   })
 
-  // SDD: REQ-008 AC-008.1
+  // SDD: 011 REQ-008 AC-008.1
   it("al corregir la medición a 79,5 kg desaparecen el estado y la marca", async () => {
     const user = userEvent.setup()
     useProfile()
@@ -1210,7 +1210,7 @@ describe("BodyMetricsPage - ritmo poco realista", () => {
     expect(marks()).toHaveLength(0)
   })
 
-  // SDD: REQ-008 AC-008.2
+  // SDD: 011 REQ-008 AC-008.2
   it("al borrar la medición errónea el Ritmo vuelve a 'Faltan registros' y sin marca", async () => {
     const user = userEvent.setup()
     useProfile()

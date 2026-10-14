@@ -15,8 +15,8 @@ La cadena es REQ → tarea → test.
 | Requisito | `### REQ-001 — …` en `spec.md` |
 | Criterio de aceptación | `**AC-001.1:**` debajo de su REQ |
 | Tarea | `- [ ] T-001 [REQ-001, AC-001.1] (test) … — \`ruta\`` en `tasks.md` |
-| Test (Python) | `# SDD: REQ-001 AC-001.1` en la línea anterior a `def test_…` |
-| Test (TypeScript) | `// SDD: REQ-001 AC-001.1` en la línea anterior a `it(…)` |
+| Test (Python) | `# SDD: 011 REQ-001 AC-001.1` en la línea anterior a `def test_…` (`011` = número de la spec, ADR-0022) |
+| Test (TypeScript) | `// SDD: 011 REQ-001 AC-001.1` en la línea anterior a `it(…)` |
 
 Con esos marcadores, el `verifier` puede comprobar mediante grep que cada AC tiene un test y cada REQ tiene una tarea.
 

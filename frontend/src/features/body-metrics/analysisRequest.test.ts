@@ -244,7 +244,7 @@ describe("buildAnalysisRequest", () => {
 describe("buildAnalysisRequest - ritmo poco realista", () => {
   const JUMP_UP = [m("2026-10-01", 80), m("2026-10-06", 80), m("2026-10-11", 98)]
 
-  // SDD: REQ-004 AC-004.2
+  // SDD: 011 REQ-004 AC-004.2
   it("con el salto hacia arriba envía 'unrealistic' con el ritmo y el peso", () => {
     const request = build(JUMP_UP)
 
@@ -254,7 +254,7 @@ describe("buildAnalysisRequest - ritmo poco realista", () => {
     expect(request.latest_weight_kg).toBe(98)
   })
 
-  // SDD: REQ-007 AC-007.6
+  // SDD: 011 REQ-007 AC-007.6
   it("el cuerpo con 'unrealistic' pasa analysisRequestSchema", async () => {
     const schemas = (await import(
       "@/features/body-metrics/schemas"
