@@ -11,12 +11,12 @@
   "branch": "feat/012-remove-catalog",
   "base_branch": "main",
   "created_at": "2026-10-14T20:51:28.634Z",
-  "stage": "plan",
+  "stage": "tasks",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-14T21:43:44.312Z",
     "plan": "2026-10-14T21:46:15.444Z",
-    "tasks": null,
+    "tasks": "2026-10-14T21:48:29.911Z",
     "tests": null,
     "implement": null,
     "verify": null,
@@ -26,7 +26,8 @@
   },
   "commits": {
     "spec": "e1c5894",
-    "spec_rework": "eee07d2"
+    "spec_rework": "eee07d2",
+    "plan": "c00dc8a"
   },
   "iterations": {
     "tests": 0,
@@ -149,6 +150,24 @@
       "stage": "plan",
       "event": "approved",
       "note": "Plan y commit aprobados por el usuario (\"1,2,3 sí\"); excepción del red check ampliada a AC-007.6"
+    },
+    {
+      "at": "2026-10-14T21:46:15.564Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegado al task-breaker (iteración 1)"
+    },
+    {
+      "at": "2026-10-14T21:47:20.126Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks.md: 49 tareas (1 scaffold, 25 test, 21 impl, 1 migration, 1 config)"
+    },
+    {
+      "at": "2026-10-14T21:48:29.911Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "Tareas y commit aprobados por el usuario (\"1,2,3 sí\"); AC-N001.3 cubierto por los comandos del verifier, sin marcador"
     }
   ],
   "red_check_exception": {
@@ -161,6 +180,13 @@
       "AC-006.*",
       "AC-008.*",
       "AC-007.6"
+    ]
+  },
+  "traceability_exception": {
+    "at": "2026-10-14T21:48:29.911Z",
+    "note": "AC-N001.3 (lint, tsc, build y ruff-new) lo cubren los comandos del verifier en verify, sin marcador SDD (aprobado por el usuario en el gate de tasks)",
+    "acs": [
+      "AC-N001.3"
     ]
   }
 }
