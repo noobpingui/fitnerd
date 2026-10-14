@@ -14,7 +14,7 @@
   "stage": "spec",
   "status": "awaiting_approval",
   "approvals": {
-    "spec": "2026-10-14T21:28:05.194Z",
+    "spec": "2026-10-14T21:43:44.312Z",
     "plan": null,
     "tasks": null,
     "tests": null,
@@ -24,7 +24,9 @@
     "docs": null,
     "close": null
   },
-  "commits": {},
+  "commits": {
+    "spec": "e1c5894"
+  },
   "iterations": {
     "tests": 0,
     "implement": 0,
@@ -86,6 +88,59 @@
       "stage": "spec",
       "event": "approved",
       "note": "Spec y commit aprobados por el usuario (\"1,2 sí\")"
+    },
+    {
+      "at": "2026-10-14T21:28:05.313Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegado al planner (iteración 1)"
+    },
+    {
+      "at": "2026-10-14T21:34:27.064Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md: retirada vertical, migración f2c4e6a8b0d1 (drop 5 tablas, downgrade vacías), sin ADR; 2 choques con la spec (AC-N001.2, AC-002.1) y tests de no regresión en verde en el red check"
+    },
+    {
+      "at": "2026-10-14T21:42:14.884Z",
+      "stage": "plan",
+      "event": "changes_requested",
+      "note": "Usuario: \"1.A 2. Si. 3. Si\" — reabrir la spec para precisar AC-N001.2 y AC-002.1 (Q8); plan sin aprobar ni commitear hasta revisarlo"
+    },
+    {
+      "at": "2026-10-14T21:42:14.884Z",
+      "stage": "plan",
+      "event": "user_decision",
+      "note": "Excepción aprobada para el red check: los tests de no regresión de AC-002.x, AC-004.x, AC-005.x, AC-006.x y AC-008.x pueden estar en verde (ya se cumplen con CATALOG_ENABLED=false); el rojo legítimo lo dan REQ-001, REQ-003, REQ-007 y NFR-001"
+    },
+    {
+      "at": "2026-10-14T21:42:14.884Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Spec reabierta (approvals.spec → null); Q8 copiada en spec.md; re-delegado al spec-writer (iteración 3)"
+    },
+    {
+      "at": "2026-10-14T21:42:54.221Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec.md iteración 3: AC-N001.1, AC-N001.2 y AC-002.1 precisados (Q8 resuelta); sin cambios de alcance"
+    },
+    {
+      "at": "2026-10-14T21:43:44.312Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Spec (iteración 3) y commit aprobados por el usuario (\"1,2 sí\")"
     }
-  ]
+  ],
+  "red_check_exception": {
+    "at": "2026-10-14T21:42:14.884Z",
+    "note": "Tests de no regresión permitidos en verde en el red check (aprobado por el usuario en el gate del plan)",
+    "acs": [
+      "AC-002.*",
+      "AC-004.*",
+      "AC-005.*",
+      "AC-006.*",
+      "AC-008.*"
+    ]
+  }
 }

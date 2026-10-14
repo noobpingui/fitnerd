@@ -53,7 +53,7 @@ WHEN un cliente llama a cualquiera de los endpoints retirados (listados en la se
 ### REQ-002 — El resto del backend sigue igual
 THE SYSTEM SHALL mantener sin cambios el comportamiento de los endpoints de autenticación, perfil, métricas corporales (incluido el análisis con IA), coach, feedback y salud.
 
-- **AC-002.1:** Given el backend con esta feature aplicada, When se ejecuta la suite completa de tests del backend, sin los tests propios del catálogo, de favoritos ni del plan semanal, Then todos los tests pasan sin modificar, saltar ni debilitar ninguno de los de las demás áreas.
+- **AC-002.1:** Given el backend con esta feature aplicada, When se ejecuta la suite completa de tests del backend, sin los tests propios del catálogo, de favoritos ni del plan semanal, Then todos los tests pasan y ninguno de los de las demás áreas se salta ni se debilita. La única modificación permitida en ellos es sustituir un dato auxiliar sembrado en una tabla retirada por uno equivalente en una tabla que se conserva (caso conocido: el test de salud que comprueba que la consulta no cambia los recuentos de filas), siempre que lo que el test comprueba no cambie (Q8, resuelta).
 - **AC-002.2:** Given el backend con esta feature aplicada, When se hace `GET /api/health`, Then la respuesta es `200`.
 - **AC-002.3:** Given un usuario autenticado con perfil, When hace `GET /api/profile` y `GET /api/body-metrics`, Then ambas respuestas son `200` con el mismo formato que antes de la feature.
 
@@ -101,10 +101,10 @@ THE SYSTEM SHALL mantener sin cambios el comportamiento de las pantallas de aute
 ## 5. Requisitos no funcionales
 
 ### NFR-001 — Sin restos de las funciones retiradas
-THE SYSTEM SHALL no conservar en el código de la app (frontend y backend, excluido el historial de migraciones y los artefactos de `specs/` y `docs/`) referencias a los endpoints retirados ni al interruptor que ocultaba el catálogo.
+THE SYSTEM SHALL no conservar en el código de la app (frontend y backend, excluidos el historial de migraciones, los tests y los artefactos de `specs/` y `docs/`) referencias a los endpoints retirados ni al interruptor que ocultaba el catálogo.
 
-- **AC-N001.1:** Given el código fuente del frontend, When se busca cualquiera de las rutas `/api/body-regions`, `/api/exercise-categories`, `/api/exercises`, `/api/favorites` o `/api/weekly-plan`, o el interruptor de las secciones del catálogo, Then no hay ninguna coincidencia.
-- **AC-N001.2:** Given el código fuente del backend fuera del historial de migraciones, When se busca cualquiera de esas rutas o el nombre de cualquiera de las cinco tablas retiradas, Then no hay ninguna coincidencia, salvo en la propia migración de esta feature.
+- **AC-N001.1:** Given el código fuente del frontend, excluidos sus tests (por el mismo motivo que en AC-N001.2), When se busca cualquiera de las rutas `/api/body-regions`, `/api/exercise-categories`, `/api/exercises`, `/api/favorites` o `/api/weekly-plan`, o el interruptor de las secciones del catálogo, Then no hay ninguna coincidencia.
+- **AC-N001.2:** Given el código fuente del backend, excluidos el historial de migraciones (que incluye la migración de esta feature), los tests y las dependencias instaladas, When se busca cualquiera de esas rutas o el nombre de cualquiera de las cinco tablas retiradas como palabra completa, Then no hay ninguna coincidencia y el script de migración del catálogo a producción ya no existe. Los tests quedan fuera porque los de REQ-001 y REQ-003 tienen que nombrar las rutas y las tablas retiradas (Q8, resuelta).
 - **AC-N001.3:** Given el frontend con esta feature aplicada, When se ejecutan el lint, la comprobación de tipos y el build de producción, Then terminan sin errores; y Given el backend, When se ejecuta el ratchet de ruff, Then no aparecen violaciones nuevas.
 
 ## 6. Datos y contratos visibles
@@ -142,7 +142,7 @@ THE SYSTEM SHALL no conservar en el código de la app (frontend y backend, exclu
 
 ## 7. Preguntas abiertas
 
-Todas resueltas (usuario: "Todas las propuestas, en Q5 volcado completo").
+Todas resueltas (Q1–Q7, usuario: "Todas las propuestas, en Q5 volcado completo"; Q8, usuario: "1.A").
 
 | # | Pregunta | Respuesta del usuario |
 |---|---|---|
@@ -153,6 +153,7 @@ Todas resueltas (usuario: "Todas las propuestas, en Q5 volcado completo").
 | Q5 | ¿Cómo y dónde se hace la copia de seguridad previa de producción? | **Resuelta (con cambio sobre la propuesta):** volcado **completo** de la base de datos de producción en Supabase (esquema y datos de todas las tablas, no solo de las cinco retiradas), guardado fuera del repositorio en `C:/Users/alber/fitnerd-backups`, hecho por el usuario antes de aplicar la migración en producción y documentado en los pasos de despliegue. En local no hace falta. Incorporada en "Incluye" y en la sección 6. |
 | Q6 | Las URL antiguas (`/categories…`, `/favorites`), ¿siguen redirigiendo a `/home` sin aviso o muestran una página de "no encontrado"? | **Resuelta:** siguen redirigiendo a `/home` (o a `/login` sin sesión) sin aviso, como ahora. Incorporada en REQ-004. |
 | Q7 | ¿Los endpoints retirados responden `404` o `410 Gone`? | **Resuelta:** `404` con el `{"error": …}` genérico del servidor, igual que cualquier ruta inexistente. Incorporada en REQ-001 y en la sección 6. |
+| Q8 | Gate del plan (hallazgo del planner): AC-N001.2 exige "ninguna coincidencia" en el backend, pero los tests de REQ-001 tienen que nombrar las rutas retiradas; y AC-002.1 exige no modificar los demás tests, pero `test_health_routes.py` siembra una fila de `BodyRegion`, que desaparece. ¿Se precisan los dos AC en la spec (A) o se acepta la interpretación del plan (B)? | **Resuelta** (usuario: "1.A"): se precisan los dos AC en la spec. AC-N001.2 excluye del escaneo los tests (además del historial de migraciones y las dependencias instaladas), busca los nombres de tabla como palabra completa y exige que el script de migración del catálogo ya no exista. AC-002.1 permite una única modificación en los tests de otras áreas: sustituir un dato auxiliar sembrado en una tabla retirada por uno equivalente en una tabla que se conserva, sin cambiar lo que el test comprueba. |
 
 ## 8. Glosario
 
