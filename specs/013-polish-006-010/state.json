@@ -11,12 +11,12 @@
   "branch": "fix/013-polish-006-010",
   "base_branch": "main",
   "created_at": "2026-10-15T09:28:18.161Z",
-  "stage": "plan",
+  "stage": "tasks",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-15T09:41:10.811Z",
     "plan": "2026-10-15T09:57:33.125Z",
-    "tasks": null,
+    "tasks": "2026-10-15T20:02:24.074Z",
     "tests": null,
     "implement": null,
     "verify": null,
@@ -25,7 +25,8 @@
     "close": null
   },
   "commits": {
-    "spec": "778fd3e"
+    "spec": "778fd3e",
+    "plan": "f3f3ebc"
   },
   "iterations": {
     "tests": 0,
@@ -106,6 +107,24 @@
       "stage": "plan",
       "event": "approved",
       "note": "Plan y commit aprobados por el usuario (\"1,2,3,4 sí\"); red_check_exception y traceability_exception (NFR-006) registradas"
+    },
+    {
+      "at": "2026-10-15T09:57:33.275Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegado al task-breaker (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T09:58:35.174Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks.md: 46 tareas (1 scaffold, 28 test, 15 impl, 1 config, 1 docs)"
+    },
+    {
+      "at": "2026-10-15T20:02:24.074Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "Tasks y commit aprobados por el usuario (\"1,2,3 sí\"); traceability_exception ampliada con AC-N001.1–4 y AC-N003.3"
     }
   ],
   "red_check_exception": {
@@ -127,11 +146,16 @@
   },
   "traceability_exception": {
     "at": "2026-10-15T09:57:33.125Z",
-    "note": "Los AC de NFR-006 (CLAUDE.md) no tienen test: los escribe el doc-keeper en docs y los comprueba el orquestador a mano en el gate de docs (aprobado por el usuario en el gate del plan)",
+    "note": "Los AC de NFR-006 (CLAUDE.md) no tienen test: los escribe el doc-keeper en docs y los comprueba el orquestador a mano en el gate de docs (aprobado por el usuario en el gate del plan). AC-N001.1, AC-N001.2 y AC-N001.4 los cubren los comandos del verifier (pytest, npm test, lint, tsc, build, ruff-new); AC-N001.3 y AC-N003.3 los comprueba el reviewer sobre el diff (aprobado por el usuario en el gate de tasks)",
     "acs": [
       "AC-N006.1",
       "AC-N006.2",
-      "AC-N006.3"
+      "AC-N006.3",
+      "AC-N001.1",
+      "AC-N001.2",
+      "AC-N001.4",
+      "AC-N001.3",
+      "AC-N003.3"
     ]
   }
 }
