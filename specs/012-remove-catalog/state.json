@@ -11,7 +11,7 @@
   "branch": "feat/012-remove-catalog",
   "base_branch": "main",
   "created_at": "2026-10-14T20:51:28.634Z",
-  "stage": "implement",
+  "stage": "review",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-14T21:43:44.312Z",
@@ -19,8 +19,8 @@
     "tasks": "2026-10-14T21:48:29.911Z",
     "tests": "2026-10-15T01:22:38.445Z",
     "implement": "2026-10-15T01:27:42.208Z",
-    "verify": null,
-    "review": null,
+    "verify": "2026-10-15T01:34:00.854Z",
+    "review": "2026-10-15T01:45:15.465Z",
     "docs": null,
     "close": null
   },
@@ -29,12 +29,13 @@
     "spec_rework": "eee07d2",
     "plan": "c00dc8a",
     "tasks": "8db2fd5",
-    "tests": "b83d52c"
+    "tests": "b83d52c",
+    "implement": "6cfdf2c"
   },
   "iterations": {
     "tests": 2,
     "implement": 1,
-    "review": 0
+    "review": 2
   },
   "max_iterations": 3,
   "red_check": {
@@ -42,12 +43,12 @@
     "at": "2026-10-14T21:58:08.677Z"
   },
   "verify": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-15T01:43:49.980Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-10-15T01:44:45.289Z"
   },
   "bypass": false,
   "history": [
@@ -230,6 +231,96 @@
       "stage": "implement",
       "event": "approved",
       "note": "Etapa implement y commit aprobados por el usuario (\"1,2 sí\")"
+    },
+    {
+      "at": "2026-10-15T01:27:42.493Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier en modo full (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T01:29:58.325Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS (iteración 1): pytest 699, vitest 462, lint, tsc, build, ruff-new; trazabilidad completa (AC-N001.3 por excepción)"
+    },
+    {
+      "at": "2026-10-15T01:34:00.854Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "Etapa verify aprobada por el usuario (\"Si\")"
+    },
+    {
+      "at": "2026-10-15T01:34:00.854Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado al reviewer (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T01:36:04.330Z",
+      "stage": "review",
+      "event": "done",
+      "note": "Review APPROVED (iteración 1): 0 bloqueantes, 0 mayores, 1 menor (F1 nginx.conf), 4 NIT"
+    },
+    {
+      "at": "2026-10-15T01:40:39.096Z",
+      "stage": "review",
+      "event": "changes_requested",
+      "note": "Usuario: \"F1,F2,F4 Y F5 corregimos ahora. F3 al backlog\""
+    },
+    {
+      "at": "2026-10-15T01:40:39.096Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "test-author corrige F4 (fecha anclada en PrivacyPolicyPage.test.tsx)"
+    },
+    {
+      "at": "2026-10-15T01:41:00.642Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Cambio autorizado (review F4): PrivacyPolicyPage.test.tsx ancla la fecha antigua con (^|D); tests_snapshot actualizado para ese archivo"
+    },
+    {
+      "at": "2026-10-15T01:41:00.642Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "Implementer corrige review F1, F2 y F5 (comentarios y formato)"
+    },
+    {
+      "at": "2026-10-15T01:41:58.141Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F1, F2 y F5 corregidos (nginx.conf, AppLayout.tsx, PrivacyPolicyPage.tsx, StorePage.tsx)"
+    },
+    {
+      "at": "2026-10-15T01:41:58.141Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier en modo full (iteración 2, tras correcciones de review)"
+    },
+    {
+      "at": "2026-10-15T01:44:13.931Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS (iteración 2): pytest 699, vitest 462, lint/tsc/build/ruff-new OK; F1, F2, F4, F5 comprobados"
+    },
+    {
+      "at": "2026-10-15T01:44:13.931Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado al reviewer (iteración 2)"
+    },
+    {
+      "at": "2026-10-15T01:44:45.289Z",
+      "stage": "review",
+      "event": "done",
+      "note": "Review APPROVED (iteración 2): F1, F2, F4, F5 resueltos; F3 en backlog; 0 hallazgos nuevos"
+    },
+    {
+      "at": "2026-10-15T01:45:15.465Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Etapa review y commit aprobados por el usuario (\"1,2 sí\")"
     }
   ],
   "red_check_exception": {
@@ -252,7 +343,7 @@
     ]
   },
   "tests_snapshot": {
-    "at": "2026-10-15T01:22:38.445Z",
+    "at": "2026-10-15T01:41:00.642Z",
     "sha256": {
       "backend/tests/test_routes/test_health_routes.py": "6e3db5a6171c0227baa30e36a2651eaa76ad4b84a957f51bddcbae5dee014c69",
       "backend/tests/test_routes/test_retired_catalog_routes.py": "edc0df10d2e6079e63f66b8a38943538d118437e9f9999c97c548009fdb49867",
@@ -263,7 +354,7 @@
       "frontend/src/components/layout/BottomTabBar.test.tsx": "7e60d14dec07736123ea1a7e3f46fca355839933b2fb4325958317ac85d658b9",
       "frontend/src/components/layout/Navbar.test.tsx": "572e004ccc803881b58454e79a7c9cadff5b26a0e0e67b04a7dee00840d14461",
       "frontend/src/features/auth/components/AuthHero.test.tsx": "bb99b979317d96d095bcfa2b4edcccfb83e3f661933737d5cada3a6ae4512be4",
-      "frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx": "d0f56d0694322ceea96addc847873b75a97df6d06ebb211e7d2ad3579cd9ddf1",
+      "frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx": "35321d1eebfcf683320a53d98b4471952ca10226cf4f8bd1b83d53f8b6df9551",
       "frontend/src/features/legal/pages/TermsOfServicePage.test.tsx": "f947474a84c386228b2c73017a5e77e188c46c995a1903515059d3937a49fd51"
     },
     "deleted": [

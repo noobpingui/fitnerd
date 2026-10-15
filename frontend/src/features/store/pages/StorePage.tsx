@@ -8,7 +8,8 @@ export function StorePage() {
     <div className="mx-auto max-w-2xl p-4 sm:p-8">
       <h1 className="mb-6 text-2xl font-bold">Visita las diferentes tiendas</h1>
 
-      {/* Mismo recurso de linea divisoria que ya se usa en /home, para separar el titulo de la grilla de abajo. */}
+      {/* Mismo recurso de linea divisoria que ya se usa en /home, para
+          separar el titulo de la grilla de abajo. */}
       <div className="mb-6 border-t" />
 
       {/* Placeholder temporal mientras STORES esta vacio (ver constants.ts) -

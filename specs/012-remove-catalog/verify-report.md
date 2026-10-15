@@ -1,72 +1,76 @@
 # Verify report 012 — Eliminar el catálogo de ejercicios, los favoritos y el plan semanal
 
-- **Modo:** red (tras la etapa tests, iteración 2)
-- **Fecha:** 2026-10-14T21:58:08.677Z · **Rama:** `feat/012-remove-catalog` @ `8db2fd5`
+- **Modo:** full (tras la etapa implement, iteración 2, tras las correcciones de review F1, F2, F4 y F5)
+- **Fecha:** 2026-10-15T01:43:49.980Z · **Rama:** `feat/012-remove-catalog` @ `6cfdf2c`
 - **Resultado:** PASS
 
 ## 1. Comandos ejecutados
 
 | Ámbito | Comando | Resultado | Resumen de la salida |
 |---|---|---|---|
-| backend | `python -m pytest -v` sobre los 4 archivos con `SDD: 012` (`test_retired_catalog_routes.py`, `test_catalog_removal_migration.py`, `test_no_catalog_leftovers.py`, `test_health_routes.py`) | ✅ | 30 tests: 13 failed, 17 passed. Los 13 fallos son rojo legítimo (ver §2 y §4). Los 17 verdes son todos de la excepción `red_check_exception` (AC-002.*) |
-| frontend | `npx vitest run` sobre los 7 archivos con `SDD: 012` | ✅ | 30 tests: 6 failed, 24 passed. Los 6 fallos son asserts legítimos (AC-007.1 a 007.5 y AC-N001.1). Los 24 verdes son de la excepción (AC-004.*, AC-005.*, AC-006.*, AC-007.6, AC-008.*) |
+| backend | `backend/.venv/Scripts/python.exe -m pytest -q` | ✅ | 699 passed (37.29 s) |
+| backend | `node .claude/sdd/scripts/ruff-new.mjs main` | ✅ | Exit 0. Sin violaciones nuevas en los .py cambiados (`models/__init__.py` 8 previas toleradas, `routes/__init__.py` 1 previa toleradas, el resto 0) |
+| frontend | `npm test` | ✅ | 37 archivos, 462 tests passed |
+| frontend | `npm run lint` | ✅ | Exit 0, 0 errores. 2 warnings preexistentes (`components/ui/form.tsx:159`, `components/ui/button.tsx:64`, `only-export-components`) |
+| frontend | `npx tsc -b` | ✅ | Exit 0, sin errores |
+| frontend | `npm run build` | ✅ | Exit 0. Solo el aviso de tamaño de chunk (1.08 MB), que ya existía |
 
-Comandos de verify (lint, tsc, build, ruff-new, suite completa) no se ejecutan en modo red.
+Entorno: Postgres responde (los tests de backend pasan), `backend/.venv/Scripts/python.exe` y `frontend/node_modules` existen. No hay errores de entorno.
 
-Entorno: Postgres responde en el puerto 5433; `backend/.venv/Scripts/python.exe` y `frontend/node_modules` existen. No hay errores de entorno.
+Comprobaciones de las correcciones de review (iteración 2):
+- F1: `frontend/nginx.conf` ya no contiene `categories`. ✅
+- F2: el comentario de `AppLayout.tsx` ya no enumera las pantallas protegidas sin `/store` ni `/profile` (se dice "TODAS las pantallas protegidas"). ✅
+- F4: `PrivacyPolicyPage.test.tsx:124` ancla la fecha antigua con `(^|\D)8 de octubre de 2026`. ✅
+- F5: no quedan líneas de más de 120 caracteres en `PrivacyPolicyPage.tsx` ni en `StorePage.tsx`. ✅
+- F3 (MENOR de fecha, diferida al backlog por el usuario): no se comprueba aquí; `updatedAt` es "14 de octubre de 2026".
 
-<!--
-Modo red: solo se ejecutan los tests nuevos. Resultado PASS significa que TODOS fallan por comportamiento
-ausente (assert o 404/501 esperado), no por errores de import, sintaxis o fixture.
--->
+Comprobación de restos: sin coincidencias de `/api/body-regions`, `/api/exercise-categories`, `/api/exercises`, `/api/favorites`, `/api/weekly-plan`, `CATALOG_ENABLED`, `app/sections`, `features/exercises`, `weekly-plan` ni `dnd-kit` en `frontend/src`, `package.json` ni `nginx.conf` (fuera de tests). Sin referencias a las tablas retiradas en el backend (fuera de migraciones y tests).
+
+Integridad de los tests: `tasks.md` tiene 49 tareas `[x]` y ninguna `[ ]` (la única `- [ ]` está en el comentario de plantilla de la cabecera). En el diff contra `main` no hay `skip`, `xfail`, `.only`, `.skip` ni `it.todo` nuevos.
 
 ## 2. Trazabilidad
 
-Clasificación de los tests nuevos (`SDD: 012`) según `red_check_exception` (AC-002.\*, AC-004.\*, AC-005.\*, AC-006.\*, AC-008.\* y AC-007.6):
-
-| REQ / NFR | AC | Tests con `SDD: 012` | Estado | Clasificación |
+| REQ / NFR | AC | Tareas | Tests con `SDD: 012` | Estado del test |
 |---|---|---|---|---|
-| REQ-001 | AC-001.1 | `test_retired_list_endpoints_return_404_for_a_regular_user` (5 params) | ❌ rojo | Rojo legítimo (assert 200/400 en vez de 404) |
-| REQ-001 | AC-001.2 | `test_retired_admin_post_endpoints_return_404` | ❌ rojo | Rojo legítimo (assert 201 en vez de 404) |
-| REQ-001 | AC-001.2 | `test_retired_admin_delete_endpoints_return_404` (3 params) | ❌ rojo | Rojo legítimo (`sigue registrada en el url_map`) |
-| REQ-001 | AC-001.3 | `test_retired_favorite_endpoints_return_404` | ❌ rojo | Rojo legítimo (`sigue registrada en el url_map`) |
-| REQ-001 | AC-001.3 | `test_retired_weekly_plan_write_endpoints_return_404` | ❌ rojo | Rojo legítimo (`POST /api/weekly-plan sigue registrada en el url_map`) |
-| REQ-001 | AC-001.4 | `test_retired_endpoints_return_404_not_401_without_authorization` (2 params) | ❌ rojo | Rojo legítimo (assert 401 en vez de 404) |
-| REQ-002 | AC-002.1 | `test_url_map_keeps_the_rules_of_the_remaining_areas`, `test_health_check_does_not_change_row_counts` | ✅ verde | Permitido (excepción AC-002.*) |
-| REQ-002 | AC-002.2 | `test_health_still_returns_200` | ✅ verde | Permitido (excepción AC-002.*) |
-| REQ-002 | AC-002.3 | `test_profile_and_body_metrics_keep_their_format` | ✅ verde | Permitido (excepción AC-002.*) |
-| REQ-003 | AC-003.1 | `test_upgrade_drops_the_five_tables_and_keeps_users_profiles_and_metrics` | ❌ rojo | Rojo legítimo (`NotImplementedError` del scaffold, ADR-0012) |
-| REQ-003 | AC-003.2 | `test_downgrade_recreates_the_five_tables_empty_with_their_structure` | ❌ rojo | Rojo legítimo (`NotImplementedError` del scaffold, ADR-0012) |
-| REQ-003 | AC-003.3 | `test_test_database_has_none_of_the_retired_tables` | ❌ rojo | Rojo legítimo (assert: `public.body_regions` sigue en metadata) |
-| NFR-001 | AC-N001.2 | `test_backend_source_has_no_retired_routes_or_table_names` | ❌ rojo | Rojo legítimo (assert: 29 coincidencias en el backend) |
-| NFR-001 | AC-N001.2 | `test_catalog_migration_script_to_production_no_longer_exists` | ❌ rojo | Rojo legítimo (assert: el script existe) |
-| REQ-004 | AC-004.1 | 4 tests de `router.test.tsx` (`/categories`, `/categories/r1`, `/categories/r1/c1`, `/favorites` con sesión) | ✅ verde | Permitido (excepción AC-004.*) |
-| REQ-004 | AC-004.2 | `/favorites` sin sesión | ✅ verde | Permitido (excepción AC-004.*) |
-| REQ-005 | AC-005.1 | `Navbar.test.tsx` | ✅ verde | Permitido (excepción AC-005.*) |
-| REQ-005 | AC-005.2 | `BottomTabBar.test.tsx` | ✅ verde | Permitido (excepción AC-005.*) |
-| REQ-006 | AC-006.1, AC-006.2 | `AuthHero.test.tsx` (`/login`, `/register`) | ✅ verde | Permitido (excepción AC-006.*) |
-| REQ-007 | AC-007.1 | `PrivacyPolicyPage.test.tsx` "Actividad en la app" | ❌ rojo | Rojo legítimo (assert: contiene "favoritos") |
-| REQ-007 | AC-007.2 | `PrivacyPolicyPage.test.tsx` "Para qué usamos tu información" | ❌ rojo | Rojo legítimo (assert: contiene "catálogo") |
-| REQ-007 | AC-007.3 | `PrivacyPolicyPage.test.tsx` fecha | ❌ rojo | Rojo legítimo (assert: contiene "8 de octubre de 2026") |
-| REQ-007 | AC-007.4 | `TermsOfServicePage.test.tsx` "No es asesoría médica" | ❌ rojo | Rojo legítimo (assert: contiene "catálogo") |
-| REQ-007 | AC-007.5 | `TermsOfServicePage.test.tsx` fecha | ❌ rojo | Rojo legítimo (assert: contiene "2 de septiembre de 2026") |
-| REQ-007 | AC-007.6 | 2 tests de voseo (privacidad y términos) | ✅ verde | Permitido (excepción AC-007.6) |
-| REQ-008 | AC-008.1, AC-008.2 | 5 tests de `router.test.tsx` (`/macros`, `/body-metrics`, `/coach`, `/store`, `/profile`) | ✅ verde | Permitido (excepción AC-008.*) |
-| NFR-001 | AC-N001.1 | `noRetiredSections.test.ts` | ❌ rojo | Rojo legítimo (assert: 16 coincidencias en el frontend) |
-| NFR-001 | AC-N001.3 | Comandos del verifier en verify (sin marcador, excepción de trazabilidad) | — | No aplica en red |
+| REQ-001 | AC-001.1 | T-001, T-031, T-032, T-033 | `test_retired_catalog_routes.py:44` | ✅ |
+| REQ-001 | AC-001.2 | T-002, T-031, T-032 | `test_retired_catalog_routes.py:63`, `:90` | ✅ |
+| REQ-001 | AC-001.3 | T-003, T-031, T-033 | `test_retired_catalog_routes.py:105`, `:119` | ✅ |
+| REQ-001 | AC-001.4 | T-004, T-031 | `test_retired_catalog_routes.py:138` | ✅ |
+| REQ-002 | AC-002.1 | T-005, T-012, T-013, T-014, T-031 | `test_retired_catalog_routes.py:147`, `test_health_routes.py:123` | ✅ |
+| REQ-002 | AC-002.2 | T-006, T-031 | `test_retired_catalog_routes.py:166` | ✅ |
+| REQ-002 | AC-002.3 | T-007, T-031 | `test_retired_catalog_routes.py:174` | ✅ |
+| REQ-003 | AC-003.1 | T-008, T-030 | `test_catalog_removal_migration.py:107` | ✅ |
+| REQ-003 | AC-003.2 | T-009, T-030 | `test_catalog_removal_migration.py:191` | ✅ |
+| REQ-003 | AC-003.3 | T-010, T-038, T-039, T-040 | `test_catalog_removal_migration.py:305` | ✅ |
+| REQ-004 | AC-004.1 | T-015, T-042 | `router.test.tsx:116` | ✅ |
+| REQ-004 | AC-004.2 | T-016, T-042 | `router.test.tsx:135` | ✅ |
+| REQ-005 | AC-005.1 | T-018, T-043 | `Navbar.test.tsx:26` | ✅ |
+| REQ-005 | AC-005.2 | T-019, T-044 | `BottomTabBar.test.tsx:8` | ✅ |
+| REQ-006 | AC-006.1 | T-020, T-045 | `AuthHero.test.tsx:22` | ✅ |
+| REQ-006 | AC-006.2 | T-020, T-045 | `AuthHero.test.tsx:33` | ✅ |
+| REQ-007 | AC-007.1 | T-021, T-050 | `PrivacyPolicyPage.test.tsx:91` | ✅ |
+| REQ-007 | AC-007.2 | T-021, T-050 | `PrivacyPolicyPage.test.tsx:107` | ✅ |
+| REQ-007 | AC-007.3 | T-021, T-050 | `PrivacyPolicyPage.test.tsx:118` | ✅ |
+| REQ-007 | AC-007.4 | T-023, T-051 | `TermsOfServicePage.test.tsx:26` | ✅ |
+| REQ-007 | AC-007.5 | T-023, T-051 | `TermsOfServicePage.test.tsx:37` | ✅ |
+| REQ-007 | AC-007.6 | T-022, T-024, T-050, T-051 | `PrivacyPolicyPage.test.tsx:127`, `TermsOfServicePage.test.tsx:46` | ✅ |
+| REQ-008 | AC-008.1 | T-017, T-042 (suite completa `npm test`) | `router.test.tsx:144` + suite completa (462 passed) | ✅ |
+| REQ-008 | AC-008.2 | T-017, T-042 | `router.test.tsx:144` | ✅ |
+| NFR-001 | AC-N001.1 | T-025, T-042, T-046 a T-049 | `noRetiredSections.test.ts:23` | ✅ |
+| NFR-001 | AC-N001.2 | T-011, T-034 a T-037, T-039 a T-041 | `test_no_catalog_leftovers.py:43`, `:65` | ✅ |
+| NFR-001 | AC-N001.3 | T-052 (y todas las impl) | Sin marcador: excepción de trazabilidad aprobada en el gate de tasks. Cubierto por los comandos ruff-new, lint, tsc y build de la sección 1 | ✅ (por comandos) |
 
-- ACs sin test: ninguno (AC-N001.3 cubierto por la excepción de trazabilidad).
-- REQs sin tarea: ninguno.
-- Tareas sin marcar `[x]`: T-030..T-052 pendientes (fase B, esperado en red). T-000..T-025 marcadas.
+- ACs sin test: ninguno (AC-N001.3 cubierto por la excepción de trazabilidad y los comandos).
+- REQs sin tarea: ninguno (REQ-001 a REQ-008 y NFR-001 aparecen en `tasks.md`).
+- Tareas sin marcar `[x]`: ninguna.
+- `skip`, `xfail`, `.only` o `.skip` nuevos en el diff: ninguno.
 
 ## 3. Criterios de aceptación
 
-Los AC que no se pueden comprobar de forma automática no están en esta etapa. AC-N001.3 (lint, tsc, build, ruff-new) se comprueba en la etapa verify.
+Todos los AC se comprueban de forma automática, salvo AC-N001.3, comprobado con comandos. No hay AC que requiera revisión manual en esta etapa.
+
+Las aserciones visuales (por ejemplo, la distribución de la barra móvil) se verifican a nivel de DOM en los tests. Si quiere confirmarlo a ojo, eso queda para el gate del usuario.
 
 ## 4. Fallos (si los hay)
 
-Ninguno ilegítimo. Los tres fallos de la iteración 1 (AC-001.2 DELETE, AC-001.3 favoritos y plan semanal) quedan corregidos: ahora fallan por `sigue registrada en el url_map`, es decir, por la ruta retirada todavía viva.
-
-Rojos legítimos en esta iteración (no son fallos): 13 backend y 6 frontend, por assert, `NotImplementedError` del scaffold o lista de coincidencias no vacía.
-
-Sin errores de import, sintaxis ni fixture en ningún test nuevo. Sin `skip`, `xfail` ni `.only` en los archivos con marcador `SDD: 012`.
+Ninguno. Todas las comprobaciones están en verde.

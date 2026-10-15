@@ -121,7 +121,7 @@ describe("PrivacyPolicyPage", () => {
     const text = document.body.textContent ?? ""
 
     expect(text).toMatch(new RegExp(`Última actualización: \\d{1,2} de ${MONTHS} de \\d{4}`))
-    expect(text).not.toContain("8 de octubre de 2026")
+    expect(text).not.toMatch(/(^|\D)8 de octubre de 2026/)
   })
 
   // SDD: 012 REQ-007 AC-007.6

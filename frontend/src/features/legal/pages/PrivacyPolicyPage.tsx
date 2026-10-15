@@ -34,9 +34,9 @@ export function PrivacyPolicyPage() {
             métricas.
           </li>
           <li>
-            <strong>Actividad en la app:</strong> las preguntas
-            que le haces al AI Coach y las valoraciones (👍/👎) que das a sus respuestas (para
-            mejorar el coach y por límites de uso).
+            <strong>Actividad en la app:</strong> las preguntas que le
+            haces al AI Coach y las valoraciones (👍/👎) que das a sus
+            respuestas (para mejorar el coach y por límites de uso).
           </li>
           <li>
             <strong>Feedback:</strong> lo que escribas en el formulario de
