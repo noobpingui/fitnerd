@@ -11,7 +11,7 @@
   "branch": "fix/013-polish-006-010",
   "base_branch": "main",
   "created_at": "2026-10-15T09:28:18.161Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-15T09:41:10.811Z",
@@ -30,11 +30,12 @@
     "tasks": "9cc1bcb",
     "tests": "a7636e8",
     "implement": "ac379c7",
-    "verify": "035fcd5"
+    "verify": "035fcd5",
+    "tests_review_fix": "9d56d7e"
   },
   "iterations": {
     "tests": 2,
-    "implement": 1,
+    "implement": 2,
     "review": 2
   },
   "max_iterations": 3,
@@ -267,6 +268,24 @@
       "stage": "tests",
       "event": "approved",
       "note": "Corrección de tests (review 1) y commit aprobados por el usuario (\"Si\")"
+    },
+    {
+      "at": "2026-10-15T21:49:15.343Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "Review iteración 2: implementer corrige F3 (MetricsHistory onFailed con la lista actual)"
+    },
+    {
+      "at": "2026-10-15T21:50:13.807Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "implementer F3: metricsRef con la lista actual en onFailed; npm test 482 passed, tsc y lint OK"
+    },
+    {
+      "at": "2026-10-15T22:18:06.991Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "Corrección F3 y commit aprobados por el usuario (\"1,2 Si\")"
     }
   ],
   "red_check_exception": {

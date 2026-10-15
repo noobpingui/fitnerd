@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { CircleAlert, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DeleteMetricDialog } from "@/features/body-metrics/components/DeleteMetricDialog"
@@ -28,6 +28,12 @@ export function MetricsHistory({
   const [deleting, setDeleting] = useState<BodyMetric | null>(null)
   // Lista con la que falló el último borrado: si la lista cambia, el aviso deja de verse.
   const [failedFor, setFailedFor] = useState<BodyMetric[] | null>(null)
+
+  // Siempre apunta a la lista actual, aunque el callback de fallo venga de un render anterior.
+  const metricsRef = useRef(metrics)
+  useEffect(() => {
+    metricsRef.current = metrics
+  }, [metrics])
 
   const sorted = useMemo(
     () =>
@@ -154,7 +160,7 @@ export function MetricsHistory({
           onClose={() => setDeleting(null)}
           onFailed={() => {
             setDeleting(null)
-            setFailedFor(metrics)
+            setFailedFor(metricsRef.current)
           }}
         />
       )}
