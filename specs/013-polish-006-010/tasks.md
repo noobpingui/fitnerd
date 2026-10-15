@@ -66,7 +66,7 @@ Solo `isTestConsoleNoise` es un símbolo nuevo que importan los tests. `number_v
 - [x] T-045 [NFR-005, AC-N005.1, AC-N005.2, AC-N005.3] (config) Conectar `test.onConsoleLog` (stderr + `isTestConsoleNoise` devuelve `false`), importando con extensión `.ts`; `GoogleSignInButton.tsx` no se toca — `frontend/vite.config.ts`
 
 ### Documentación (etapa docs, doc-keeper)
-- [ ] T-046 [NFR-006, AC-N006.1, AC-N006.2, AC-N006.3] (docs) Dividir la fila "Métricas corporales" (máx. 300 caracteres) y añadir la lista "Métricas corporales, en detalle" tras la tabla, sin perder datos. Sin tarea test por `traceability_exception`; lo comprueba el orquestador en el gate de docs — `CLAUDE.md`
+- [x] T-046 [NFR-006, AC-N006.1, AC-N006.2, AC-N006.3] (docs) Dividir la fila "Métricas corporales" (máx. 300 caracteres) y añadir la lista "Métricas corporales, en detalle" tras la tabla, sin perder datos. Sin tarea test por `traceability_exception`; lo comprueba el orquestador en el gate de docs — `CLAUDE.md`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |
