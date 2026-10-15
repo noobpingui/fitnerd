@@ -627,7 +627,6 @@ describe("MetricsHistory - medición sospechosa", () => {
   })
 })
 
-
 // --- Spec 013: el aviso de error de borrado desaparece cuando deja de aplicar ---
 
 const DELETE_FAILED = "No se pudo borrar la medición. Inténtalo de nuevo."
@@ -683,7 +682,10 @@ describe("MetricsHistory - aviso de borrado fallido (spec 013)", () => {
     rerenderWith([OLDER, NEWER, metric("2026-10-12", 77)])
 
     expect(
-      await screen.findByRole("button", { name: editName("2026-10-12") })
+      await screen.findByRole("button", {
+      name: editName("2026-10-12"),
+      hidden: true,
+    })
     ).toBeInTheDocument()
     expect(screen.queryByText(DELETE_FAILED)).not.toBeInTheDocument()
   })
@@ -732,5 +734,33 @@ describe("MetricsHistory - aviso de borrado fallido (spec 013)", () => {
 
     expect(editButtons()).toHaveLength(15)
     expect(screen.getByText(DELETE_FAILED)).toBeInTheDocument()
+  })
+
+  // SDD: 013 NFR-001
+  it("si la lista cambia mientras el borrado está en curso y falla, el aviso se ve", async () => {
+    const user = userEvent.setup()
+    const { rerenderWith } = renderStatic([OLDER, NEWER])
+    let rejectDelete: (e: Error) => void = () => {}
+    deleteMock.mockReturnValue(
+      new Promise<void>((_, reject) => {
+        rejectDelete = reject
+      })
+    )
+    await user.click(
+      await screen.findByRole("button", { name: deleteName("2026-10-11") })
+    )
+    const dialog = await screen.findByRole("dialog")
+    await user.click(within(dialog).getByRole("button", { name: "Borrar" }))
+    await waitFor(() => expect(deleteMock).toHaveBeenCalledTimes(1))
+
+    // La lista cambia (p. ej. refetch) con la petición todavía en curso.
+    rerenderWith([OLDER, NEWER, metric("2026-10-12", 77)])
+    await screen.findByRole("button", {
+      name: editName("2026-10-12"),
+      hidden: true,
+    })
+    rejectDelete(new Error("fallo"))
+
+    expect(await screen.findByText(DELETE_FAILED)).toBeInTheDocument()
   })
 })

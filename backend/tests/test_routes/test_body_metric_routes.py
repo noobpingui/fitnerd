@@ -713,7 +713,9 @@ HUGE = 10**400
 def test_post_with_a_huge_integer_weight_is_400_and_creates_nothing(client, registered_user):
     """Un peso de 10^400 da el 400 de rango y la lista de mediciones no cambia."""
     headers = registered_user["headers"]
+    assert post(client, headers, {"weight": 80}).status_code in (200, 201)
     before = listing(client, headers)
+    assert before
 
     response = post(client, headers, {"weight": HUGE})
 

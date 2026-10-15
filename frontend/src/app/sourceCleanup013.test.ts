@@ -87,7 +87,7 @@ describe("limpieza de las features 006 a 010 (spec 013)", () => {
 
   // SDD: 013 NFR-002 AC-N002.5
   it("siguen existiendo los marcadores REQ-005 AC-005.1 de la spec 009", () => {
-    const marker = new RegExp("// SDD: " + "REQ-005 AC-005\.1")
+    const marker = new RegExp("// SDD: " + "REQ-005 AC-005\\.1")
 
     expect(marker.test(source(DATE_UTILS_TEST))).toBe(true)
     expect(marker.test(source(INSIGHTS_TEST))).toBe(true)
