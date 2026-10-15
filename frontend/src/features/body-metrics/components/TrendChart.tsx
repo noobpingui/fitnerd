@@ -11,8 +11,8 @@ import {
   formatDate,
   formatShortDate,
   periodStart,
-  todayIsoDate,
 } from "@/features/body-metrics/dateUtils"
+import { todayIsoDate } from "@/lib/dates"
 import {
   trendChartData,
   type NumericField,
@@ -47,12 +47,12 @@ export function TrendChart({
   const [field, setField] = useState<NumericField>("weight")
   const [range, setRange] = useState<Range>("3")
 
+  // La tendencia solo tiene sentido en el peso, que fluctúa a diario; la
+  // grasa y el músculo se miden con menos frecuencia.
   const isWeight = field === "weight"
   const unit = isWeight ? ` ${weightUnit}` : "%"
   const label = FIELDS.find((f) => f.value === field)!.label
 
-  // La tendencia solo tiene sentido en el peso, que fluctúa a diario; la
-  // grasa y el músculo se miden con menos frecuencia.
   const from = periodStart(todayIsoDate(), Number(range))
   const data = trendChartData(metrics, field, from, toDisplayWeight)
 

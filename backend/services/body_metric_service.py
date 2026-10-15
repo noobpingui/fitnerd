@@ -4,7 +4,13 @@ from datetime import date, timedelta
 
 from exceptions.custom_exceptions import ResourceNotFoundError, ValidationError
 from models.body_metric import BodyMetric
-from services.profile_service import WEIGHT_RANGES, _is_number, _round1, utc_now
+from services.number_validation import is_number
+from services.profile_service import (
+    USER_NOT_FOUND_MESSAGE,
+    WEIGHT_RANGES,
+    _round1,
+    utc_now,
+)
 
 INVALID_BODY_MESSAGE = "Los datos de la medición no son válidos"
 NO_VALUES_MESSAGE = "Debe registrar al menos un valor (peso, % de grasa o % de masa muscular)"
@@ -14,7 +20,6 @@ MUSCLE_MESSAGE = "El porcentaje de masa muscular debe estar entre 10 y 70"
 INVALID_DATE_MESSAGE = "La fecha de la medición no es válida"
 FUTURE_DATE_MESSAGE = "La fecha de la medición no puede ser futura"
 NOT_FOUND_MESSAGE = "Registro no encontrado"
-USER_NOT_FOUND_MESSAGE = "Usuario no encontrado"
 
 WEIGHT_RANGE = (29.9, 300)
 FAT_RANGE = (3, 60)
@@ -48,7 +53,7 @@ def _validate_values(data):
         value = data.get(name)
         if value is None:
             continue
-        if not _is_number(value) or not low <= value <= high:
+        if not is_number(value) or not low <= value <= high:
             raise ValidationError(message)
 
 

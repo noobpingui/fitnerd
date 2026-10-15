@@ -46,24 +46,24 @@ Solo `isTestConsoleNoise` es un símbolo nuevo que importan los tests. `number_v
 ## Fase B — Implementación (implementer)
 
 ### Backend (servicios)
-- [ ] T-030 [REQ-001, REQ-002, REQ-003] (impl) Crear `is_number` (captura `OverflowError`, nunca bool) e `is_int` — `backend/services/number_validation.py`
-- [ ] T-031 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4, AC-001.5] (impl) Borrar `_is_number` y `_is_int` e importar los del helper; `USER_NOT_FOUND_MESSAGE` queda como única definición — `backend/services/profile_service.py`
-- [ ] T-032 [REQ-002, NFR-002, AC-002.1, AC-002.2, AC-002.3, AC-002.4, AC-002.5, AC-N002.9] (impl) Usar `is_number` del helper e importar `USER_NOT_FOUND_MESSAGE` de `profile_service`, borrando la constante duplicada — `backend/services/body_metric_service.py`
-- [ ] T-033 [REQ-003, REQ-004, NFR-002, AC-003.1, AC-003.2, AC-003.3, AC-N002.9] (impl) Borrar `_is_number`, `_is_int` y `PACE_STATUSES_WITH_RATE`; importar del helper y de `calorie_suggestion` — `backend/services/progress_analysis_context.py`
-- [ ] T-034 [NFR-003, AC-N003.2] (impl) Reescribir el comentario con "prolijo" ("Un fallo de Anthropic se traduce en un 503 con un mensaje claro en lugar de un 500."), sin tocar el mensaje visible — `backend/services/progress_analysis_service.py`
+- [x] T-030 [REQ-001, REQ-002, REQ-003] (impl) Crear `is_number` (captura `OverflowError`, nunca bool) e `is_int` — `backend/services/number_validation.py`
+- [x] T-031 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4, AC-001.5] (impl) Borrar `_is_number` y `_is_int` e importar los del helper; `USER_NOT_FOUND_MESSAGE` queda como única definición — `backend/services/profile_service.py`
+- [x] T-032 [REQ-002, NFR-002, AC-002.1, AC-002.2, AC-002.3, AC-002.4, AC-002.5, AC-N002.9] (impl) Usar `is_number` del helper e importar `USER_NOT_FOUND_MESSAGE` de `profile_service`, borrando la constante duplicada — `backend/services/body_metric_service.py`
+- [x] T-033 [REQ-003, REQ-004, NFR-002, AC-003.1, AC-003.2, AC-003.3, AC-N002.9] (impl) Borrar `_is_number`, `_is_int` y `PACE_STATUSES_WITH_RATE`; importar del helper y de `calorie_suggestion` — `backend/services/progress_analysis_context.py`
+- [x] T-034 [NFR-003, AC-N003.2] (impl) Reescribir el comentario con "prolijo" ("Un fallo de Anthropic se traduce en un 503 con un mensaje claro en lugar de un 500."), sin tocar el mensaje visible — `backend/services/progress_analysis_service.py`
 
 ### Frontend
-- [ ] T-035 [REQ-005, AC-005.1, AC-005.2, AC-005.3, AC-005.4] (impl) Sustituir `deleteFailed` por `failedFor: BodyMetric[] | null` atado a la referencia de `metrics`; limpiarlo en "Corregir" y "Borrar", no en "Mostrar más" — `frontend/src/features/body-metrics/components/MetricsHistory.tsx`
-- [ ] T-036 [NFR-002, AC-N002.1, AC-N002.6] (impl) Importar `todayIsoDate` de `@/lib/dates` y mover el comentario de la tendencia justo antes de `const isWeight` — `frontend/src/features/body-metrics/components/TrendChart.tsx`
-- [ ] T-037 [NFR-002, AC-N002.1] (impl) Importar `todayIsoDate` de `@/lib/dates` — `frontend/src/features/body-metrics/pages/BodyMetricsPage.tsx`
-- [ ] T-038 [NFR-002, AC-N002.1, AC-N002.5] (impl) Borrar la reexportación de `parseLocalDate`/`todayIsoDate` con su comentario y `isWithinLastMonths` con su comentario — `frontend/src/features/body-metrics/dateUtils.ts`
-- [ ] T-039 [NFR-002, AC-N002.2, AC-N002.4] (impl) `MIN_TARGET_KCAL: Record<Gender, number>` y `heightCmFromAnswers(a) ?? 0` en lugar de la conversión propia (quitar `CM_PER_IN`) — `frontend/src/features/macros/calculations.ts`
-- [ ] T-040 [NFR-002, AC-N002.7] (impl) `formatInsights(insights: Insights, weightUnit)`; borrar `InsightsInput`, su comentario y el cast — `frontend/src/features/body-metrics/insightsView.ts`
-- [ ] T-041 [NFR-002, AC-N002.8] (impl) Dejar la comprobación `rate.kind === "ok"` una sola vez en el cálculo del ritmo enviado — `frontend/src/features/body-metrics/analysisRequest.ts`
-- [ ] T-042 [NFR-003, AC-N003.2, AC-N003.3] (impl) Corregir "errores tecnicos" a "errores técnicos" (línea 55) — `frontend/src/features/body-metrics/components/ProgressAnalysis.tsx`
-- [ ] T-043 [NFR-003, AC-N003.2, AC-N003.3] (impl) Corregir "se envia" a "se envía" (línea 41) — `frontend/src/features/body-metrics/api.ts`
-- [ ] T-044 [NFR-005, AC-N005.1, AC-N005.2] (impl) Implementar `isTestConsoleNoise`: `true` solo con "VITE_GOOGLE_CLIENT_ID no esta configurado" o `/The width\(-?\d+\) and height\(-?\d+\) of chart should be greater than 0/` — `frontend/src/lib/testConsoleNoise.ts`
-- [ ] T-045 [NFR-005, AC-N005.1, AC-N005.2, AC-N005.3] (config) Conectar `test.onConsoleLog` (stderr + `isTestConsoleNoise` devuelve `false`), importando con extensión `.ts`; `GoogleSignInButton.tsx` no se toca — `frontend/vite.config.ts`
+- [x] T-035 [REQ-005, AC-005.1, AC-005.2, AC-005.3, AC-005.4] (impl) Sustituir `deleteFailed` por `failedFor: BodyMetric[] | null` atado a la referencia de `metrics`; limpiarlo en "Corregir" y "Borrar", no en "Mostrar más" — `frontend/src/features/body-metrics/components/MetricsHistory.tsx`
+- [x] T-036 [NFR-002, AC-N002.1, AC-N002.6] (impl) Importar `todayIsoDate` de `@/lib/dates` y mover el comentario de la tendencia justo antes de `const isWeight` — `frontend/src/features/body-metrics/components/TrendChart.tsx`
+- [x] T-037 [NFR-002, AC-N002.1] (impl) Importar `todayIsoDate` de `@/lib/dates` — `frontend/src/features/body-metrics/pages/BodyMetricsPage.tsx`
+- [x] T-038 [NFR-002, AC-N002.1, AC-N002.5] (impl) Borrar la reexportación de `parseLocalDate`/`todayIsoDate` con su comentario y `isWithinLastMonths` con su comentario — `frontend/src/features/body-metrics/dateUtils.ts`
+- [x] T-039 [NFR-002, AC-N002.2, AC-N002.4] (impl) `MIN_TARGET_KCAL: Record<Gender, number>` y `heightCmFromAnswers(a) ?? 0` en lugar de la conversión propia (quitar `CM_PER_IN`) — `frontend/src/features/macros/calculations.ts`
+- [x] T-040 [NFR-002, AC-N002.7] (impl) `formatInsights(insights: Insights, weightUnit)`; borrar `InsightsInput`, su comentario y el cast — `frontend/src/features/body-metrics/insightsView.ts`
+- [x] T-041 [NFR-002, AC-N002.8] (impl) Dejar la comprobación `rate.kind === "ok"` una sola vez en el cálculo del ritmo enviado — `frontend/src/features/body-metrics/analysisRequest.ts`
+- [x] T-042 [NFR-003, AC-N003.2, AC-N003.3] (impl) Corregir "errores tecnicos" a "errores técnicos" (línea 55) — `frontend/src/features/body-metrics/components/ProgressAnalysis.tsx`
+- [x] T-043 [NFR-003, AC-N003.2, AC-N003.3] (impl) Corregir "se envia" a "se envía" (línea 41) — `frontend/src/features/body-metrics/api.ts`
+- [x] T-044 [NFR-005, AC-N005.1, AC-N005.2] (impl) Implementar `isTestConsoleNoise`: `true` solo con "VITE_GOOGLE_CLIENT_ID no esta configurado" o `/The width\(-?\d+\) and height\(-?\d+\) of chart should be greater than 0/` — `frontend/src/lib/testConsoleNoise.ts`
+- [x] T-045 [NFR-005, AC-N005.1, AC-N005.2, AC-N005.3] (config) Conectar `test.onConsoleLog` (stderr + `isTestConsoleNoise` devuelve `false`), importando con extensión `.ts`; `GoogleSignInButton.tsx` no se toca — `frontend/vite.config.ts`
 
 ### Documentación (etapa docs, doc-keeper)
 - [ ] T-046 [NFR-006, AC-N006.1, AC-N006.2, AC-N006.3] (docs) Dividir la fila "Métricas corporales" (máx. 300 caracteres) y añadir la lista "Métricas corporales, en detalle" tras la tabla, sin perder datos. Sin tarea test por `traceability_exception`; lo comprueba el orquestador en el gate de docs — `CLAUDE.md`

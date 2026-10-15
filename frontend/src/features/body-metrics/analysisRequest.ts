@@ -16,7 +16,7 @@ export function buildAnalysisRequest(
   const macros = calculateMacros(profile, parseLocalDate(today))
 
   const { rate } = insights
-  const hasRate = rate.kind === "ok" && insights.paceStatus !== null
+  const sentRate = rate.kind === "ok" && insights.paceStatus !== null ? rate : null
 
   return {
     today,
@@ -36,8 +36,8 @@ export function buildAnalysisRequest(
       total_records: insights.streak.total,
       last_record_date: insights.streak.lastDate,
     },
-    rate_kg_per_week: hasRate && rate.kind === "ok" ? rate.kgPerWeek : null,
-    latest_weight_kg: hasRate && rate.kind === "ok" ? rate.latestKg : null,
+    rate_kg_per_week: sentRate?.kgPerWeek ?? null,
+    latest_weight_kg: sentRate?.latestKg ?? null,
     calories: {
       maintenance_kcal: macros.maintenanceKcal,
       target_kcal: macros.targetKcal,
