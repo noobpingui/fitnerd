@@ -12,7 +12,12 @@ from datetime import date, timedelta
 from typing import Any
 
 from exceptions.custom_exceptions import ValidationError
-from services.calorie_suggestion import CalorieSuggestion, is_unrealistic_rate
+from services.calorie_suggestion import (
+    PACE_STATUSES_WITH_RATE,
+    CalorieSuggestion,
+    is_unrealistic_rate,
+)
+from services.number_validation import is_int, is_number
 
 INVALID_ANALYSIS_REQUEST_MESSAGE = (
     "No se pudo preparar el análisis. Recarga la página e inténtalo de nuevo."
@@ -34,7 +39,6 @@ PACE_STATUSES = (
     "stale",
     UNREALISTIC,
 )
-PACE_STATUSES_WITH_RATE = ("on_track", "too_slow", "too_fast", "off_range")
 
 # Lista blanca: dígitos, letras, puntuación numérica, signos, espacios y "%" o "/".
 # Impide saltos de línea y, con el tope de longitud, instrucciones largas.
@@ -104,14 +108,6 @@ def _invalid() -> ValidationError:
     return ValidationError(INVALID_ANALYSIS_REQUEST_MESSAGE)
 
 
-def _is_int(value: Any) -> bool:
-    return isinstance(value, int) and not isinstance(value, bool)
-
-
-def _is_number(value: Any) -> bool:
-    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
-
-
 def _parse_date(value: Any) -> date:
     if not isinstance(value, str) or not _DATE_PATTERN.match(value):
         raise _invalid()
@@ -152,12 +148,12 @@ def parse_analysis_request(data: Any, server_today: date) -> AnalysisRequest:
     rate = data.get("rate_kg_per_week")
     latest = data.get("latest_weight_kg")
     if pace_status == UNREALISTIC:
-        if not _is_number(rate) or not _is_number(latest) or not 20 <= latest <= 400:
+        if not is_number(rate) or not is_number(latest) or not 20 <= latest <= 400:
             raise _invalid()
     elif pace_status in PACE_STATUSES_WITH_RATE:
-        if not _is_number(rate) or not -10 <= rate <= 10:
+        if not is_number(rate) or not -10 <= rate <= 10:
             raise _invalid()
-        if not _is_number(latest) or not 20 <= latest <= 400:
+        if not is_number(latest) or not 20 <= latest <= 400:
             raise _invalid()
         if is_unrealistic_rate(rate, latest):
             pace_status = UNREALISTIC
@@ -166,7 +162,7 @@ def parse_analysis_request(data: Any, server_today: date) -> AnalysisRequest:
 
     for key in _COUNTER_INDICATORS:
         value = indicators.get(key)
-        if not _is_int(value) or not 0 <= value <= MAX_COUNTER:
+        if not is_int(value) or not 0 <= value <= MAX_COUNTER:
             raise _invalid()
         clean[key] = value
 
@@ -178,7 +174,7 @@ def parse_analysis_request(data: Any, server_today: date) -> AnalysisRequest:
     kcal = {}
     for key in ("maintenance_kcal", "target_kcal"):
         value = calories.get(key)
-        if not _is_int(value) or not 1 <= value <= MAX_KCAL:
+        if not is_int(value) or not 1 <= value <= MAX_KCAL:
             raise _invalid()
         kcal[key] = value
 

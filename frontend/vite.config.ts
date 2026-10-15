@@ -5,6 +5,7 @@ import path from 'node:path'
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { isTestConsoleNoise } from './src/lib/testConsoleNoise.ts'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -23,5 +24,10 @@ export default defineConfig({
     // jest-dom (toBeInTheDocument, etc.), para no tener que importarlos a mano en
     // cada archivo.
     setupFiles: './src/test/setup.ts',
+    // Oculta dos avisos conocidos (Google sin client id y Recharts sin tamaño en
+    // jsdom). No envuelve console.warn, así que un spy sigue viendo la llamada.
+    onConsoleLog(log, type) {
+      if (type === 'stderr' && isTestConsoleNoise(log)) return false
+    },
   },
 })

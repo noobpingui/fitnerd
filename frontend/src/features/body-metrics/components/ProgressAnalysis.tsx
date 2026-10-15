@@ -52,7 +52,7 @@ export function ProgressAnalysis({
       {isError && error instanceof ApiError &&
         (error.status === 429 || error.status === 409) ? (
         // 429 (limite de analisis por dia) y 409 (falta el perfil) no son
-        // fallas reales - son respuestas esperadas del sistema, no errores tecnicos. Se muestra
+        // fallas reales - son respuestas esperadas del sistema, no errores técnicos. Se muestra
         // en tono neutro (muted), sin el rojo de destructive ni el prefijo
         // "Error (xxx):", que hace que se lea como que algo se rompio.
         <p className="mt-3 text-sm text-muted-foreground">{error.message}</p>

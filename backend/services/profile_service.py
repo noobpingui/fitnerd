@@ -1,4 +1,3 @@
-import math
 import re
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
@@ -6,6 +5,7 @@ from decimal import ROUND_HALF_UP, Decimal
 
 from exceptions.custom_exceptions import ResourceNotFoundError, ValidationError
 from models.user_profile import UserProfile
+from services.number_validation import is_int, is_number
 
 INVALID_BODY_MESSAGE = "Los datos del perfil no son válidos"
 INVALID_DOB_MESSAGE = "La fecha de nacimiento no es válida"
@@ -45,18 +45,6 @@ def age_on(date_of_birth, today):
     return today.year - date_of_birth.year - before_birthday
 
 
-def _is_number(value):
-    return (
-        isinstance(value, (int, float))
-        and not isinstance(value, bool)
-        and math.isfinite(value)
-    )
-
-
-def _is_int(value):
-    return isinstance(value, int) and not isinstance(value, bool)
-
-
 def _round1(value):
     return float(Decimal(str(value)).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
 
@@ -94,17 +82,17 @@ def _validate(data, today):
     height_cm = height_ft = height_in = None
     if height_unit == "cm":
         raw = data.get("height_cm")
-        if not _is_number(raw) or not 100 <= raw <= 250:
+        if not is_number(raw) or not 100 <= raw <= 250:
             raise ValidationError(HEIGHT_CM_MESSAGE)
         height_cm = _round1(raw)
     else:
         height_ft = data.get("height_ft")
-        if not _is_int(height_ft) or not 3 <= height_ft <= 8:
+        if not is_int(height_ft) or not 3 <= height_ft <= 8:
             raise ValidationError(HEIGHT_FT_MESSAGE)
         height_in = data.get("height_in")
         if height_in is None:
             height_in = 0
-        elif not _is_int(height_in) or not 0 <= height_in <= 11:
+        elif not is_int(height_in) or not 0 <= height_in <= 11:
             raise ValidationError(HEIGHT_FT_MESSAGE)
 
     weight_unit = data.get("weight_unit")
@@ -112,7 +100,7 @@ def _validate(data, today):
         raise ValidationError(INVALID_WEIGHT_UNIT_MESSAGE)
     low, high, message = WEIGHT_RANGES[weight_unit]
     weight = data.get("weight")
-    if not _is_number(weight) or not low <= weight <= high:
+    if not is_number(weight) or not low <= weight <= high:
         raise ValidationError(message)
 
     activity_level = data.get("activity_level")

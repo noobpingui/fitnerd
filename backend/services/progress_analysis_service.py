@@ -146,7 +146,7 @@ class ProgressAnalysisService:
                 [{"role": "user", "content": user_message}],
             )
         except Exception:
-            # Una falla de Anthropic se traduce a un 503 prolijo en vez de un 500.
+            # Un fallo de Anthropic se traduce en un 503 con un mensaje claro en lugar de un 500.
             logger.exception("Fallo Anthropic al generar el analisis de progreso")
             raise ServiceUnavailableError(
                 "No se pudo generar el analisis en este momento. Intenta de nuevo en unos minutos."

@@ -4,6 +4,7 @@ nacimiento validas estan lejos de los limites de edad (los limites exactos se
 prueban en los unitarios con un reloj fijo).
 """
 
+import json
 from datetime import datetime
 
 import pytest
@@ -414,3 +415,80 @@ def test_a_user_id_in_the_body_does_not_affect_another_user(client, app, registe
     assert response.status_code == 200
     assert read_profile(client, user_a)["profile"]["gender"] == "male"
     assert read_profile(client, other["headers"]) == NO_PROFILE
+
+
+# --------------------------------------------------------------------------
+# Enteros enormes (spec 013, REQ-001)
+# --------------------------------------------------------------------------
+
+HUGE = 10**400
+
+
+# SDD: 013 REQ-001 AC-001.1
+def test_put_with_a_huge_integer_height_returns_400_with_the_range_message(
+    client, registered_user
+):
+    """Una altura de 10^400 cm da el 400 de rango, no un 500."""
+    response = put_profile(
+        client, registered_user["headers"], body(height_unit="cm", height_cm=HUGE)
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "La altura debe estar entre 100 y 250 cm"}
+
+
+# SDD: 013 REQ-001 AC-001.2
+def test_put_with_a_huge_integer_weight_in_kg_returns_400_with_the_range_message(
+    client, registered_user
+):
+    """Un peso de 10^400 kg da el 400 de rango en kg."""
+    response = put_profile(
+        client, registered_user["headers"], body(weight_unit="kg", weight=HUGE)
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "El peso debe estar entre 30 y 300 kg"}
+
+
+# SDD: 013 REQ-001 AC-001.3
+def test_put_with_a_huge_negative_weight_in_lb_returns_400_with_the_range_message(
+    client, registered_user
+):
+    """Un peso de -10^400 lb da el 400 de rango en lb."""
+    response = put_profile(
+        client, registered_user["headers"], body(weight_unit="lb", weight=-HUGE)
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "El peso debe estar entre 66 y 660 lb"}
+
+
+# SDD: 013 REQ-001 AC-001.4
+def test_a_rejected_huge_weight_leaves_the_saved_profile_untouched(client, registered_user):
+    """Tras el 400 por un peso de 10^400, el GET devuelve el mismo perfil que antes."""
+    headers = registered_user["headers"]
+    assert put_profile(client, headers, PROFILE_BODY).status_code == 200
+    before = read_profile(client, headers)
+
+    response = put_profile(client, headers, body(weight=HUGE))
+
+    assert response.status_code == 400
+    assert read_profile(client, headers) == before
+
+
+# SDD: 013 REQ-001 AC-001.5
+def test_put_with_a_5000_digit_weight_returns_400_and_never_500(client, registered_user):
+    """Un entero de 5000 dígitos no se puede parsear: 400 de datos no válidos."""
+    digits = "1" + "0" * 4999
+    raw = json.dumps(body(weight=0)).replace('"weight": 0', '"weight": ' + digits)
+    assert digits in raw
+
+    response = client.put(
+        "/api/profile",
+        data=raw,
+        content_type="application/json",
+        headers=registered_user["headers"],
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "Los datos del perfil no son válidos"}

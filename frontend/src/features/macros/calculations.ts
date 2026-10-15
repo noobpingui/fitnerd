@@ -1,10 +1,11 @@
 import type {
   ActivityLevel,
+  Gender,
   Goal,
   OnboardingAnswers,
 } from "@/features/onboarding/types"
 import { ageFromIsoDate } from "@/lib/age"
-import { CM_PER_IN, KG_PER_LB } from "@/features/onboarding/units"
+import { KG_PER_LB, heightCmFromAnswers } from "@/features/onboarding/units"
 
 // Spec 007: el cálculo vive en el frontend como función pura.
 
@@ -31,7 +32,7 @@ export type MacroKey = "carbs" | "protein" | "fat"
 
 // Suelo calórico del objetivo diario (spec 007, REQ-004): se aplica siempre
 // y no modifica el mantenimiento.
-const MIN_TARGET_KCAL = { male: 1500, female: 1200 }
+const MIN_TARGET_KCAL: Record<Gender, number> = { male: 1500, female: 1200 }
 
 // Reparto del objetivo calórico (spec 007): la proteína depende del peso de
 // referencia, las grasas son un % fijo del total y los carbohidratos se
@@ -72,10 +73,7 @@ export function calculateMacros(
 ): MacrosSummary {
   const kg =
     a.weightUnit === "kg" ? Number(a.weight) : Number(a.weight) * KG_PER_LB
-  const cm =
-    a.heightUnit === "cm"
-      ? Number(a.heightCm)
-      : (Number(a.heightFt) * 12 + Number(a.heightIn || 0)) * CM_PER_IN
+  const cm = heightCmFromAnswers(a) ?? 0
   const age = ageFromIsoDate(a.dateOfBirth, today)
 
   // Mifflin-St Jeor: tasa metabólica basal (TMB) en kcal/día.

@@ -616,3 +616,51 @@ def test_rejects_someone_turning_14_tomorrow():
 def test_rejects_someone_who_turned_101_today():
     """Quien cumple 101 hoy ya supera los 100."""
     assert_rejected(valid_data(date_of_birth="1925-10-11"), AGE_RANGE)
+
+
+# --------------------------------------------------------------------------
+# Enteros enormes (spec 013, REQ-001)
+# --------------------------------------------------------------------------
+
+HUGE = 10**400
+
+
+# SDD: 013 REQ-001 AC-001.1
+def test_huge_integer_height_in_cm_is_rejected_with_the_range_message():
+    """Una altura de 10^400 cm da el mensaje de rango, no un OverflowError."""
+    assert_rejected(valid_data(height_unit="cm", height_cm=HUGE), HEIGHT_CM_INVALID)
+
+
+# SDD: 013 REQ-001 AC-001.2
+def test_huge_integer_weight_in_kg_is_rejected_with_the_range_message():
+    """Un peso de 10^400 kg da el mensaje de rango en kg."""
+    assert_rejected(valid_data(weight_unit="kg", weight=HUGE), WEIGHT_KG_INVALID)
+
+
+# SDD: 013 REQ-001 AC-001.3
+def test_huge_negative_integer_weight_in_lb_is_rejected_with_the_range_message():
+    """Un peso de -10^400 lb da el mensaje de rango en lb."""
+    assert_rejected(valid_data(weight_unit="lb", weight=-HUGE), WEIGHT_LB_INVALID)
+
+
+# SDD: 013 REQ-001 AC-001.4
+def test_huge_integer_weight_leaves_the_saved_profile_untouched():
+    """Con un perfil ya guardado, un peso enorme se rechaza sin modificarlo ni hacer commit."""
+    service, _, profile_repository, unit_of_work, _ = make_service()
+    service.save_profile("user-1", valid_data())
+    before = (
+        profile_repository.profiles["user-1"].weight,
+        profile_repository.profiles["user-1"].height_cm,
+    )
+    unit_of_work.committed = False
+
+    with pytest.raises(ValidationError) as excinfo:
+        service.save_profile("user-1", valid_data(weight=HUGE))
+
+    assert excinfo.value.message == WEIGHT_KG_INVALID
+    assert len(profile_repository.created) == 1
+    assert (
+        profile_repository.profiles["user-1"].weight,
+        profile_repository.profiles["user-1"].height_cm,
+    ) == before
+    assert unit_of_work.committed is False

@@ -1,0 +1,444 @@
+{
+  "$comment": "Única fuente de verdad del flujo SDD de una feature. Lo escriben solo el orquestador (/sdd-*) y el verifier (secciones red_check y verify). Etapas: spec, plan, tasks, tests, implement, verify, review, docs, close, done.",
+  "schema_version": 1,
+  "feature": "013-polish-006-010",
+  "title": "Pulido del código y la documentación de las features 006 a 010",
+  "type": "refactor",
+  "scope": {
+    "backend": true,
+    "frontend": true
+  },
+  "branch": "fix/013-polish-006-010",
+  "base_branch": "main",
+  "created_at": "2026-10-15T09:28:18.161Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": "2026-10-15T09:41:10.811Z",
+    "plan": "2026-10-15T09:57:33.125Z",
+    "tasks": "2026-10-15T20:02:24.074Z",
+    "tests": "2026-10-15T20:52:09.243Z",
+    "implement": "2026-10-15T20:56:22.324Z",
+    "verify": "2026-10-15T22:58:46.137Z",
+    "review": "2026-10-15T23:05:30.232Z",
+    "docs": "2026-10-15T23:07:14.140Z",
+    "close": "2026-10-15T23:10:13.219Z"
+  },
+  "commits": {
+    "spec": "778fd3e",
+    "plan": "f3f3ebc",
+    "tasks": "9cc1bcb",
+    "tests": "a7636e8",
+    "implement": "ac379c7",
+    "verify": "035fcd5",
+    "tests_review_fix": "9d56d7e",
+    "implement_review_fix": "7e25d58",
+    "tests_traceability_fix": "0ab8421",
+    "verify_after_review": "e1704c1",
+    "review": "c94762e",
+    "docs": "f35ab06"
+  },
+  "iterations": {
+    "tests": 3,
+    "implement": 2,
+    "review": 2
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-10-15T21:42:26.505Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-10-15T22:56:18.585Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-10-15T23:00:41.194Z"
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-15T09:28:18.161Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "Feature creada desde main (aprobado por el usuario); origen: NITs del backlog de 006–010, 008 F1/F3, ruido de tests y fila Métricas del CLAUDE.md"
+    },
+    {
+      "at": "2026-10-15T09:29:22.412Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegado al spec-writer (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T09:33:11.891Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "spec.md iteración 1: 5 REQ (24 AC), 6 NFR (19 AC); Q1–Q10 abiertas"
+    },
+    {
+      "at": "2026-10-15T09:38:52.000Z",
+      "stage": "spec",
+      "event": "user_decision",
+      "note": "Usuario: \"Todas las propuestas\" (Q1–Q10)"
+    },
+    {
+      "at": "2026-10-15T09:38:52.000Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Respuestas Q1–Q10 copiadas en spec.md; re-delegado al spec-writer (iteración 2)"
+    },
+    {
+      "at": "2026-10-15T09:39:37.416Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec.md iteración 2: 5 REQ (24 AC), 6 NFR (24 AC); Q1–Q10 resueltas"
+    },
+    {
+      "at": "2026-10-15T09:41:10.811Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Spec y commit aprobados por el usuario (\"1,2 sí\")"
+    },
+    {
+      "at": "2026-10-15T09:41:10.974Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegado al planner (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T09:49:35.893Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md: helper number_validation.is_number (OverflowError), aviso de borrado atado a la lista, limpiezas 006–010, filtro de ruido en vite.config.ts; sin migración ni ADR; preguntas: red_check_exception y NFR-006 manual"
+    },
+    {
+      "at": "2026-10-15T09:57:33.125Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "Plan y commit aprobados por el usuario (\"1,2,3,4 sí\"); red_check_exception y traceability_exception (NFR-006) registradas"
+    },
+    {
+      "at": "2026-10-15T09:57:33.275Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegado al task-breaker (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T09:58:35.174Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks.md: 46 tareas (1 scaffold, 28 test, 15 impl, 1 config, 1 docs)"
+    },
+    {
+      "at": "2026-10-15T20:02:24.074Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "Tasks y commit aprobados por el usuario (\"1,2,3 sí\"); traceability_exception ampliada con AC-N001.1–4 y AC-N003.3"
+    },
+    {
+      "at": "2026-10-15T20:02:28.240Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Delegado al implementer en modo scaffold (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T20:02:43.733Z",
+      "stage": "tests",
+      "event": "scaffold_done",
+      "note": "implementer scaffold: T-000 (stub isTestConsoleNoise); delegado al test-author (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T20:12:58.936Z",
+      "stage": "tests",
+      "event": "tests_written",
+      "note": "test-author: T-001–T-028 (~55 tests, marcadores SDD: 013); delegado al verifier en modo red"
+    },
+    {
+      "at": "2026-10-15T20:16:22.771Z",
+      "stage": "tests",
+      "event": "red_check_fail",
+      "note": "verifier red: 24 backend + 15 frontend en rojo legítimo; FAIL por 3 tests en verde fuera de la excepción (dates.test.ts x2 AC-N002.1, marcadores 009 AC-N002.5). Pendiente decisión del usuario"
+    },
+    {
+      "at": "2026-10-15T20:46:32.121Z",
+      "stage": "tests",
+      "event": "user_decision",
+      "note": "Usuario aprueba ampliar red_check_exception (opción A, \"1 sí\"); red check repetido por el verifier (iteración 2)"
+    },
+    {
+      "at": "2026-10-15T20:49:26.987Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS (iteración 2): backend 24 rojo / 10 verde en excepción; frontend 15 rojo / 9 verde en excepción"
+    },
+    {
+      "at": "2026-10-15T20:52:09.243Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "Tests y commit aprobados por el usuario (\"1,2 sí\")"
+    },
+    {
+      "at": "2026-10-15T20:52:09.525Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegado al implementer (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T20:55:25.233Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "implementer: T-029–T-045; pytest 726 passed, npm test 481 passed, tsc y lint sin errores, ruff-new sin nuevas"
+    },
+    {
+      "at": "2026-10-15T20:56:22.324Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "Implement y commit aprobados por el usuario (\"1,2 sí\")"
+    },
+    {
+      "at": "2026-10-15T20:56:22.579Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier en modo full"
+    },
+    {
+      "at": "2026-10-15T21:00:00.445Z",
+      "stage": "verify",
+      "event": "verify_fail",
+      "note": "verifier full: pytest 726, npm test 481, lint/tsc/build/ruff-new OK, trazabilidad OK; FAIL solo por T-046 (docs) sin [x], que por diseño se hace en la etapa docs. Pendiente decisión del usuario"
+    },
+    {
+      "at": "2026-10-15T21:16:36.191Z",
+      "stage": "verify",
+      "event": "user_decision",
+      "note": "Usuario elige opción A (\"1,2 sí\"): T-046 (docs) exenta del criterio de tareas [x] en verify; verify repetido (iteración 2)"
+    },
+    {
+      "at": "2026-10-15T21:19:45.704Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify full PASS (iteración 2): pytest 726, npm test 481, lint 0 errores (1 warning nuevo en sourceCleanup013.test.ts:90), tsc/build/ruff-new OK, trazabilidad OK"
+    },
+    {
+      "at": "2026-10-15T21:34:26.651Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "Verify y commit aprobados por el usuario (\"1,2 Si\")"
+    },
+    {
+      "at": "2026-10-15T21:34:26.815Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado al reviewer (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T21:37:24.522Z",
+      "stage": "review",
+      "event": "changes_requested",
+      "note": "review 1: F1 MAYOR (tildes en dates.test.ts, AC-N003.3), F2 MENOR (escape en sourceCleanup013.test.ts:90), F3 MENOR (onFailed con metrics obsoleto, diferible), F4/F5 NIT. Pendiente decisión del usuario sobre F3–F5"
+    },
+    {
+      "at": "2026-10-15T21:38:45.043Z",
+      "stage": "review",
+      "event": "user_decision",
+      "note": "Usuario: arreglar F3 ahora e incluir F4 y F5 (\"1. Arreglarla ahora. 2. Si\")"
+    },
+    {
+      "at": "2026-10-15T21:38:45.043Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Review iteración 2: test-author corrige F1, F2, F4, F5 y escribe el test rojo de F3"
+    },
+    {
+      "at": "2026-10-15T21:42:12.211Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "test-author: F1, F2, F4, F5 corregidos; test nuevo de F3 (SDD: 013 NFR-001) en rojo. Nota: el hook bloqueó un Edit porque state.stage seguía en review (fallo del orquestador) y el agente aplicó F2 con sed"
+    },
+    {
+      "at": "2026-10-15T21:42:12.211Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "verifier red solo del test nuevo de F3"
+    },
+    {
+      "at": "2026-10-15T21:43:13.358Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check parcial PASS (corrección de review): F3 en rojo legítimo; F1, F2, F4, F5 pasan con la implementación actual"
+    },
+    {
+      "at": "2026-10-15T21:49:15.176Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "Corrección de tests (review 1) y commit aprobados por el usuario (\"Si\")"
+    },
+    {
+      "at": "2026-10-15T21:49:15.343Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "Review iteración 2: implementer corrige F3 (MetricsHistory onFailed con la lista actual)"
+    },
+    {
+      "at": "2026-10-15T21:50:13.807Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "implementer F3: metricsRef con la lista actual en onFailed; npm test 482 passed, tsc y lint OK"
+    },
+    {
+      "at": "2026-10-15T22:18:06.991Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "Corrección F3 y commit aprobados por el usuario (\"1,2 Si\")"
+    },
+    {
+      "at": "2026-10-15T22:18:07.150Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "verifier full tras la corrección de review (iteración 2 de review)"
+    },
+    {
+      "at": "2026-10-15T22:21:51.883Z",
+      "stage": "verify",
+      "event": "verify_fail",
+      "note": "verify full tras review: todo verde (pytest 726, npm test 482, lint sin el warning) salvo AC-N004.1 sin marcador propio (T-006/T-016 solo cambiaban marcadores). Pendiente decisión del usuario"
+    },
+    {
+      "at": "2026-10-15T22:51:37.044Z",
+      "stage": "verify",
+      "event": "user_decision",
+      "note": "Usuario elige opción A (\"A\"): test de recorrido de fuente para AC-N004.1"
+    },
+    {
+      "at": "2026-10-15T22:51:37.044Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "test-author añade test SDD: 013 NFR-004 AC-N004.1 en test_source_cleanup_013.py (iteración 3/3)"
+    },
+    {
+      "at": "2026-10-15T22:52:16.780Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "test-author: test_analysis_body_validation_tests_cite_their_own_013_criteria (SDD: 013 NFR-004 AC-N004.1), pasa; ruff-new OK"
+    },
+    {
+      "at": "2026-10-15T22:54:09.724Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "Test de AC-N004.1 y commit aprobados por el usuario (\"1,2 Si\")"
+    },
+    {
+      "at": "2026-10-15T22:54:09.899Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "verifier full tras el test de AC-N004.1"
+    },
+    {
+      "at": "2026-10-15T22:56:45.017Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify full PASS tras correcciones: pytest 727, npm test 482, lint 0 errores (solo 2 warnings previos), tsc/build/ruff-new OK, trazabilidad completa"
+    },
+    {
+      "at": "2026-10-15T22:58:46.137Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "Verify tras correcciones y commit aprobados por el usuario (\"1,2 Si\")"
+    },
+    {
+      "at": "2026-10-15T22:58:46.275Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado al reviewer (iteración 2)"
+    },
+    {
+      "at": "2026-10-15T23:00:41.194Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review 2: APPROVED; F1–F5 resueltos; 4 NIT diferibles (N1 aserciones redundantes en test AC-N004.1, N2 sangría, N3 marcador sin AC, N4 aviso con fila ya borrada)"
+    },
+    {
+      "at": "2026-10-15T23:05:30.232Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Review y commit aprobados por el usuario (\"1,2,3 Si\"); N1–N3 al backlog con la feature 6, N4 solo como nota"
+    },
+    {
+      "at": "2026-10-15T23:05:30.362Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegado al doc-keeper (T-046, NFR-006)"
+    },
+    {
+      "at": "2026-10-15T23:06:12.703Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "doc-keeper: T-046 [x]; fila Métricas 287 caracteres; lista de detalle con 3 puntos; comprobación manual del orquestador OK (sin pérdida de datos, UTF-8 CRLF)"
+    },
+    {
+      "at": "2026-10-15T23:07:14.140Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "Docs y commit aprobados por el usuario (\"1,2 Si\")"
+    },
+    {
+      "at": "2026-10-15T23:07:14.269Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Close ejecutado por el orquestador"
+    },
+    {
+      "at": "2026-10-15T23:07:23.085Z",
+      "stage": "close",
+      "event": "done",
+      "note": "Checklist Art. 9 todo en verde; pendiente aprobación del cierre"
+    },
+    {
+      "at": "2026-10-15T23:10:13.219Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Cierre, commit, integración por PR y push aprobados por el usuario (\"1,2 Si, 3 a, 4 Si\")"
+    }
+  ],
+  "red_check_exception": {
+    "at": "2026-10-15T09:57:33.125Z",
+    "note": "Tests en verde permitidos en el red check (plan §5.6, aprobado por el usuario en el gate del plan). Ampliada en el red check 1 con los tests movidos de AC-N002.1 y el test de marcadores 009 de AC-N002.5 (aprobado por el usuario, \"1 sí\")",
+    "acs": [
+      "AC-001.5",
+      "AC-002.5",
+      "AC-004.*",
+      "AC-005.3",
+      "AC-005.4",
+      "AC-N002.3",
+      "AC-N002.10",
+      "AC-N002.5 (solo el test sustituto del límite inferior)",
+      "AC-N003.1",
+      "AC-N004.1",
+      "AC-N005.3",
+      "AC-N002.1 (solo los 2 tests movidos a frontend/src/lib/dates.test.ts)",
+      "AC-N002.5 (test de que siguen los marcadores REQ-005 AC-005.1 de la spec 009, en app/sourceCleanup013.test.ts)"
+    ]
+  },
+  "traceability_exception": {
+    "at": "2026-10-15T09:57:33.125Z",
+    "note": "Los AC de NFR-006 (CLAUDE.md) no tienen test: los escribe el doc-keeper en docs y los comprueba el orquestador a mano en el gate de docs (aprobado por el usuario en el gate del plan). AC-N001.1, AC-N001.2 y AC-N001.4 los cubren los comandos del verifier (pytest, npm test, lint, tsc, build, ruff-new); AC-N001.3 y AC-N003.3 los comprueba el reviewer sobre el diff (aprobado por el usuario en el gate de tasks)",
+    "acs": [
+      "AC-N006.1",
+      "AC-N006.2",
+      "AC-N006.3",
+      "AC-N001.1",
+      "AC-N001.2",
+      "AC-N001.4",
+      "AC-N001.3",
+      "AC-N003.3"
+    ]
+  },
+  "tasks_checkbox_exception": {
+    "at": "2026-10-15T21:16:36.191Z",
+    "note": "Las tareas (docs) no se exigen [x] en verify: las completa el doc-keeper en la etapa docs y el orquestador lo comprueba en ese gate (aprobado por el usuario, opción A)",
+    "tasks": [
+      "T-046"
+    ]
+  }
+}

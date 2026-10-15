@@ -38,7 +38,7 @@ export function deleteBodyMetric(id: string) {
 
 // POST porque dispara una accion real (llama a Claude del lado del
 // backend) - no es un simple GET idempotente/cacheable. El cuerpo lleva el
-// contexto que ya calcula la pantalla; sin perfil se envia sin cuerpo y el
+// contexto que ya calcula la pantalla; sin perfil se envía sin cuerpo y el
 // servidor responde 409.
 export async function analyzeBodyMetrics(
   request: AnalysisRequest | null

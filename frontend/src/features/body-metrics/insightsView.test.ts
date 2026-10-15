@@ -52,29 +52,13 @@ const ON_TRACK = [
   m("2026-10-11", 78.5, 20),
 ]
 
-type Text = string | null
-type Formatted = {
-  weight: Text
-  weightChange30d: Text
-  rate: Text
-  bodyFat: Text
-  bodyFatChange30d: Text
-  fatMass: Text
-  leanMass: Text
-  bmi: Text
-  ffmi: Text
-  statusLabel: string | undefined | null
-}
-
 function view(
   metrics: BodyMetric[],
   profile: OnboardingAnswers | null = PROFILE,
   unit: WeightUnit = "kg"
 ) {
-  const insights = buildInsights(metrics, profile, TODAY) as unknown as {
-    paceStatus: string | null
-  }
-  const text = formatInsights(insights, unit) as unknown as Formatted
+  const insights = buildInsights(metrics, profile, TODAY)
+  const text = formatInsights(insights, unit)
   return { insights, text }
 }
 
@@ -214,24 +198,13 @@ const PROFILE_LB = makeAnswers({
   goal: "lose",
 })
 
-type Extra = {
-  paceStatus: string | null
-  suspiciousDate?: string | null
-}
-type ExtraText = {
-  rate: Text
-  statusLabel: string | undefined | null
-  tone: string | null
-  paceWarning?: string | null
-}
-
 function view011(
   metrics: BodyMetric[],
   profile: OnboardingAnswers | null = PROFILE,
   unit: WeightUnit = "kg"
 ) {
-  const insights = buildInsights(metrics, profile, TODAY) as unknown as Extra
-  const text = formatInsights(insights as never, unit) as unknown as ExtraText
+  const insights = buildInsights(metrics, profile, TODAY)
+  const text = formatInsights(insights, unit)
   return { insights, text }
 }
 

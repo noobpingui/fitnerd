@@ -186,7 +186,7 @@ def test_with_the_quota_exhausted_it_returns_too_many_requests(
     assert analysis_rows(app) == 2
 
 
-# SDD: NFR-001 AC-N001.1
+# SDD: 013 REQ-004 AC-004.7
 def test_an_invalid_body_returns_bad_request_and_creates_no_row(
     client, app, registered_user
 ):
@@ -326,3 +326,26 @@ def test_a_malformed_body_without_a_profile_is_conflict(client, app, registered_
     assert response.status_code == 400
     assert response.get_json() == {"error": INVALID_MESSAGE}
     assert analysis_rows(app) == 0
+
+
+# SDD: 013 REQ-003 AC-003.1
+def test_a_huge_integer_rate_is_bad_request_even_with_the_quota_exhausted(
+    client, app, registered_user
+):
+    """rate_kg_per_week de 10^400: 400 antes del límite, sin 500 y sin filas nuevas.
+
+    Se siembran 2 análisis: si el cuerpo se aceptara, la ruta respondería 429 y
+    nunca llamaría al modelo de verdad.
+    """
+    headers = registered_user["headers"]
+    save_profile(client, headers)
+    add_measurement(client, headers)
+    seed_analyses(app, 2)
+
+    response = client.post(
+        URL, json=pace_body("on_track", 10**400, 80, "-0,2 kg/sem"), headers=headers
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": INVALID_MESSAGE}
+    assert analysis_rows(app) == 2

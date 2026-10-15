@@ -86,13 +86,8 @@ export function buildInsights(
 
 export type Insights = ReturnType<typeof buildInsights>
 
-// Lo que acepta formatInsights: el resultado de buildInsights (el estado de
-// ritmo llega tipado como texto en algunos llamadores de los tests).
-type InsightsInput = Insights | { paceStatus: string | null }
-
 // Textos de las tarjetas; `null` donde la pantalla pinta "—".
-export function formatInsights(input: InsightsInput, weightUnit: WeightUnit) {
-  const insights = input as Insights
+export function formatInsights(insights: Insights, weightUnit: WeightUnit) {
   // El backend guarda el peso en kg; se muestra en la unidad del perfil.
   const toDisplayWeight = (kg: number) =>
     weightUnit === "lb" ? Math.round((kg / KG_PER_LB) * 10) / 10 : kg

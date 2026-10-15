@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { CircleAlert, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DeleteMetricDialog } from "@/features/body-metrics/components/DeleteMetricDialog"
@@ -26,7 +26,14 @@ export function MetricsHistory({
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<BodyMetric | null>(null)
-  const [deleteFailed, setDeleteFailed] = useState(false)
+  // Lista con la que falló el último borrado: si la lista cambia, el aviso deja de verse.
+  const [failedFor, setFailedFor] = useState<BodyMetric[] | null>(null)
+
+  // Siempre apunta a la lista actual, aunque el callback de fallo venga de un render anterior.
+  const metricsRef = useRef(metrics)
+  useEffect(() => {
+    metricsRef.current = metrics
+  }, [metrics])
 
   const sorted = useMemo(
     () =>
@@ -102,7 +109,10 @@ export function MetricsHistory({
                         variant="ghost"
                         size="icon"
                         aria-label={`Corregir medición del ${date}`}
-                        onClick={() => setEditingId(metric.id)}
+                        onClick={() => {
+                          setFailedFor(null)
+                          setEditingId(metric.id)
+                        }}
                       >
                         <Pencil aria-hidden className="h-4 w-4" />
                       </Button>
@@ -112,7 +122,7 @@ export function MetricsHistory({
                         size="icon"
                         aria-label={`Borrar medición del ${date}`}
                         onClick={() => {
-                          setDeleteFailed(false)
+                          setFailedFor(null)
                           setDeleting(metric)
                         }}
                       >
@@ -138,7 +148,7 @@ export function MetricsHistory({
         </Button>
       )}
 
-      {deleteFailed && (
+      {failedFor !== null && failedFor === metrics && (
         <p role="alert" className="text-sm text-destructive">
           No se pudo borrar la medición. Inténtalo de nuevo.
         </p>
@@ -150,7 +160,7 @@ export function MetricsHistory({
           onClose={() => setDeleting(null)}
           onFailed={() => {
             setDeleting(null)
-            setDeleteFailed(true)
+            setFailedFor(metricsRef.current)
           }}
         />
       )}
