@@ -11,8 +11,8 @@
   "branch": "feat/012-remove-catalog",
   "base_branch": "main",
   "created_at": "2026-10-14T20:51:28.634Z",
-  "stage": "docs",
-  "status": "awaiting_approval",
+  "stage": "done",
+  "status": "done",
   "approvals": {
     "spec": "2026-10-14T21:43:44.312Z",
     "plan": "2026-10-14T21:46:15.444Z",
@@ -22,7 +22,7 @@
     "verify": "2026-10-15T01:34:00.854Z",
     "review": "2026-10-15T01:45:15.465Z",
     "docs": "2026-10-15T01:46:16.084Z",
-    "close": null
+    "close": "2026-10-15T01:47:43.009Z"
   },
   "commits": {
     "spec": "e1c5894",
@@ -31,7 +31,8 @@
     "tasks": "8db2fd5",
     "tests": "b83d52c",
     "implement": "6cfdf2c",
-    "review": "6c26a88"
+    "review": "6c26a88",
+    "docs": "1ccdd7a"
   },
   "iterations": {
     "tests": 2,
@@ -340,6 +341,18 @@
       "stage": "docs",
       "event": "approved",
       "note": "Etapa docs y commit aprobados por el usuario (\"1,2 sí\")"
+    },
+    {
+      "at": "2026-10-15T01:46:16.228Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Orquestador: checklist de hecho (Art. 9) y propuesta de integración"
+    },
+    {
+      "at": "2026-10-15T01:47:43.009Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Cierre y commit aprobados por el usuario (\"1,2 sí\"); integración por PR con volcado previo y migración tras el CD"
     }
   ],
   "red_check_exception": {
