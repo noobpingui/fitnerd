@@ -37,6 +37,7 @@ App de fitness full-stack con un **coach de IA basado en contenido real**: respo
   4. Guarda los embeddings en pgvector.
 
 **Despliegue:**
+- **Procedimiento paso a paso** (tipos de despliegue, backup, migraciones, comprobaciones y marcha atrás): `docs/deploy-runbook.md`.
 - Frontend en **Vercel**: cada push a `main` despliega automáticamente.
 - Backend en **AWS EC2**, detrás de Caddy con HTTPS en `api.fitnerd.betofallas.dev`. **CD (ADR-0016):** el job `deploy` de `backend-tests.yml` se ejecuta tras pasar los tests en un push a `main` (o a mano con *Run workflow*). Se autentica en AWS por OIDC, ejecuta por SSM `git pull --ff-only` y `docker compose -f docker-compose.prod.yml up -d --build` como `ec2-user` en `/home/ec2-user/fitnerd`, y comprueba `/api/health`. Las variables `AWS_ROLE_ARN`, `AWS_REGION`, `EC2_INSTANCE_ID` y `DEPLOY_PATH` están en el environment `production` de GitHub. **Las migraciones no se aplican solas:** si el resumen del job lo avisa, ejecuta `docker compose -f docker-compose.prod.yml exec backend flask db upgrade` en la instancia.
 - Redis corre en la misma instancia.
