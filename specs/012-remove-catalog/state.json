@@ -11,13 +11,13 @@
   "branch": "feat/012-remove-catalog",
   "base_branch": "main",
   "created_at": "2026-10-14T20:51:28.634Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-14T21:43:44.312Z",
     "plan": "2026-10-14T21:46:15.444Z",
     "tasks": "2026-10-14T21:48:29.911Z",
-    "tests": null,
+    "tests": "2026-10-15T01:22:38.445Z",
     "implement": null,
     "verify": null,
     "review": null,
@@ -27,17 +27,18 @@
   "commits": {
     "spec": "e1c5894",
     "spec_rework": "eee07d2",
-    "plan": "c00dc8a"
+    "plan": "c00dc8a",
+    "tasks": "8db2fd5"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 2,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-14T21:58:08.677Z"
   },
   "verify": {
     "result": null,
@@ -168,6 +169,48 @@
       "stage": "tasks",
       "event": "approved",
       "note": "Tareas y commit aprobados por el usuario (\"1,2,3 sí\"); AC-N001.3 cubierto por los comandos del verifier, sin marcador"
+    },
+    {
+      "at": "2026-10-14T21:48:30.049Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Delegado al implementer en modo scaffold (iteración 1)"
+    },
+    {
+      "at": "2026-10-14T21:48:48.366Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Scaffold T-000 hecho (migración f2c4e6a8b0d1 con NotImplementedError); delegado al test-author (iteración 1)"
+    },
+    {
+      "at": "2026-10-14T21:55:23.272Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests T-001..T-025 escritos (backend 30, frontend 6 rojos + verdes de no regresión); delegado al verifier en modo red (iteración 1)"
+    },
+    {
+      "at": "2026-10-14T21:56:43.373Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL (iteración 1): 3 tests de AC-001.2/AC-001.3 pasan sin implementación (404 por entidad inexistente, no por ruta retirada). Devuelto al test-author (iteración 2)"
+    },
+    {
+      "at": "2026-10-14T21:57:14.511Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "test-author reforzó AC-001.2/AC-001.3 comprobando url_map (assert_rule_retired); delegado al verifier en modo red (iteración 2)"
+    },
+    {
+      "at": "2026-10-14T21:58:29.162Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS (iteración 2): backend 13 rojos legítimos + 17 verdes de la excepción; frontend 6 rojos legítimos + 24 verdes de la excepción"
+    },
+    {
+      "at": "2026-10-15T01:22:38.445Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "Etapa tests y commit aprobados por el usuario (\"1,2 sí\"); tests_snapshot con 11 archivos y 2 borrados"
     }
   ],
   "red_check_exception": {
@@ -187,6 +230,26 @@
     "note": "AC-N001.3 (lint, tsc, build y ruff-new) lo cubren los comandos del verifier en verify, sin marcador SDD (aprobado por el usuario en el gate de tasks)",
     "acs": [
       "AC-N001.3"
+    ]
+  },
+  "tests_snapshot": {
+    "at": "2026-10-15T01:22:38.445Z",
+    "sha256": {
+      "backend/tests/test_routes/test_health_routes.py": "6e3db5a6171c0227baa30e36a2651eaa76ad4b84a957f51bddcbae5dee014c69",
+      "backend/tests/test_routes/test_retired_catalog_routes.py": "edc0df10d2e6079e63f66b8a38943538d118437e9f9999c97c548009fdb49867",
+      "backend/tests/test_services/test_catalog_removal_migration.py": "c0cf8c112ef86d31ab1116b4ee0044cd41e1e640e8f666745c3d3d2171e68d07",
+      "backend/tests/test_services/test_no_catalog_leftovers.py": "b905432a5fd894eba0ac872137946747ffdf559ba90f22ff9d9f1700246273b3",
+      "frontend/src/app/router.test.tsx": "ba4a7d5f7881135b1a1fc06bec75194fea6259395654b14f0edca11cea0b5682",
+      "frontend/src/app/noRetiredSections.test.ts": "2c80474038663bba27c2590501352db03a435a3d4eddcb2b20baf28864211962",
+      "frontend/src/components/layout/BottomTabBar.test.tsx": "7e60d14dec07736123ea1a7e3f46fca355839933b2fb4325958317ac85d658b9",
+      "frontend/src/components/layout/Navbar.test.tsx": "572e004ccc803881b58454e79a7c9cadff5b26a0e0e67b04a7dee00840d14461",
+      "frontend/src/features/auth/components/AuthHero.test.tsx": "bb99b979317d96d095bcfa2b4edcccfb83e3f661933737d5cada3a6ae4512be4",
+      "frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx": "d0f56d0694322ceea96addc847873b75a97df6d06ebb211e7d2ad3579cd9ddf1",
+      "frontend/src/features/legal/pages/TermsOfServicePage.test.tsx": "f947474a84c386228b2c73017a5e77e188c46c995a1903515059d3937a49fd51"
+    },
+    "deleted": [
+      "backend/tests/test_routes/test_exercise_routes.py",
+      "backend/tests/test_services/test_weekly_plan_service.py"
     ]
   }
 }

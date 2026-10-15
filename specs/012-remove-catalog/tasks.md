@@ -17,40 +17,40 @@ Reglas:
 -->
 
 ## Fase A0 — Andamiaje (implementer, modo scaffold)
-- [ ] T-000 [REQ-003, AC-003.1, AC-003.2] (scaffold) Crear la revisión `f2c4e6a8b0d1` (`down_revision = 'd8e4b2a7c1f5'`) con `upgrade()` y `downgrade()` que lancen `NotImplementedError("not implemented")`, para que los tests de la migración puedan cargarla — `backend/migrations/versions/f2c4e6a8b0d1_drop_catalog_favorites_and_weekly_plan.py`
+- [x] T-000 [REQ-003, AC-003.1, AC-003.2] (scaffold) Crear la revisión `f2c4e6a8b0d1` (`down_revision = 'd8e4b2a7c1f5'`) con `upgrade()` y `downgrade()` que lancen `NotImplementedError("not implemented")`, para que los tests de la migración puedan cargarla — `backend/migrations/versions/f2c4e6a8b0d1_drop_catalog_favorites_and_weekly_plan.py`
 
 Frontend: no aplica. Rutas HTTP retiradas: no aplica (un 200/401 hoy es el rojo legítimo).
 
 ## Fase A — Tests (test-author)
 
 ### Backend
-- [ ] T-001 [REQ-001, AC-001.1] (test) `GET` con usuario `user` a `/api/body-regions`, `/api/exercise-categories`, `/api/exercises`, `/api/favorites` y `/api/weekly-plan` (parametrizado): 404 con clave `error` — `backend/tests/test_routes/test_retired_catalog_routes.py`
-- [ ] T-002 [REQ-001, AC-001.2] (test) Con `admin_headers`, `POST` a body-regions, exercise-categories y exercises con cuerpo válido, y `DELETE` a `/{uuid4}` de los tres: 404 con `error` — `backend/tests/test_routes/test_retired_catalog_routes.py`
-- [ ] T-003 [REQ-001, AC-001.3] (test) `POST`/`DELETE /api/exercises/{id}/favorites`, `POST /api/weekly-plan` y `DELETE /api/weekly-plan/{id}`: 404 con `error` — `backend/tests/test_routes/test_retired_catalog_routes.py`
-- [ ] T-004 [REQ-001, AC-001.4] (test) Sin cabecera de autorización, `GET /api/exercises` y `GET /api/weekly-plan` responden 404 (no 401) con `error` — `backend/tests/test_routes/test_retired_catalog_routes.py`
-- [ ] T-005 [REQ-002, AC-002.1] (test) No regresión: el `url_map` conserva las reglas de auth, profile, body-metrics (y `/analysis`), coach (`/ask`, `/feedback`), feedback y health — `backend/tests/test_routes/test_retired_catalog_routes.py`
-- [ ] T-006 [REQ-002, AC-002.2] (test) `GET /api/health` responde 200 — `backend/tests/test_routes/test_retired_catalog_routes.py`
-- [ ] T-007 [REQ-002, AC-002.3] (test) Usuario con perfil: `GET /api/profile` y `GET /api/body-metrics` responden 200 con el formato de antes — `backend/tests/test_routes/test_retired_catalog_routes.py`
-- [ ] T-008 [REQ-003, AC-003.1] (test) Migración `upgrade()` con `MigrationContext`/`Operations` en transacción: con filas en las cinco tablas y un usuario con perfil y medición, las cinco tablas desaparecen y el resto queda igual — `backend/tests/test_services/test_catalog_removal_migration.py`
-- [ ] T-009 [REQ-003, AC-003.2] (test) Migración `downgrade()`: recrea las cinco tablas vacías con columnas, restricciones únicas, FK e índices de §3.1 del plan — `backend/tests/test_services/test_catalog_removal_migration.py`
-- [ ] T-010 [REQ-003, AC-003.3] (test) Ninguna de las cinco tablas está en `db.metadata` ni en las tablas de la base de tests — `backend/tests/test_services/test_catalog_removal_migration.py`
-- [ ] T-011 [NFR-001, AC-N001.2] (test) Escaneo del backend (excluye `.venv/`, `migrations/versions/`, `tests/`, `__pycache__/`): sin rutas retiradas, sin nombres de tabla como palabra completa y sin `scripts/migrate_catalog_to_prod.py` — `backend/tests/test_services/test_no_catalog_leftovers.py`
-- [ ] T-012 [REQ-002, AC-002.1] (test) Adaptar `test_health_check_does_not_change_row_counts`: sembrar `User(email=…, date_of_birth=date(2000, 1, 1))` en lugar de `BodyRegion`, sin cambiar el aserto — `backend/tests/test_routes/test_health_routes.py`
-- [ ] T-013 [REQ-001, AC-002.1] (test) Borrar los tests del catálogo y los favoritos, retirados por la spec — `backend/tests/test_routes/test_exercise_routes.py`
-- [ ] T-014 [REQ-001, AC-002.1] (test) Borrar los tests del plan semanal, retirados por la spec — `backend/tests/test_services/test_weekly_plan_service.py`
+- [x] T-001 [REQ-001, AC-001.1] (test) `GET` con usuario `user` a `/api/body-regions`, `/api/exercise-categories`, `/api/exercises`, `/api/favorites` y `/api/weekly-plan` (parametrizado): 404 con clave `error` — `backend/tests/test_routes/test_retired_catalog_routes.py`
+- [x] T-002 [REQ-001, AC-001.2] (test) Con `admin_headers`, `POST` a body-regions, exercise-categories y exercises con cuerpo válido, y `DELETE` a `/{uuid4}` de los tres: 404 con `error` — `backend/tests/test_routes/test_retired_catalog_routes.py`
+- [x] T-003 [REQ-001, AC-001.3] (test) `POST`/`DELETE /api/exercises/{id}/favorites`, `POST /api/weekly-plan` y `DELETE /api/weekly-plan/{id}`: 404 con `error` — `backend/tests/test_routes/test_retired_catalog_routes.py`
+- [x] T-004 [REQ-001, AC-001.4] (test) Sin cabecera de autorización, `GET /api/exercises` y `GET /api/weekly-plan` responden 404 (no 401) con `error` — `backend/tests/test_routes/test_retired_catalog_routes.py`
+- [x] T-005 [REQ-002, AC-002.1] (test) No regresión: el `url_map` conserva las reglas de auth, profile, body-metrics (y `/analysis`), coach (`/ask`, `/feedback`), feedback y health — `backend/tests/test_routes/test_retired_catalog_routes.py`
+- [x] T-006 [REQ-002, AC-002.2] (test) `GET /api/health` responde 200 — `backend/tests/test_routes/test_retired_catalog_routes.py`
+- [x] T-007 [REQ-002, AC-002.3] (test) Usuario con perfil: `GET /api/profile` y `GET /api/body-metrics` responden 200 con el formato de antes — `backend/tests/test_routes/test_retired_catalog_routes.py`
+- [x] T-008 [REQ-003, AC-003.1] (test) Migración `upgrade()` con `MigrationContext`/`Operations` en transacción: con filas en las cinco tablas y un usuario con perfil y medición, las cinco tablas desaparecen y el resto queda igual — `backend/tests/test_services/test_catalog_removal_migration.py`
+- [x] T-009 [REQ-003, AC-003.2] (test) Migración `downgrade()`: recrea las cinco tablas vacías con columnas, restricciones únicas, FK e índices de §3.1 del plan — `backend/tests/test_services/test_catalog_removal_migration.py`
+- [x] T-010 [REQ-003, AC-003.3] (test) Ninguna de las cinco tablas está en `db.metadata` ni en las tablas de la base de tests — `backend/tests/test_services/test_catalog_removal_migration.py`
+- [x] T-011 [NFR-001, AC-N001.2] (test) Escaneo del backend (excluye `.venv/`, `migrations/versions/`, `tests/`, `__pycache__/`): sin rutas retiradas, sin nombres de tabla como palabra completa y sin `scripts/migrate_catalog_to_prod.py` — `backend/tests/test_services/test_no_catalog_leftovers.py`
+- [x] T-012 [REQ-002, AC-002.1] (test) Adaptar `test_health_check_does_not_change_row_counts`: sembrar `User(email=…, date_of_birth=date(2000, 1, 1))` en lugar de `BodyRegion`, sin cambiar el aserto — `backend/tests/test_routes/test_health_routes.py`
+- [x] T-013 [REQ-001, AC-002.1] (test) Borrar los tests del catálogo y los favoritos, retirados por la spec — `backend/tests/test_routes/test_exercise_routes.py`
+- [x] T-014 [REQ-001, AC-002.1] (test) Borrar los tests del plan semanal, retirados por la spec — `backend/tests/test_services/test_weekly_plan_service.py`
 
 ### Frontend
-- [ ] T-015 [REQ-004, AC-004.1] (test) Con sesión y onboarding completo, `/categories`, `/categories/r1`, `/categories/r1/c1` y `/favorites` terminan en `/home` sin "Catálogo", "Favoritos" ni "Plan semanal" — `frontend/src/app/router.test.tsx`
-- [ ] T-016 [REQ-004, AC-004.2] (test) Sin sesión, `/favorites` termina en `/login` — `frontend/src/app/router.test.tsx`
-- [ ] T-017 [REQ-008, AC-008.1, AC-008.2] (test) Con sesión y onboarding completo, `/macros`, `/body-metrics`, `/coach`, `/store` y `/profile` mantienen su URL y muestran su pantalla — `frontend/src/app/router.test.tsx`
-- [ ] T-018 [REQ-005, AC-005.1] (test) Los enlaces de sección de `Navbar` son exactamente Macros, Métricas, Coach y Tienda, en ese orden, sin "Catálogo" ni "Favoritos" — `frontend/src/components/layout/Navbar.test.tsx`
-- [ ] T-019 [REQ-005, AC-005.2] (test) Las pestañas de `BottomTabBar` son exactamente Inicio, Macros, Métricas, Coach y Tienda, en ese orden — `frontend/src/components/layout/BottomTabBar.test.tsx`
-- [ ] T-020 [REQ-006, AC-006.1, AC-006.2] (test) `/login` y `/register` muestran "AI Coach online" y no los textos del catálogo ni de favoritos — `frontend/src/features/auth/components/AuthHero.test.tsx`
-- [ ] T-021 [REQ-007, AC-007.1, AC-007.2, AC-007.3] (test) Privacidad: "Actividad en la app" (AI Coach y valoraciones, sin favoritos ni plan semanal), "Para qué usamos tu información" (sin catálogo, favoritos ni plan) y fecha con formato y distinta de "8 de octubre de 2026" — `frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx`
-- [ ] T-022 [REQ-007, AC-007.6] (test) Privacidad sin voseo (marcador 012) — `frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx`
-- [ ] T-023 [REQ-007, AC-007.4, AC-007.5] (test) Términos: "No es asesoría médica" advierte del AI Coach y no contiene "catálogo"; fecha con formato y distinta de "2 de septiembre de 2026" — `frontend/src/features/legal/pages/TermsOfServicePage.test.tsx`
-- [ ] T-024 [REQ-007, AC-007.6] (test) Términos sin voseo — `frontend/src/features/legal/pages/TermsOfServicePage.test.tsx`
-- [ ] T-025 [NFR-001, AC-N001.1] (test) Escaneo del código fuente del frontend (sin tests) con `import.meta.glob`: sin rutas `/api/…` retiradas, sin `CATALOG_ENABLED` ni `app/sections` — `frontend/src/app/noRetiredSections.test.ts`
+- [x] T-015 [REQ-004, AC-004.1] (test) Con sesión y onboarding completo, `/categories`, `/categories/r1`, `/categories/r1/c1` y `/favorites` terminan en `/home` sin "Catálogo", "Favoritos" ni "Plan semanal" — `frontend/src/app/router.test.tsx`
+- [x] T-016 [REQ-004, AC-004.2] (test) Sin sesión, `/favorites` termina en `/login` — `frontend/src/app/router.test.tsx`
+- [x] T-017 [REQ-008, AC-008.1, AC-008.2] (test) Con sesión y onboarding completo, `/macros`, `/body-metrics`, `/coach`, `/store` y `/profile` mantienen su URL y muestran su pantalla — `frontend/src/app/router.test.tsx`
+- [x] T-018 [REQ-005, AC-005.1] (test) Los enlaces de sección de `Navbar` son exactamente Macros, Métricas, Coach y Tienda, en ese orden, sin "Catálogo" ni "Favoritos" — `frontend/src/components/layout/Navbar.test.tsx`
+- [x] T-019 [REQ-005, AC-005.2] (test) Las pestañas de `BottomTabBar` son exactamente Inicio, Macros, Métricas, Coach y Tienda, en ese orden — `frontend/src/components/layout/BottomTabBar.test.tsx`
+- [x] T-020 [REQ-006, AC-006.1, AC-006.2] (test) `/login` y `/register` muestran "AI Coach online" y no los textos del catálogo ni de favoritos — `frontend/src/features/auth/components/AuthHero.test.tsx`
+- [x] T-021 [REQ-007, AC-007.1, AC-007.2, AC-007.3] (test) Privacidad: "Actividad en la app" (AI Coach y valoraciones, sin favoritos ni plan semanal), "Para qué usamos tu información" (sin catálogo, favoritos ni plan) y fecha con formato y distinta de "8 de octubre de 2026" — `frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx`
+- [x] T-022 [REQ-007, AC-007.6] (test) Privacidad sin voseo (marcador 012) — `frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx`
+- [x] T-023 [REQ-007, AC-007.4, AC-007.5] (test) Términos: "No es asesoría médica" advierte del AI Coach y no contiene "catálogo"; fecha con formato y distinta de "2 de septiembre de 2026" — `frontend/src/features/legal/pages/TermsOfServicePage.test.tsx`
+- [x] T-024 [REQ-007, AC-007.6] (test) Términos sin voseo — `frontend/src/features/legal/pages/TermsOfServicePage.test.tsx`
+- [x] T-025 [NFR-001, AC-N001.1] (test) Escaneo del código fuente del frontend (sin tests) con `import.meta.glob`: sin rutas `/api/…` retiradas, sin `CATALOG_ENABLED` ni `app/sections` — `frontend/src/app/noRetiredSections.test.ts`
 
 ## Fase B — Implementación (implementer)
 

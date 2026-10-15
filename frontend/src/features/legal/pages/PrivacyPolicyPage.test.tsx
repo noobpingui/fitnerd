@@ -87,4 +87,50 @@ describe("PrivacyPolicyPage", () => {
       expect(text).not.toContain(form)
     }
   })
+
+  // SDD: 012 REQ-007 AC-007.1
+  it("'Actividad en la app' menciona al AI Coach y sus valoraciones, sin favoritos ni plan semanal", () => {
+    renderPage()
+
+    const entry = screen
+      .getAllByRole("listitem")
+      .find((item) => /Actividad en la app/.test(item.textContent ?? ""))
+
+    expect(entry).toBeDefined()
+    const text = entry?.textContent ?? ""
+    expect(text).toMatch(/AI Coach/)
+    expect(text).toMatch(/valoraciones/i)
+    expect(text.toLowerCase()).not.toContain("favoritos")
+    expect(text.toLowerCase()).not.toContain("plan semanal")
+  })
+
+  // SDD: 012 REQ-007 AC-007.2
+  it("'Para qué usamos tu información' no menciona catálogo, favoritos ni plan", () => {
+    renderPage()
+
+    const text = (sectionOf("Para qué usamos tu información").textContent ?? "").toLowerCase()
+
+    expect(text).not.toContain("catálogo")
+    expect(text).not.toContain("favoritos")
+    expect(text).not.toContain("plan")
+  })
+
+  // SDD: 012 REQ-007 AC-007.3
+  it("la última actualización tiene formato 'D de mes de AAAA' y no es la del 8 de octubre de 2026", () => {
+    renderPage()
+    const text = document.body.textContent ?? ""
+
+    expect(text).toMatch(new RegExp(`Última actualización: \\d{1,2} de ${MONTHS} de \\d{4}`))
+    expect(text).not.toContain("8 de octubre de 2026")
+  })
+
+  // SDD: 012 REQ-007 AC-007.6
+  it("sigue sin formas de voseo tras reescribir los textos", () => {
+    renderPage()
+    const text = document.body.textContent ?? ""
+
+    for (const form of ["registrás", "iniciás", "vos mismo", "hacés", "usás", "usá ", "Podés"]) {
+      expect(text).not.toContain(form)
+    }
+  })
 })
