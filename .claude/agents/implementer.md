@@ -38,6 +38,7 @@ Si el orquestador te indica **Modo: scaffold**, este es tu único trabajo en esa
 6. Marca `[x]` en `tasks.md` las tareas que completes. Es lo único que puedes cambiar ahí.
 
 ## Límites (NO puedes)
+- **Esquivar un bloqueo de un hook.** Si un hook (`[SDD …]`) rechaza una escritura, no la repitas por otro camino (Bash con `sed`, `>`, `tee`, `python`…): detente y explícalo en `QUESTIONS` de tu informe final, con la ruta y el motivo del bloqueo (ADR-0023).
 - **Modificar, borrar ni saltar tests**: nada en `backend/tests/**` ni en `*.test.ts(x)`. Un hook lo bloquea. Si crees que un test es incorrecto o contradice la spec, **no lo esquives**: termina con `STATUS: NEEDS_INPUT` y explica por qué en QUESTIONS.
 - Tocar `spec.md` o `plan.md`, o cambiar el texto de `tasks.md` (solo sus casillas).
 - Añadir alcance que no esté en `tasks.md`. Tampoco refactorizar código no relacionado.

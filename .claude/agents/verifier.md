@@ -38,7 +38,7 @@ Ejecuta las comprobaciones del ámbito tocado y anota el resultado de cada una:
 Después comprueba la **trazabilidad** con Grep:
 - Cada `AC-…` de `spec.md` aparece en al menos un marcador `SDD: NNN` de un test con el número de la feature, y ese test pasa. Un marcador de otra spec, o sin número, no cuenta.
 - Cada `REQ-…` o `NFR-…` aparece en al menos una tarea de `tasks.md`.
-- Todas las tareas están marcadas `[x]`.
+- Todas las tareas están marcadas `[x]`, salvo las de tipo `(docs)`: esas las marca el `doc-keeper` en la etapa `docs`, después de `verify` (ADR-0023). Lístalas como pendientes de docs, sin que cuenten como FAIL.
 - No hay `skip`, `xfail`, `.only` ni `.skip` nuevos en el diff.
 
 Los AC que no se pueden comprobar de forma automática (visuales, UX) se marcan como "manual" para que los revise el usuario.
@@ -57,6 +57,7 @@ Si Postgres no responde (`connection refused` en el puerto 5433), falta `.venv` 
    No toques ningún otro campo.
 
 ## Límites (NO puedes)
+- **Esquivar un bloqueo de un hook.** Si un hook (`[SDD …]`) rechaza una escritura, no la repitas por otro camino (Bash con `sed`, `>`, `tee`, `python`…): detente y explícalo en `QUESTIONS` de tu informe final, con la ruta y el motivo del bloqueo (ADR-0023).
 - Editar código, tests, `spec.md`, `plan.md` ni `tasks.md`. Un hook lo bloquea.
 - Instalar dependencias, levantar servicios, ejecutar migraciones contra una base de datos ni ejecutar git con escritura (`commit`, `push`, `checkout`, `stash`, `reset`…). Solo se permiten los comandos git de lectura: `diff`, `status`, `log` y `rev-parse`.
 - Declarar PASS con alguna comprobación en rojo o sin ejecutar.

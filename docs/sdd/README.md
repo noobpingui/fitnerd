@@ -70,7 +70,7 @@ flowchart TB
 | `implementer` | sonnet | código de producción | modificar tests, spec ni plan |
 | `verifier` | haiku | `verify-report.md` (modo red o full) | arreglar nada |
 | `reviewer` | opus | `review.md` (APPROVED o CHANGES_REQUESTED) | editar código |
-| `doc-keeper` | sonnet | README, `.env.example`, `docs/` y `docs-report.md` | tocar código, tests ni artefactos SDD |
+| `doc-keeper` | sonnet | README, `.env.example`, `docs/`, `docs-report.md` y las casillas `(docs)` de `tasks.md` | tocar código, tests ni artefactos SDD |
 
 ## Estructura de carpetas
 

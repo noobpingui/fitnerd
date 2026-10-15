@@ -144,7 +144,7 @@ Aquí intervienen tres agentes seguidos:
 - **Qué decides tú:** qué hacer con los hallazgos MENOR y NIT: corregirlos (se abre un ciclo de corrección) o aceptarlos.
 
 ### Paso 9: docs
-- **Qué hace el `doc-keeper`:** actualiza el README, los `.env.example` y `docs/` si hace falta. Si no, deja escrito en `docs-report.md` por qué no.
+- **Qué hace el `doc-keeper`:** actualiza el README, los `.env.example` y `docs/` si hace falta. Si no, deja escrito en `docs-report.md` por qué no. También hace las tareas `(docs)` de `tasks.md` y marca su casilla; el `verifier` no las exige en `verify`, porque esa etapa va antes (ADR-0023).
 
 ### Paso 10: close
 El orquestador:
@@ -241,7 +241,7 @@ Repetir una etapa que ya aprobaste **la reabre**, y con ella todas las posterior
 | `implementer` | sonnet | Esqueletos (etapa tests) y código de producción (etapa implement) | `backend/**` y `frontend/**` salvo tests, `.env.example` y casillas | **Modificar tests**, spec o plan; usar git con escritura |
 | `verifier` | haiku | Ejecuta las comprobaciones y reporta | `verify-report.md` y `state.json` (red_check/verify) | Arreglar nada |
 | `reviewer` | opus | Revisión independiente | `review.md` | Editar código |
-| `doc-keeper` | sonnet | Actualiza la documentación afectada | READMEs, `.env.example`, `docs/` (salvo `decisions/`) y `docs-report.md` | Tocar código, tests o artefactos SDD |
+| `doc-keeper` | sonnet | Actualiza la documentación afectada | READMEs, `.env.example`, `docs/` (salvo `decisions/`), `docs-report.md` y las casillas `(docs)` de `tasks.md` | Tocar código, tests o artefactos SDD |
 
 Todos leen `specs/constitution.md` y trabajan solo con archivos en disco. Ninguno puede lanzar otros subagentes, hacer commit ni hacer push; eso lo hace solo el orquestador, siempre con tu aprobación.
 
