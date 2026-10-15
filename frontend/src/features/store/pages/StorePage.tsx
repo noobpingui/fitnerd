@@ -8,14 +8,12 @@ export function StorePage() {
     <div className="mx-auto max-w-2xl p-4 sm:p-8">
       <h1 className="mb-6 text-2xl font-bold">Visita las diferentes tiendas</h1>
 
-      {/* Mismo recurso de linea divisoria que ya se usa en /home y
-          /favorites, para separar el titulo de la grilla de abajo. */}
+      {/* Mismo recurso de linea divisoria que ya se usa en /home, para separar el titulo de la grilla de abajo. */}
       <div className="mb-6 border-t" />
 
       {/* Placeholder temporal mientras STORES esta vacio (ver constants.ts) -
-          mismo lenguaje visual que otros estados vacios de la app (ej.
-          FavoritesPage "Todavia no marcaste ningun ejercicio como
-          favorito"), pero con un icono en vez de solo texto porque esto no
+          mismo lenguaje visual que otros estados vacios de la app,
+          pero con un icono en vez de solo texto porque esto no
           es un estado que dependa de datos del usuario - es la pantalla
           entera todavia sin contenido cargado. Reemplazar este bloque por
           la grilla de abajo apenas STORES tenga elementos. */}

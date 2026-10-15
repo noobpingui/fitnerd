@@ -11,14 +11,14 @@
   "branch": "feat/012-remove-catalog",
   "base_branch": "main",
   "created_at": "2026-10-14T20:51:28.634Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-14T21:43:44.312Z",
     "plan": "2026-10-14T21:46:15.444Z",
     "tasks": "2026-10-14T21:48:29.911Z",
     "tests": "2026-10-15T01:22:38.445Z",
-    "implement": null,
+    "implement": "2026-10-15T01:27:42.208Z",
     "verify": null,
     "review": null,
     "docs": null,
@@ -28,11 +28,12 @@
     "spec": "e1c5894",
     "spec_rework": "eee07d2",
     "plan": "c00dc8a",
-    "tasks": "8db2fd5"
+    "tasks": "8db2fd5",
+    "tests": "b83d52c"
   },
   "iterations": {
     "tests": 2,
-    "implement": 0,
+    "implement": 1,
     "review": 0
   },
   "max_iterations": 3,
@@ -211,6 +212,24 @@
       "stage": "tests",
       "event": "approved",
       "note": "Etapa tests y commit aprobados por el usuario (\"1,2 sí\"); tests_snapshot con 11 archivos y 2 borrados"
+    },
+    {
+      "at": "2026-10-15T01:22:38.635Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegado al implementer (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T01:26:05.493Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "Implementer iteración 1: T-030..T-052 hechas; pytest 699, vitest 462, tsc/build OK, lint 0 errores, ruff-new OK; tests intactos según tests_snapshot"
+    },
+    {
+      "at": "2026-10-15T01:27:42.208Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "Etapa implement y commit aprobados por el usuario (\"1,2 sí\")"
     }
   ],
   "red_check_exception": {

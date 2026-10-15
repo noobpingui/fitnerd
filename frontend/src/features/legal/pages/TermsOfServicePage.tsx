@@ -2,7 +2,7 @@ import { LegalPageLayout } from "@/features/legal/components/LegalPageLayout"
 
 export function TermsOfServicePage() {
   return (
-    <LegalPageLayout title="Términos de servicio" updatedAt="2 de septiembre de 2026">
+    <LegalPageLayout title="Términos de servicio" updatedAt="14 de octubre de 2026">
       <p>
         fitnerd es un proyecto personal, ofrecido de forma
         gratuita y "tal cual" (as-is), sin garantías formales. Al usar la
@@ -14,7 +14,7 @@ export function TermsOfServicePage() {
           No es asesoría médica
         </h2>
         <p>
-          El catálogo de ejercicios y las respuestas del AI Coach son
+          Las respuestas del AI Coach son
           información general con fines educativos - no reemplazan el
           consejo de un profesional de la salud, entrenador certificado o
           médico. Consulta a un profesional antes de empezar cualquier

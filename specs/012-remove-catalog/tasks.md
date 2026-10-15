@@ -55,31 +55,31 @@ Frontend: no aplica. Rutas HTTP retiradas: no aplica (un 200/401 hoy es el rojo 
 ## Fase B — Implementación (implementer)
 
 ### Backend
-- [ ] T-030 [REQ-003, AC-003.1, AC-003.2] (migration) Implementar `upgrade()` (drop de `weekly_plan_entries`, `exercise_favorites`, `exercises`, `exercise_categories`, `body_regions`, `schema='public'`, sin `IF EXISTS`) y `downgrade()` (recrea las cinco vacías según §3.1 del plan, con docstring que avisa de que los datos no vuelven) — `backend/migrations/versions/f2c4e6a8b0d1_drop_catalog_favorites_and_weekly_plan.py`
-- [ ] T-031 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4, AC-002.1] (impl) Quitar los imports y los `register_blueprint` de los cinco blueprints retirados — `backend/routes/__init__.py`
-- [ ] T-032 [REQ-001, AC-001.1, AC-001.2, NFR-001] (impl) Borrar las rutas de regiones, categorías y ejercicios (incluye favoritos por ejercicio) — `backend/routes/body_region_routes.py`, `backend/routes/exercise_category_routes.py`, `backend/routes/exercise_routes.py`
-- [ ] T-033 [REQ-001, AC-001.1, AC-001.3, NFR-001] (impl) Borrar las rutas de favoritos y plan semanal — `backend/routes/exercise_favorite_routes.py`, `backend/routes/weekly_plan_routes.py`
-- [ ] T-034 [REQ-001, AC-N001.2] (impl) Borrar los servicios de regiones, categorías y ejercicios — `backend/services/body_region_service.py`, `backend/services/exercise_category_service.py`, `backend/services/exercise_service.py`
-- [ ] T-035 [REQ-001, AC-N001.2] (impl) Borrar los servicios de favoritos y plan semanal — `backend/services/exercise_favorite_service.py`, `backend/services/weekly_plan_service.py`
-- [ ] T-036 [REQ-001, AC-N001.2] (impl) Borrar los repositorios de regiones, categorías y ejercicios — `backend/repositories/body_region_repository.py`, `backend/repositories/exercise_category_repository.py`, `backend/repositories/exercise_repository.py`
-- [ ] T-037 [REQ-001, AC-N001.2] (impl) Borrar los repositorios de favoritos y plan semanal — `backend/repositories/exercise_favorite_repository.py`, `backend/repositories/weekly_plan_repository.py`
-- [ ] T-038 [REQ-003, AC-003.3] (impl) Quitar `BodyRegion`, `ExerciseCategory`, `Exercise`, `ExerciseFavorite` y `WeeklyPlanEntry` de los imports y de `__all__` — `backend/models/__init__.py`
-- [ ] T-039 [REQ-003, AC-003.3, AC-N001.2] (impl) Borrar los modelos de regiones, categorías y ejercicios — `backend/models/body_region.py`, `backend/models/exercise_category.py`, `backend/models/exercise.py`
-- [ ] T-040 [REQ-003, AC-003.3, AC-N001.2] (impl) Borrar los modelos de favoritos y plan semanal — `backend/models/exercise_favorite.py`, `backend/models/weekly_plan_entry.py`
-- [ ] T-041 [NFR-001, AC-N001.2] (impl) Borrar el script de migración del catálogo a producción — `backend/scripts/migrate_catalog_to_prod.py`
+- [x] T-030 [REQ-003, AC-003.1, AC-003.2] (migration) Implementar `upgrade()` (drop de `weekly_plan_entries`, `exercise_favorites`, `exercises`, `exercise_categories`, `body_regions`, `schema='public'`, sin `IF EXISTS`) y `downgrade()` (recrea las cinco vacías según §3.1 del plan, con docstring que avisa de que los datos no vuelven) — `backend/migrations/versions/f2c4e6a8b0d1_drop_catalog_favorites_and_weekly_plan.py`
+- [x] T-031 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4, AC-002.1] (impl) Quitar los imports y los `register_blueprint` de los cinco blueprints retirados — `backend/routes/__init__.py`
+- [x] T-032 [REQ-001, AC-001.1, AC-001.2, NFR-001] (impl) Borrar las rutas de regiones, categorías y ejercicios (incluye favoritos por ejercicio) — `backend/routes/body_region_routes.py`, `backend/routes/exercise_category_routes.py`, `backend/routes/exercise_routes.py`
+- [x] T-033 [REQ-001, AC-001.1, AC-001.3, NFR-001] (impl) Borrar las rutas de favoritos y plan semanal — `backend/routes/exercise_favorite_routes.py`, `backend/routes/weekly_plan_routes.py`
+- [x] T-034 [REQ-001, AC-N001.2] (impl) Borrar los servicios de regiones, categorías y ejercicios — `backend/services/body_region_service.py`, `backend/services/exercise_category_service.py`, `backend/services/exercise_service.py`
+- [x] T-035 [REQ-001, AC-N001.2] (impl) Borrar los servicios de favoritos y plan semanal — `backend/services/exercise_favorite_service.py`, `backend/services/weekly_plan_service.py`
+- [x] T-036 [REQ-001, AC-N001.2] (impl) Borrar los repositorios de regiones, categorías y ejercicios — `backend/repositories/body_region_repository.py`, `backend/repositories/exercise_category_repository.py`, `backend/repositories/exercise_repository.py`
+- [x] T-037 [REQ-001, AC-N001.2] (impl) Borrar los repositorios de favoritos y plan semanal — `backend/repositories/exercise_favorite_repository.py`, `backend/repositories/weekly_plan_repository.py`
+- [x] T-038 [REQ-003, AC-003.3] (impl) Quitar `BodyRegion`, `ExerciseCategory`, `Exercise`, `ExerciseFavorite` y `WeeklyPlanEntry` de los imports y de `__all__` — `backend/models/__init__.py`
+- [x] T-039 [REQ-003, AC-003.3, AC-N001.2] (impl) Borrar los modelos de regiones, categorías y ejercicios — `backend/models/body_region.py`, `backend/models/exercise_category.py`, `backend/models/exercise.py`
+- [x] T-040 [REQ-003, AC-003.3, AC-N001.2] (impl) Borrar los modelos de favoritos y plan semanal — `backend/models/exercise_favorite.py`, `backend/models/weekly_plan_entry.py`
+- [x] T-041 [NFR-001, AC-N001.2] (impl) Borrar el script de migración del catálogo a producción — `backend/scripts/migrate_catalog_to_prod.py`
 
 ### Frontend
-- [ ] T-042 [REQ-004, REQ-008, AC-004.1, AC-004.2, AC-008.1, AC-008.2] (impl) Quitar `CATALOG_ENABLED`, los cuatro imports de páginas y el bloque condicional de rutas; el comodín `*` redirige — `frontend/src/app/router.tsx`
-- [ ] T-043 [REQ-005, AC-005.1] (impl) Lista fija de enlaces: Macros, Métricas, Coach y Tienda — `frontend/src/components/layout/Navbar.tsx`
-- [ ] T-044 [REQ-005, AC-005.2] (impl) Lista fija de pestañas: Inicio, Macros, Métricas, Coach y Tienda; quitar los iconos `Dumbbell` y `Heart` — `frontend/src/components/layout/BottomTabBar.tsx`
-- [ ] T-045 [REQ-006, AC-006.1, AC-006.2] (impl) Dejar solo la etiqueta "AI Coach online"; quitar `Dumbbell`, `Heart` y el import de `sections` — `frontend/src/features/auth/components/AuthHero.tsx`
-- [ ] T-046 [NFR-001, AC-N001.1] (impl) Borrar el interruptor del catálogo — `frontend/src/app/sections.ts`
-- [ ] T-047 [REQ-004, NFR-001, AC-N001.1] (impl) Borrar la feature de ejercicios completa (`api.ts`, `hooks.ts`, `types.ts`, `components/ExerciseCard.tsx`, `pages/RegionsPage.tsx`, `CategoriesPage.tsx`, `ExercisesPage.tsx`, `FavoritesPage.tsx`) — `frontend/src/features/exercises/`
-- [ ] T-048 [REQ-004, NFR-001, AC-N001.1] (impl) Borrar la feature del plan semanal completa (`api.ts`, `hooks.ts`, `types.ts`, `constants.ts`, `components/DayColumn.tsx`, `DraggableFavoriteCard.tsx`) — `frontend/src/features/weekly-plan/`
-- [ ] T-049 [NFR-001, REQ-008, AC-N001.1] (impl) Actualizar los comentarios que citan `/categories`, `/favorites`, `FavoritesPage` y "categorias, ejercicios, favoritos" — `frontend/src/app/AppLayout.tsx`, `frontend/src/app/providers.tsx`, `frontend/src/features/store/pages/StorePage.tsx`
-- [ ] T-050 [REQ-007, AC-007.1, AC-007.2, AC-007.3, AC-007.6] (impl) Reescribir "Actividad en la app" y "Para qué usamos tu información" (sin la subcadena "plan"), y cambiar `updatedAt` a la fecha del día con formato "D de mes de AAAA" — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
-- [ ] T-051 [REQ-007, AC-007.4, AC-007.5, AC-007.6] (impl) Reescribir "No es asesoría médica" (sin "catálogo") y cambiar `updatedAt` a la misma fecha — `frontend/src/features/legal/pages/TermsOfServicePage.tsx`
-- [ ] T-052 [NFR-001, AC-N001.3] (config) Desinstalar `@dnd-kit/core` (`npm uninstall`), sin uso tras T-047 y T-048 — `frontend/package.json`, `frontend/package-lock.json`
+- [x] T-042 [REQ-004, REQ-008, AC-004.1, AC-004.2, AC-008.1, AC-008.2] (impl) Quitar `CATALOG_ENABLED`, los cuatro imports de páginas y el bloque condicional de rutas; el comodín `*` redirige — `frontend/src/app/router.tsx`
+- [x] T-043 [REQ-005, AC-005.1] (impl) Lista fija de enlaces: Macros, Métricas, Coach y Tienda — `frontend/src/components/layout/Navbar.tsx`
+- [x] T-044 [REQ-005, AC-005.2] (impl) Lista fija de pestañas: Inicio, Macros, Métricas, Coach y Tienda; quitar los iconos `Dumbbell` y `Heart` — `frontend/src/components/layout/BottomTabBar.tsx`
+- [x] T-045 [REQ-006, AC-006.1, AC-006.2] (impl) Dejar solo la etiqueta "AI Coach online"; quitar `Dumbbell`, `Heart` y el import de `sections` — `frontend/src/features/auth/components/AuthHero.tsx`
+- [x] T-046 [NFR-001, AC-N001.1] (impl) Borrar el interruptor del catálogo — `frontend/src/app/sections.ts`
+- [x] T-047 [REQ-004, NFR-001, AC-N001.1] (impl) Borrar la feature de ejercicios completa (`api.ts`, `hooks.ts`, `types.ts`, `components/ExerciseCard.tsx`, `pages/RegionsPage.tsx`, `CategoriesPage.tsx`, `ExercisesPage.tsx`, `FavoritesPage.tsx`) — `frontend/src/features/exercises/`
+- [x] T-048 [REQ-004, NFR-001, AC-N001.1] (impl) Borrar la feature del plan semanal completa (`api.ts`, `hooks.ts`, `types.ts`, `constants.ts`, `components/DayColumn.tsx`, `DraggableFavoriteCard.tsx`) — `frontend/src/features/weekly-plan/`
+- [x] T-049 [NFR-001, REQ-008, AC-N001.1] (impl) Actualizar los comentarios que citan `/categories`, `/favorites`, `FavoritesPage` y "categorias, ejercicios, favoritos" — `frontend/src/app/AppLayout.tsx`, `frontend/src/app/providers.tsx`, `frontend/src/features/store/pages/StorePage.tsx`
+- [x] T-050 [REQ-007, AC-007.1, AC-007.2, AC-007.3, AC-007.6] (impl) Reescribir "Actividad en la app" y "Para qué usamos tu información" (sin la subcadena "plan"), y cambiar `updatedAt` a la fecha del día con formato "D de mes de AAAA" — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
+- [x] T-051 [REQ-007, AC-007.4, AC-007.5, AC-007.6] (impl) Reescribir "No es asesoría médica" (sin "catálogo") y cambiar `updatedAt` a la misma fecha — `frontend/src/features/legal/pages/TermsOfServicePage.tsx`
+- [x] T-052 [NFR-001, AC-N001.3] (config) Desinstalar `@dnd-kit/core` (`npm uninstall`), sin uso tras T-047 y T-048 — `frontend/package.json`, `frontend/package-lock.json`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

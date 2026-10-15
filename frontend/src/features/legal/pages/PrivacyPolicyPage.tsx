@@ -2,7 +2,7 @@ import { LegalPageLayout } from "@/features/legal/components/LegalPageLayout"
 
 export function PrivacyPolicyPage() {
   return (
-    <LegalPageLayout title="Política de privacidad" updatedAt="8 de octubre de 2026">
+    <LegalPageLayout title="Política de privacidad" updatedAt="14 de octubre de 2026">
       <p>
         fitnerd es un proyecto personal, desarrollado y
         mantenido por una sola persona - no una empresa con un equipo
@@ -34,9 +34,8 @@ export function PrivacyPolicyPage() {
             métricas.
           </li>
           <li>
-            <strong>Actividad en la app:</strong> tus ejercicios
-            favoritos, tu plan semanal, y las preguntas que le haces al AI
-            Coach y las valoraciones (👍/👎) que das a sus respuestas (para
+            <strong>Actividad en la app:</strong> las preguntas
+            que le haces al AI Coach y las valoraciones (👍/👎) que das a sus respuestas (para
             mejorar el coach y por límites de uso).
           </li>
           <li>
@@ -51,9 +50,9 @@ export function PrivacyPolicyPage() {
           Para qué usamos tu información
         </h2>
         <p>
-          Únicamente para que la app funcione: autenticarte, mostrarte tu
-          catálogo/favoritos/plan, guardar tu progreso, y darle contexto
-          al AI Coach para que te responda. No usamos tus datos con fines
+          Únicamente para que la app funcione: autenticarte, guardar tu
+          perfil y tu progreso, y darle contexto al AI Coach para que te
+          responda. No usamos tus datos con fines
           publicitarios, ni los vendemos ni los compartimos con terceros
           para marketing.
         </p>
