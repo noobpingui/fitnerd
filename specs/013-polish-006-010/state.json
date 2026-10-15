@@ -11,11 +11,11 @@
   "branch": "fix/013-polish-006-010",
   "base_branch": "main",
   "created_at": "2026-10-15T09:28:18.161Z",
-  "stage": "spec",
+  "stage": "plan",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-15T09:41:10.811Z",
-    "plan": null,
+    "plan": "2026-10-15T09:57:33.125Z",
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -24,7 +24,9 @@
     "docs": null,
     "close": null
   },
-  "commits": {},
+  "commits": {
+    "spec": "778fd3e"
+  },
   "iterations": {
     "tests": 0,
     "implement": 0,
@@ -86,6 +88,50 @@
       "stage": "spec",
       "event": "approved",
       "note": "Spec y commit aprobados por el usuario (\"1,2 sí\")"
+    },
+    {
+      "at": "2026-10-15T09:41:10.974Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegado al planner (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T09:49:35.893Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md: helper number_validation.is_number (OverflowError), aviso de borrado atado a la lista, limpiezas 006–010, filtro de ruido en vite.config.ts; sin migración ni ADR; preguntas: red_check_exception y NFR-006 manual"
+    },
+    {
+      "at": "2026-10-15T09:57:33.125Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "Plan y commit aprobados por el usuario (\"1,2,3,4 sí\"); red_check_exception y traceability_exception (NFR-006) registradas"
     }
-  ]
+  ],
+  "red_check_exception": {
+    "at": "2026-10-15T09:57:33.125Z",
+    "note": "Tests en verde permitidos en el red check (plan §5.6, aprobado por el usuario en el gate del plan)",
+    "acs": [
+      "AC-001.5",
+      "AC-002.5",
+      "AC-004.*",
+      "AC-005.3",
+      "AC-005.4",
+      "AC-N002.3",
+      "AC-N002.10",
+      "AC-N002.5 (solo el test sustituto del límite inferior)",
+      "AC-N003.1",
+      "AC-N004.1",
+      "AC-N005.3"
+    ]
+  },
+  "traceability_exception": {
+    "at": "2026-10-15T09:57:33.125Z",
+    "note": "Los AC de NFR-006 (CLAUDE.md) no tienen test: los escribe el doc-keeper en docs y los comprueba el orquestador a mano en el gate de docs (aprobado por el usuario en el gate del plan)",
+    "acs": [
+      "AC-N006.1",
+      "AC-N006.2",
+      "AC-N006.3"
+    ]
+  }
 }
