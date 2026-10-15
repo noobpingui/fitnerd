@@ -1,0 +1,397 @@
+{
+  "$comment": "Única fuente de verdad del flujo SDD de una feature. Lo escriben solo el orquestador (/sdd-*) y el verifier (secciones red_check y verify). Etapas: spec, plan, tasks, tests, implement, verify, review, docs, close, done.",
+  "schema_version": 1,
+  "feature": "012-remove-catalog",
+  "title": "Eliminar el catálogo de ejercicios, los favoritos y el plan semanal",
+  "type": "feature",
+  "scope": {
+    "backend": true,
+    "frontend": true
+  },
+  "branch": "feat/012-remove-catalog",
+  "base_branch": "main",
+  "created_at": "2026-10-14T20:51:28.634Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": "2026-10-14T21:43:44.312Z",
+    "plan": "2026-10-14T21:46:15.444Z",
+    "tasks": "2026-10-14T21:48:29.911Z",
+    "tests": "2026-10-15T01:22:38.445Z",
+    "implement": "2026-10-15T01:27:42.208Z",
+    "verify": "2026-10-15T01:34:00.854Z",
+    "review": "2026-10-15T01:45:15.465Z",
+    "docs": "2026-10-15T01:46:16.084Z",
+    "close": "2026-10-15T01:47:43.009Z"
+  },
+  "commits": {
+    "spec": "e1c5894",
+    "spec_rework": "eee07d2",
+    "plan": "c00dc8a",
+    "tasks": "8db2fd5",
+    "tests": "b83d52c",
+    "implement": "6cfdf2c",
+    "review": "6c26a88",
+    "docs": "1ccdd7a"
+  },
+  "iterations": {
+    "tests": 2,
+    "implement": 1,
+    "review": 2
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-10-14T21:58:08.677Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-10-15T01:43:49.980Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-10-15T01:44:45.289Z"
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-14T20:51:28.634Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "Feature creada desde main (aprobado por el usuario); origen: ítem 3 del backlog (quitar el catálogo oculto desde el rediseño)"
+    },
+    {
+      "at": "2026-10-14T20:53:40.843Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegado al spec-writer (iteración 1)"
+    },
+    {
+      "at": "2026-10-14T20:56:00.829Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "spec.md iteración 1: 8 REQ, 26 AC, 1 NFR (3 AC); Q1–Q7 abiertas"
+    },
+    {
+      "at": "2026-10-14T21:26:10.549Z",
+      "stage": "spec",
+      "event": "user_decision",
+      "note": "Usuario: \"Todas las propuestas, en Q5 volcado completo\""
+    },
+    {
+      "at": "2026-10-14T21:26:10.549Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Respuestas Q1–Q7 copiadas en spec.md; re-delegado al spec-writer (iteración 2)"
+    },
+    {
+      "at": "2026-10-14T21:27:01.558Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec.md iteración 2: 8 REQ, 26 AC, 1 NFR (3 AC); Q1–Q7 resueltas"
+    },
+    {
+      "at": "2026-10-14T21:28:05.194Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Spec y commit aprobados por el usuario (\"1,2 sí\")"
+    },
+    {
+      "at": "2026-10-14T21:28:05.313Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegado al planner (iteración 1)"
+    },
+    {
+      "at": "2026-10-14T21:34:27.064Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md: retirada vertical, migración f2c4e6a8b0d1 (drop 5 tablas, downgrade vacías), sin ADR; 2 choques con la spec (AC-N001.2, AC-002.1) y tests de no regresión en verde en el red check"
+    },
+    {
+      "at": "2026-10-14T21:42:14.884Z",
+      "stage": "plan",
+      "event": "changes_requested",
+      "note": "Usuario: \"1.A 2. Si. 3. Si\" — reabrir la spec para precisar AC-N001.2 y AC-002.1 (Q8); plan sin aprobar ni commitear hasta revisarlo"
+    },
+    {
+      "at": "2026-10-14T21:42:14.884Z",
+      "stage": "plan",
+      "event": "user_decision",
+      "note": "Excepción aprobada para el red check: los tests de no regresión de AC-002.x, AC-004.x, AC-005.x, AC-006.x y AC-008.x pueden estar en verde (ya se cumplen con CATALOG_ENABLED=false); el rojo legítimo lo dan REQ-001, REQ-003, REQ-007 y NFR-001"
+    },
+    {
+      "at": "2026-10-14T21:42:14.884Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Spec reabierta (approvals.spec → null); Q8 copiada en spec.md; re-delegado al spec-writer (iteración 3)"
+    },
+    {
+      "at": "2026-10-14T21:42:54.221Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec.md iteración 3: AC-N001.1, AC-N001.2 y AC-002.1 precisados (Q8 resuelta); sin cambios de alcance"
+    },
+    {
+      "at": "2026-10-14T21:43:44.312Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Spec (iteración 3) y commit aprobados por el usuario (\"1,2 sí\")"
+    },
+    {
+      "at": "2026-10-14T21:43:44.459Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegado al planner (iteración 2): revisar plan.md contra la spec corregida (Q8)"
+    },
+    {
+      "at": "2026-10-14T21:45:12.902Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md iteración 2: alineado con la spec tras Q8 y con red_check_exception; pregunta: ampliar la excepción a AC-007.6"
+    },
+    {
+      "at": "2026-10-14T21:46:15.444Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "Plan y commit aprobados por el usuario (\"1,2,3 sí\"); excepción del red check ampliada a AC-007.6"
+    },
+    {
+      "at": "2026-10-14T21:46:15.564Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegado al task-breaker (iteración 1)"
+    },
+    {
+      "at": "2026-10-14T21:47:20.126Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks.md: 49 tareas (1 scaffold, 25 test, 21 impl, 1 migration, 1 config)"
+    },
+    {
+      "at": "2026-10-14T21:48:29.911Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "Tareas y commit aprobados por el usuario (\"1,2,3 sí\"); AC-N001.3 cubierto por los comandos del verifier, sin marcador"
+    },
+    {
+      "at": "2026-10-14T21:48:30.049Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Delegado al implementer en modo scaffold (iteración 1)"
+    },
+    {
+      "at": "2026-10-14T21:48:48.366Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Scaffold T-000 hecho (migración f2c4e6a8b0d1 con NotImplementedError); delegado al test-author (iteración 1)"
+    },
+    {
+      "at": "2026-10-14T21:55:23.272Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests T-001..T-025 escritos (backend 30, frontend 6 rojos + verdes de no regresión); delegado al verifier en modo red (iteración 1)"
+    },
+    {
+      "at": "2026-10-14T21:56:43.373Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL (iteración 1): 3 tests de AC-001.2/AC-001.3 pasan sin implementación (404 por entidad inexistente, no por ruta retirada). Devuelto al test-author (iteración 2)"
+    },
+    {
+      "at": "2026-10-14T21:57:14.511Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "test-author reforzó AC-001.2/AC-001.3 comprobando url_map (assert_rule_retired); delegado al verifier en modo red (iteración 2)"
+    },
+    {
+      "at": "2026-10-14T21:58:29.162Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS (iteración 2): backend 13 rojos legítimos + 17 verdes de la excepción; frontend 6 rojos legítimos + 24 verdes de la excepción"
+    },
+    {
+      "at": "2026-10-15T01:22:38.445Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "Etapa tests y commit aprobados por el usuario (\"1,2 sí\"); tests_snapshot con 11 archivos y 2 borrados"
+    },
+    {
+      "at": "2026-10-15T01:22:38.635Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegado al implementer (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T01:26:05.493Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "Implementer iteración 1: T-030..T-052 hechas; pytest 699, vitest 462, tsc/build OK, lint 0 errores, ruff-new OK; tests intactos según tests_snapshot"
+    },
+    {
+      "at": "2026-10-15T01:27:42.208Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "Etapa implement y commit aprobados por el usuario (\"1,2 sí\")"
+    },
+    {
+      "at": "2026-10-15T01:27:42.493Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier en modo full (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T01:29:58.325Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS (iteración 1): pytest 699, vitest 462, lint, tsc, build, ruff-new; trazabilidad completa (AC-N001.3 por excepción)"
+    },
+    {
+      "at": "2026-10-15T01:34:00.854Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "Etapa verify aprobada por el usuario (\"Si\")"
+    },
+    {
+      "at": "2026-10-15T01:34:00.854Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado al reviewer (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T01:36:04.330Z",
+      "stage": "review",
+      "event": "done",
+      "note": "Review APPROVED (iteración 1): 0 bloqueantes, 0 mayores, 1 menor (F1 nginx.conf), 4 NIT"
+    },
+    {
+      "at": "2026-10-15T01:40:39.096Z",
+      "stage": "review",
+      "event": "changes_requested",
+      "note": "Usuario: \"F1,F2,F4 Y F5 corregimos ahora. F3 al backlog\""
+    },
+    {
+      "at": "2026-10-15T01:40:39.096Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "test-author corrige F4 (fecha anclada en PrivacyPolicyPage.test.tsx)"
+    },
+    {
+      "at": "2026-10-15T01:41:00.642Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Cambio autorizado (review F4): PrivacyPolicyPage.test.tsx ancla la fecha antigua con (^|D); tests_snapshot actualizado para ese archivo"
+    },
+    {
+      "at": "2026-10-15T01:41:00.642Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "Implementer corrige review F1, F2 y F5 (comentarios y formato)"
+    },
+    {
+      "at": "2026-10-15T01:41:58.141Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F1, F2 y F5 corregidos (nginx.conf, AppLayout.tsx, PrivacyPolicyPage.tsx, StorePage.tsx)"
+    },
+    {
+      "at": "2026-10-15T01:41:58.141Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegado al verifier en modo full (iteración 2, tras correcciones de review)"
+    },
+    {
+      "at": "2026-10-15T01:44:13.931Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS (iteración 2): pytest 699, vitest 462, lint/tsc/build/ruff-new OK; F1, F2, F4, F5 comprobados"
+    },
+    {
+      "at": "2026-10-15T01:44:13.931Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegado al reviewer (iteración 2)"
+    },
+    {
+      "at": "2026-10-15T01:44:45.289Z",
+      "stage": "review",
+      "event": "done",
+      "note": "Review APPROVED (iteración 2): F1, F2, F4, F5 resueltos; F3 en backlog; 0 hallazgos nuevos"
+    },
+    {
+      "at": "2026-10-15T01:45:15.465Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Etapa review y commit aprobados por el usuario (\"1,2 sí\")"
+    },
+    {
+      "at": "2026-10-15T01:45:15.623Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegado al doc-keeper (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T01:45:57.636Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "doc-keeper: README.md y CLAUDE.md (filas de catálogo y favoritos quitadas, paso previo al despliegue de la 012); codificaciones intactas"
+    },
+    {
+      "at": "2026-10-15T01:46:16.084Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "Etapa docs y commit aprobados por el usuario (\"1,2 sí\")"
+    },
+    {
+      "at": "2026-10-15T01:46:16.228Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Orquestador: checklist de hecho (Art. 9) y propuesta de integración"
+    },
+    {
+      "at": "2026-10-15T01:47:43.009Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Cierre y commit aprobados por el usuario (\"1,2 sí\"); integración por PR con volcado previo y migración tras el CD"
+    }
+  ],
+  "red_check_exception": {
+    "at": "2026-10-14T21:42:14.884Z",
+    "note": "Tests de no regresión permitidos en verde en el red check (aprobado por el usuario en el gate del plan)",
+    "acs": [
+      "AC-002.*",
+      "AC-004.*",
+      "AC-005.*",
+      "AC-006.*",
+      "AC-008.*",
+      "AC-007.6"
+    ]
+  },
+  "traceability_exception": {
+    "at": "2026-10-14T21:48:29.911Z",
+    "note": "AC-N001.3 (lint, tsc, build y ruff-new) lo cubren los comandos del verifier en verify, sin marcador SDD (aprobado por el usuario en el gate de tasks)",
+    "acs": [
+      "AC-N001.3"
+    ]
+  },
+  "tests_snapshot": {
+    "at": "2026-10-15T01:41:00.642Z",
+    "sha256": {
+      "backend/tests/test_routes/test_health_routes.py": "6e3db5a6171c0227baa30e36a2651eaa76ad4b84a957f51bddcbae5dee014c69",
+      "backend/tests/test_routes/test_retired_catalog_routes.py": "edc0df10d2e6079e63f66b8a38943538d118437e9f9999c97c548009fdb49867",
+      "backend/tests/test_services/test_catalog_removal_migration.py": "c0cf8c112ef86d31ab1116b4ee0044cd41e1e640e8f666745c3d3d2171e68d07",
+      "backend/tests/test_services/test_no_catalog_leftovers.py": "b905432a5fd894eba0ac872137946747ffdf559ba90f22ff9d9f1700246273b3",
+      "frontend/src/app/router.test.tsx": "ba4a7d5f7881135b1a1fc06bec75194fea6259395654b14f0edca11cea0b5682",
+      "frontend/src/app/noRetiredSections.test.ts": "2c80474038663bba27c2590501352db03a435a3d4eddcb2b20baf28864211962",
+      "frontend/src/components/layout/BottomTabBar.test.tsx": "7e60d14dec07736123ea1a7e3f46fca355839933b2fb4325958317ac85d658b9",
+      "frontend/src/components/layout/Navbar.test.tsx": "572e004ccc803881b58454e79a7c9cadff5b26a0e0e67b04a7dee00840d14461",
+      "frontend/src/features/auth/components/AuthHero.test.tsx": "bb99b979317d96d095bcfa2b4edcccfb83e3f661933737d5cada3a6ae4512be4",
+      "frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx": "35321d1eebfcf683320a53d98b4471952ca10226cf4f8bd1b83d53f8b6df9551",
+      "frontend/src/features/legal/pages/TermsOfServicePage.test.tsx": "f947474a84c386228b2c73017a5e77e188c46c995a1903515059d3937a49fd51"
+    },
+    "deleted": [
+      "backend/tests/test_routes/test_exercise_routes.py",
+      "backend/tests/test_services/test_weekly_plan_service.py"
+    ]
+  }
+}

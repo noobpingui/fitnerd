@@ -6,14 +6,12 @@ Live: [fitnerd.betofallas.dev](https://fitnerd.betofallas.dev)
 
 ## What problem does it solve, and who is it for?
 
-Most people who want to train on their own end up choosing between two bad options: expensive personal training, or free advice that's either a generic AI hallucinating exercise technique or a social media "influencer" repeating myths with no science behind them. fitnerd is for anyone who wants to train with correct technique and track real progress, without needing a coach on retainer - a catalog of exercises organized by body region, a place to log body metrics over time, and an AI coach that only answers from a curated library of real fitness video transcripts (and says "I don't know" instead of making something up when the answer isn't in there).
+Most people who want to train on their own end up choosing between two bad options: expensive personal training, or free advice that's either a generic AI hallucinating exercise technique or a social media "influencer" repeating myths with no science behind them. fitnerd is for anyone who wants to train with correct technique and track real progress, without needing a coach on retainer - a place to log body metrics and macros over time, and an AI coach that only answers from a curated library of real fitness video transcripts (and says "I don't know" instead of making something up when the answer isn't in there).
 
 I built it as a personal project - both because I wanted exactly this tool for my own training, and as a way to prove out a full stack end-to-end: API design, a real SPA frontend, a RAG pipeline, and a real cloud deployment, not just another CRUD tutorial app.
 
 ## What it offers
 
-- **Exercise catalog** (body region -> category -> exercise) with correct-technique videos
-- **Favorites** and a **weekly workout plan**
 - **Body metrics tracking** - weight, body-fat %, muscle-mass % with progress charts over time; one measurement per day (saving again the same day updates it), editable and deletable from a history list, and the profile weight always follows the latest measurement; progress indicators on top (30-day change, weekly pace checked against the profile goal, 7-day trend, body composition, logging streak); a pace above 2% of body weight per week is flagged as unrealistic and the likely wrong weight is marked in the history
 - **Onboarding and profile** - physical data, birth date, activity level and goal are saved per account on the server, so they follow the user across devices
 - **Calories and macros** - daily target from Mifflin-St Jeor with a calorie floor, a protein cap for high body weights and a 100 g carb minimum, computed in the frontend
@@ -40,7 +38,7 @@ I built it as a personal project - both because I wanted exactly this tool for m
 
 **Backend - layered architecture**, `routes -> services -> repositories -> models`, on top of Flask's **Application Factory pattern** (`create_app()`) rather than a module-level `Flask(__name__)`. Routes only handle HTTP concerns; services own business rules and validation; repositories are the *only* layer that talks SQLAlchemy - a service never touches the DB session directly, that's centralized behind a **Unit of Work**. I also used a **Repository pattern** with a shared base class for common queries, and ownership checks are done inside the query itself (e.g. "get this record *for this user*") rather than fetched-then-checked - so a valid ID belonging to someone else returns "not found" instead of leaking that the record exists. I chose this layering because it keeps each concern testable and swappable in isolation, and because it makes the codebase's rules explicit instead of implicit.
 
-**Frontend - feature-based folders**, not type-based: each domain (`auth`, `exercises`, `body-metrics`, `coach`...) owns its own `types`, `api`, `hooks`, and `components`, mirroring the backend's per-domain split. API communication is three layers deep, each with one job: a single shared client handles the actual `fetch` + auth header + error normalization; each feature's `api.ts` knows which endpoint to call; each feature's `hooks.ts` wraps that in TanStack Query for caching and state. No component ever calls `fetch` directly. Same underlying philosophy as the backend: one direction of dependency, one job per layer.
+**Frontend - feature-based folders**, not type-based: each domain (`auth`, `body-metrics`, `coach`...) owns its own `types`, `api`, `hooks`, and `components`, mirroring the backend's per-domain split. API communication is three layers deep, each with one job: a single shared client handles the actual `fetch` + auth header + error normalization; each feature's `api.ts` knows which endpoint to call; each feature's `hooks.ts` wraps that in TanStack Query for caching and state. No component ever calls `fetch` directly. Same underlying philosophy as the backend: one direction of dependency, one job per layer.
 
 ## The AI Coach: how the RAG pipeline works
 
@@ -84,5 +82,7 @@ docker compose up --build
 Frontend at `localhost:5173`, backend at `localhost:5000`.
 
 **Manual** - backend: create a venv, `pip install -r requirements.txt`, set up the same `.env` files above against your own local Postgres/Redis, run migrations (`flask db upgrade`), then `flask run`. Frontend: `npm install`, `npm run dev`.
+
+**Removal of the exercise catalog, favorites and weekly plan (spec 012):** these features were hidden after the data-centric redesign and have now been removed entirely (endpoints now answer `404`). The migration `f2c4e6a8b0d1` drops their five tables (`body_regions`, `exercise_categories`, `exercises`, `exercise_favorites`, `weekly_plan_entries`) and all their data; its downgrade recreates them empty. Migrations are not applied automatically, so before deploying to production take a **full** database backup (schema and data of every table, e.g. with `pg_dump`) and keep it outside the repository (`C:/Users/alber/fitnerd-backups`); then, after the CD job finishes, run `docker compose -f docker-compose.prod.yml exec backend flask db upgrade` on the instance.
 
 **Heads-up when running Flask by hand:** `backend/wsgi.py` defaults to `FLASK_ENV=production`, so `flask run` or `flask db upgrade` without `FLASK_ENV=development` uses `ProductionConfig` and points at the production database (`PROD_DATABASE_URL`). Always set `FLASK_ENV=development` first. Password-reset emails are only logged to the console locally (`MAIL_BACKEND=console`); no real email is sent.

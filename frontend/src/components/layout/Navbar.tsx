@@ -3,16 +3,9 @@ import { Logo } from "@/components/layout/Logo"
 import { UserMenu } from "@/components/layout/UserMenu"
 import { FeedbackButton } from "@/features/feedback/components/FeedbackButton"
 import { cn } from "@/lib/utils"
-import { CATALOG_ENABLED } from "@/app/sections"
 import logo from "@/assets/logo.png"
 
 const links = [
-  ...(CATALOG_ENABLED
-    ? [
-        { to: "/categories", label: "Catálogo" },
-        { to: "/favorites", label: "Favoritos" },
-      ]
-    : []),
   { to: "/macros", label: "Macros" },
   { to: "/body-metrics", label: "Métricas" },
   { to: "/coach", label: "Coach" },

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
-import { Dumbbell, Heart, Sparkles } from "lucide-react"
-import { CATALOG_ENABLED } from "@/app/sections"
+import { Sparkles } from "lucide-react"
 
 const rotatingWords = [
   "con criterio",
@@ -10,12 +9,6 @@ const rotatingWords = [
 ]
 
 const features = [
-  ...(CATALOG_ENABLED
-    ? [
-        { icon: Dumbbell, label: "Catálogo de ejercicios con técnica de ejecución" },
-        { icon: Heart, label: "Guarda tus ejercicios favoritos" },
-      ]
-    : []),
   { icon: Sparkles, label: "AI Coach online" },
 ]
 

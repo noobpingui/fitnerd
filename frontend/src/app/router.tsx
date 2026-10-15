@@ -3,17 +3,12 @@ import { AnimatePresence } from "motion/react"
 import { ProtectedRoute } from "@/app/ProtectedRoute"
 import { AppLayout } from "@/app/AppLayout"
 import { PageTransition } from "@/app/PageTransition"
-import { CATALOG_ENABLED } from "@/app/sections"
 import { OnboardingGuard } from "@/app/OnboardingGuard"
 import { OnboardingRoute } from "@/app/OnboardingRoute"
 import { LoginPage } from "@/features/auth/pages/LoginPage"
 import { RegisterPage } from "@/features/auth/pages/RegisterPage"
 import { ForgotPasswordPage } from "@/features/auth/pages/ForgotPasswordPage"
 import { ResetPasswordPage } from "@/features/auth/pages/ResetPasswordPage"
-import { RegionsPage } from "@/features/exercises/pages/RegionsPage"
-import { CategoriesPage } from "@/features/exercises/pages/CategoriesPage"
-import { ExercisesPage } from "@/features/exercises/pages/ExercisesPage"
-import { FavoritesPage } from "@/features/exercises/pages/FavoritesPage"
 import { MacrosPage } from "@/features/macros/pages/MacrosPage"
 import { BodyMetricsPage } from "@/features/body-metrics/pages/BodyMetricsPage"
 import { HomePage } from "@/features/home/pages/HomePage"
@@ -92,22 +87,6 @@ function AnimatedRoutes() {
           <Route element={<OnboardingGuard />}>
             <Route element={<AppLayout />}>
               <Route path="/home" element={<HomePage />} />
-              {/* Si CATALOG_ENABLED es false, estas rutas no existen y la
-                  ruta comodín "*" de abajo redirige a /home. */}
-              {CATALOG_ENABLED && (
-                <>
-                  <Route path="/categories" element={<RegionsPage />} />
-                  <Route
-                    path="/categories/:regionId"
-                    element={<CategoriesPage />}
-                  />
-                  <Route
-                    path="/categories/:regionId/:categoryId"
-                    element={<ExercisesPage />}
-                  />
-                  <Route path="/favorites" element={<FavoritesPage />} />
-                </>
-              )}
               <Route path="/macros" element={<MacrosPage />} />
               <Route path="/body-metrics" element={<BodyMetricsPage />} />
               <Route path="/coach" element={<CoachPage />} />

@@ -9,12 +9,14 @@ incluido el POST, devuelven 404 - rojo legítimo según ADR-0012 y el plan
 (sección 5): la ruta no se andamia, solo el servicio y el repositorio.
 """
 
+from datetime import date
+
 import pytest
 from sqlalchemy import event, func, select
 from sqlalchemy.exc import OperationalError, ProgrammingError
 
 from extensions import db as _db
-from models import BodyRegion
+from models import User
 
 FAKE_CONNECTION_ERROR_TEXT = "postgresql://usuario_secreto:clave_secreta@db.interno.secreto:5432/fitnerd"
 
@@ -118,11 +120,12 @@ def test_health_rejects_post_with_405_and_standard_error_body(client):
 
 
 # SDD: NFR-002 AC-N002.1
+# SDD: 012 REQ-002 AC-002.1
 def test_health_check_does_not_change_row_counts(client, db_session):
     """El chequeo de salud es de solo lectura: contar filas de todas las
     tablas antes y después de GET /api/health debe dar el mismo resultado."""
-    region = BodyRegion(name="Región de prueba para el chequeo de salud")
-    db_session.add(region)
+    user = User(email="salud@example.com", date_of_birth=date(2000, 1, 1))
+    db_session.add(user)
     db_session.commit()
 
     tables = _db.metadata.sorted_tables

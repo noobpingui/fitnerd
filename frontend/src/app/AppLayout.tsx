@@ -8,9 +8,9 @@ import { BottomTabBar } from "@/components/layout/BottomTabBar"
 // (el chrome visual: navbar + el resto de la pantalla). Cada uno con una
 // sola responsabilidad.
 export function AppLayout() {
-  // AppLayout envuelve TODAS las pantallas protegidas (/home, /categories,
-  // /favorites, /body-metrics, /coach) - el footer solo debe verse en
-  // /home, asi que hay que chequear la ruta actual antes de mostrarlo.
+  // AppLayout envuelve TODAS las pantallas protegidas - el footer solo
+  // debe verse en /home, asi que hay que chequear la ruta actual antes
+  // de mostrarlo.
   const location = useLocation()
   const showFooter = location.pathname === "/home"
 
