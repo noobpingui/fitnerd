@@ -1,0 +1,185 @@
+# Runbook de despliegue a producción
+
+Guía paso a paso para llevar una rama a producción sin sustos. Recoge lo que se hizo en los despliegues del rediseño (006–010, 13-oct-2026), de la 011, de la retirada del catálogo (012, 14-oct-2026) y del pulido 013 (15-oct-2026).
+
+**Piezas que intervienen:**
+
+| Pieza | Dónde | Cómo se despliega |
+|---|---|---|
+| Frontend | Vercel (`fitnerd.betofallas.dev`) | Solo, con cada push a `main` |
+| Backend | EC2 detrás de Caddy (`api.fitnerd.betofallas.dev`) | Job `deploy` de `backend-tests.yml` tras pasar los tests en `main` (ADR-0016) |
+| Base de datos | Supabase (Postgres) | **A mano**: las migraciones nunca se aplican solas |
+| Redis | La misma instancia EC2 | Con el backend (`docker-compose.prod.yml`) |
+
+---
+
+## 0. Reglas que no se saltan
+
+- **Nunca imprimas `PROD_DATABASE_URL`** (ni en la terminal ni en un log). Los scripts de abajo la leen de `backend/.env` y se la pasan al proceso sin mostrarla.
+- **Nunca ejecutes `docker compose config`**: imprime todos los secretos en claro.
+- **`flask` sin `FLASK_ENV` apunta a producción** (`backend/wsgi.py` usa `ProductionConfig` por defecto). Para trabajar en local, siempre `FLASK_ENV=development`. Para producción, escríbelo explícitamente (`FLASK_ENV=production`) para que se vea que es a propósito.
+- **Las comprobaciones contra producción son de solo lectura:** abren la transacción con `SET TRANSACTION READ ONLY`, así que cualquier escritura fallaría.
+- **El merge a `main` lo hace el usuario** (`gh pr merge N --merge`). Cada commit, push y merge lleva su aprobación.
+
+---
+
+## 1. ¿Qué tipo de despliegue es?
+
+Lista las migraciones que trae la rama:
+
+```bash
+git fetch origin
+git diff --name-only origin/main...HEAD -- backend/migrations/versions/
+```
+
+| Caso | Ejemplo | Qué cambia en el procedimiento |
+|---|---|---|
+| **A. Sin migraciones** | 011, 013 | Solo PR, merge y comprobaciones (pasos 2, 5 y 6). |
+| **B. Migración aditiva** (tabla o columna nueva, restricción que el código nuevo necesita) | 006 (`c6a1f0d2e9b4`), 008 (`d8e4b2a7c1f5`) | Backup y migración **antes** del merge (*expand*): el código viejo sigue funcionando con el esquema nuevo. |
+| **C. Migración destructiva** (borrar tablas o columnas, renombrar, `NOT NULL` sobre datos existentes) | 012 (`f2c4e6a8b0d1`) | Backup completo, merge y **después** del CD la migración (*contract*): el código que ya no usa esas tablas tiene que estar desplegado antes de borrarlas. |
+
+Si una migración mezcla las dos cosas, sepárala en dos despliegues: primero la parte aditiva, después la destructiva.
+
+---
+
+## 2. Comprobaciones previas (todos los casos)
+
+1. **PR abierto contra `main` con el CI en verde:** `gh pr checks N --watch`. Deben pasar los dos `test` (backend y frontend) y el preview de Vercel. El job `deploy` sale como *skipping* en un PR, y es lo normal.
+2. **Variables nuevas:** si la feature añade alguna, ya tiene que estar en el `backend/.env` de EC2 (o en Vercel, si es del frontend) **antes** del merge.
+3. **Avisos del despliegue:** lee la sección de despliegue del `CLAUDE.md` y el PR por si hay pasos específicos de la feature.
+
+---
+
+## 3. Backup de producción (casos B y C)
+
+Volcado completo (esquema y datos de todas las tablas) en formato *custom* de `pg_dump`, guardado **fuera del repositorio** en `C:/Users/alber/fitnerd-backups`. Se usa la imagen `postgres:17` para no depender de un `pg_dump` local.
+
+```bash
+#!/usr/bin/env bash
+# Lee PROD_DATABASE_URL de backend/.env sin imprimirla y se la pasa a pg_dump
+# por variable de entorno (no aparece en la línea de comandos).
+set -euo pipefail
+OUT="/c/Users/alber/fitnerd-backups/prod-$(date +%F).dump"
+[ -e "$OUT" ] && { echo "Ya existe $OUT; no se sobrescribe."; exit 1; }
+PGURL="$(grep -m1 '^PROD_DATABASE_URL=' /c/Users/alber/source/repos/fitnerd/backend/.env \
+  | cut -d= -f2- | tr -d '\r"' | sed 's#^postgresql+[a-z0-9]*://#postgresql://#')"
+export PGURL
+docker run --rm -e PGURL postgres:17 sh -c 'pg_dump --format=custom --no-owner "$PGURL"' > "$OUT"
+unset PGURL
+ls -l "$OUT"
+
+# Comprueba que el archivo se puede leer y cuenta lo que contiene.
+docker run --rm -i postgres:17 pg_restore --list < "$OUT" > /tmp/toc.txt
+echo "tablas: $(grep -c ' TABLE public ' /tmp/toc.txt)"
+echo "bloques de datos: $(grep -c ' TABLE DATA public ' /tmp/toc.txt)"
+```
+
+- El `sed` quita el sufijo del driver de SQLAlchemy (`postgresql+psycopg://` → `postgresql://`), que `pg_dump` no entiende.
+- **Un backup que no se ha leído no cuenta:** el `pg_restore --list` tiene que listar todas las tablas. En la 012 eran 14 tablas, y además se contaron las filas de las cinco que se iban a borrar.
+
+---
+
+## 4. Comprobación de solo lectura de la base
+
+Antes de migrar, confirma en qué revisión está Supabase y que los datos están como esperas. Plantilla (ajusta las consultas a la feature):
+
+```python
+"""Comprobación de solo lectura de producción.
+
+Uso: cd backend && .venv/Scripts/python.exe <script>.py .env
+"""
+import os
+import sys
+
+from dotenv import load_dotenv
+from sqlalchemy import create_engine, text
+
+load_dotenv(sys.argv[1])
+engine = create_engine(os.environ["PROD_DATABASE_URL"])
+
+with engine.connect() as conn:
+    conn.execute(text("SET TRANSACTION READ ONLY"))
+    q = lambda sql: conn.execute(text(sql)).scalar()
+    print("alembic_version:", q("SELECT version_num FROM alembic_version"))
+    print("users:", q("SELECT count(*) FROM users"))
+    print("body_metrics:", q("SELECT count(*) FROM body_metrics"))
+    # Ejemplos de comprobaciones específicas usadas en despliegues anteriores:
+    # - ¿existe una tabla?  q("SELECT to_regclass('public.user_profiles')") is not None
+    # - duplicados que una restricción única rechazaría (008):
+    #   SELECT user_id, recorded_at, count(*) FROM body_metrics
+    #   GROUP BY user_id, recorded_at HAVING count(*) > 1
+    conn.rollback()
+```
+
+La revisión que devuelve tiene que ser la `down_revision` de la primera migración nueva. Si no coincide, **para**: alguien migró producción por otro camino.
+
+---
+
+## 5. Migrar, hacer merge y desplegar
+
+### Caso B (aditiva): migración antes del merge
+
+1. Backup (paso 3) y comprobación (paso 4).
+2. Aplica las migraciones desde local, contra producción:
+   ```bash
+   cd backend
+   FLASK_ENV=production .venv/Scripts/python.exe -m flask db upgrade
+   ```
+   Alternativa en la instancia: `docker compose -f docker-compose.prod.yml exec backend flask db upgrade`.
+3. Repite la comprobación de solo lectura: revisión nueva, tablas o restricciones creadas, recuento de filas sin cambios.
+4. Merge del PR (`gh pr merge N --merge`) y paso 6.
+
+### Caso C (destructiva): migración después del CD
+
+1. Backup completo (paso 3) **verificado**, con el recuento de filas de lo que se va a borrar.
+2. Merge del PR y espera a que el CD termine en verde (paso 6). Desde ese momento el backend ya no usa las tablas.
+3. Aplica la migración (mismo comando que en el caso B).
+4. Comprobación de solo lectura: revisión nueva y las tablas ya no existen (`to_regclass` devuelve `NULL`); el resto de recuentos, igual que antes.
+
+### Caso A (sin migraciones)
+
+Merge del PR y paso 6.
+
+---
+
+## 6. Después del merge
+
+1. **CD del backend:**
+   ```bash
+   gh run list --branch main --limit 3
+   gh run watch <id-del-run-de-Backend-tests> --exit-status
+   ```
+   Tienen que pasar `test` y `deploy`. Si el resumen del job avisa de migraciones nuevas sin aplicar y no estabas en el caso B o C, aplícalas ahora.
+2. **Frontend:** el workflow `Frontend tests` en verde y el despliegue de Vercel completado.
+3. **Salud:**
+   ```bash
+   curl -s -o /dev/null -w "%{http_code}\n" https://api.fitnerd.betofallas.dev/api/health      # 200
+   curl -s -o /dev/null -w "%{http_code}\n" https://api.fitnerd.betofallas.dev/api/profile     # 401 sin token
+   ```
+4. **Prueba manual con una cuenta real:** las pantallas que toca la feature, y un vistazo rápido a Macros, Métricas, Coach y Perfil.
+5. **Recarga las pestañas abiertas** (recarga forzada): un bundle viejo puede llamar a rutas que ya no existen (012) o enviar cuerpos que el backend nuevo rechaza (010).
+6. **Limpieza:** borra la rama en local y en `origin`, y `git pull --ff-only` en `main`.
+
+---
+
+## 7. Marcha atrás
+
+| Qué falló | Qué hacer |
+|---|---|
+| El código desplegado (backend o frontend) | `git revert -m 1 <merge-commit>` en una rama, PR y merge. El CD redespliega la versión anterior. El commit de merge de cada despliegue está en la tabla de la sección 8. |
+| Migración aditiva | Normalmente nada: el código anterior funciona con el esquema nuevo, así que basta con revertir el código. `flask db downgrade` solo si la migración estorba de verdad, y después de revisar qué hace su `downgrade()`. |
+| Migración destructiva | El `downgrade()` de la 012 recrea las tablas **vacías**. Los datos solo vuelven desde el backup: `pg_restore --data-only --table=<tabla>` desde el `.dump`, en un orden que respete las claves foráneas. Pruébalo antes contra la base local. |
+| `/api/health` no da 200 tras el CD | Mira los logs del job `deploy` y, en la instancia, `docker compose -f docker-compose.prod.yml logs backend --tail 100`. |
+
+---
+
+## 8. Historial de despliegues
+
+| Fecha | Feature | PR / merge | Migraciones | Backup |
+|---|---|---|---|---|
+| 2026-10-13 | 006–010, rediseño | #3, `a60ca15` | `c6a1f0d2e9b4` y `d8e4b2a7c1f5`, aplicadas antes del merge (0 duplicados) | `prod-2026-10-13.dump` |
+| 2026-10-14 | 011, ritmo poco realista | #4, `863ec4b` | — | — |
+| 2026-10-14 | 012, retirada del catálogo | #6, `ebb3003` | `f2c4e6a8b0d1`, aplicada después del CD (5 tablas borradas) | `prod-2026-10-14.dump` |
+| 2026-10-15 | 013, pulido de 006–010 | #7, `0596d9e` | — | — |
+
+Añade una fila en cada despliegue.
