@@ -85,3 +85,43 @@ def test_progress_analysis_service_has_no_regional_wording():
         encoding="utf-8"
     )
     assert "prolijo" not in content
+
+
+VALIDATION_TESTS = {
+    "test_progress_analysis_service.py": [
+        "test_a_missing_body_is_rejected",
+        "test_a_request_date_more_than_a_day_away_from_the_server_date_is_rejected",
+        "test_a_request_date_one_day_away_from_the_server_date_is_accepted",
+        "test_an_indicator_text_with_a_line_break_is_rejected",
+        "test_an_unknown_pace_status_is_rejected",
+        "test_non_integer_calories_are_rejected",
+    ],
+    "../test_routes/test_progress_analysis_routes.py": [
+        "test_an_invalid_body_returns_bad_request_and_creates_no_row",
+    ],
+}
+SPEC_010_MARKERS = ["REQ-002 AC-002.1", "REQ-004 AC-004.1", "NFR-001 AC-N001.1"]
+
+
+def marker_before(path, test_name):
+    lines = path.read_text(encoding="utf-8").splitlines()
+    index = next(i for i, line in enumerate(lines) if line.startswith(f"def {test_name}("))
+    return lines[index - 1]
+
+
+# SDD: 013 NFR-004 AC-N004.1
+def test_analysis_body_validation_tests_cite_their_own_013_criteria():
+    """Los 7 tests de validación llevan SDD: 013 con AC de REQ-004, sin citar la spec 010."""
+    tests_dir = BACKEND_ROOT / "tests" / "test_services"
+    markers = []
+    for relative, names in VALIDATION_TESTS.items():
+        path = (tests_dir / relative).resolve()
+        for name in names:
+            markers.append(marker_before(path, name))
+
+    assert len(markers) == 7
+    for marker in markers:
+        assert re.fullmatch(r"# SDD: 013 REQ-004 AC-004\.\d+", marker), marker
+        for forbidden in SPEC_010_MARKERS:
+            assert marker != f"# SDD: {forbidden}", marker
+            assert marker != f"# SDD: 013 {forbidden}" or forbidden != "REQ-002 AC-002.1", marker

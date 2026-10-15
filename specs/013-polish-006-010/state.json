@@ -11,7 +11,7 @@
   "branch": "fix/013-polish-006-010",
   "base_branch": "main",
   "created_at": "2026-10-15T09:28:18.161Z",
-  "stage": "implement",
+  "stage": "tests",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-15T09:41:10.811Z",
@@ -31,10 +31,11 @@
     "tests": "a7636e8",
     "implement": "ac379c7",
     "verify": "035fcd5",
-    "tests_review_fix": "9d56d7e"
+    "tests_review_fix": "9d56d7e",
+    "implement_review_fix": "7e25d58"
   },
   "iterations": {
-    "tests": 2,
+    "tests": 3,
     "implement": 2,
     "review": 2
   },
@@ -44,8 +45,8 @@
     "at": "2026-10-15T21:42:26.505Z"
   },
   "verify": {
-    "result": "PASS",
-    "at": "2026-10-15T21:19:20.307Z"
+    "result": "FAIL",
+    "at": "2026-10-15T22:21:12.176Z"
   },
   "review": {
     "verdict": "CHANGES_REQUESTED",
@@ -286,6 +287,42 @@
       "stage": "implement",
       "event": "approved",
       "note": "Corrección F3 y commit aprobados por el usuario (\"1,2 Si\")"
+    },
+    {
+      "at": "2026-10-15T22:18:07.150Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "verifier full tras la corrección de review (iteración 2 de review)"
+    },
+    {
+      "at": "2026-10-15T22:21:51.883Z",
+      "stage": "verify",
+      "event": "verify_fail",
+      "note": "verify full tras review: todo verde (pytest 726, npm test 482, lint sin el warning) salvo AC-N004.1 sin marcador propio (T-006/T-016 solo cambiaban marcadores). Pendiente decisión del usuario"
+    },
+    {
+      "at": "2026-10-15T22:51:37.044Z",
+      "stage": "verify",
+      "event": "user_decision",
+      "note": "Usuario elige opción A (\"A\"): test de recorrido de fuente para AC-N004.1"
+    },
+    {
+      "at": "2026-10-15T22:51:37.044Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "test-author añade test SDD: 013 NFR-004 AC-N004.1 en test_source_cleanup_013.py (iteración 3/3)"
+    },
+    {
+      "at": "2026-10-15T22:52:16.780Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "test-author: test_analysis_body_validation_tests_cite_their_own_013_criteria (SDD: 013 NFR-004 AC-N004.1), pasa; ruff-new OK"
+    },
+    {
+      "at": "2026-10-15T22:54:09.724Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "Test de AC-N004.1 y commit aprobados por el usuario (\"1,2 Si\")"
     }
   ],
   "red_check_exception": {
