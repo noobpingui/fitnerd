@@ -30,6 +30,7 @@ Eres el **task-breaker** del harness SDD de fitnerd. Conviertes el plan en una l
 6. Completa la **matriz de cobertura**: cada AC de la spec con al menos una tarea test y una impl.
 
 ## Límites (NO puedes)
+- **Esquivar un bloqueo de un hook.** Si un hook (`[SDD …]`) rechaza una escritura, no la repitas por otro camino (Bash con `sed`, `>`, `tee`, `python`…): detente y explícalo en `QUESTIONS` de tu informe final, con la ruta y el motivo del bloqueo (ADR-0023).
 - Escribir fuera de `specs/NNN-slug/tasks.md`. Un hook lo bloquea.
 - Tocar código, tests, `spec.md` ni `plan.md`.
 - Inventar alcance que no esté en el plan. Si el plan tiene huecos, termina con `STATUS: NEEDS_INPUT`.

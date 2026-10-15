@@ -20,10 +20,11 @@ Todos los hooks son `PreToolUse`: se ejecutan **antes** de que Claude use la her
 | `implementer` | `backend/**` y `frontend/**` (sin tests), los `.env.example` y las casillas de `tasks.md` |
 | `verifier` | `specs/NNN/verify-report.md`, `specs/NNN/state.json` |
 | `reviewer` | `specs/NNN/review.md` |
-| `doc-keeper` | `README.md`, `frontend/README.md`, `CLAUDE.md` (el hook permite el archivo; su prompt lo limita a la sección Proyecto, ADR-0013), los `.env.example`, `docs/**` (salvo `docs/sdd/decisions/`) y `specs/NNN/docs-report.md` |
+| `doc-keeper` | `README.md`, `frontend/README.md`, `CLAUDE.md` (el hook permite el archivo; su prompt lo limita a la sección Proyecto, ADR-0013), los `.env.example`, `docs/**` (salvo `docs/sdd/decisions/`), `specs/NNN/docs-report.md` y las casillas de las tareas `(docs)` de `tasks.md` (ADR-0023) |
 
   4. Ningún subagente edita un `.env` real.
 - Si el hook falla internamente, el agente queda bloqueado (*fail-closed*).
+- **Límite conocido:** la `role-guard` solo vigila `Write`, `Edit`, `MultiEdit` y `NotebookEdit`. Una escritura hecha con Bash (`sed -i`, `>`, `tee`…) no pasa por ella. Por eso las fichas de todos los agentes prohíben esquivar un bloqueo: el agente debe detenerse e informar (ADR-0023).
 
 ## 2. `stage-guard`: sin spec ni plan no hay código de producción
 - **Se activa con:** escrituras de la **sesión principal** o de subagentes que no son del harness (Explore, general-purpose…) en código de producción, es decir, `backend/**` y `frontend/**` menos los tests, los `README.md` y los `.env.example`.

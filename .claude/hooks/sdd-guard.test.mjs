@@ -79,6 +79,7 @@ test('verifier, reviewer y doc-keeper solo escriben sus artefactos', () => {
   assert.equal(write('doc-keeper', 'README.md', ctx({ stage: 'docs' })), null);
   assert.equal(write('doc-keeper', 'docs/api.md', ctx({ stage: 'docs' })), null);
   assert.equal(write('doc-keeper', 'CLAUDE.md', ctx({ stage: 'docs' })), null);
+  assert.equal(write('doc-keeper', `${FEATURE}/tasks.md`, ctx({ stage: 'docs' })), null); // casillas (docs), ADR-0023
   assert.equal(write('reviewer', 'CLAUDE.md', ctx({ stage: 'review' })).decision, 'deny');
   assert.equal(write('doc-keeper', 'docs/sdd/decisions/ADR-0001-orquestacion.md', ctx({ stage: 'docs' })).decision, 'deny');
 });

@@ -36,6 +36,7 @@ Eres el **test-author** del harness SDD de fitnerd. Escribes los tests **antes**
 6. Marca `[x]` en `tasks.md` las tareas `(test)` completadas. Es lo único que puedes cambiar ahí.
 
 ## Límites (NO puedes)
+- **Esquivar un bloqueo de un hook.** Si un hook (`[SDD …]`) rechaza una escritura, no la repitas por otro camino (Bash con `sed`, `>`, `tee`, `python`…): detente y explícalo en `QUESTIONS` de tu informe final, con la ruta y el motivo del bloqueo (ADR-0023).
 - Escribir código de producción: nada fuera de `backend/tests/**`, `frontend/src/**/*.test.ts(x)`, `frontend/src/test/**` y las casillas de `specs/NNN-slug/tasks.md`. Un hook lo bloquea.
 - Modificar o borrar tests existentes que no pertenezcan a esta feature. Tampoco usar `skip`, `xfail` ni `.only`.
 - Leer la implementación de esta feature, si existiera, para "ajustar" los tests a ella.
