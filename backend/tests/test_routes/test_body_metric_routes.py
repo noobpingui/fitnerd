@@ -1,9 +1,10 @@
-"""Tests de INTEGRACION de /api/body-metrics (spec 008): cliente HTTP real contra
+"""Tests de INTEGRACIÓN de /api/body-metrics (spec 008): cliente HTTP real contra
 la app, el service y los repositories reales y Postgres de test. El reloj del
-servidor es el real, asi que las fechas se calculan relativas a la fecha UTC de
-hoy; los ejemplos con fecha exacta (2026-10-12) estan en los unitarios.
+servidor es el real, así que las fechas se calculan relativas a la fecha UTC de
+hoy; los ejemplos con fecha exacta (2026-10-12) están en los unitarios.
 """
 
+import json
 from datetime import date, datetime, timedelta, timezone
 
 import pytest
@@ -104,7 +105,7 @@ def read_profile(client, headers):
 
 # SDD: REQ-001 AC-001.1
 def test_post_creates_a_metric_with_201(client, registered_user):
-    """Sin medicion ese dia: 201 y el historial tiene una con peso 80."""
+    """Sin medición ese día: 201 y el historial tiene una con peso 80."""
     headers = registered_user["headers"]
 
     response = post(client, headers, {"weight": 80, "recorded_at": day(0)})
@@ -123,7 +124,7 @@ def test_post_creates_a_metric_with_201(client, registered_user):
 
 # SDD: REQ-001 AC-001.2
 def test_post_on_the_same_day_updates_with_200_and_the_same_id(client, registered_user):
-    """El segundo POST del dia es 200, mismo id, conserva la grasa y no duplica."""
+    """El segundo POST del día es 200, mismo id, conserva la grasa y no duplica."""
     headers = registered_user["headers"]
     first = post(client, headers, {"weight": 80, "body_fat_percentage": 20, "recorded_at": day(0)})
     assert first.status_code == 201
@@ -140,7 +141,7 @@ def test_post_on_the_same_day_updates_with_200_and_the_same_id(client, registere
 
 # SDD: REQ-001 AC-001.4
 def test_post_on_another_day_creates_a_second_metric(client, registered_user):
-    """Un dia distinto es 201 y el historial tiene dos mediciones."""
+    """Un día distinto es 201 y el historial tiene dos mediciones."""
     headers = registered_user["headers"]
     older = post(client, headers, {"weight": 80, "recorded_at": day(-1)})
     assert older.status_code == 201
@@ -156,7 +157,7 @@ def test_post_on_another_day_creates_a_second_metric(client, registered_user):
 
 # SDD: REQ-001 AC-001.5
 def test_post_of_another_user_on_the_same_day_creates_its_own(client, app):
-    """B registra el mismo dia que A: 201 propio y la de A no cambia."""
+    """B registra el mismo día que A: 201 propio y la de A no cambia."""
     user_a = create_user(app, "a@example.com")
     user_b = create_user(app, "b@example.com")
     post(client, user_a["headers"], {"weight": 80, "recorded_at": day(0)})
@@ -172,7 +173,7 @@ def test_post_of_another_user_on_the_same_day_creates_its_own(client, app):
 
 # SDD: REQ-001 AC-001.6
 def test_post_without_recorded_at_uses_todays_utc_date(client, registered_user):
-    """Sin recorded_at: fecha UTC del servidor y la misma regla de uno por dia."""
+    """Sin recorded_at: fecha UTC del servidor y la misma regla de uno por día."""
     headers = registered_user["headers"]
 
     first = post(client, headers, {"weight": 80})
@@ -186,7 +187,7 @@ def test_post_without_recorded_at_uses_todays_utc_date(client, registered_user):
 
 # SDD: REQ-001 AC-001.7
 def test_history_never_repeats_a_date_after_post_put_and_delete(client, registered_user):
-    """Una secuencia de POST, PUT y DELETE deja fechas unicas en el GET."""
+    """Una secuencia de POST, PUT y DELETE deja fechas únicas en el GET."""
     headers = registered_user["headers"]
     first = post(client, headers, {"weight": 80, "recorded_at": day(-2)}).get_json()
     post(client, headers, {"weight": 79, "recorded_at": day(-2)})
@@ -206,7 +207,7 @@ def test_history_never_repeats_a_date_after_post_put_and_delete(client, register
 
 # SDD: REQ-001 AC-001.7
 def test_database_rejects_a_duplicate_user_and_date(client, app, registered_user):
-    """La restriccion unica (user_id, recorded_at) impide el duplicado en la base."""
+    """La restricción única (user_id, recorded_at) impide el duplicado en la base."""
     post(client, registered_user["headers"], {"weight": 80, "recorded_at": day(0)})
 
     with app.app_context():
@@ -241,7 +242,7 @@ def assert_post_rejected(client, headers, payload, message):
     ],
 )
 def test_post_without_any_value_is_400(client, registered_user, payload):
-    """Sin peso, grasa ni musculo (ausentes o null): mensaje literal, en POST y en PUT."""
+    """Sin peso, grasa ni músculo (ausentes o null): mensaje literal, en POST y en PUT."""
     headers = registered_user["headers"]
     assert_post_rejected(client, headers, payload, NO_VALUES)
     metric = post(client, headers, {"weight": 80}).get_json()
@@ -304,7 +305,7 @@ def test_post_accepts_tomorrow_and_rejects_the_day_after(client, registered_user
 
 # SDD: REQ-002 AC-002.7
 def test_post_without_a_body_is_400(client, registered_user):
-    """Sin cuerpo JSON: 400 con el mensaje de datos no validos."""
+    """Sin cuerpo JSON: 400 con el mensaje de datos no válidos."""
     response = client.post(URL, headers=registered_user["headers"])
 
     assert response.status_code == 400
@@ -314,7 +315,7 @@ def test_post_without_a_body_is_400(client, registered_user):
 # SDD: REQ-002 AC-002.7
 @pytest.mark.parametrize("raw", ["[]", '"texto"', "80", "no-json"])
 def test_post_with_a_body_that_is_not_an_object_is_400(client, registered_user, raw):
-    """Un cuerpo que no es un objeto (o no es JSON valido) es 400."""
+    """Un cuerpo que no es un objeto (o no es JSON válido) es 400."""
     response = client.post(
         URL, data=raw, content_type="application/json", headers=registered_user["headers"]
     )
@@ -326,7 +327,7 @@ def test_post_with_a_body_that_is_not_an_object_is_400(client, registered_user, 
 # SDD: REQ-002 AC-002.7
 @pytest.mark.parametrize("raw", ["[]", "no-json"])
 def test_put_with_a_body_that_is_not_an_object_is_400(client, registered_user, raw):
-    """La correccion tambien rechaza un cuerpo que no es un objeto."""
+    """La corrección también rechaza un cuerpo que no es un objeto."""
     headers = registered_user["headers"]
     metric = post(client, headers, {"weight": 80}).get_json()
 
@@ -341,7 +342,7 @@ def test_put_with_a_body_that_is_not_an_object_is_400(client, registered_user, r
 
 # SDD: REQ-002 AC-002.8
 def test_post_accepts_the_exact_limits(client, registered_user):
-    """Los valores limite minimos y maximos se aceptan."""
+    """Los valores límite mínimos y máximos se aceptan."""
     headers = registered_user["headers"]
 
     low = post(
@@ -377,7 +378,7 @@ def test_post_accepts_the_exact_limits(client, registered_user):
 
 # SDD: REQ-002 AC-002.9
 def test_a_rejected_weight_leaves_the_stored_metric_unchanged(client, registered_user):
-    """Un peso de 400 sobre la medicion de hoy da 400 y sigue en 80."""
+    """Un peso de 400 sobre la medición de hoy da 400 y sigue en 80."""
     headers = registered_user["headers"]
     post(client, headers, {"weight": 80, "recorded_at": day(0)})
 
@@ -389,7 +390,7 @@ def test_a_rejected_weight_leaves_the_stored_metric_unchanged(client, registered
 
 # SDD: REQ-002 AC-002.10
 def test_get_returns_an_old_metric_out_of_the_new_ranges_unchanged(client, app, registered_user):
-    """Una medicion guardada antes con grasa 2 se lee tal cual."""
+    """Una medición guardada antes con grasa 2 se lee tal cual."""
     headers = registered_user["headers"]
     user_id = read_user_id(app, "test@example.com")
     with app.app_context():
@@ -420,7 +421,7 @@ def read_user_id(app, email):
 
 # SDD: REQ-003 AC-003.1
 def test_put_replaces_the_three_values(client, registered_user):
-    """La correccion sustituye los tres valores; el ausente queda en null."""
+    """La corrección sustituye los tres valores; el ausente queda en null."""
     headers = registered_user["headers"]
     metric = post(
         client,
@@ -458,7 +459,7 @@ def test_put_keeps_the_notes(client, registered_user):
 
 # SDD: REQ-003 AC-003.3
 def test_put_ignores_recorded_at(client, registered_user):
-    """Enviar otra recorded_at no cambia la fecha de la medicion."""
+    """Enviar otra recorded_at no cambia la fecha de la medición."""
     headers = registered_user["headers"]
     metric = post(client, headers, {"weight": 80, "recorded_at": day(-5)}).get_json()
 
@@ -470,7 +471,7 @@ def test_put_ignores_recorded_at(client, registered_user):
 
 # SDD: REQ-003 AC-003.4
 def test_put_without_any_value_is_400_and_changes_nothing(client, registered_user):
-    """Sin ningun valor: 400 y la medicion no cambia."""
+    """Sin ningún valor: 400 y la medición no cambia."""
     headers = registered_user["headers"]
     metric = post(client, headers, {"weight": 80, "body_fat_percentage": 20}).get_json()
 
@@ -499,7 +500,7 @@ def test_put_of_an_unknown_id_is_404(client, registered_user):
 
 # SDD: REQ-004 AC-004.1
 def test_delete_removes_the_metric_with_204(client, registered_user):
-    """Borrar una medicion propia: 204 y desaparece del historial."""
+    """Borrar una medición propia: 204 y desaparece del historial."""
     headers = registered_user["headers"]
     metric = post(client, headers, {"weight": 80}).get_json()
 
@@ -515,7 +516,7 @@ def test_delete_removes_the_metric_with_204(client, registered_user):
 
 # SDD: REQ-004 AC-004.1
 def test_delete_of_the_latest_metric_moves_the_profile_weight_back(client, registered_user):
-    """Al borrar la ultima, el peso del perfil vuelve al de la anterior."""
+    """Al borrar la última, el peso del perfil vuelve al de la anterior."""
     headers = registered_user["headers"]
     save_profile(client, headers, PROFILE_KG)
     post(client, headers, {"weight": 82, "recorded_at": day(-3)})
@@ -549,7 +550,7 @@ def test_delete_of_an_unknown_id_is_404(client, registered_user):
 
 # SDD: REQ-005 AC-005.1
 def test_put_of_the_latest_metric_moves_the_profile_weight(client, registered_user):
-    """Corregir la ultima medicion a 78,4 deja el perfil en 78,4 kg."""
+    """Corregir la última medición a 78,4 deja el perfil en 78,4 kg."""
     headers = registered_user["headers"]
     save_profile(client, headers, PROFILE_KG)
     metric = post(client, headers, {"weight": 80, "recorded_at": day(-1)}).get_json()
@@ -563,7 +564,7 @@ def test_put_of_the_latest_metric_moves_the_profile_weight(client, registered_us
 
 # SDD: REQ-005 AC-005.2
 def test_delete_converts_the_previous_weight_to_pounds(client, registered_user):
-    """Perfil en lb: borrar la ultima deja 176,4 lb (80 kg)."""
+    """Perfil en lb: borrar la última deja 176,4 lb (80 kg)."""
     headers = registered_user["headers"]
     save_profile(client, headers, PROFILE_LB)
     post(client, headers, {"weight": 80, "recorded_at": day(-7)})
@@ -578,7 +579,7 @@ def test_delete_converts_the_previous_weight_to_pounds(client, registered_user):
 
 # SDD: REQ-005 AC-005.3
 def test_delete_of_the_latest_metric_restores_the_previous_weight_in_kg(client, registered_user):
-    """Perfil en kg con 78,5: borrar la ultima lo deja en 80."""
+    """Perfil en kg con 78,5: borrar la última lo deja en 80."""
     headers = registered_user["headers"]
     save_profile(client, headers, {**PROFILE_KG, "weight": 78.5})
     post(client, headers, {"weight": 80, "recorded_at": day(-7)})
@@ -591,7 +592,7 @@ def test_delete_of_the_latest_metric_restores_the_previous_weight_in_kg(client, 
 
 # SDD: REQ-005 AC-005.8
 def test_profile_weight_is_clamped_to_the_profile_range(client, registered_user):
-    """Perfil en kg con 31 y medicion de hoy de 29,9: el perfil queda en 30."""
+    """Perfil en kg con 31 y medición de hoy de 29,9: el perfil queda en 30."""
     headers = registered_user["headers"]
     save_profile(client, headers, {**PROFILE_KG, "weight": 31})
 
@@ -602,7 +603,7 @@ def test_profile_weight_is_clamped_to_the_profile_range(client, registered_user)
 
 # SDD: REQ-005 AC-005.9
 def test_post_without_a_profile_keeps_the_onboarding_pending(client, registered_user):
-    """Sin perfil: la medicion se guarda y el onboarding sigue pendiente."""
+    """Sin perfil: la medición se guarda y el onboarding sigue pendiente."""
     headers = registered_user["headers"]
 
     response = post(client, headers, {"weight": 80})
@@ -647,7 +648,7 @@ def test_sync_leaves_the_rest_of_the_profile_untouched(client, registered_user):
     ids=["sin-token", "token-invalido"],
 )
 def test_put_and_delete_require_a_valid_session(client, registered_user, headers):
-    """Sin token o con uno invalido: 401 y nada cambia."""
+    """Sin token o con uno inválido: 401 y nada cambia."""
     own = registered_user["headers"]
     metric = post(client, own, {"weight": 80}).get_json()
 
@@ -663,7 +664,7 @@ def test_put_and_delete_require_a_valid_session(client, registered_user, headers
 
 # SDD: NFR-001 AC-N001.2
 def test_a_user_cannot_update_or_delete_a_metric_of_another_user(client, app):
-    """A contra el id de B: 404 y la medicion y el perfil de B no cambian."""
+    """A contra el id de B: 404 y la medición y el perfil de B no cambian."""
     user_a = create_user(app, "a@example.com")
     user_b = create_user(app, "b@example.com")
     save_profile(client, user_b["headers"], PROFILE_KG)
@@ -683,7 +684,7 @@ def test_a_user_cannot_update_or_delete_a_metric_of_another_user(client, app):
 
 # SDD: NFR-001 AC-N001.3
 def test_user_id_in_the_body_is_ignored(client, app):
-    """A envia el user_id de B: la medicion es de A y B no cambia."""
+    """A envía el user_id de B: la medición es de A y B no cambia."""
     user_a = create_user(app, "a@example.com")
     user_b = create_user(app, "b@example.com")
     profile_before = read_profile(client, user_b["headers"])
@@ -699,3 +700,81 @@ def test_user_id_in_the_body_is_ignored(client, app):
     # B tampoco puede corregir la medicion de A.
     metric_id = response.get_json()["id"]
     assert put(client, user_b["headers"], metric_id, {"weight": 1}).status_code == 404
+
+
+# --------------------------------------------------------------------------
+# Enteros enormes (spec 013, REQ-002)
+# --------------------------------------------------------------------------
+
+HUGE = 10**400
+
+
+# SDD: 013 REQ-002 AC-002.1
+def test_post_with_a_huge_integer_weight_is_400_and_creates_nothing(client, registered_user):
+    """Un peso de 10^400 da el 400 de rango y la lista de mediciones no cambia."""
+    headers = registered_user["headers"]
+    before = listing(client, headers)
+
+    response = post(client, headers, {"weight": HUGE})
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": WEIGHT_INVALID}
+    assert listing(client, headers) == before
+
+
+# SDD: 013 REQ-002 AC-002.2
+def test_post_with_a_huge_integer_body_fat_is_400(client, registered_user):
+    """Una grasa de 10^400 da el 400 de rango de la grasa."""
+    response = post(client, registered_user["headers"], {"body_fat_percentage": HUGE})
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": FAT_INVALID}
+
+
+# SDD: 013 REQ-002 AC-002.3
+def test_post_with_a_huge_negative_integer_muscle_is_400(client, registered_user):
+    """Una masa muscular de -10^400 da el 400 de rango de la masa muscular."""
+    response = post(client, registered_user["headers"], {"muscle_mass_percentage": -HUGE})
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": MUSCLE_INVALID}
+
+
+# SDD: 013 REQ-002 AC-002.4
+def test_put_with_a_huge_integer_weight_is_400_and_keeps_metric_and_profile(
+    client, registered_user
+):
+    """Corregir con 10^400: 400, la medición sigue en 80 kg y el peso del perfil no cambia."""
+    headers = registered_user["headers"]
+    save_profile(client, headers, PROFILE_KG)
+    created = post(client, headers, {"weight": 80, "recorded_at": day(0)})
+    assert created.status_code == 201
+    metric_id = created.get_json()["id"]
+    profile_before = read_profile(client, headers)
+
+    response = put(client, headers, metric_id, {"weight": HUGE})
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": WEIGHT_INVALID}
+    items = listing(client, headers)
+    assert len(items) == 1
+    assert items[0]["weight"] == 80
+    assert read_profile(client, headers) == profile_before
+
+
+# SDD: 013 REQ-002 AC-002.5
+def test_post_with_a_5000_digit_weight_is_400_and_never_500(client, registered_user):
+    """Un entero de 5000 dígitos no se puede parsear: 400 de datos no válidos."""
+    digits = "1" + "0" * 4999
+    raw = json.dumps({"weight": 0}).replace('"weight": 0', '"weight": ' + digits)
+    assert digits in raw
+
+    response = client.post(
+        URL,
+        data=raw,
+        content_type="application/json",
+        headers=registered_user["headers"],
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": BODY_INVALID}

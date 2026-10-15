@@ -781,3 +781,44 @@ def test_user_id_in_the_body_is_ignored():
 
     assert result.metric.user_id == USER
     assert env.metrics.list_by_user(OTHER) == []
+
+
+# --------------------------------------------------------------------------
+# Enteros enormes (spec 013, REQ-002)
+# --------------------------------------------------------------------------
+
+HUGE = 10**400
+
+
+# SDD: 013 REQ-002 AC-002.1
+def test_save_rejects_a_huge_integer_weight_with_the_range_message():
+    """Un peso de 10^400 da el mensaje de rango y no crea ninguna medición."""
+    assert_save_rejected({"weight": HUGE}, WEIGHT_INVALID)
+
+
+# SDD: 013 REQ-002 AC-002.2
+def test_save_rejects_a_huge_integer_body_fat_with_the_range_message():
+    """Una grasa de 10^400 da el mensaje de rango y no crea ninguna medición."""
+    assert_save_rejected({"body_fat_percentage": HUGE}, FAT_INVALID)
+
+
+# SDD: 013 REQ-002 AC-002.3
+def test_save_rejects_a_huge_negative_integer_muscle_with_the_range_message():
+    """Una masa muscular de -10^400 da el mensaje de rango y no crea nada."""
+    assert_save_rejected({"muscle_mass_percentage": -HUGE}, MUSCLE_INVALID)
+
+
+# SDD: 013 REQ-002 AC-002.4
+def test_update_rejects_a_huge_integer_weight_and_keeps_metric_and_profile():
+    """Corregir con 10^400: 400, la medición sigue en 80 kg, el perfil intacto y sin commit."""
+    existing = make_metric(weight=80)
+    profile = make_profile(weight=80)
+    env = make_env([existing], {USER: profile})
+
+    with pytest.raises(ValidationError) as excinfo:
+        env.service.update_metric(USER, existing.id, {"weight": HUGE})
+
+    assert excinfo.value.message == WEIGHT_INVALID
+    assert existing.weight == 80
+    assert profile.weight == 80
+    assert env.uow.committed is False

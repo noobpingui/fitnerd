@@ -1,7 +1,7 @@
 // Tests UNITARIOS puros de los indicadores de Métricas (spec 009): sin React
 // ni red. Las funciones reciben "hoy" como argumento, así que no se falsea el
 // reloj.
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   composition,
   isUnrealisticRate,
@@ -16,8 +16,10 @@ import {
   streak,
   trendChartData,
 } from "./insights"
+import { periodStart } from "@/features/body-metrics/dateUtils"
 import type { BodyMetric } from "@/features/body-metrics/types"
 import type { Goal } from "@/features/onboarding/types"
+import { todayIsoDate } from "@/lib/dates"
 
 function m(
   recorded_at: string,
@@ -690,5 +692,29 @@ describe("rateWindow y suspiciousPoint", () => {
   // SDD: 011 REQ-009 AC-009.1
   it("con una ventana vacía no hay medición sospechosa", () => {
     expect(suspiciousPoint([])).toBeNull()
+  })
+})
+
+describe("trendChartData - límite inferior del periodo 1M", () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  // SDD: REQ-005 AC-005.1
+  // SDD: 013 NFR-002 AC-N002.5
+  it("incluye una medición de exactamente un mes atrás incluso por la tarde y no la del día anterior", () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 9, 12, 15)) // 12 de octubre, 15:00
+
+    const data = trendChartData(
+      [m("2026-09-11", 80), m("2026-09-12", 79)],
+      "weight",
+      periodStart(todayIsoDate(), 1),
+      (kg) => kg
+    )
+    const dates = data.map((point) => point.date)
+
+    expect(dates).toContain("2026-09-12")
+    expect(dates).not.toContain("2026-09-11")
   })
 })

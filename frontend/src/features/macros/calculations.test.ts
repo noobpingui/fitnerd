@@ -95,7 +95,7 @@ describe("calculateMacros - conversión de unidades y edad (spec 007)", () => {
     const birthday = makeAnswers({
       ...profileFor(H30),
       dateOfBirth: "1996-10-12",
-    } as Record<string, string>)
+    })
 
     const summary = calculateMacros(birthday, new Date(2026, 9, 11))
 
@@ -108,7 +108,7 @@ describe("calculateMacros - conversión de unidades y edad (spec 007)", () => {
     const birthday = makeAnswers({
       ...profileFor(H30),
       dateOfBirth: "1996-10-12",
-    } as Record<string, string>)
+    })
 
     const summary = calculateMacros(birthday, new Date(2026, 9, 12))
 
@@ -237,7 +237,7 @@ describe("calculateMacros - reparto estándar y tope de proteína (spec 007)", (
       ...profileFor(heavy),
       weightUnit: "lb",
       weight: "264.6",
-    } as Record<string, string>)
+    })
 
     const summary = calculateMacros(pounds, TODAY)
 

@@ -627,3 +627,110 @@ describe("MetricsHistory - medición sospechosa", () => {
   })
 })
 
+
+// --- Spec 013: el aviso de error de borrado desaparece cuando deja de aplicar ---
+
+const DELETE_FAILED = "No se pudo borrar la medición. Inténtalo de nuevo."
+
+// Sin arnés: la lista que recibe el Historial la controla el test, para poder
+// mantener la misma referencia o cambiarla con `rerender`.
+function renderStatic(metrics: BodyMetric[]) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  })
+  const toDisplayWeight = (kg: number) => kg
+  const ui = (list: BodyMetric[]) => (
+    <QueryClientProvider client={queryClient}>
+      <MetricsHistory
+        metrics={list}
+        weightUnit="kg"
+        toDisplayWeight={toDisplayWeight}
+      />
+    </QueryClientProvider>
+  )
+  const view = render(ui(metrics))
+  return { rerenderWith: (list: BodyMetric[]) => view.rerender(ui(list)) }
+}
+
+// Provoca un borrado fallido de la medición `iso` y espera el aviso.
+async function failDelete(user: User, iso: string) {
+  deleteMock.mockRejectedValue(new Error("fallo"))
+  await user.click(await screen.findByRole("button", { name: deleteName(iso) }))
+  const dialog = await screen.findByRole("dialog")
+  await user.click(within(dialog).getByRole("button", { name: "Borrar" }))
+  expect(await screen.findByText(DELETE_FAILED)).toBeInTheDocument()
+}
+
+describe("MetricsHistory - aviso de borrado fallido (spec 013)", () => {
+  // SDD: 013 REQ-005 AC-005.1
+  it("al pulsar Corregir en otra fila el aviso deja de verse", async () => {
+    const user = userEvent.setup()
+    renderStatic([OLDER, NEWER])
+    await failDelete(user, "2026-10-11")
+
+    await user.click(screen.getByRole("button", { name: editName("2026-10-05") }))
+
+    expect(screen.queryByText(DELETE_FAILED)).not.toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Guardar" })).toBeInTheDocument()
+  })
+
+  // SDD: 013 REQ-005 AC-005.2
+  it("si la lista gana una medición nueva el aviso deja de verse", async () => {
+    const user = userEvent.setup()
+    const { rerenderWith } = renderStatic([OLDER, NEWER])
+    await failDelete(user, "2026-10-11")
+
+    rerenderWith([OLDER, NEWER, metric("2026-10-12", 77)])
+
+    expect(
+      await screen.findByRole("button", { name: editName("2026-10-12") })
+    ).toBeInTheDocument()
+    expect(screen.queryByText(DELETE_FAILED)).not.toBeInTheDocument()
+  })
+
+  // SDD: 013 REQ-005 AC-005.2
+  it("si la medición que no se pudo borrar ya no está en la lista el aviso deja de verse", async () => {
+    const user = userEvent.setup()
+    const { rerenderWith } = renderStatic([OLDER, NEWER])
+    await failDelete(user, "2026-10-11")
+
+    rerenderWith([OLDER])
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: editName("2026-10-11") })
+      ).not.toBeInTheDocument()
+    )
+    expect(screen.queryByText(DELETE_FAILED)).not.toBeInTheDocument()
+  })
+
+  // SDD: 013 REQ-005 AC-005.3
+  it("al pulsar Borrar en otra fila el aviso deja de verse y se abre el diálogo", async () => {
+    const user = userEvent.setup()
+    renderStatic([OLDER, NEWER])
+    await failDelete(user, "2026-10-11")
+
+    await user.click(screen.getByRole("button", { name: deleteName("2026-10-05") }))
+
+    const dialog = await screen.findByRole("dialog")
+    expect(
+      within(dialog).getByText(
+        `¿Borrar la medición del ${formatDate("2026-10-05")}?`
+      )
+    ).toBeInTheDocument()
+    expect(screen.queryByText(DELETE_FAILED)).not.toBeInTheDocument()
+  })
+
+  // SDD: 013 REQ-005 AC-005.4
+  it("al pulsar Mostrar más con la misma lista el aviso sigue visible", async () => {
+    const user = userEvent.setup()
+    renderStatic(manyMetrics(15))
+    await failDelete(user, "2026-10-12")
+    expect(editButtons()).toHaveLength(10)
+
+    await user.click(showMore()!)
+
+    expect(editButtons()).toHaveLength(15)
+    expect(screen.getByText(DELETE_FAILED)).toBeInTheDocument()
+  })
+})

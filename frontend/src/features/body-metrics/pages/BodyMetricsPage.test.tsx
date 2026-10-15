@@ -46,7 +46,11 @@ vi.mock("@/features/body-metrics/components/TrendChart", () => ({
   TrendChart: () => <div>Gráfico</div>,
 }))
 vi.mock("@/features/body-metrics/components/ProgressAnalysis", () => ({
-  ProgressAnalysis: () => <div>Análisis</div>,
+  // Solo recibe una petición cuando el perfil y las mediciones han cargado:
+  // el texto distinto permite esperar al perfil sin vaciar microtareas.
+  ProgressAnalysis: ({ request }: { request: unknown }) => (
+    <div>{request ? "Análisis con contexto" : "Análisis"}</div>
+  ),
 }))
 
 const getProfileMock = vi.mocked(getProfile)
@@ -374,15 +378,25 @@ function profileWith(profile: Parameters<typeof makeProfileResponse>[1] = {}) {
   )
 }
 
-// Renderiza y espera a que la página y el perfil hayan llegado.
+// Renderiza y espera a que la página y el perfil hayan llegado: el stub de
+// ProgressAnalysis solo muestra "Análisis con contexto" cuando hay perfil.
 async function renderLoaded(metrics: BodyMetric[]) {
   listMock.mockResolvedValue(metrics)
   const view = renderPage()
   await screen.findByRole("heading", { name: "Constancia" })
+  await screen.findByText("Análisis con contexto")
+  return view
+}
+
+// Como renderLoaded, pero con el perfil rechazado (no hay nada visible que
+// dependa de él): se espera la promesa rechazada real dentro de act.
+async function renderWithoutProfile(metrics: BodyMetric[]) {
+  listMock.mockResolvedValue(metrics)
+  const view = renderPage()
+  await screen.findByRole("heading", { name: "Constancia" })
   await waitFor(() => expect(getProfileMock).toHaveBeenCalled())
-  // El mock resuelve en microtareas: se vacían dentro de act, sin temporizador real.
   await act(async () => {
-    for (let i = 0; i < 5; i++) await Promise.resolve()
+    await getProfileMock.mock.results[0].value.catch(() => {})
   })
   return view
 }
@@ -893,7 +907,7 @@ describe("BodyMetricsPage - indicadores (spec 009): perfil no disponible", () =>
 
   // SDD: REQ-010 AC-010.1
   it("muestra los pesos en kg y — en IMC y FFMI", async () => {
-    await renderLoaded([metric("2026-10-11", 80, 20)])
+    await renderWithoutProfile([metric("2026-10-11", 80, 20)])
 
     expect(kpi("Peso").getByText(exact("80 kg"))).toBeInTheDocument()
     expect(stat("Masa grasa").getByText(exact("16 kg"))).toBeInTheDocument()
@@ -906,7 +920,7 @@ describe("BodyMetricsPage - indicadores (spec 009): perfil no disponible", () =>
 
   // SDD: REQ-010 AC-010.2
   it("el ritmo se muestra en kg sin estado de meta", async () => {
-    await renderLoaded(METRICS)
+    await renderWithoutProfile(METRICS)
 
     expect(kpi("Ritmo").getByText(exact("-0,5 kg/sem"))).toBeInTheDocument()
     expectNoStatus()
@@ -914,7 +928,7 @@ describe("BodyMetricsPage - indicadores (spec 009): perfil no disponible", () =>
 
   // SDD: REQ-004 AC-004.11
   it("sin perfil el ritmo no lleva estado de meta ni Faltan registros", async () => {
-    await renderLoaded(METRICS)
+    await renderWithoutProfile(METRICS)
 
     expectNoStatus()
     expect(screen.queryByText("Faltan registros para calcularlo")).not.toBeInTheDocument()

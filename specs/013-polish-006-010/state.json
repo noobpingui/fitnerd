@@ -11,13 +11,13 @@
   "branch": "fix/013-polish-006-010",
   "base_branch": "main",
   "created_at": "2026-10-15T09:28:18.161Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-15T09:41:10.811Z",
     "plan": "2026-10-15T09:57:33.125Z",
     "tasks": "2026-10-15T20:02:24.074Z",
-    "tests": null,
+    "tests": "2026-10-15T20:52:09.243Z",
     "implement": null,
     "verify": null,
     "review": null,
@@ -26,17 +26,18 @@
   },
   "commits": {
     "spec": "778fd3e",
-    "plan": "f3f3ebc"
+    "plan": "f3f3ebc",
+    "tasks": "9cc1bcb"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 2,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-15T20:48:43.083Z"
   },
   "verify": {
     "result": null,
@@ -125,11 +126,53 @@
       "stage": "tasks",
       "event": "approved",
       "note": "Tasks y commit aprobados por el usuario (\"1,2,3 sí\"); traceability_exception ampliada con AC-N001.1–4 y AC-N003.3"
+    },
+    {
+      "at": "2026-10-15T20:02:28.240Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Delegado al implementer en modo scaffold (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T20:02:43.733Z",
+      "stage": "tests",
+      "event": "scaffold_done",
+      "note": "implementer scaffold: T-000 (stub isTestConsoleNoise); delegado al test-author (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T20:12:58.936Z",
+      "stage": "tests",
+      "event": "tests_written",
+      "note": "test-author: T-001–T-028 (~55 tests, marcadores SDD: 013); delegado al verifier en modo red"
+    },
+    {
+      "at": "2026-10-15T20:16:22.771Z",
+      "stage": "tests",
+      "event": "red_check_fail",
+      "note": "verifier red: 24 backend + 15 frontend en rojo legítimo; FAIL por 3 tests en verde fuera de la excepción (dates.test.ts x2 AC-N002.1, marcadores 009 AC-N002.5). Pendiente decisión del usuario"
+    },
+    {
+      "at": "2026-10-15T20:46:32.121Z",
+      "stage": "tests",
+      "event": "user_decision",
+      "note": "Usuario aprueba ampliar red_check_exception (opción A, \"1 sí\"); red check repetido por el verifier (iteración 2)"
+    },
+    {
+      "at": "2026-10-15T20:49:26.987Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS (iteración 2): backend 24 rojo / 10 verde en excepción; frontend 15 rojo / 9 verde en excepción"
+    },
+    {
+      "at": "2026-10-15T20:52:09.243Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "Tests y commit aprobados por el usuario (\"1,2 sí\")"
     }
   ],
   "red_check_exception": {
     "at": "2026-10-15T09:57:33.125Z",
-    "note": "Tests en verde permitidos en el red check (plan §5.6, aprobado por el usuario en el gate del plan)",
+    "note": "Tests en verde permitidos en el red check (plan §5.6, aprobado por el usuario en el gate del plan). Ampliada en el red check 1 con los tests movidos de AC-N002.1 y el test de marcadores 009 de AC-N002.5 (aprobado por el usuario, \"1 sí\")",
     "acs": [
       "AC-001.5",
       "AC-002.5",
@@ -141,7 +184,9 @@
       "AC-N002.5 (solo el test sustituto del límite inferior)",
       "AC-N003.1",
       "AC-N004.1",
-      "AC-N005.3"
+      "AC-N005.3",
+      "AC-N002.1 (solo los 2 tests movidos a frontend/src/lib/dates.test.ts)",
+      "AC-N002.5 (test de que siguen los marcadores REQ-005 AC-005.1 de la spec 009, en app/sourceCleanup013.test.ts)"
     ]
   },
   "traceability_exception": {
