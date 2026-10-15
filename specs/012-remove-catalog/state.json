@@ -11,7 +11,7 @@
   "branch": "feat/012-remove-catalog",
   "base_branch": "main",
   "created_at": "2026-10-14T20:51:28.634Z",
-  "stage": "review",
+  "stage": "docs",
   "status": "awaiting_approval",
   "approvals": {
     "spec": "2026-10-14T21:43:44.312Z",
@@ -21,7 +21,7 @@
     "implement": "2026-10-15T01:27:42.208Z",
     "verify": "2026-10-15T01:34:00.854Z",
     "review": "2026-10-15T01:45:15.465Z",
-    "docs": null,
+    "docs": "2026-10-15T01:46:16.084Z",
     "close": null
   },
   "commits": {
@@ -30,7 +30,8 @@
     "plan": "c00dc8a",
     "tasks": "8db2fd5",
     "tests": "b83d52c",
-    "implement": "6cfdf2c"
+    "implement": "6cfdf2c",
+    "review": "6c26a88"
   },
   "iterations": {
     "tests": 2,
@@ -321,6 +322,24 @@
       "stage": "review",
       "event": "approved",
       "note": "Etapa review y commit aprobados por el usuario (\"1,2 sí\")"
+    },
+    {
+      "at": "2026-10-15T01:45:15.623Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegado al doc-keeper (iteración 1)"
+    },
+    {
+      "at": "2026-10-15T01:45:57.636Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "doc-keeper: README.md y CLAUDE.md (filas de catálogo y favoritos quitadas, paso previo al despliegue de la 012); codificaciones intactas"
+    },
+    {
+      "at": "2026-10-15T01:46:16.084Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "Etapa docs y commit aprobados por el usuario (\"1,2 sí\")"
     }
   ],
   "red_check_exception": {
