@@ -197,8 +197,8 @@ def test_empty_error_body_still_raises_email_send_error_and_logs_code():
 # ---------------------------------------------------------------- Spec 014
 
 def logged_snippet(status, body):
-    """Envia con un error de Resend y devuelve el fragmento del cuerpo ya
-    registrado (lo que sigue al primer ': ' de la unica entrada del log)."""
+    """Envía con un error de Resend y devuelve el fragmento del cuerpo ya
+    registrado (lo que sigue al primer ': ' de la única entrada del log)."""
     transport, _, logger = make_transport(status=status, body=body)
 
     with pytest.raises(EmailSendError):
@@ -210,7 +210,7 @@ def logged_snippet(status, body):
 
 # SDD: 014 REQ-012 AC-012.1
 def test_logged_error_body_escapes_newlines():
-    """Un salto de linea del cuerpo se registra como '\\n' (dos caracteres), sin salto real."""
+    """Un salto de línea del cuerpo se registra como '\\n' (dos caracteres), sin salto real."""
     snippet = logged_snippet(403, b"x\nFAKE LOG LINE")
 
     assert "\n" not in snippet
@@ -260,9 +260,9 @@ def test_logged_error_body_is_truncated_before_escaping():
 
 # SDD: 014 REQ-012 AC-012.6
 def test_logged_error_body_with_api_key_and_newline_leaks_no_key():
-    """Con la API key y un salto de linea, el log no contiene la key."""
+    """Con la API key y un salto de línea, el log no contiene la clave."""
     transport, _, logger = make_transport(
-        status=401, body=f"{API_KEY}\nsegunda linea".encode("utf-8")
+        status=401, body=f"{API_KEY}\nsegunda línea".encode("utf-8")
     )
 
     with pytest.raises(EmailSendError) as exc_info:

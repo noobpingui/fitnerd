@@ -10,7 +10,7 @@
   "branch": "feat/014-auth-hardening",
   "base_branch": "main",
   "created_at": "2026-10-16T01:36:04.914Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,7 +25,10 @@
       "at": "2026-10-16T03:01:51.678Z",
       "note": "auto (gate_mode=flow): 13 tareas nuevas para REQ-013 y F1-F4"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-16T03:07:36.087Z",
+      "note": "auto (gate_mode=flow): red check PASS, 6 rojos legítimos (F1 y REQ-013)"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -40,7 +43,8 @@
     "implement": "f5f152c",
     "tests-fix": "e2a3976",
     "spec-fix": "34d1ae8",
-    "plan-fix": "c925722"
+    "plan-fix": "c925722",
+    "tasks-fix": "ead2cfb"
   },
   "iterations": {
     "tests": 2,
@@ -49,8 +53,8 @@
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-16T03:07:21.046Z"
   },
   "verify": {
     "result": null,
@@ -61,18 +65,20 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-16T02:32:51.589Z",
-    "reason": "Corrección E501 de verify iteración 1 (solo docstrings)",
+    "at": "2026-10-16T03:07:35.977Z",
+    "reason": "Tests de REQ-013 y F1/F2/F4 tras red check PASS",
     "sha256": {
       "backend/tests/test_routes/test_auth_routes.py": "2766e9347dce0022f31f5ca10619826f316281f943cf4b8011a772080f2af2ee",
-      "backend/tests/test_routes/test_password_reset_routes.py": "11cc63fe232f305ef6c94dfe1a5776d94e2a68cef838dbad724b49fb0129989f",
+      "backend/tests/test_routes/test_password_reset_routes.py": "32606621c4778eb6dbd53a8a3889301eae9d0d6c4c9c48dd48706d7d1949f8da",
       "backend/tests/test_services/test_auth_service.py": "0711a43b9954d918426285ea76415bbb63e8e37d9e1fbd1ce2a1acbe83638abe",
       "backend/tests/test_services/test_credential_rules.py": "bcce519609ffdcdd63bceaae0f308c72fc567a6b3c35fcc02ebbfced92a0d371",
-      "backend/tests/test_services/test_email_sender.py": "7453c5e352059260cacfc86cb0960a0e6ac1bc4800f9a5317879982b4e205aa2",
+      "backend/tests/test_services/test_email_sender.py": "42c2a5623dea71023239c010c53401b2bf66f67d41d83caf9a1ae1a9324e16b0",
       "backend/tests/test_services/test_lowercase_emails_migration.py": "ae0c82a9a36ee246cfb538e863bc671148f3d0c5511b9506beae9b8b3048466a",
-      "backend/tests/test_services/test_password_reset_service.py": "a048c625fce8eaba7fd28c5a79ec3dfadb22a48a71479d35f8c11dacd21fef5c",
-      "frontend/src/features/auth/components/LoginForm.test.tsx": "cc3f7a9345a8524dcb1070cff7a94cf15b9f7d18e8a7446022b233cacf893b30",
-      "frontend/src/features/auth/components/RegisterForm.test.tsx": "6ac679e4878e782ed0d8baff4f0ef3cd9b199a6627a5c455df2bfc858d37bd8d"
+      "backend/tests/test_services/test_password_reset_service.py": "29dd92e2003049e2263bcb448fb3e935be98ce5258f45d351cf5a5fcd0789ce7",
+      "frontend/src/features/auth/components/ForgotPasswordForm.test.tsx": "dead2dd078976a492731ba9cecb67e5a5a3cc9799b03e08ff50ee2899e6d85e3",
+      "frontend/src/features/auth/components/LoginForm.test.tsx": "92c6cf2a8f93ec6c0e65f549a3a1db297c243fa6b04fe39394d61727fb2df75b",
+      "frontend/src/features/auth/components/RegisterForm.test.tsx": "150e01fb198fef50d0029c9e8d42b2b804de10bfd0d26a10eef91e04856111cc",
+      "frontend/src/features/auth/schemas.test.ts": "888482be888ba13dd0f8ac3af243bd2e3aefee16ee29551b6667da992ba31090"
     }
   },
   "bypass": false,
@@ -442,6 +448,54 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): 13 tareas nuevas para REQ-013 y F1-F4"
+    },
+    {
+      "at": "2026-10-16T03:01:51.862Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks-fix: ead2cfb"
+    },
+    {
+      "at": "2026-10-16T03:01:51.937Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: sin tareas scaffold nuevas, se salta; Paso 2/3: test-author (T-021 a T-029)"
+    },
+    {
+      "at": "2026-10-16T03:04:53.208Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier modo red (ciclo de review 2)"
+    },
+    {
+      "at": "2026-10-16T03:07:21.046Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red check iteración 2 de review: 6 rojos no exentos fallan de forma legítima (3 backend, 3 frontend schemas.test.ts); exentos en verde; sin skip nuevos"
+    },
+    {
+      "at": "2026-10-16T03:07:35.816Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Orquestador acepta el rojo de AC-010.3 por precondición: la petición corta hoy espera el bloqueo, que es justo el comportamiento ausente de F1"
+    },
+    {
+      "at": "2026-10-16T03:07:35.896Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS ciclo de review 2: 6 rojos legítimos, guardas exceptuadas"
+    },
+    {
+      "at": "2026-10-16T03:07:35.977Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "11 archivo(s) de test: Tests de REQ-013 y F1/F2/F4 tras red check PASS"
+    },
+    {
+      "at": "2026-10-16T03:07:36.087Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 6 rojos legítimos (F1 y REQ-013)"
     }
   ]
 }

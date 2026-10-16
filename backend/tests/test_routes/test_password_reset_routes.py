@@ -543,7 +543,7 @@ API_KEY = "re_test_123"
 
 
 def wait_until(condition, timeout=10.0):
-    """Espera activa con tiempo maximo; devuelve si la condicion se cumplio."""
+    """Espera activa con tiempo máximo; devuelve si la condición se cumplió."""
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         if condition():
@@ -553,7 +553,7 @@ def wait_until(condition, timeout=10.0):
 
 
 def count_lock_waiters(monitor):
-    """Backends de esta base de datos que esperan un bloqueo de fila."""
+    """«Backends» de esta base de datos que esperan un bloqueo de fila."""
     return monitor.execute(
         text(
             "SELECT count(*) FROM pg_stat_activity "
@@ -564,8 +564,8 @@ def count_lock_waiters(monitor):
 
 
 def concurrent_resets(app, token, passwords, ready):
-    """Bloquea la fila del token desde una conexion propia, lanza un
-    reset-password por contrasena en hilos distintos (cada uno con su
+    """Bloquea la fila del token desde una conexión propia, lanza un
+    reset-password por contraseña en hilos distintos (cada uno con su
     `test_client`), espera con `ready(threads_done, waiters)` a que las
     peticiones queden en espera, libera el bloqueo y devuelve las respuestas
     en el mismo orden que `passwords` como (status, json)."""
@@ -596,10 +596,14 @@ def concurrent_resets(app, token, passwords, ready):
             ]
             for thread in threads:
                 thread.start()
-            wait_until(
+            reached = wait_until(
                 lambda: ready(
                     [not t.is_alive() for t in threads], count_lock_waiters(monitor)
                 )
+            )
+            assert reached, (
+                "las peticiones no llegaron a esperar el bloqueo de la fila: "
+                "el test no habría probado la concurrencia"
             )
         finally:
             lock_tx.rollback()
@@ -608,13 +612,13 @@ def concurrent_resets(app, token, passwords, ready):
                 thread.join(timeout=15)
             monitor.close()
 
-    assert all(not t.is_alive() for t in threads), "una peticion quedo colgada"
+    assert all(not t.is_alive() for t in threads), "una petición quedó colgada"
     return [results[i] for i in range(len(passwords))]
 
 
 # SDD: 014 REQ-003 AC-003.1
 def test_forgot_password_with_uppercase_email_sends_the_link_to_the_stored_address(client):
-    """'Ana@Example.com' da 200 generico y el correo sale a 'ana@example.com'."""
+    """'Ana@Example.com' da 200 genérico y el correo sale a 'ana@example.com'."""
     register(client, "ana@example.com")
 
     response = forgot(client, "Ana@Example.com")
@@ -641,7 +645,7 @@ def test_email_cooldown_ignores_letter_case(client, app):
 
 # SDD: 014 REQ-003 AC-003.3
 def test_link_requested_with_uppercase_email_resets_the_account_password(client):
-    """El enlace recibido tras pedirlo con mayusculas cambia la contrasena y el login funciona."""
+    """El enlace recibido tras pedirlo con mayúsculas cambia la contraseña y el login funciona."""
     register(client, "ana@example.com")
     token = request_token(client, "Ana@Example.com")
 
@@ -653,7 +657,7 @@ def test_link_requested_with_uppercase_email_resets_the_account_password(client)
 
 # SDD: 014 REQ-010 AC-010.4 NFR-001 AC-N001.1
 def test_used_link_is_rejected_and_the_password_does_not_change(client):
-    """Un enlace usado con exito da 400 al reusarlo y la contrasena no cambia."""
+    """Un enlace usado con éxito da 400 al reusarlo y la contraseña no cambia."""
     register(client, "ana@example.com")
     token = request_token(client)
     assert reset(client, token, "NuevaClave123").status_code == 200
@@ -668,12 +672,12 @@ def test_used_link_is_rejected_and_the_password_does_not_change(client):
 
 # SDD: 014 REQ-012 AC-012.6
 def test_resend_error_with_api_key_and_newline_is_sanitized_end_to_end(client):
-    """Resend 401 con key y salto de linea: 503 fijo y el log sin la key ni saltos."""
+    """Resend 401 con la clave y un salto de línea: 503 fijo y el log sin la clave ni saltos."""
     register(client, "ana@example.com")
     logger = FakeLogger()
     email_sender.transport = ResendTransport(
         API_KEY,
-        opener=FakeOpener(status=401, body=f"{API_KEY}\nsegunda linea".encode("utf-8")),
+        opener=FakeOpener(status=401, body=f"{API_KEY}\nsegunda línea".encode("utf-8")),
         logger=logger,
     )
 
@@ -688,8 +692,8 @@ def test_resend_error_with_api_key_and_newline_is_sanitized_end_to_end(client):
 
 # SDD: 014 REQ-010 AC-010.1 AC-010.2
 def test_two_simultaneous_resets_with_the_same_link_only_one_wins(client, app):
-    """Dos reset-password simultaneos con el mismo token: un 200 y un 400 de enlace
-    no valido; solo la contrasena de la peticion ganadora permite entrar."""
+    """Dos reset-password simultáneos con el mismo token: un 200 y un 400 de enlace
+    no válido; solo la contraseña de la petición ganadora permite entrar."""
     register(client, "ana@example.com")
     token = request_token(client)
     passwords = ["ClaveUno123", "ClaveDos123"]
@@ -713,7 +717,7 @@ def test_two_simultaneous_resets_with_the_same_link_only_one_wins(client, app):
 
 # SDD: 014 REQ-010 AC-010.3
 def test_invalid_password_in_a_simultaneous_reset_does_not_consume_the_link(client, app):
-    """Con dos peticiones simultaneas, la de 'corta' da 400 de minimo y la valida da 200."""
+    """Con dos peticiones simultáneas, la de 'corta' da 400 de mínimo y la válida da 200."""
     register(client, "ana@example.com")
     token = request_token(client)
 
@@ -721,7 +725,7 @@ def test_invalid_password_in_a_simultaneous_reset_does_not_consume_the_link(clie
         app,
         token,
         ["corta", "ClaveDos123"],
-        ready=lambda done, waiters: waiters >= 2 or (done[0] and waiters >= 1),
+        ready=lambda done, waiters: done[0] and waiters >= 1,
     )
 
     (short_status, short_body), (valid_status, valid_body) = results

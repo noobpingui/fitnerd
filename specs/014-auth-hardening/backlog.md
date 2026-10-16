@@ -48,3 +48,11 @@
 
 ## tasks (iteración 2) · task-breaker
 - [ ] Las tildes pendientes en textos anteriores a la 014, por ejemplo el docstring de `FakePasswordResetRepository`, no se tocan. El plan ya los manda al backlog.
+
+## tests (iteración 2) · test-author
+- [ ] Textos sin tilde anteriores a la 014 en los tests de autenticación y reset, y en los tests de `LoginForm` y `ForgotPasswordForm` ("exito", "peticion", "contrasena"...).
+- [ ] Si el implementer cambia `type="email"` o añade `noValidate`, revisar `fireEvent.submit` en `RegisterForm.test.tsx`.
+
+## tests red (iteración 2) · verifier
+- [ ] Observación para el orquestador: test_two_simultaneous_resets_with_the_same_link_only_one_wins pasa con la implementación actual. Su helper concurrent_resets gana una aserción de precondición (T-022), pero el test solo cambia tildes, así que queda dentro de la excepción F2. El comportamiento de AC-010.1 ya se cumple.
+- [ ] Pendiente de decisión: si el orquestador considera que el rojo de AC-010.3 por precondición no es legítimo, habría que reformular el test de ruta.

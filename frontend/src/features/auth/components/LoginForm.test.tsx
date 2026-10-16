@@ -206,7 +206,7 @@ describe("LoginForm - recuperacion de contraseña", () => {
   })
 })
 
-// Aviso de contrasena actualizada una sola vez (spec 014, REQ-011). Se usa un
+// Aviso de contraseña actualizada una sola vez (spec 014, REQ-011). Se usa un
 // router en memoria de datos para poder inspeccionar y recorrer el historial.
 describe("LoginForm - aviso de contraseña actualizada una sola vez", () => {
   const NOTICE = "Contraseña actualizada. Ya puedes iniciar sesión."
@@ -309,5 +309,41 @@ describe("LoginForm - aviso de contraseña actualizada una sola vez", () => {
     renderWithRouter()
 
     expect(screen.queryByText(NOTICE)).not.toBeInTheDocument()
+  })
+})
+
+describe("LoginForm - correo con espacios (spec 014)", () => {
+  beforeEach(() => {
+    vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "")
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  // SDD: 014 REQ-013 AC-013.2
+  it("envía el correo recortado y no muestra Email inválido", async () => {
+    const fakeFetch = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ error: "Wrong Credentials" }), {
+          status: 401,
+        })
+      )
+    vi.stubGlobal("fetch", fakeFetch)
+    const user = userEvent.setup()
+    renderLoginForm()
+
+    await user.type(screen.getByLabelText("Email"), " ana@example.com  ")
+    await user.type(screen.getByLabelText("Password"), "Clave123")
+    await user.click(screen.getByRole("button", { name: "Entrar" }))
+
+    await waitFor(() => expect(fakeFetch).toHaveBeenCalledTimes(1))
+    const [url, init] = fakeFetch.mock.calls[0]
+    expect(String(url)).toContain("/api/auth/login")
+    expect(JSON.parse(init.body)).toEqual(
+      expect.objectContaining({ email: "ana@example.com" })
+    )
+    expect(screen.queryByText("Email inválido")).not.toBeInTheDocument()
   })
 })
