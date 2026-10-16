@@ -10,8 +10,14 @@ from exceptions.custom_exceptions import ConflictError, AuthenticationError, Res
 
 
 
+def verify_google_id_token(_id_token_str: str, _client_id: str | None) -> dict:
+    raise NotImplementedError("not implemented")
+
+
 class AuthService():
-    def __init__(self, user_repository: UserRepository, unit_of_work, jwt_manager: JWTManager, google_client_id: str = None):
+    def __init__(self, user_repository: UserRepository, unit_of_work, jwt_manager: JWTManager, google_client_id: str = None,
+                 google_token_verifier=verify_google_id_token):
+        self.google_token_verifier = google_token_verifier
         self.user_repository = user_repository
         self.jwt_manager = jwt_manager
         self.unit_of_work = unit_of_work

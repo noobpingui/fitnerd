@@ -35,6 +35,10 @@ class InMemoryTransport:
         self.fail_with = None
 
 
+def escape_log_text(_text: str) -> str:
+    raise NotImplementedError("not implemented")
+
+
 class ResendTransport:
     """Envía el correo con la API HTTP de Resend (ADR-0014)."""
 

@@ -16,3 +16,8 @@
 - [ ] Los correos guardados con espacios no se recortan en la migración, porque la spec solo pide minúsculas.
 - [ ] Las contraseñas antiguas de más de 72 bytes dejan de entrar en el login (REQ-009) y se recuperan con el restablecimiento.
 - [ ] Los mensajes del registro y el login siguen en inglés (`Wrong Credentials`, `Email already registered`), fuera del alcance de la spec.
+
+## tests · test-author
+- [ ] Opcional: unitarios directos de `escape_log_text` más allá del que ya hay.
+- [ ] Pendiente de la implementación (hoy sin esqueleto): el test de migración depende de que T-036 cree `a7d3f9c1e5b2_lowercase_user_emails.py` con `down_revision = 'f2c4e6a8b0d1'`.
+- [ ] El test de concurrencia necesita Postgres y un pool con al menos 4 conexiones (el valor por defecto de SQLAlchemy basta).

@@ -192,3 +192,91 @@ def test_empty_error_body_still_raises_email_send_error_and_logs_code():
 
     assert type(exc_info.value) is EmailSendError
     assert any("500" in r for r in logger.records)
+
+
+# ---------------------------------------------------------------- Spec 014
+
+def logged_snippet(status, body):
+    """Envia con un error de Resend y devuelve el fragmento del cuerpo ya
+    registrado (lo que sigue al primer ': ' de la unica entrada del log)."""
+    transport, _, logger = make_transport(status=status, body=body)
+
+    with pytest.raises(EmailSendError):
+        transport.send(make_message())
+
+    assert len(logger.records) == 1
+    return logger.records[0].split(": ", 1)[1]
+
+
+# SDD: 014 REQ-012 AC-012.1
+def test_logged_error_body_escapes_newlines():
+    """Un salto de linea del cuerpo se registra como '\\n' (dos caracteres), sin salto real."""
+    snippet = logged_snippet(403, b"x\nFAKE LOG LINE")
+
+    assert "\n" not in snippet
+    assert snippet == "x\\nFAKE LOG LINE"
+
+
+# SDD: 014 REQ-012 AC-012.2
+def test_logged_error_body_escapes_carriage_return_tab_and_esc():
+    """CR, tabulador y ESC se registran como '\\r', '\\t' y '\\x1b' escritos como texto."""
+    snippet = logged_snippet(500, b"a\rb\tc\x1bd")
+
+    for real in ("\r", "\t", "\x1b"):
+        assert real not in snippet
+    assert snippet == "a\\rb\\tc\\x1bd"
+
+
+# SDD: 014 REQ-012 AC-012.3
+def test_logged_error_body_escapes_unicode_line_separators_and_nel():
+    """U+2028, U+2029 y U+0085 se registran escapados y no como caracteres reales."""
+    snippet = logged_snippet(400, "a b c\u0085d".encode("utf-8"))
+
+    for real in (" ", " ", "\u0085"):
+        assert real not in snippet
+    assert snippet == "a\\u2028b\\u2029c\\x85d"
+
+
+# SDD: 014 REQ-012 AC-012.4
+def test_logged_error_body_keeps_accented_letters_unchanged():
+    """Las letras con tilde y la 'ñ' no se escapan."""
+    body = '{"message": "Dominio no verificado: ñandú"}'.encode("utf-8")
+
+    snippet = logged_snippet(422, body)
+
+    assert snippet == '{"message": "Dominio no verificado: ñandú"}'
+
+
+# SDD: 014 REQ-012 AC-012.5
+def test_logged_error_body_is_truncated_before_escaping():
+    """El recorte a 200 caracteres se aplica al texto original: 200 '\\n' y ninguna 'b'."""
+    body = ("\n" * 200 + "b" * 300).encode("utf-8")
+
+    snippet = logged_snippet(403, body)
+
+    assert snippet == "\\n" * 200
+    assert "b" not in snippet
+
+
+# SDD: 014 REQ-012 AC-012.6
+def test_logged_error_body_with_api_key_and_newline_leaks_no_key():
+    """Con la API key seguida de un salto de linea, el log no contiene la key y la excepcion no cambia."""
+    transport, _, logger = make_transport(
+        status=401, body=f"{API_KEY}\nsegunda linea".encode("utf-8")
+    )
+
+    with pytest.raises(EmailSendError) as exc_info:
+        transport.send(make_message())
+
+    assert str(exc_info.value) == "Resend respondió con HTTP 401"
+    assert logger.records
+    assert all(API_KEY not in r for r in logger.records)
+    assert all("\n" not in r for r in logger.records)
+
+
+# SDD: 014 REQ-012 AC-012.1
+def test_escape_log_text_escapes_only_control_and_line_separator_characters():
+    """escape_log_text deja intactos la barra invertida, las tildes y la 'ñ'."""
+    from utils.email_sender import escape_log_text
+
+    assert escape_log_text("a\\b ñandú\n\x7f") == "a\\b ñandú\\n\\x7f"

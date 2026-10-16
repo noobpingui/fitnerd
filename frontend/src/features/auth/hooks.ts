@@ -76,6 +76,10 @@ export function useResetPassword() {
   })
 }
 
+export function usePasswordResetNotice(): boolean {
+  throw new Error("not implemented");
+}
+
 export function useRegister() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()

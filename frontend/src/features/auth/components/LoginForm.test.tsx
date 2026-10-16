@@ -7,9 +7,15 @@
 // validacion de Zod falla, react-hook-form ni siquiera llega a llamar a la
 // mutation (useLogin) - por eso este test no necesita tocar la red para nada.
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { act, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { MemoryRouter, Route, Routes } from "react-router"
+import {
+  createMemoryRouter,
+  MemoryRouter,
+  Route,
+  RouterProvider,
+  Routes,
+} from "react-router"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { LoginForm } from "./LoginForm"
 
@@ -197,5 +203,111 @@ describe("LoginForm - recuperacion de contraseña", () => {
     expect(
       screen.queryByText("Contraseña actualizada. Ya puedes iniciar sesión.")
     ).not.toBeInTheDocument()
+  })
+})
+
+// Aviso de contrasena actualizada una sola vez (spec 014, REQ-011). Se usa un
+// router en memoria de datos para poder inspeccionar y recorrer el historial.
+describe("LoginForm - aviso de contraseña actualizada una sola vez", () => {
+  const NOTICE = "Contraseña actualizada. Ya puedes iniciar sesión."
+
+  beforeEach(() => {
+    vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "")
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  function renderWithRouter(state?: { passwordReset: boolean }) {
+    const router = createMemoryRouter(
+      [
+        { path: "/login", element: <LoginForm /> },
+        { path: "/register", element: <p>Pantalla de registro</p> },
+      ],
+      { initialEntries: [{ pathname: "/login", state }] }
+    )
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    )
+    return router
+  }
+
+  // SDD: 014 REQ-011 AC-011.1
+  it("muestra el aviso al llegar a /login tras restablecer la contraseña", () => {
+    renderWithRouter({ passwordReset: true })
+
+    expect(screen.getByText(NOTICE)).toBeInTheDocument()
+  })
+
+  // SDD: 014 REQ-011 AC-011.2
+  it("mantiene el aviso visible mientras se escribe en los campos", async () => {
+    const user = userEvent.setup()
+    renderWithRouter({ passwordReset: true })
+
+    await user.type(screen.getByLabelText("Email"), "persona@example.com")
+    await user.type(screen.getByLabelText("Password"), "unaContraseña123")
+
+    expect(screen.getByText(NOTICE)).toBeInTheDocument()
+  })
+
+  // SDD: 014 REQ-011 AC-011.2
+  it("mantiene el aviso visible cuando un intento de login falla con 401", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ error: "Wrong Credentials" }), {
+          status: 401,
+        })
+      )
+    )
+    const user = userEvent.setup()
+    renderWithRouter({ passwordReset: true })
+
+    await user.type(screen.getByLabelText("Email"), "persona@example.com")
+    await user.type(screen.getByLabelText("Password"), "contraseñaIncorrecta")
+    await user.click(screen.getByRole("button", { name: "Entrar" }))
+
+    expect(await screen.findByText("Wrong Credentials")).toBeInTheDocument()
+    expect(screen.getByText(NOTICE)).toBeInTheDocument()
+  })
+
+  // SDD: 014 REQ-011 AC-011.3
+  it("limpia el indicador de la entrada del historial sin ocultar el aviso de la visita", async () => {
+    const router = renderWithRouter({ passwordReset: true })
+
+    await waitFor(() =>
+      expect(router.state.location.state?.passwordReset).not.toBe(true)
+    )
+    expect(router.state.location.pathname).toBe("/login")
+    expect(screen.getByText(NOTICE)).toBeInTheDocument()
+  })
+
+  // SDD: 014 REQ-011 AC-011.4
+  it("no vuelve a mostrar el aviso al regresar a /login con atrás", async () => {
+    const router = renderWithRouter({ passwordReset: true })
+    await waitFor(() =>
+      expect(router.state.location.state?.passwordReset).not.toBe(true)
+    )
+
+    await act(async () => {
+      await router.navigate("/register")
+    })
+    expect(screen.getByText("Pantalla de registro")).toBeInTheDocument()
+    await act(async () => {
+      await router.navigate(-1)
+    })
+
+    expect(await screen.findByLabelText("Email")).toBeInTheDocument()
+    expect(screen.queryByText(NOTICE)).not.toBeInTheDocument()
+  })
+
+  // SDD: 014 REQ-011 AC-011.5
+  it("no muestra el aviso en una visita a /login sin venir de un restablecimiento", () => {
+    renderWithRouter()
+
+    expect(screen.queryByText(NOTICE)).not.toBeInTheDocument()
   })
 })

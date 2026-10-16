@@ -646,3 +646,32 @@ def test_request_reset_takes_email_and_ip_advisory_locks_before_reading():
     assert "password-reset:email:ana@example.com" in ctx.repo.locked_keys
     assert f"password-reset:ip:{IP}" in ctx.repo.locked_keys
     assert ctx.repo.calls[0] == "lock_keys"
+
+
+# ---------------------------------------------------------------- Spec 014
+
+# SDD: 014 REQ-003 AC-003.1
+def test_request_reset_normalizes_the_email_for_lock_lookup_row_and_delivery():
+    """Con 'Ana@Example.com' la clave de lock, la fila y el envio usan el correo en minusculas."""
+    ctx = make_service([make_user("ana@example.com")])
+
+    ctx.service.request_reset("  Ana@Example.com ", IP)
+
+    assert "password-reset:email:ana@example.com" in ctx.repo.locked_keys
+    assert ctx.repo.rows[0].email == "ana@example.com"
+    assert len(ctx.email.sent) == 1
+    assert ctx.email.sent[0]["to"] == "ana@example.com"
+
+
+# SDD: 014 REQ-003 AC-003.2
+def test_request_reset_applies_the_email_cooldown_ignoring_case():
+    """Una segunda solicitud 30 s despues con 'ANA@EXAMPLE.COM' da RateLimitError y no envia correo."""
+    ctx = make_service([make_user("ana@example.com")])
+    ctx.service.request_reset("ana@example.com", IP)
+    ctx.clock.advance(seconds=30)
+
+    with pytest.raises(RateLimitError) as exc_info:
+        ctx.service.request_reset("ANA@EXAMPLE.COM", OTHER_IP)
+
+    assert str(exc_info.value) == EMAIL_LIMIT
+    assert len(ctx.email.sent) == 1
