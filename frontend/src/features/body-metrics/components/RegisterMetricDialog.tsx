@@ -53,6 +53,15 @@ export function RegisterMetricDialog({
   const allValid = Object.keys(errors).length === 0
   const hasMetricOnDate = metrics.some((m) => m.recorded_at === draft.date)
 
+  // Los errores del campo y el de "al menos un valor" describen al input.
+  function describedBy(id: string, fieldError?: string): string | undefined {
+    const ids = [
+      fieldError ? `${id}-error` : null,
+      errors.values ? "register-values-error" : null,
+    ].filter(Boolean)
+    return ids.length > 0 ? ids.join(" ") : undefined
+  }
+
   function update(patch: Partial<MetricRegistrationValues>) {
     for (const key of Object.keys(patch) as (keyof MetricRegistrationValues)[]) {
       form.setValue(key, patch[key] as never, { shouldDirty: true })
@@ -119,6 +128,7 @@ export function RegisterMetricDialog({
               onChange={(weight) => update({ weight })}
               suffix={weightUnit}
               invalid={!!errors.weight}
+              aria-describedby={describedBy("register-weight", errors.weight)}
             />
           </Field>
 
@@ -129,6 +139,7 @@ export function RegisterMetricDialog({
               onChange={(fat) => update({ fat })}
               suffix="%"
               invalid={!!errors.fat}
+              aria-describedby={describedBy("register-fat", errors.fat)}
             />
           </Field>
 
@@ -143,11 +154,12 @@ export function RegisterMetricDialog({
               onChange={(muscle) => update({ muscle })}
               suffix="%"
               invalid={!!errors.muscle}
+              aria-describedby={describedBy("register-muscle", errors.muscle)}
             />
           </Field>
 
           {errors.values && (
-            <p className="text-xs text-destructive">{errors.values}</p>
+            <p id="register-values-error" className="text-xs text-destructive">{errors.values}</p>
           )}
 
           {mutation.isError && (

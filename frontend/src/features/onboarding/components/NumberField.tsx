@@ -14,6 +14,7 @@ export function NumberField({
   large = false,
   id,
   invalid = false,
+  "aria-describedby": ariaDescribedBy,
 }: {
   value: string
   onChange: (value: string) => void
@@ -24,6 +25,7 @@ export function NumberField({
   large?: boolean
   id?: string
   invalid?: boolean
+  "aria-describedby"?: string
 }) {
   return (
     <div className="relative w-full">
@@ -35,6 +37,7 @@ export function NumberField({
         value={value}
         placeholder={placeholder}
         aria-invalid={invalid || undefined}
+        aria-describedby={ariaDescribedBy}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
           // Oculta las flechitas de subir/bajar del navegador.

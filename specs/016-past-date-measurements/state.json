@@ -10,7 +10,7 @@
   "branch": "feat/016-past-date-measurements",
   "base_branch": "main",
   "created_at": "2026-10-16T10:30:55.104Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,7 +29,10 @@
       "at": "2026-10-16T21:12:07.789Z",
       "note": "auto (gate_mode=flow): red check PASS"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-16T21:16:24.881Z",
+      "note": "auto (gate_mode=flow): todo en verde"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -39,7 +42,7 @@
     "spec": "4779ea7",
     "plan": "27516a5",
     "tasks": "74fd138",
-    "tests": "b1bd525",
+    "tests": "df02ae5",
     "implement": "3527d19"
   },
   "iterations": {
@@ -430,6 +433,36 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS"
+    },
+    {
+      "at": "2026-10-16T21:12:08.081Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: df02ae5"
+    },
+    {
+      "at": "2026-10-16T21:12:08.256Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Corregir F1, F2, F4 y F5 de review.md"
+    },
+    {
+      "at": "2026-10-16T21:16:24.721Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "Review fixes: NumberField acepta aria-describedby; botón se habilita si falla la carga del perfil; aviso REQ-009 solo si había perfil en caché antes del PUT"
+    },
+    {
+      "at": "2026-10-16T21:16:24.800Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F1,F2,F4,F5 corregidos; pytest 831, vitest 687"
+    },
+    {
+      "at": "2026-10-16T21:16:24.881Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): todo en verde"
     }
   ]
 }

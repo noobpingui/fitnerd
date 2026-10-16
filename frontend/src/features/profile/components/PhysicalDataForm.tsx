@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Check } from "lucide-react"
@@ -12,6 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { formatDate } from "@/features/body-metrics/dateUtils"
+import {
+  bodyMetricsKeys,
+  useCreateBodyMetric,
+} from "@/features/body-metrics/hooks"
+import { laterWeightMetric } from "@/features/body-metrics/laterWeight"
+import type { BodyMetric } from "@/features/body-metrics/types"
 import { NumberField } from "@/features/onboarding/components/NumberField"
 import { UnitToggle } from "@/features/onboarding/components/UnitToggle"
 import {
@@ -30,14 +38,6 @@ import {
   convertWeight,
   KG_PER_LB,
 } from "@/features/onboarding/units"
-import { useQueryClient } from "@tanstack/react-query"
-import { formatDate } from "@/features/body-metrics/dateUtils"
-import {
-  bodyMetricsKeys,
-  useCreateBodyMetric,
-} from "@/features/body-metrics/hooks"
-import { laterWeightMetric } from "@/features/body-metrics/laterWeight"
-import type { BodyMetric } from "@/features/body-metrics/types"
 import { fieldMessages } from "@/features/onboarding/schemas"
 import { makeProfileFormSchema } from "@/features/profile/schemas"
 import type {
@@ -114,6 +114,11 @@ export function PhysicalDataForm({
     if (!dirty || !allValid) return
     createMetric.reset()
     saveProfile.reset()
+    // Sin perfil en la caché al empezar no se sabe qué peso tiene el perfil:
+    // no se afirma nada de él (ni aviso ni peso ajeno).
+    const hadProfile = !!queryClient.getQueryData<ProfileResponse>(
+      profileKeys.detail
+    )?.profile
     // 1. Perfil completo (PUT, idempotente). Si falla, no se toca `saved`.
     try {
       await saveProfile.mutateAsync(payloadFromAnswers(values))
@@ -150,13 +155,15 @@ export function PhysicalDataForm({
       const cachedMetrics = queryClient.getQueryData<BodyMetric[]>(
         bodyMetricsKeys.list
       )
-      later = cachedMetrics ? laterWeightMetric(cachedMetrics, todayIsoDate()) : null
       const cachedProfile = queryClient.getQueryData<ProfileResponse>(
         profileKeys.detail
       )
-      if (later && cachedProfile?.profile) {
-        const real = answersFromProfile(cachedProfile)
-        next = { ...values, weight: real.weight, weightUnit: real.weightUnit }
+      if (hadProfile && cachedMetrics && cachedProfile?.profile) {
+        later = laterWeightMetric(cachedMetrics, todayIsoDate())
+        if (later) {
+          const real = answersFromProfile(cachedProfile)
+          next = { ...values, weight: real.weight, weightUnit: real.weightUnit }
+        }
       }
     }
     setSaved(next)

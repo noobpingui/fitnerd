@@ -41,7 +41,7 @@ function fadeIn(index: number) {
 export function BodyMetricsPage() {
   const [registering, setRegistering] = useState(false)
   const { data: metrics, isLoading, isError, error } = useBodyMetrics()
-  const { data: profileResponse } = useProfile()
+  const { data: profileResponse, isLoading: profileLoading } = useProfile()
   const profile = useMemo(
     () => (profileResponse ? answersFromProfile(profileResponse) : null),
     [profileResponse]
@@ -77,7 +77,11 @@ export function BodyMetricsPage() {
       </p>
 
       {!isLoading && !isError && (
-        <Button className="mb-6" onClick={() => setRegistering(true)}>
+        <Button
+          className="mb-6"
+          disabled={profileLoading}
+          onClick={() => setRegistering(true)}
+        >
           Registrar medición
         </Button>
       )}
