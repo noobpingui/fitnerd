@@ -9,7 +9,7 @@
   "branch": "fix/015-onboarding-profile-rhf",
   "base_branch": "main",
   "created_at": "2026-10-16T04:11:19.304Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -24,7 +24,10 @@
       "at": "2026-10-16T04:25:13.206Z",
       "note": "auto (gate_mode=flow): 31 tareas (3 scaffold, 21 test, 7 impl), 37 AC cubiertos"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-16T04:52:56.125Z",
+      "note": "auto (gate_mode=flow): red check PASS iteración 2 con excepción confirmada por el usuario"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -33,17 +36,18 @@
   },
   "commits": {
     "spec": "aea1091",
-    "plan": "618cba5"
+    "plan": "618cba5",
+    "tasks": "2dc8b48"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 1,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-16T04:52:47.430Z"
   },
   "verify": {
     "result": null,
@@ -53,7 +57,17 @@
     "verdict": null,
     "at": null
   },
-  "tests_snapshot": null,
+  "tests_snapshot": {
+    "at": "2026-10-16T04:52:56.014Z",
+    "reason": "Tests de 015 tras red check PASS (iteración 2)",
+    "sha256": {
+      "frontend/src/features/onboarding/pages/OnboardingPage.test.tsx": "5fbfbefaf2189f63a5943f68558d9dc55f732b7ead10fd1dec7bc3962a572d3c",
+      "frontend/src/features/onboarding/schemas.test.ts": "5230e1bd665cded9cc5e0544447312a38de85add9cd2a42314218bae187115e2",
+      "frontend/src/features/onboarding/units.test.ts": "c982fced06a653b16c62d54704d915d285ec09e3d35243892a26dca8b1814509",
+      "frontend/src/features/profile/pages/ProfilePage.test.tsx": "9a2d602f6b4f830d80dbd9e485fb7c7ddc271d20b5acaeff263fc47d223d3084",
+      "frontend/src/features/profile/schemas.test.ts": "1e59110d7d384ee9b0cab360545a607d3606dbca56ae1e199e0d2d0b31edce03"
+    }
+  },
   "bypass": false,
   "history": [
     {
@@ -139,6 +153,84 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): 31 tareas (3 scaffold, 21 test, 7 impl), 37 AC cubiertos"
+    },
+    {
+      "at": "2026-10-16T04:25:13.387Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 2dc8b48"
+    },
+    {
+      "at": "2026-10-16T04:25:13.473Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold"
+    },
+    {
+      "at": "2026-10-16T04:26:21.446Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-16T04:32:27.441Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier modo red"
+    },
+    {
+      "at": "2026-10-16T04:41:07.593Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: 37 tests nuevos fallan (rojo legítimo: 24+8 not implemented del scaffold, 5 por AC-003.5). 35 tests nuevos pasan sin implementación y no están marcados como caracterización en tasks.md (T-016, T-018, T-023, T-024): decisión del usuario pendiente"
+    },
+    {
+      "at": "2026-10-16T04:41:21.164Z",
+      "stage": "tests",
+      "event": "needs_input",
+      "note": "Red check FAIL iteración 1: 72 tests de caracterización en verde (35 en tareas mixtas T-016/018/023/024); 37 rojos legítimos. Pide confirmar excepción y cómo borrar validation.test.ts (T-030)"
+    },
+    {
+      "at": "2026-10-16T04:50:28.197Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Excepción de red check confirmada por el usuario (\"1. Si, confirmado. 2. A\"): los tests de caracterización en verde (incluidos los de T-016, T-018, T-023 y T-024) se aceptan como guardas; validation.test.ts lo borra el usuario (T-030)"
+    },
+    {
+      "at": "2026-10-16T04:50:39.104Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL iteración 1 resuelto por decisión del usuario: excepción confirmada y validation.test.ts borrado por el usuario · tests 1/3"
+    },
+    {
+      "at": "2026-10-16T04:50:39.178Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier modo red (iteración 2) con excepción"
+    },
+    {
+      "at": "2026-10-16T04:52:47.430Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Iteración 2: 37 nuevos fallan de forma legítima (32 not implemented del scaffold, 5 por aserción AC-003.5); 102 pasan en total, los nuevos en verde son caracterización aceptada por el usuario; validation.test.ts eliminado (T-030)"
+    },
+    {
+      "at": "2026-10-16T04:52:55.930Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS iteración 2: 37 rojos legítimos, 72 caracterización exceptuados"
+    },
+    {
+      "at": "2026-10-16T04:52:56.014Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "5 archivo(s) de test: Tests de 015 tras red check PASS (iteración 2)"
+    },
+    {
+      "at": "2026-10-16T04:52:56.125Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS iteración 2 con excepción confirmada por el usuario"
     }
   ]
 }

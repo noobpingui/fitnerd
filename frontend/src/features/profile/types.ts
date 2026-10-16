@@ -3,8 +3,14 @@ import type {
   Gender,
   Goal,
   HeightUnit,
+  OnboardingAnswers,
   WeightUnit,
 } from "@/features/onboarding/types"
+
+// Composición corporal opcional (texto mientras se edita, "" = sin dato).
+export type BodyComposition = { fat: string; muscle: string }
+// Valores del formulario Datos físicos.
+export type PhysicalDataFormValues = OnboardingAnswers & BodyComposition
 
 export type ServerProfile = {
   gender: Gender

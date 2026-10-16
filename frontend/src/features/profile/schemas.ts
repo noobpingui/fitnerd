@@ -1,5 +1,15 @@
 import { z } from "zod"
 import { LIMITS } from "@/features/onboarding/constants"
+import type { PhysicalDataErrorKey } from "@/features/onboarding/schemas"
+import type { PhysicalDataFormValues } from "@/features/profile/types"
+
+export type ProfileFormErrorKey = PhysicalDataErrorKey | "fat" | "muscle"
+
+export function makeProfileFormSchema(
+  _today?: Date
+): z.ZodType<PhysicalDataFormValues, PhysicalDataFormValues> {
+  throw new Error("not implemented")
+}
 
 const gender = z.enum(["male", "female"])
 const heightUnit = z.enum(["cm", "ft"])

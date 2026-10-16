@@ -12,3 +12,7 @@
 ## tasks · task-breaker
 - [ ] Mejorar el mensaje de altura en ft/in cuando fallan las pulgadas (hoy dice "Entre 3 y 8 ft"). La spec lo deja fuera de alcance.
 - [ ] Mediciones con fecha pasada desde el perfil (fuera de alcance de la spec).
+
+## tests · test-author
+- [ ] Los tests nuevos de `OnboardingPage.test.tsx` repiten algunas pruebas de fecha que ya existen con el marcador 006 (por ejemplo, la fecha prerrellenada de 1900). Se pueden simplificar cuando se cierre la feature.
+- [ ] Los tests de fecha de `ProfilePage.test.tsx` (reglas de validación de la 015) comprueban 14 y 100 años con `fireEvent.change` sobre el `input type=date`. Un test de integración con un navegador real sería más fiel, pero queda fuera de Vitest.

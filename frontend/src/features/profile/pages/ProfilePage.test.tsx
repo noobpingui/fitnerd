@@ -1,7 +1,7 @@
 // Test de PÁGINA del perfil (feature 006): el formulario de datos físicos
 // lee y guarda en el servidor. La red se simula en los api.ts (vi.mock).
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { Link, MemoryRouter, Route, Routes } from "react-router"
@@ -443,5 +443,481 @@ describe("ProfilePage - medición del día del usuario (spec 008)", () => {
         "Se usan para calcular tus calorías y macros. Cada cambio de peso o composición se guarda como la medición de hoy en tu progreso; si ya hay una de hoy, se actualiza."
       )
     ).toBeInTheDocument()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Spec 015: formulario Datos físicos con react-hook-form y zod. "Hoy" fijo:
+// 11-10-2026. Con perfil en cm y kg los campos numéricos son
+// [altura, peso, grasa, músculo]; con ft/lb, [ft, in, peso, grasa, músculo].
+// ---------------------------------------------------------------------------
+
+const FUTURE_MESSAGE = "La fecha de nacimiento no puede ser futura"
+const RANGE_MESSAGE = "Debes tener entre 14 y 100 años"
+const REQUIRED_MESSAGE = "Indica tu fecha de nacimiento"
+const discardButton = () => screen.queryByRole("button", { name: "Descartar" })
+const setValue = (input: HTMLElement, value: string) =>
+  fireEvent.change(input, { target: { value } })
+
+function setupMocks() {
+  getProfileMock.mockReset()
+  saveMock.mockReset()
+  listMetricsMock.mockReset()
+  createMetricMock.mockReset()
+  getCurrentUserMock.mockReset()
+  listMetricsMock.mockResolvedValue([])
+  getCurrentUserMock.mockResolvedValue({
+    email: "ana@example.com",
+  } as Awaited<ReturnType<typeof getCurrentUser>>)
+  createMetricMock.mockResolvedValue({
+    id: "m1",
+    weight: 80,
+    body_fat_percentage: null,
+    muscle_mass_percentage: null,
+    notes: null,
+    recorded_at: "2026-10-11",
+  })
+  localStorage.clear()
+  Element.prototype.hasPointerCapture = vi.fn(() => false)
+  Element.prototype.setPointerCapture = vi.fn()
+  Element.prototype.releasePointerCapture = vi.fn()
+  Element.prototype.scrollIntoView = vi.fn()
+}
+
+describe("ProfilePage - reglas de validación (spec 015)", () => {
+  beforeEach(() => {
+    setupMocks()
+    getProfileMock.mockResolvedValue(CM_KG_RESPONSE)
+    vi.useFakeTimers({ toFake: ["Date"] })
+    vi.setSystemTime(new Date(2026, 9, 11, 12, 0))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  // SDD: 015 REQ-001 AC-001.1
+  it.each(["2012-10-11", "1925-10-12"])(
+    "la fecha %s (límite de edad) no muestra aviso y 'Guardar cambios' queda habilitado",
+    async (value) => {
+      renderPage()
+
+      setValue(await dobInput(), value)
+
+      expect(screen.queryByText(FUTURE_MESSAGE)).not.toBeInTheDocument()
+      expect(screen.queryByText(RANGE_MESSAGE)).not.toBeInTheDocument()
+      expect(saveButton()).toBeEnabled()
+    }
+  )
+
+  // SDD: 015 REQ-001 AC-001.2
+  it("una fecha futura (2026-10-12) muestra el aviso y deshabilita 'Guardar cambios'", async () => {
+    renderPage()
+
+    setValue(await dobInput(), "2026-10-12")
+
+    expect(screen.getByText(FUTURE_MESSAGE)).toBeInTheDocument()
+    expect(saveButton()).toBeDisabled()
+  })
+
+  // SDD: 015 REQ-001 AC-001.3
+  it.each(["2012-10-12", "1925-10-11"])(
+    "la fecha %s (13 o 101 años) muestra el aviso de rango y deshabilita 'Guardar cambios'",
+    async (value) => {
+      renderPage()
+
+      setValue(await dobInput(), value)
+
+      expect(screen.getByText(RANGE_MESSAGE)).toBeInTheDocument()
+      expect(saveButton()).toBeDisabled()
+    }
+  )
+
+  // SDD: 015 REQ-002 AC-002.1
+  it("al vaciar la fecha muestra 'Indica tu fecha de nacimiento', marca el campo y deshabilita guardar", async () => {
+    renderPage()
+
+    setValue(await dobInput(), "")
+
+    expect(screen.getByText(REQUIRED_MESSAGE)).toBeInTheDocument()
+    expect(screen.getByLabelText("Fecha de nacimiento")).toHaveAttribute(
+      "aria-invalid",
+      "true"
+    )
+    expect(saveButton()).toBeDisabled()
+  })
+
+  // SDD: 015 REQ-002 AC-002.2
+  it("al introducir una fecha válida tras vaciarla, el mensaje desaparece y guardar se habilita", async () => {
+    renderPage()
+    const input = await dobInput()
+    setValue(input, "")
+    expect(screen.getByText(REQUIRED_MESSAGE)).toBeInTheDocument()
+
+    setValue(input, "1999-01-15")
+
+    expect(screen.queryByText(REQUIRED_MESSAGE)).not.toBeInTheDocument()
+    expect(saveButton()).toBeEnabled()
+  })
+
+  // SDD: 015 REQ-003 AC-003.1
+  it.each(["100", "250"])(
+    "una altura de %s cm no muestra mensaje y guardar queda habilitado",
+    async (cm) => {
+      renderPage()
+      await dobInput()
+
+      setValue(spinbuttons()[0], cm)
+
+      expect(screen.queryByText(/^Entre \d+ y \d+ cm$/)).not.toBeInTheDocument()
+      expect(saveButton()).toBeEnabled()
+    }
+  )
+
+  // SDD: 015 REQ-003 AC-003.2
+  it.each(["99", "251", ""])(
+    "una altura de '%s' cm muestra 'Entre 100 y 250 cm', marca el campo y deshabilita guardar",
+    async (cm) => {
+      renderPage()
+      await dobInput()
+
+      setValue(spinbuttons()[0], cm)
+
+      expect(screen.getByText("Entre 100 y 250 cm")).toBeInTheDocument()
+      expect(spinbuttons()[0]).toHaveAttribute("aria-invalid", "true")
+      expect(saveButton()).toBeDisabled()
+    }
+  )
+
+  // SDD: 015 REQ-003 AC-003.3
+  it("5 ft con las pulgadas vacías es una altura válida", async () => {
+    getProfileMock.mockResolvedValue(FT_LB_RESPONSE)
+    renderPage()
+    await dobInput()
+
+    setValue(spinbuttons()[1], "")
+
+    expect(screen.queryByText("Entre 3 y 8 ft")).not.toBeInTheDocument()
+    expect(saveButton()).toBeEnabled()
+  })
+
+  // SDD: 015 REQ-003 AC-003.4
+  it.each([
+    ["2", "9"],
+    ["9", "9"],
+    ["5", "12"],
+  ])(
+    "%s ft con %s in muestra 'Entre 3 y 8 ft' y deshabilita guardar",
+    async (ft, inches) => {
+      getProfileMock.mockResolvedValue(FT_LB_RESPONSE)
+      renderPage()
+      await dobInput()
+
+      setValue(spinbuttons()[0], ft)
+      setValue(spinbuttons()[1], inches)
+
+      expect(screen.getByText("Entre 3 y 8 ft")).toBeInTheDocument()
+      expect(spinbuttons()[0]).toHaveAttribute("aria-invalid", "true")
+      expect(spinbuttons()[1]).toHaveAttribute("aria-invalid", "true")
+      expect(saveButton()).toBeDisabled()
+    }
+  )
+
+  // SDD: 015 REQ-003 AC-003.5
+  it.each([
+    ["5.5", "9"],
+    ["5", "2.5"],
+  ])(
+    "%s ft con %s in (decimales) muestra 'Entre 3 y 8 ft' y deshabilita guardar",
+    async (ft, inches) => {
+      getProfileMock.mockResolvedValue(FT_LB_RESPONSE)
+      renderPage()
+      await dobInput()
+
+      setValue(spinbuttons()[0], ft)
+      setValue(spinbuttons()[1], inches)
+
+      expect(screen.getByText("Entre 3 y 8 ft")).toBeInTheDocument()
+      expect(saveButton()).toBeDisabled()
+    }
+  )
+
+  // SDD: 015 REQ-004 AC-004.1
+  it.each(["30", "300"])(
+    "un peso de %s kg no muestra mensaje y guardar queda habilitado",
+    async (kg) => {
+      renderPage()
+      await dobInput()
+
+      setValue(spinbuttons()[1], kg)
+
+      expect(screen.queryByText("Entre 30 y 300 kg")).not.toBeInTheDocument()
+      expect(saveButton()).toBeEnabled()
+    }
+  )
+
+  // SDD: 015 REQ-004 AC-004.2
+  it.each(["29.9", "300.1", ""])(
+    "un peso de '%s' kg muestra 'Entre 30 y 300 kg', marca el campo y deshabilita guardar",
+    async (kg) => {
+      renderPage()
+      await dobInput()
+
+      setValue(spinbuttons()[1], kg)
+
+      expect(screen.getByText("Entre 30 y 300 kg")).toBeInTheDocument()
+      expect(spinbuttons()[1]).toHaveAttribute("aria-invalid", "true")
+      expect(saveButton()).toBeDisabled()
+    }
+  )
+
+  // SDD: 015 REQ-004 AC-004.3
+  it.each(["66", "660"])(
+    "un peso de %s lb no muestra mensaje",
+    async (lb) => {
+      getProfileMock.mockResolvedValue(FT_LB_RESPONSE)
+      renderPage()
+      await dobInput()
+
+      setValue(spinbuttons()[2], lb)
+
+      expect(screen.queryByText("Entre 66 y 660 lb")).not.toBeInTheDocument()
+      expect(saveButton()).toBeEnabled()
+    }
+  )
+
+  // SDD: 015 REQ-004 AC-004.3
+  it.each(["65.9", "660.1"])(
+    "un peso de %s lb muestra 'Entre 66 y 660 lb' y deshabilita guardar",
+    async (lb) => {
+      getProfileMock.mockResolvedValue(FT_LB_RESPONSE)
+      renderPage()
+      await dobInput()
+
+      setValue(spinbuttons()[2], lb)
+
+      expect(screen.getByText("Entre 66 y 660 lb")).toBeInTheDocument()
+      expect(saveButton()).toBeDisabled()
+    }
+  )
+
+  // SDD: 015 REQ-005 AC-005.1
+  it("grasa y músculo vacíos o en sus límites no muestran mensaje", async () => {
+    renderPage()
+    await dobInput()
+
+    expect(screen.queryByText(/^Entre \d+ y \d+ %$/)).not.toBeInTheDocument()
+    for (const [fat, muscle] of [
+      ["3", "10"],
+      ["60", "70"],
+    ]) {
+      setValue(spinbuttons()[2], fat)
+      setValue(spinbuttons()[3], muscle)
+      expect(screen.queryByText(/^Entre \d+ y \d+ %$/)).not.toBeInTheDocument()
+      expect(saveButton()).toBeEnabled()
+    }
+  })
+
+  // SDD: 015 REQ-005 AC-005.2
+  it("61 en grasa corporal muestra 'Entre 3 y 60 %' y deshabilita guardar", async () => {
+    renderPage()
+    await dobInput()
+
+    setValue(screen.getByLabelText("% Grasa corporal (opcional)"), "61")
+
+    expect(screen.getByText("Entre 3 y 60 %")).toBeInTheDocument()
+    expect(saveButton()).toBeDisabled()
+  })
+
+  // SDD: 015 REQ-005 AC-005.3
+  it("9 en masa muscular muestra 'Entre 10 y 70 %' y deshabilita guardar", async () => {
+    renderPage()
+    await dobInput()
+
+    setValue(screen.getByLabelText("% Masa muscular (opcional)"), "9")
+
+    expect(screen.getByText("Entre 10 y 70 %")).toBeInTheDocument()
+    expect(saveButton()).toBeDisabled()
+  })
+
+  // SDD: 015 REQ-006 AC-006.3
+  it("72 kg se convierte a 158.7 lb al elegir 'lb'", async () => {
+    getProfileMock.mockResolvedValue(
+      makeProfileResponse({ date_of_birth: "1998-04-03" }, { weight: 72 })
+    )
+    const user = userEvent.setup()
+    renderPage()
+    await dobInput()
+
+    await user.click(screen.getByRole("button", { name: "lb" }))
+
+    expect(spinbuttons()[1]).toHaveValue(158.7)
+  })
+
+  // SDD: 015 REQ-006 AC-006.1
+  it("175 cm se convierte a 5 ft 9 in al elegir 'ft / in'", async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await dobInput()
+
+    await user.click(screen.getByRole("button", { name: "ft / in" }))
+
+    expect(spinbuttons().slice(0, 2).map((i) => i.value)).toEqual(["5", "9"])
+  })
+
+  // SDD: 015 REQ-010 AC-010.1
+  it("un perfil sin fecha de nacimiento muestra el aviso desde la carga", async () => {
+    getProfileMock.mockResolvedValue(makeProfileResponse({ date_of_birth: null }))
+    renderPage()
+
+    await dobInput()
+
+    expect(screen.getByText(REQUIRED_MESSAGE)).toBeInTheDocument()
+    expect(saveButton()).toBeDisabled()
+  })
+
+  // SDD: 015 REQ-010 AC-010.2
+  it("al escribir 500 en el peso el aviso se ve sin pulsar guardar", async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await dobInput()
+
+    await typeInto(user, spinbuttons()[1], "500")
+
+    expect(screen.getByText("Entre 30 y 300 kg")).toBeInTheDocument()
+  })
+})
+
+describe("ProfilePage - guardado del formulario (spec 015)", () => {
+  beforeEach(() => {
+    setupMocks()
+    getProfileMock.mockResolvedValue(CM_KG_RESPONSE)
+    saveMock.mockResolvedValue(CM_KG_RESPONSE)
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  // SDD: 015 REQ-009 AC-009.1
+  it("recién cargado, 'Guardar cambios' está deshabilitado y 'Descartar' no aparece", async () => {
+    renderPage()
+    await dobInput()
+
+    expect(saveButton()).toBeDisabled()
+    expect(discardButton()).not.toBeInTheDocument()
+  })
+
+  // SDD: 015 REQ-009 AC-009.2
+  it("'Descartar' restaura los valores cargados y desaparece junto con la habilitación de guardar", async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await dobInput()
+
+    await changeGoalTo(user, "Aumentar peso")
+    await typeInto(user, spinbuttons()[1], "80")
+    expect(discardButton()).toBeInTheDocument()
+    expect(saveButton()).toBeEnabled()
+
+    await user.click(screen.getByRole("button", { name: "Descartar" }))
+
+    expect(spinbuttons()[1]).toHaveValue(72.5)
+    expect(screen.getAllByRole("combobox")[1]).toHaveTextContent("Mantener peso")
+    expect(discardButton()).not.toBeInTheDocument()
+    expect(saveButton()).toBeDisabled()
+  })
+
+  // SDD: 015 REQ-009 AC-009.3
+  it("cambiar solo la unidad del peso envía weight_unit lb y no registra medición", async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await dobInput()
+
+    await user.click(screen.getByRole("button", { name: "lb" }))
+    await user.click(saveButton())
+
+    expect(await screen.findByText("Cambios guardados")).toBeInTheDocument()
+    expect(saveMock).toHaveBeenCalledTimes(1)
+    expect(saveMock.mock.calls[0][0]).toMatchObject({ weight_unit: "lb" })
+    expect(createMetricMock).not.toHaveBeenCalled()
+  })
+
+  // SDD: 015 REQ-009 AC-009.4
+  it("cambiar solo el músculo a 40 con grasa 20 guardada registra la medición sin body_fat_percentage", async () => {
+    const user = userEvent.setup()
+    listMetricsMock.mockResolvedValue([
+      {
+        id: "m0",
+        weight: 72.5,
+        body_fat_percentage: 20,
+        muscle_mass_percentage: null,
+        notes: null,
+        recorded_at: "2026-10-01",
+      },
+    ])
+    renderPage()
+    await dobInput()
+    await waitFor(() => expect(spinbuttons()[2]).toHaveValue(20))
+
+    await typeInto(user, spinbuttons()[3], "40")
+    await user.click(saveButton())
+
+    expect(await screen.findByText("Cambios guardados")).toBeInTheDocument()
+    expect(createMetricMock).toHaveBeenCalledTimes(1)
+    const body = createMetricMock.mock.calls[0][0]
+    expect(body).toMatchObject({ muscle_mass_percentage: 40 })
+    expect(body).not.toHaveProperty("body_fat_percentage")
+  })
+
+  // SDD: 015 REQ-009 AC-009.5
+  it("'Cambios guardados' desaparece a los 3 segundos", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    renderPage()
+    await dobInput()
+
+    await changeGoalTo(user, "Aumentar peso")
+    await user.click(saveButton())
+    expect(await screen.findByText("Cambios guardados")).toBeInTheDocument()
+
+    act(() => {
+      vi.advanceTimersByTime(3000)
+    })
+
+    await waitFor(() =>
+      expect(screen.queryByText("Cambios guardados")).not.toBeInTheDocument()
+    )
+  })
+
+  // SDD: 015 REQ-009 AC-009.5
+  it("'Cambios guardados' desaparece al modificar cualquier campo antes de los 3 segundos", async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await dobInput()
+
+    await changeGoalTo(user, "Aumentar peso")
+    await user.click(saveButton())
+    expect(await screen.findByText("Cambios guardados")).toBeInTheDocument()
+
+    setValue(spinbuttons()[1], "73")
+
+    expect(screen.queryByText("Cambios guardados")).not.toBeInTheDocument()
+  })
+
+  // SDD: 015 REQ-009 AC-009.6
+  it("tras guardar el peso 80, cambiarlo a 79.5 registra una segunda medición con 79.5", async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await dobInput()
+
+    await typeInto(user, spinbuttons()[1], "80")
+    await user.click(saveButton())
+    await screen.findByText("Cambios guardados")
+    await typeInto(user, spinbuttons()[1], "79.5")
+    await user.click(saveButton())
+
+    await waitFor(() => expect(createMetricMock).toHaveBeenCalledTimes(2))
+    expect(createMetricMock.mock.calls[0][0]).toMatchObject({ weight: 80 })
+    expect(createMetricMock.mock.calls[1][0]).toMatchObject({ weight: 79.5 })
   })
 })
