@@ -60,7 +60,7 @@ App de fitness full-stack con un **coach de IA basado en contenido real**: respo
 | | Backend (`cd backend`) | Frontend (`cd frontend`) |
 |---|---|---|
 | Tests | `.venv/Scripts/python.exe -m pytest -q` (requiere Postgres) | `npm test` |
-| Lint | `node .claude/sdd/scripts/ruff-new.mjs` (desde la raíz; solo cuenta violaciones nuevas) | `npm run lint` |
+| Lint | ratchet de ruff del plugin `sdd-beto` (`lint_ratchet` en `.sdd/config.json`; solo cuenta violaciones nuevas) | `npm run lint` |
 | Typecheck / build | — | `npx tsc -b` / `npm run build` |
 | Migraciones | `flask db migrate -m "…"` / `flask db upgrade` | — |
 

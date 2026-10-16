@@ -1,107 +1,34 @@
-# Harness SDD de fitnerd
+# SDD en fitnerd
 
-El desarrollo de fitnerd sigue **Spec-Driven Development**: cada cambio funcional se especifica, se diseña, se descompone en tareas, se prueba (TDD), se implementa, se verifica, se revisa y se documenta antes de integrarse.
+El desarrollo de fitnerd sigue **Spec-Driven Development** con el plugin [`sdd-beto`](https://github.com/noobpingui/sdd-beto) en modo `flow` (ADR-0024): cada cambio funcional se especifica, se diseña, se descompone en tareas, se prueba (TDD), se implementa, se verifica, se revisa y se documenta antes de integrarse.
 
-- Cada etapa la ejecuta un **agente independiente con permisos separados**.
-- El usuario aprueba el cierre de **cada etapa** y **cada commit y push**.
+`spec → plan → tasks → tests (rojo) → implement → verify → review → docs → close`
 
-> La guía práctica paso a paso para usarlo es [`GUIA-DE-USO.md`](GUIA-DE-USO.md). Este documento es la visión general.
+- Cada etapa la ejecuta un subagente `sdd-beto:<rol>`; la sesión principal orquesta.
+- El flujo se detiene en los gates de `spec`, `review` y `close`, y ante decisiones mayores (ver `CLAUDE.md`, sección Aprobación humana).
+- Comandos: `/sdd-beto:new <slug> <idea>`, `/sdd-beto:run [NNN-slug]`, `/sdd-beto:status` y `/sdd-beto:<etapa>`.
 
-## Flujo
+La documentación del flujo, los agentes, los hooks y el ratchet de lint vive en el propio plugin.
 
-```mermaid
-flowchart LR
-    idea([Idea]) --> new["/sdd-new<br/>orquestador"]
-    new --> spec["spec<br/>spec-writer"]
-    spec --> G1{{gate}}
-    G1 --> plan["plan<br/>planner"]
-    plan --> G2{{gate}}
-    G2 --> tasks["tasks<br/>task-breaker"]
-    tasks --> G3{{gate}}
-    G3 --> tests["tests<br/>implementer (scaffold)<br/>+ test-author<br/>+ verifier (red)"]
-    tests --> G4{{gate}}
-    G4 --> impl["implement<br/>implementer"]
-    impl --> G5{{gate}}
-    G5 --> verify["verify<br/>verifier (full)"]
-    verify --> G6{{gate}}
-    G6 --> review["review<br/>reviewer"]
-    review --> G7{{gate}}
-    G7 --> docs["docs<br/>doc-keeper"]
-    docs --> G8{{gate}}
-    G8 --> close["close<br/>orquestador"]
-    close --> G9{{gate + PR/merge<br/>+ push}}
-    G9 --> done([done])
-
-    tests -. "red FAIL (≤3)" .-> tests
-    verify -. "FAIL (≤3)" .-> impl
-    review -. "CHANGES_REQUESTED (≤3)" .-> impl
-    review -. "hallazgo de spec/plan" .-> spec
-```
-
-- **gate:** el orquestador se detiene, muestra un resumen y el commit propuesto, y espera un "aprobado" explícito. Los pushes se aprueban aparte.
-- **Líneas punteadas:** ciclos de corrección. Tras 3 iteraciones fallidas se escala al usuario.
-
-## Piezas
-
-```mermaid
-flowchart TB
-    U([Usuario]) <-->|gates y aprobaciones| O["Sesión principal = orquestador<br/>skills /sdd-*"]
-    O -->|"Agent (rutas, etapa, modo)"| A["Subagentes<br/>.claude/agents/*.md"]
-    A -->|leen y escriben| F[("specs/NNN-slug/<br/>artefactos + state.json")]
-    O -->|lee y actualiza| F
-    H["Hooks PreToolUse<br/>.claude/hooks/sdd-guard.mjs"] -. "bloquean escrituras fuera de rol,<br/>código sin spec/plan, git de subagentes" .-> A
-    H -. "piden confirmación en commit/push" .-> O
-    C["specs/constitution.md"] -.->|reglas| A
-```
-
-- **Orquestador:** es la **sesión principal**, guiada por la skill `/sdd-run` (o una skill por etapa). No es un subagente, porque solo la sesión principal puede detenerse a pedir aprobación. Ver la [ADR-0001](decisions/ADR-0001-orquestacion.md).
-- **Subagentes:** hay uno por rol. No pueden lanzar otros subagentes y se comunican **solo a través de archivos en disco**.
-- **`state.json`:** es la máquina de estados de cada feature, con la etapa, las aprobaciones, los commits y las iteraciones.
-- **Hooks:** son la barrera determinista contra las violaciones de rol. Ver [`hooks.md`](hooks.md).
-
-## Agentes
-
-| Agente | Modelo | Produce | No puede |
-|---|---|---|---|
-| `spec-writer` | opus | `spec.md` (REQ en EARS y AC en Given/When/Then) | proponer implementación ni tocar código |
-| `planner` | opus | `plan.md` y ADRs | tocar código ni tests |
-| `task-breaker` | sonnet | `tasks.md` (T-NNN con REQ y AC) | tocar código |
-| `test-author` | sonnet | tests que fallan, escritos a partir de la spec | tocar producción |
-| `implementer` | sonnet | código de producción | modificar tests, spec ni plan |
-| `verifier` | haiku | `verify-report.md` (modo red o full) | arreglar nada |
-| `reviewer` | opus | `review.md` (APPROVED o CHANGES_REQUESTED) | editar código |
-| `doc-keeper` | sonnet | README, `.env.example`, `docs/`, `docs-report.md` y las casillas `(docs)` de `tasks.md` | tocar código, tests ni artefactos SDD |
-
-## Estructura de carpetas
+## Qué hay en este repo
 
 ```
-CLAUDE.md                       reglas para Claude: flujo, comandos y aprobación antes de commit/push
-.claude/
-  settings.json                 hooks + CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1
-  agents/                       8 subagentes (uno por rol)
-  skills/sdd-*/SKILL.md         12 comandos: run, new, status y uno por etapa
-  sdd/protocol.md               reglas del orquestador (gates, commits, correcciones, state.json)
-  sdd/stages.md                 tabla de etapas: agente, precondición, salida, commit y qué revisar
-  sdd/scripts/ruff-new.mjs      ratchet de ruff (solo violaciones nuevas)
-  hooks/sdd-guard.mjs           role-guard, stage-guard y git-guard (+ tests)
+CLAUDE.md                 reglas para Claude: proyecto, SDD, aprobación y convenciones
+.sdd/
+  config.json             configuración del plugin: ámbitos, comandos, rutas y gate_mode
+  constitution.md         constitución, Parte II (propia de fitnerd); la Parte I está en el plugin
 specs/
-  constitution.md               principios no negociables
-  _templates/                   spec, plan, tasks, state.json, review y verify-report
-  NNN-slug/                     una carpeta por feature
+  NNN-slug/               una carpeta por feature, con sus artefactos y state.json
 docs/sdd/
-  README.md                     este documento
-  GUIA-DE-USO.md                guía práctica de principio a fin
-  00-discovery.md               análisis del repo antes del harness
-  hooks.md                      qué bloquea cada hook y cómo desactivarlos
-  decisions/                    ADRs del harness y de las features
+  README.md               este documento
+  00-discovery.md         análisis del repo antes del primer harness (septiembre de 2026)
+  decisions/              ADRs del proyecto
 ```
 
-## Trazabilidad
+## Historia
 
-La cadena es `REQ-001` (spec) → `AC-001.1` (spec) → `T-003 [REQ-001, AC-001.1]` (tasks) → `# SDD: 011 REQ-001 AC-001.1` (test, con el número de la spec; ADR-0022).
-
-El `verifier` comprueba de forma mecánica que cada AC tiene un test que pasa y que cada REQ tiene al menos una tarea. Ver [`specs/README.md`](../../specs/README.md).
+Hasta la spec 013, fitnerd usó un harness propio versionado en el repo (`.claude/agents/`, `.claude/skills/sdd-*`, `.claude/hooks/sdd-guard.mjs`, `.claude/sdd/`, `specs/constitution.md` y `specs/_templates/`; ADR-0010). Ese harness se extrajo al plugin `sdd-beto`, se adoptó con la ADR-0024 y se retiró después en una rama `chore/…`; sigue disponible en el historial de git. Las ADR-0001 a ADR-0013 y la ADR-0023 describen su diseño y citan rutas que ya no existen; la ADR-0022 (marcador con número de spec) sigue vigente.
 
 ## Decisiones
 
-Todas las decisiones de diseño del harness están en [`decisions/`](decisions/README.md), de la ADR-0001 a la ADR-0011.
+Todas las decisiones están en [`decisions/`](decisions/README.md).

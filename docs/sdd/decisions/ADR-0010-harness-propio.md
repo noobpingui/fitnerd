@@ -1,6 +1,6 @@
 # ADR-0010 — Harness propio, inspirado en GitHub Spec Kit y Kiro
 
-- **Estado:** Aceptada · 2026-09-23
+- **Estado:** Sustituida por la ADR-0024 · 2026-10-15 (aceptada el 2026-09-23; el harness propio se retiró del repo y sigue en el historial de git)
 - **Decidido por:** Claude (sin trade-offs relevantes para el usuario)
 
 ## Contexto

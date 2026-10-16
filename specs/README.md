@@ -1,10 +1,10 @@
 # specs/
 
-Artefactos del flujo SDD de fitnerd. La visión general del harness está en [`docs/sdd/`](../docs/sdd/).
+Artefactos del flujo SDD de fitnerd, gestionados por el plugin `sdd-beto`. La visión general está en [`docs/sdd/`](../docs/sdd/).
 
-- [`constitution.md`](constitution.md): principios no negociables que todos los agentes respetan.
-- [`_templates/`](_templates/): plantillas que se copian a cada feature nueva (`/sdd-new`).
-- `NNN-slug/`: una carpeta por feature, con `idea.md`, `spec.md`, `plan.md`, `tasks.md`, `verify-report.md`, `review.md`, `docs-report.md` y `state.json`.
+- `NNN-slug/`: una carpeta por feature, con `idea.md`, `spec.md`, `plan.md`, `tasks.md`, `verify-report.md`, `review.md`, `docs-report.md` y `state.json`. Las features nuevas se crean con `/sdd-beto:new`.
+- La constitución es la base del plugin más [`.sdd/constitution.md`](../.sdd/constitution.md) (Parte II).
+- Las specs 000–013 se hicieron con el harness anterior y su `state.json` usa su formato; como están cerradas, no se migran (ADR-0024).
 
 ## Trazabilidad
 
