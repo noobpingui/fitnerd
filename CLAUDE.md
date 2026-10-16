@@ -1,5 +1,6 @@
 # fitnerd
 
+<!-- sdd-beto:proyecto:start -->
 ## Proyecto
 
 App de fitness full-stack con un **coach de IA basado en contenido real**: responde solo con transcripciones de vídeos de entrenamiento y, si la respuesta no está ahí, dice "no lo sé". Es un proyecto de portfolio personal. En producción está en https://fitnerd.betofallas.dev. El "por qué" de cada decisión está en `README.md`, que está en inglés.
@@ -74,30 +75,49 @@ App de fitness full-stack con un **coach de IA basado en contenido real**: respo
 - **Resend rechaza el User-Agent por defecto de Python (403, Cloudflare 1010):** `ResendTransport` envía `fitnerd/1.0 (+https://fitnerd.betofallas.dev)`; si vuelven los 503 al recuperar contraseña, mira en el log del backend el cuerpo del error de Resend (recortado a 200 caracteres, sin la API key).
 - **Código existente sin lint:** tiene unas 145 violaciones de ruff previas; no las arregles fuera de una tarea que lo pida.
 - **Antes de tocar un área, mira su estado real:** la cobertura de tests es baja (ver `docs/sdd/00-discovery.md`, que es una foto de septiembre de 2026).
+<!-- sdd-beto:proyecto:end -->
 
-## Desarrollo guiado por specs (SDD): obligatorio
+<!-- sdd-beto:sdd:start -->
+## SDD
 
-**Ningún cambio funcional entra sin spec.** Todo cambio de comportamiento sigue el flujo:
+Este proyecto usa el plugin `sdd-beto` (Spec-Driven Development). Todo cambio funcional pasa por:
 
 `spec → plan → tasks → tests (rojo) → implement → verify → review → docs → close`
 
-- **Cómo arrancar:** `/sdd-new <slug> <idea>` y después `/sdd-run [NNN-slug]`. El orquestador delega cada etapa en su subagente de `.claude/agents/`. Estos comandos solo los puede escribir el usuario.
-- **Comandos por etapa:** `/sdd-spec`, `/sdd-plan`, `/sdd-tasks`, `/sdd-test`, `/sdd-implement`, `/sdd-verify`, `/sdd-review`, `/sdd-docs` y `/sdd-close`. Para ver el estado, `/sdd-status`.
-- **Artefactos:** en `specs/NNN-slug/`. Los principios no negociables están en `specs/constitution.md`; la guía práctica en `docs/sdd/GUIA-DE-USO.md` y la visión general en `docs/sdd/README.md`.
-- **Roles separados:** la sesión principal orquesta y **no** escribe spec, plan, tests ni código. Esos los escribe cada subagente, y los hooks (`docs/sdd/hooks.md`) bloquean que alguien escriba fuera de su rol.
-- **Excepciones sin spec completa** (constitución, Art. 1.2): typos, cambios de copy o estilos, y bumps de dependencias. Los hotfixes se hacen con `SDD_BYPASS=1` y llevan una spec retroactiva.
+- Cada etapa la hace un subagente `sdd-beto:<rol>`; la sesión principal orquesta y no hace el trabajo de los roles.
+- Comandos: `/sdd-beto:new <slug> <idea>` crea una feature, `/sdd-beto:run [NNN-slug]` recorre el flujo, `/sdd-beto:status` muestra el estado y `/sdd-beto:<etapa>` ejecuta una sola etapa.
+- Artefactos de cada feature: `specs/NNN-slug/`. Su estado vive en `state.json` y solo se cambia con la CLI `sdd-state` del plugin, nunca a mano.
+- Configuración: `.sdd/config.json`. Constitución: la base del plugin más `.sdd/constitution.md` (Parte II, propia de este proyecto). Si chocan, gana la base.
+- Decisiones del proyecto: `docs/sdd/decisions/`. Backlog del proyecto: `docs/backlog.md`.
+- Los hooks del plugin impiden editar código de producción fuera de una feature con spec y plan aprobados. Solo un hotfix o una excepción del Art. B1.2 justifica reiniciar con `SDD_BYPASS=1`.
+<!-- sdd-beto:sdd:end -->
 
-## Aprobación humana: obligatoria
+<!-- sdd-beto:aprobacion:start -->
+## Aprobación humana
 
-- **Al cerrar cada etapa**, detente, muestra el resumen (qué se produjo, decisiones, siguiente etapa y preguntas) y espera un "aprobado" explícito. El silencio no aprueba, y nunca se agrupan varias etapas en una sola aprobación.
-- **Antes de cada `git commit`**, muestra los archivos (`git status --short` y `git diff --stat`), un resumen en lenguaje claro y el mensaje propuesto. Espera aprobación.
-- **Antes de cada `git push`**, muestra la rama de origen y de destino y la lista de commits. Espera aprobación.
-- **Solo la sesión principal** hace commit y push, nunca un subagente. Nada de `git add -A`, `--no-verify` ni `push --force` a `main`.
+- En un gate, solo un "aprobado" o "sí" explícito del usuario cuenta como aprobación. El silencio, una pregunta o un "luego vemos" no.
+- Modo de gates: `flow` (ADR-0029 del plugin). El flujo se detiene en tres gates: `spec`, `review` y `close`.
+- Entre gates, el flujo solo se detiene por una decisión mayor: cambiar el alcance de la spec; incumplir la constitución; una dependencia nueva, una migración destructiva o romper una API; algo que afecte a la seguridad o a los datos; una ambigüedad con resultados distintos; o el límite de iteraciones. Lo menor se decide y se anota en el backlog de la feature.
+- Los commits de cada etapa se hacen sin pedir aprobación, solo en local y en la rama de la feature. Nada se sube antes del gate de `close`.
+- El gate de `close` aprueba de una vez el último commit, el push, el PR y su merge.
+- Los subagentes nunca hacen commit, push ni cambian de rama.
+<!-- sdd-beto:aprobacion:end -->
 
+<!-- sdd-beto:convenciones:start -->
 ## Convenciones
 
-- **Ramas:** `feat/NNN-slug` o `fix/NNN-slug`; `chore/…` solo para cambios del harness, de documentación o de CI/CD (estos últimos sin SDD completo, con ADR si introducen una decisión nueva; ADR-0016). Nunca trabajes directamente en `main`.
-- **Commits:** en inglés e imperativo, sin prefijos convencionales.
-- **Idioma:** comentarios, docstrings y textos de la UI en español correcto, sin voseo. Los nombres de tests del backend van en inglés.
-- **Tests:** fakes escritos a mano en lugar de mocks, y cada test lleva un marcador de trazabilidad `SDD: NNN REQ-… AC-…` con el número de la spec (ADR-0022; los anteriores a la 011 no llevan número).
-- **Mantenimiento de este archivo:** la sección **Proyecto** la actualiza el `doc-keeper` en la etapa `docs` cuando una feature la deja desactualizada (ADR-0013). Las demás secciones solo cambian mediante un ADR.
+- **Idioma de los artefactos y de los mensajes al usuario:** `es`.
+- **Ramas:** se parte de `main`; `feat/NNN-slug`, `fix/NNN-slug` y `fix/NNN-slug`.
+- **Commits:** idioma `en`, estilo "imperative, no conventional prefixes". Un commit por etapa. Nunca `--no-verify`, `git add -A` ni `push --force` a `main`.
+- **Iteraciones de corrección** antes de escalar al usuario: 3.
+- **Ámbitos** (`scopes` de `.sdd/config.json`):
+
+| Ámbito | Raíz | Test | Lint | Typecheck | Build |
+|---|---|---|---|---|---|
+| `backend` | `backend` | `".venv/Scripts/python.exe" -m pytest -q` | ratchet (ruff) | — | — |
+| `frontend` | `frontend` | `npm test` | `npm run lint` | `npx tsc -b` | `npm run build` |
+<!-- sdd-beto:convenciones:end -->
+
+## Ramas `chore/…`
+
+- `chore/…` solo para cambios del harness, de documentación o de CI/CD: sin SDD completo y con ADR si introducen una decisión nueva (ADR-0016). Nunca se trabaja directamente en `main`.
