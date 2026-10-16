@@ -10,7 +10,7 @@
   "branch": "feat/016-past-date-measurements",
   "base_branch": "main",
   "created_at": "2026-10-16T10:30:55.104Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,7 +29,10 @@
       "at": "2026-10-16T20:19:32.039Z",
       "note": "auto (gate_mode=flow): red check PASS repetido tras corregir AC-007.6"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-16T20:21:48.095Z",
+      "note": "auto (gate_mode=flow): todo en verde"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -39,7 +42,7 @@
     "spec": "4779ea7",
     "plan": "27516a5",
     "tasks": "74fd138",
-    "tests": "f13f042"
+    "tests": "b1bd525"
   },
   "iterations": {
     "tests": 0,
@@ -315,6 +318,36 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS repetido tras corregir AC-007.6"
+    },
+    {
+      "at": "2026-10-16T20:19:32.260Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: b1bd525"
+    },
+    {
+      "at": "2026-10-16T20:19:32.445Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Reanudar implement: el código T-030 a T-037 ya existe; cerrar el desfase de AC-007.6"
+    },
+    {
+      "at": "2026-10-16T20:21:47.928Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "Decisiones: aviso REQ-009 se oculta al editar; medición posterior solo si hubo cambio medible; sin profile en caché se conservan valores del formulario"
+    },
+    {
+      "at": "2026-10-16T20:21:48.012Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-030 a T-037; pytest 831, vitest 680, tsc y ruff ratchet OK"
+    },
+    {
+      "at": "2026-10-16T20:21:48.095Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): todo en verde"
     }
   ]
 }

@@ -70,6 +70,8 @@ def _parse_recorded_at(value, today):
         raise ValidationError(INVALID_DATE_MESSAGE)
     if parsed > today + timedelta(days=1):
         raise ValidationError(FUTURE_DATE_MESSAGE)
+    if parsed < today - timedelta(days=PAST_LIMIT_DAYS):
+        raise ValidationError(TOO_OLD_DATE_MESSAGE)
     return parsed
 
 

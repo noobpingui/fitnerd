@@ -3,6 +3,7 @@ import { LIMITS } from "@/features/onboarding/constants"
 import { inRange } from "@/features/onboarding/schemas"
 import type { WeightUnit } from "@/features/onboarding/types"
 import { KG_PER_LB } from "@/features/onboarding/units"
+import { shiftIsoDate } from "@/lib/dates"
 import type {
   BodyMetric,
   CreateBodyMetricPayload,
@@ -94,19 +95,94 @@ export type MetricRegistrationErrorKey =
 // `today` es la fecha del dispositivo ("YYYY-MM-DD"). El aviso "Registra al
 // menos un valor" va en la ruta ["values"] para que `fieldMessages` lo recoja.
 export function makeMetricRegistrationSchema(
-  _weightUnit: WeightUnit,
-  _today: string
+  weightUnit: WeightUnit,
+  today: string
 ): z.ZodType<MetricRegistrationValues, MetricRegistrationValues> {
-  throw new Error("not implemented")
+  const weightLimits = weightUnit === "kg" ? LIMITS.kg : LIMITS.lb
+  const oldest = shiftIsoDate(today, -REGISTRATION_PAST_DAYS)
+
+  return z
+    .object({
+      date: z.string(),
+      weight: z.string(),
+      fat: z.string(),
+      muscle: z.string(),
+    })
+    .superRefine((values, ctx) => {
+      const weight = values.weight.trim()
+      const fat = values.fat.trim()
+      const muscle = values.muscle.trim()
+
+      if (values.date === "") {
+        ctx.addIssue({ code: "custom", path: ["date"], message: "Elige una fecha" })
+      } else if (values.date > today) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["date"],
+          message: "La fecha no puede ser futura",
+        })
+      } else if (values.date < oldest) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["date"],
+          message: "Solo puedes registrar mediciones del último año",
+        })
+      }
+
+      if (weight === "" && fat === "" && muscle === "") {
+        ctx.addIssue({
+          code: "custom",
+          path: ["values"],
+          message: "Registra al menos un valor",
+        })
+      }
+
+      if (weight !== "" && !inRange(weight, weightLimits)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["weight"],
+          message: `Entre ${weightLimits.min} y ${weightLimits.max} ${weightUnit}`,
+        })
+      }
+
+      if (fat !== "" && !inRange(fat, FAT_LIMITS)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["fat"],
+          message: `Entre ${FAT_LIMITS.min} y ${FAT_LIMITS.max} %`,
+        })
+      }
+
+      if (muscle !== "" && !inRange(muscle, MUSCLE_LIMITS)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["muscle"],
+          message: `Entre ${MUSCLE_LIMITS.min} y ${MUSCLE_LIMITS.max} %`,
+        })
+      }
+    })
 }
 
 // Cuerpo del POST: la fecha siempre; cada valor solo si está relleno; el peso
 // convertido a kg (si la unidad es lb) y redondeado a un decimal.
 export function registrationPayload(
-  _values: MetricRegistrationValues,
-  _weightUnit: WeightUnit
+  values: MetricRegistrationValues,
+  weightUnit: WeightUnit
 ): CreateBodyMetricPayload {
-  throw new Error("not implemented")
+  const weight = values.weight.trim()
+  const fat = values.fat.trim()
+  const muscle = values.muscle.trim()
+  return {
+    recorded_at: values.date,
+    ...(weight !== "" && {
+      weight:
+        Math.round(
+          Number(weight) * (weightUnit === "lb" ? KG_PER_LB : 1) * 10
+        ) / 10,
+    }),
+    ...(fat !== "" && { body_fat_percentage: Number(fat) }),
+    ...(muscle !== "" && { muscle_mass_percentage: Number(muscle) }),
+  }
 }
 
 function orNull(text: string) {

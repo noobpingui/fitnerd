@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from "react"
+import { useMemo, useState, type ReactNode } from "react"
 import { Link } from "react-router"
 import { motion } from "motion/react"
 import {
@@ -16,6 +16,7 @@ import { ApiError } from "@/lib/apiClient"
 import { cn } from "@/lib/utils"
 import { MetricsHistory } from "@/features/body-metrics/components/MetricsHistory"
 import { ProgressAnalysis } from "@/features/body-metrics/components/ProgressAnalysis"
+import { RegisterMetricDialog } from "@/features/body-metrics/components/RegisterMetricDialog"
 import { TrendChart } from "@/features/body-metrics/components/TrendChart"
 import { formatDate } from "@/features/body-metrics/dateUtils"
 import { todayIsoDate } from "@/lib/dates"
@@ -38,6 +39,7 @@ function fadeIn(index: number) {
 }
 
 export function BodyMetricsPage() {
+  const [registering, setRegistering] = useState(false)
   const { data: metrics, isLoading, isError, error } = useBodyMetrics()
   const { data: profileResponse } = useProfile()
   const profile = useMemo(
@@ -70,9 +72,23 @@ export function BodyMetricsPage() {
   return (
     <div className="mx-auto max-w-4xl p-4 sm:p-8">
       <h1 className="mb-1 text-2xl font-bold">Métricas</h1>
-      <p className="mb-6 text-muted-foreground">
-        Tu progreso a partir de las mediciones que registras en tu perfil.
+      <p className="mb-4 text-muted-foreground">
+        Tu progreso a partir de las mediciones que registras aquí o en tu perfil.
       </p>
+
+      {!isLoading && !isError && (
+        <Button className="mb-6" onClick={() => setRegistering(true)}>
+          Registrar medición
+        </Button>
+      )}
+
+      {registering && (
+        <RegisterMetricDialog
+          metrics={metrics ?? []}
+          weightUnit={weightUnit}
+          onClose={() => setRegistering(false)}
+        />
+      )}
 
       {isLoading && <p className="text-muted-foreground">Cargando...</p>}
 
@@ -88,8 +104,8 @@ export function BodyMetricsPage() {
           <CardContent className="flex flex-col items-center gap-3 py-8 text-center">
             <p className="font-medium">Aún no tienes mediciones</p>
             <p className="max-w-sm text-sm text-muted-foreground">
-              Registra tu peso y, si lo conoces, tu composición corporal desde
-              tu perfil. Aquí verás cómo evolucionan.
+              Registra tu peso y, si lo conoces, tu composición corporal aquí o
+              desde tu perfil. Aquí verás cómo evolucionan.
             </p>
             <Button asChild variant="outline">
               <Link to="/profile">Ir a mi perfil</Link>
