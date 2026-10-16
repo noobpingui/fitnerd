@@ -123,6 +123,11 @@ export function addPhysicalDataIssues(
   ctx: z.RefinementCtx,
   today: Date
 ): void {
+  for (const key of ["gender", "activityLevel", "goal"] as const) {
+    if (values[key] === null) {
+      ctx.addIssue({ code: "custom", path: [key], message: "Elige una opción" })
+    }
+  }
   const dobMessage = dateOfBirthMessage(values.dateOfBirth, today)
   if (dobMessage !== null) {
     ctx.addIssue({ code: "custom", path: ["dateOfBirth"], message: dobMessage })

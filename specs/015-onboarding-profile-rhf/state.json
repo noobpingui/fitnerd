@@ -9,7 +9,7 @@
   "branch": "fix/015-onboarding-profile-rhf",
   "base_branch": "main",
   "created_at": "2026-10-16T04:11:19.304Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -28,7 +28,10 @@
       "at": "2026-10-16T08:43:51.339Z",
       "note": "auto (gate_mode=flow): 5 tests de F2 en rojo legítimo"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-16T08:45:15.536Z",
+      "note": "auto (gate_mode=flow): F1, issue Elige una opción para enums null"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -39,7 +42,8 @@
     "plan": "618cba5",
     "tasks": "2dc8b48",
     "tests": "6bb94e7",
-    "implement": "84e7e3d"
+    "implement": "84e7e3d",
+    "tests-fix": "cf1da40"
   },
   "iterations": {
     "tests": 1,
@@ -341,6 +345,30 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): 5 tests de F2 en rojo legítimo"
+    },
+    {
+      "at": "2026-10-16T08:43:51.560Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests-fix: cf1da40"
+    },
+    {
+      "at": "2026-10-16T08:43:51.645Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Corregir F1"
+    },
+    {
+      "at": "2026-10-16T08:45:15.449Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F1 corregido; 612 tests"
+    },
+    {
+      "at": "2026-10-16T08:45:15.536Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F1, issue Elige una opción para enums null"
     }
   ]
 }
