@@ -67,3 +67,7 @@
 - [ ] Etapa docs: documentar en docs/deploy-runbook.md el volcado previo y el `flask db upgrade` de la migración a7d3f9c1e5b2 (Art. P4).
 - [ ] Etapa docs: pasar ADR-0025 a "Aceptada" si el usuario la aprueba en el gate.
 - [ ] Tildes en textos de tests anteriores a la 014 (p. ej. el describe "LoginForm - recuperacion de contraseña" y el docstring de FakePasswordResetRepository).
+
+## docs · doc-keeper
+- [ ] ADR-0025 sigue por pasar a "Aceptada" (el usuario la aprobó en la review; las ADRs no son del doc-keeper).
+- [ ] La fila "pendiente" del historial del runbook hay que completarla (PR, fecha y volcado) tras el despliegue.

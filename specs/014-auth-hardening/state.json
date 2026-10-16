@@ -10,7 +10,7 @@
   "branch": "feat/014-auth-hardening",
   "base_branch": "main",
   "created_at": "2026-10-16T01:36:04.914Z",
-  "stage": "docs",
+  "stage": "close",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -41,7 +41,10 @@
       "at": "2026-10-16T03:25:31.713Z",
       "note": "Aprobado, los NIT al backlog"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-16T03:26:28.179Z",
+      "note": "auto (gate_mode=flow): runbook caso B' para a7d3f9c1e5b2, README y CLAUDE.md"
+    },
     "close": null
   },
   "commits": {
@@ -55,7 +58,8 @@
     "plan-fix": "c925722",
     "tasks-fix": "ead2cfb",
     "tests-fix-2": "1290032",
-    "implement-fix": "1ac3b26"
+    "implement-fix": "1ac3b26",
+    "review": "875ce13"
   },
   "iterations": {
     "tests": 2,
@@ -585,6 +589,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Aprobado, los NIT al backlog"
+    },
+    {
+      "at": "2026-10-16T03:25:31.947Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: 875ce13"
+    },
+    {
+      "at": "2026-10-16T03:25:32.098Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Actualizar documentación"
+    },
+    {
+      "at": "2026-10-16T03:26:28.097Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "Runbook caso B', README y CLAUDE.md actualizados"
+    },
+    {
+      "at": "2026-10-16T03:26:28.179Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): runbook caso B' para a7d3f9c1e5b2, README y CLAUDE.md"
     }
   ]
 }
