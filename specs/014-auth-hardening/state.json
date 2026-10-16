@@ -10,8 +10,8 @@
   "branch": "feat/014-auth-hardening",
   "base_branch": "main",
   "created_at": "2026-10-16T01:36:04.914Z",
-  "stage": "close",
-  "status": "in_progress",
+  "stage": "done",
+  "status": "done",
   "approvals": {
     "spec": {
       "at": "2026-10-16T02:57:04.893Z",
@@ -45,7 +45,10 @@
       "at": "2026-10-16T03:26:28.179Z",
       "note": "auto (gate_mode=flow): runbook caso B' para a7d3f9c1e5b2, README y CLAUDE.md"
     },
-    "close": null
+    "close": {
+      "at": "2026-10-16T03:34:04.240Z",
+      "note": "Sí, pasos 1 a 3 ahora, el merge después de migrar"
+    }
   },
   "commits": {
     "spec": "466b39f",
@@ -59,7 +62,8 @@
     "tasks-fix": "ead2cfb",
     "tests-fix-2": "1290032",
     "implement-fix": "1ac3b26",
-    "review": "875ce13"
+    "review": "875ce13",
+    "docs": "c50928f"
   },
   "iterations": {
     "tests": 2,
@@ -613,6 +617,36 @@
       "stage": "docs",
       "event": "approved",
       "note": "auto (gate_mode=flow): runbook caso B' para a7d3f9c1e5b2, README y CLAUDE.md"
+    },
+    {
+      "at": "2026-10-16T03:26:28.359Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: c50928f"
+    },
+    {
+      "at": "2026-10-16T03:26:28.439Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Checklist de hecho, backlog global e integración"
+    },
+    {
+      "at": "2026-10-16T03:27:10.992Z",
+      "stage": "close",
+      "event": "done",
+      "note": "Checklist de hecho OK; backlog global con 17 puntos"
+    },
+    {
+      "at": "2026-10-16T03:34:04.240Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Sí, pasos 1 a 3 ahora, el merge después de migrar"
+    },
+    {
+      "at": "2026-10-16T03:34:04.240Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
     }
   ]
 }
