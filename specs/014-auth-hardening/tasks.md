@@ -44,10 +44,10 @@
 - [x] T-038 [REQ-011] (impl) Implementar `usePasswordResetNotice` (estado fijado al montar y `navigate` con `replace` y `state: null`) y usarlo en `LoginForm` — `frontend/src/features/auth/hooks.ts`, `frontend/src/features/auth/components/LoginForm.tsx`
 
 ### Iteración 2 — correcciones de la review (F1–F5, REQ-013)
-- [ ] T-039 [REQ-010, AC-010.1, AC-010.2, AC-010.3] (impl) F1: `get_by_token_hash` vuelve a ser lectura sin bloqueo y nuevo `get_by_token_hash_for_update` con `.with_for_update()` y `populate_existing=True`, con comentario del bloqueo — `backend/repositories/password_reset_repository.py`
-- [ ] T-040 [REQ-010, AC-010.1, AC-010.2, AC-010.3, AC-010.4] (impl) F1: `reset_password` lee sin bloqueo, valida enlace y contraseña, calcula bcrypt, relee con `get_by_token_hash_for_update` y revalida con `_ensure_link_is_usable`, todo dentro del `try` con `rollback` — `backend/services/password_reset_service.py`
-- [ ] T-041 [REQ-012, AC-012.2] (impl) F3: claves de U+2028 y U+2029 en `_NAMED_ESCAPES` escritas como `" "` y `" "`, sin cambiar el comportamiento — `backend/utils/email_sender.py`
-- [ ] T-042 [REQ-013, AC-013.1, AC-013.2, AC-013.3, AC-013.4, AC-013.5] (impl) F5: `emailSchema = z.string().trim().pipe(z.email("Email inválido"))` usado por `loginSchema`, `registerSchema` y `forgotPasswordSchema`, y actualizar el comentario de cabecera — `frontend/src/features/auth/schemas.ts`
+- [x] T-039 [REQ-010, AC-010.1, AC-010.2, AC-010.3] (impl) F1: `get_by_token_hash` vuelve a ser lectura sin bloqueo y nuevo `get_by_token_hash_for_update` con `.with_for_update()` y `populate_existing=True`, con comentario del bloqueo — `backend/repositories/password_reset_repository.py`
+- [x] T-040 [REQ-010, AC-010.1, AC-010.2, AC-010.3, AC-010.4] (impl) F1: `reset_password` lee sin bloqueo, valida enlace y contraseña, calcula bcrypt, relee con `get_by_token_hash_for_update` y revalida con `_ensure_link_is_usable`, todo dentro del `try` con `rollback` — `backend/services/password_reset_service.py`
+- [x] T-041 [REQ-012, AC-012.2] (impl) F3: claves de U+2028 y U+2029 en `_NAMED_ESCAPES` escritas como `" "` y `" "`, sin cambiar el comportamiento — `backend/utils/email_sender.py`
+- [x] T-042 [REQ-013, AC-013.1, AC-013.2, AC-013.3, AC-013.4, AC-013.5] (impl) F5: `emailSchema = z.string().trim().pipe(z.email("Email inválido"))` usado por `loginSchema`, `registerSchema` y `forgotPasswordSchema`, y actualizar el comentario de cabecera — `frontend/src/features/auth/schemas.ts`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

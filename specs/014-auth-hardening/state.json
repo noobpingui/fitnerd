@@ -10,7 +10,7 @@
   "branch": "feat/014-auth-hardening",
   "base_branch": "main",
   "created_at": "2026-10-16T01:36:04.914Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,7 +29,10 @@
       "at": "2026-10-16T03:07:36.087Z",
       "note": "auto (gate_mode=flow): red check PASS, 6 rojos legítimos (F1 y REQ-013)"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-16T03:09:54.672Z",
+      "note": "auto (gate_mode=flow): F1 (relectura con bloqueo tras validar), F3 (escapes), REQ-013 (emailSchema)"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -44,7 +47,8 @@
     "tests-fix": "e2a3976",
     "spec-fix": "34d1ae8",
     "plan-fix": "c925722",
-    "tasks-fix": "ead2cfb"
+    "tasks-fix": "ead2cfb",
+    "tests-fix-2": "1290032"
   },
   "iterations": {
     "tests": 2,
@@ -496,6 +500,30 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS, 6 rojos legítimos (F1 y REQ-013)"
+    },
+    {
+      "at": "2026-10-16T03:07:41.909Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests-fix-2: 1290032"
+    },
+    {
+      "at": "2026-10-16T03:07:41.986Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "T-039 a T-042 (F1, F3, REQ-013)"
+    },
+    {
+      "at": "2026-10-16T03:09:54.590Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-039 a T-042; backend 807, frontend 504"
+    },
+    {
+      "at": "2026-10-16T03:09:54.672Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F1 (relectura con bloqueo tras validar), F3 (escapes), REQ-013 (emailSchema)"
     }
   ]
 }

@@ -116,31 +116,42 @@ class PasswordResetService:
             self.unit_of_work.rollback()
             raise
 
+    def _ensure_link_is_usable(self, row):
+        if (
+            row is None
+            or row.user_id is None
+            or row.used_at is not None
+            or row.invalidated_at is not None
+            or self.clock() - row.created_at >= TOKEN_TTL
+        ):
+            raise ValidationError(INVALID_LINK_MESSAGE)
+
     def reset_password(self, token, password):
         if not isinstance(token, str) or not token:
             raise ValidationError(INVALID_LINK_MESSAGE)
 
         try:
-            # La lectura bloquea la fila (FOR UPDATE); el rollback de abajo libera el bloqueo
-            # también cuando se lanza un ValidationError.
-            row = self.password_reset_repository.get_by_token_hash(hash_token(token))
-            now = self.clock()
-            if (
-                row is None
-                or row.user_id is None
-                or row.used_at is not None
-                or row.invalidated_at is not None
-                or now - row.created_at >= TOKEN_TTL
-            ):
-                raise ValidationError(INVALID_LINK_MESSAGE)
+            token_hash = hash_token(token)
+            repo = self.password_reset_repository
 
+            # Primero sin bloqueo: un enlace o una contraseña inválidos fallan sin esperar
+            # ni consumir el enlace.
+            row = repo.get_by_token_hash(token_hash)
+            self._ensure_link_is_usable(row)
             validate_new_password(password)
+            hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+
+            # Después se relee con FOR UPDATE y se revalida: si otra petición consumió el
+            # enlace mientras esperábamos, esta recibe "enlace no válido". El rollback de
+            # abajo libera el bloqueo también cuando se lanza un ValidationError.
+            row = repo.get_by_token_hash_for_update(token_hash)
+            self._ensure_link_is_usable(row)
 
             user = self.user_repository.get_by_id(row.user_id)
             if user is None:
                 raise ValidationError(INVALID_LINK_MESSAGE)
 
-            hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+            now = self.clock()
             user.password_hash = hashed.decode("utf-8")
             row.used_at = now
             self.unit_of_work.commit()
