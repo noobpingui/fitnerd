@@ -1,6 +1,6 @@
 # ADR-0025: Correo canónico en minúsculas, migración de datos que falla ante conflictos y enlace de restablecimiento consumido con bloqueo de fila
 
-- **Estado:** Propuesta · 2026-10-16 (feature `014-auth-hardening`)
+- **Estado:** Aceptada · 2026-10-15 (aprobada por el usuario en el gate de `review` de `014-auth-hardening`)
 - **Decidido por:** el planner lo propone; lo acepta o rechaza el usuario en el gate de `review` (modo `flow`).
 
 ## Contexto

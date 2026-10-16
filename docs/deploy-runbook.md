@@ -191,6 +191,6 @@ Merge del PR y paso 6.
 | 2026-10-14 | 011, ritmo poco realista | #4, `863ec4b` | — | — |
 | 2026-10-14 | 012, retirada del catálogo | #6, `ebb3003` | `f2c4e6a8b0d1`, aplicada después del CD (5 tablas borradas) | `prod-2026-10-14.dump` |
 | 2026-10-15 | 013, pulido de 006–010 | #7, `0596d9e` | — | — |
-| pendiente | 014, endurecimiento de la autenticación | — | `a7d3f9c1e5b2`, a aplicar antes del merge (correos a minúsculas; falla si hay conflictos) | pendiente |
+| 2026-10-15 | 014, endurecimiento de la autenticación | #13, `8f21df4` | `a7d3f9c1e5b2`, aplicada antes del merge (sin cambios de datos: 0 correos con mayúsculas) | `prod-2026-10-15.dump` |
 
 Añade una fila en cada despliegue.
