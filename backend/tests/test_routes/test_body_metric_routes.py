@@ -949,7 +949,8 @@ def test_a_past_post_with_the_user_id_of_another_user_creates_its_own(client, ap
     user_a = create_user(app, "a@example.com")
     user_b = create_user(app, "b@example.com")
     save_profile(client, user_b["headers"], PROFILE_KG)
-    assert post(client, user_b["headers"], {"weight": 80, "recorded_at": day(-5)}).status_code == 201
+    seeded = post(client, user_b["headers"], {"weight": 80, "recorded_at": day(-5)})
+    assert seeded.status_code == 201
     b_history = listing(client, user_b["headers"])
     b_profile = read_profile(client, user_b["headers"])
 

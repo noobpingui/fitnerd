@@ -355,12 +355,12 @@ describe("BodyMetricsPage - tras registrar con fecha pasada", () => {
   it("la composición corporal dice 'Según tu medición del' con la fecha de la grasa registrada", async () => {
     const user = userEvent.setup()
     const m11 = metric("2026-10-11", 78)
-    const m05 = metric("2026-10-05", null, 20)
+    const m05 = metric("2026-10-05", 80, 20)
     listMock.mockResolvedValueOnce([m11]).mockResolvedValue([m05, m11])
     renderPage()
     await screen.findByRole("heading", { name: "Composición corporal" })
 
-    await register(user, { date: "2026-10-05", fat: "20" })
+    await register(user, { date: "2026-10-05", weight: "80", fat: "20" })
 
     expect(
       await screen.findByText(`Según tu medición del ${formatDate("2026-10-05")}.`)

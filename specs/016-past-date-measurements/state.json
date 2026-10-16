@@ -10,16 +10,25 @@
   "branch": "feat/016-past-date-measurements",
   "base_branch": "main",
   "created_at": "2026-10-16T10:30:55.104Z",
-  "stage": "plan",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-10-16T19:25:55.117Z",
       "note": "Si"
     },
-    "plan": null,
-    "tasks": null,
-    "tests": null,
+    "plan": {
+      "at": "2026-10-16T19:26:06.563Z",
+      "note": "auto (gate_mode=flow): plan.md sin cambios tras el rework de spec (AC-007.6)"
+    },
+    "tasks": {
+      "at": "2026-10-16T19:26:06.857Z",
+      "note": "auto (gate_mode=flow): tasks.md sin cambios tras el rework de spec (AC-007.6)"
+    },
+    "tests": {
+      "at": "2026-10-16T20:19:32.039Z",
+      "note": "auto (gate_mode=flow): red check PASS repetido tras corregir AC-007.6"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -27,7 +36,7 @@
     "close": null
   },
   "commits": {
-    "spec": "2db1af0",
+    "spec": "4779ea7",
     "plan": "27516a5",
     "tasks": "74fd138",
     "tests": "f13f042"
@@ -39,8 +48,8 @@
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-16T20:19:17.695Z"
   },
   "verify": {
     "result": null,
@@ -51,15 +60,15 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-16T11:03:55.531Z",
-    "reason": "Tests 016 aprobados tras red check PASS",
+    "at": "2026-10-16T19:26:47.352Z",
+    "reason": "Corrección de AC-007.6 (peso 80 y grasa 20) y E501 tras rework de spec",
     "sha256": {
-      "backend/tests/test_routes/test_body_metric_routes.py": "be158c4a2d1502cb4064d2df66dd86c599a3375d1e1d39e469213ce22c555bf6",
+      "backend/tests/test_routes/test_body_metric_routes.py": "e9d8db14baebe1340e934d9034a9aefde7bb9d9a313c34342d0aab7b7ca42091",
       "backend/tests/test_services/test_body_metric_service.py": "b494c87ecc1481ab5483ddd6f8a30ce743e1ad37d216498b082a5bfbb74e3da1",
       "frontend/src/features/body-metrics/components/RegisterMetricDialog.test.tsx": "32249952bbab9badd1ad8ea6223be21dcaea46775406a54d5b875125653b9b8d",
       "frontend/src/features/body-metrics/laterWeight.test.ts": "aec5e7ed5572c21e7427bd13d25209754448314fdb77550b4add571a8adb0a2a",
       "frontend/src/features/body-metrics/pages/BodyMetricsPage.analysis.test.tsx": "dbdb8195aaf11ac5c80e460b1a042db3b0742320a93eeabeb57d5a24da852f39",
-      "frontend/src/features/body-metrics/pages/BodyMetricsPage.register.test.tsx": "c155045227c101d96c4c4116c95b25579b027050e30117e3b8e76f27449994c0",
+      "frontend/src/features/body-metrics/pages/BodyMetricsPage.register.test.tsx": "ded31cfed6d1ca90ab1f87bea08d07e8bde02632f5659fcd130fa46c3ba5087a",
       "frontend/src/features/body-metrics/schemas.test.ts": "d3210b19d002c8120d2fdf27fd046cd0fc46c174c13aed7e6ce12b9893b93533",
       "frontend/src/features/profile/pages/ProfilePage.test.tsx": "3406cc56523830cb61f82323b7172978d0613a202c71464cd458fc1fb7cadf1c",
       "frontend/src/lib/dates.test.ts": "de703fc4de14148262ffe54e1ca99c134a251d7867ce479504fe12bf7d9d26ff"
@@ -234,6 +243,78 @@
       "stage": "spec",
       "event": "approved",
       "note": "Si"
+    },
+    {
+      "at": "2026-10-16T19:26:06.270Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 4779ea7"
+    },
+    {
+      "at": "2026-10-16T19:26:06.375Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Reaprobación tras corregir AC-007.6: sin cambios en plan.md"
+    },
+    {
+      "at": "2026-10-16T19:26:06.469Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md sin cambios; AC-007.6 solo cambia los datos de un test"
+    },
+    {
+      "at": "2026-10-16T19:26:06.563Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan.md sin cambios tras el rework de spec (AC-007.6)"
+    },
+    {
+      "at": "2026-10-16T19:26:06.663Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Reaprobación tras corregir AC-007.6: sin cambios en tasks.md"
+    },
+    {
+      "at": "2026-10-16T19:26:06.762Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks.md sin cambios; AC-007.6 solo cambia los datos de un test"
+    },
+    {
+      "at": "2026-10-16T19:26:06.857Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): tasks.md sin cambios tras el rework de spec (AC-007.6)"
+    },
+    {
+      "at": "2026-10-16T19:26:43.961Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Corrección de AC-007.6 y E501; red check previo PASS (f13f042)"
+    },
+    {
+      "at": "2026-10-16T19:26:47.352Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "9 archivo(s) de test: Corrección de AC-007.6 (peso 80 y grasa 20) y E501 tras rework de spec"
+    },
+    {
+      "at": "2026-10-16T20:15:55.426Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Red check de nuevo (rework de spec AC-007.6): producción en stash temporal, restaurar tras el verifier"
+    },
+    {
+      "at": "2026-10-16T20:19:17.695Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red check tras corregir AC-007.6 y E501. Backend: 3 fallos AC-005.2 por aserción (173 passed; regresión en verde por diseño). Frontend: 67 fallos legítimos (not implemented, elemento ausente, 1 aserción), 86 passed; tsc -b OK. Tests idénticos al snapshot."
+    },
+    {
+      "at": "2026-10-16T20:19:32.039Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS repetido tras corregir AC-007.6"
     }
   ]
 }
