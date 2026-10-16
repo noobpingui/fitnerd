@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { Link, MemoryRouter, Route, Routes } from "react-router"
 import { getCurrentUser } from "@/features/auth/api"
 import { createBodyMetric, listBodyMetrics } from "@/features/body-metrics/api"
+import { formatDate } from "@/features/body-metrics/dateUtils"
 import { getProfile, saveProfile } from "@/features/profile/api"
 import { HomePage } from "@/features/home/pages/HomePage"
 import { MacrosPage } from "@/features/macros/pages/MacrosPage"
@@ -919,5 +920,133 @@ describe("ProfilePage - guardado del formulario (spec 015)", () => {
     await waitFor(() => expect(createMetricMock).toHaveBeenCalledTimes(2))
     expect(createMetricMock.mock.calls[0][0]).toMatchObject({ weight: 80 })
     expect(createMetricMock.mock.calls[1][0]).toMatchObject({ weight: 79.5 })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Spec 016 (008 F2): relectura tras registrar y aviso si existe una medición
+// de peso posterior a hoy. "Hoy" fijo: 12-10-2026.
+// ---------------------------------------------------------------------------
+
+describe("ProfilePage - medición posterior a hoy y relectura (spec 016)", () => {
+  const PROFILE_80 = makeProfileResponse({ date_of_birth: "1998-04-03" }, { weight: 80 })
+  const PROFILE_79 = makeProfileResponse({ date_of_birth: "1998-04-03" }, { weight: 79 })
+  const LATER = {
+    id: "later",
+    weight: 80,
+    body_fat_percentage: null,
+    muscle_mass_percentage: null,
+    notes: null,
+    recorded_at: "2026-10-13",
+  }
+  const WARNING = `Guardamos tu medición de hoy, pero tu peso del perfil es el de tu medición más reciente, del ${formatDate("2026-10-13")}. Puedes corregirla o borrarla en Métricas.`
+
+  beforeEach(() => {
+    getProfileMock.mockReset()
+    saveMock.mockReset()
+    listMetricsMock.mockReset()
+    createMetricMock.mockReset()
+    getCurrentUserMock.mockReset()
+    getCurrentUserMock.mockResolvedValue({
+      email: "ana@example.com",
+    } as Awaited<ReturnType<typeof getCurrentUser>>)
+    Element.prototype.hasPointerCapture = vi.fn(() => false)
+    Element.prototype.setPointerCapture = vi.fn()
+    Element.prototype.releasePointerCapture = vi.fn()
+    Element.prototype.scrollIntoView = vi.fn()
+    vi.useFakeTimers({ toFake: ["Date"] })
+    vi.setSystemTime(new Date(2026, 9, 12, 12, 0))
+    saveMock.mockResolvedValue(PROFILE_79)
+    createMetricMock.mockResolvedValue({ ...LATER, id: "today", recorded_at: "2026-10-12", weight: 79 })
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  // SDD: 016 REQ-008 AC-008.3
+  it("tras guardar un cambio de peso se vuelven a leer el perfil y las mediciones", async () => {
+    const user = userEvent.setup()
+    getProfileMock.mockResolvedValueOnce(PROFILE_80).mockResolvedValue(PROFILE_79)
+    listMetricsMock.mockResolvedValue([])
+    renderPage()
+    await dobInput()
+    const profileCallsBefore = getProfileMock.mock.calls.length
+    const metricCallsBefore = listMetricsMock.mock.calls.length
+
+    await typeInto(user, spinbuttons()[1], "79")
+    await user.click(saveButton())
+
+    expect(await screen.findByText("Cambios guardados")).toBeInTheDocument()
+    expect(createMetricMock).toHaveBeenCalledTimes(1)
+    expect(getProfileMock.mock.calls.length).toBeGreaterThan(profileCallsBefore)
+    expect(listMetricsMock.mock.calls.length).toBeGreaterThan(metricCallsBefore)
+  })
+
+  // SDD: 016 REQ-009 AC-009.1
+  it("con una medición del día 13, registra la de hoy, muestra 80 en el peso y el aviso con esa fecha", async () => {
+    const user = userEvent.setup()
+    getProfileMock.mockResolvedValue(PROFILE_80)
+    listMetricsMock.mockResolvedValue([LATER])
+    renderPage()
+    await dobInput()
+
+    await typeInto(user, spinbuttons()[1], "79")
+    await user.click(saveButton())
+
+    expect(await screen.findByText(WARNING)).toBeInTheDocument()
+    expect(createMetricMock).toHaveBeenCalledTimes(1)
+    expect(createMetricMock.mock.calls[0][0]).toMatchObject({
+      recorded_at: "2026-10-12",
+      weight: 79,
+    })
+    expect(spinbuttons()[1]).toHaveValue(80)
+  })
+
+  // SDD: 016 REQ-009 AC-009.2
+  it("con la medición posterior no muestra 'Cambios guardados'", async () => {
+    const user = userEvent.setup()
+    getProfileMock.mockResolvedValue(PROFILE_80)
+    listMetricsMock.mockResolvedValue([LATER])
+    renderPage()
+    await dobInput()
+
+    await typeInto(user, spinbuttons()[1], "79")
+    await user.click(saveButton())
+
+    await screen.findByText(WARNING)
+    expect(screen.queryByText("Cambios guardados")).not.toBeInTheDocument()
+  })
+
+  // SDD: 016 REQ-009 AC-009.3
+  it("sin medición posterior muestra 'Cambios guardados', no el aviso y el peso 79", async () => {
+    const user = userEvent.setup()
+    getProfileMock.mockResolvedValueOnce(PROFILE_80).mockResolvedValue(PROFILE_79)
+    listMetricsMock.mockResolvedValue([])
+    renderPage()
+    await dobInput()
+
+    await typeInto(user, spinbuttons()[1], "79")
+    await user.click(saveButton())
+
+    expect(await screen.findByText("Cambios guardados")).toBeInTheDocument()
+    expect(screen.queryByText(/Guardamos tu medición de hoy/)).not.toBeInTheDocument()
+    expect(spinbuttons()[1]).toHaveValue(79)
+  })
+
+  // SDD: 016 REQ-009 AC-009.4
+  it("tras el aviso no quedan cambios pendientes", async () => {
+    const user = userEvent.setup()
+    getProfileMock.mockResolvedValue(PROFILE_80)
+    listMetricsMock.mockResolvedValue([LATER])
+    renderPage()
+    await dobInput()
+
+    await typeInto(user, spinbuttons()[1], "79")
+    await user.click(saveButton())
+    await screen.findByText(WARNING)
+
+    expect(saveButton()).toBeDisabled()
+    expect(discardButton()).not.toBeInTheDocument()
   })
 })

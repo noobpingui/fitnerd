@@ -4,12 +4,13 @@
 // BodyMetricsPage.test.tsx, aquí NO se sustituye ProgressAnalysis. La red se
 // simula en api.ts (vi.mock) y el gráfico se sustituye por un stub.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { render, screen, waitFor } from "@testing-library/react"
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { MemoryRouter, Route, Routes } from "react-router"
 import {
   analyzeBodyMetrics,
+  createBodyMetric,
   listBodyMetrics,
   updateBodyMetric,
 } from "@/features/body-metrics/api"
@@ -390,5 +391,57 @@ describe("BodyMetricsPage - análisis con ritmo poco realista", () => {
     await waitFor(() => expect(analyzeMock).toHaveBeenCalledTimes(1))
     expect(firstArg()).toMatchObject({ indicators: { pace_status: "too_slow" } })
     expect(await screen.findByText("Ajuste de calorías sugerido")).toBeInTheDocument()
+  })
+})
+
+describe("BodyMetricsPage - análisis tras registrar con fecha pasada (spec 016)", () => {
+  // Abre el diálogo "Registrar medición", guarda un peso en kg y espera a que cierre.
+  async function registerWeight(
+    user: ReturnType<typeof userEvent.setup>,
+    date: string,
+    weight: string
+  ) {
+    await user.click(await screen.findByRole("button", { name: "Registrar medición" }))
+    const dialog = await screen.findByRole("dialog", { name: "Registrar medición" })
+    fireEvent.change(within(dialog).getByLabelText("Fecha"), { target: { value: date } })
+    await user.type(within(dialog).getByLabelText("Peso (kg)"), weight)
+    await user.click(within(dialog).getByRole("button", { name: "Guardar" }))
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+    )
+  }
+
+  // SDD: 016 REQ-007 AC-007.2
+  it("la petición de análisis lleva el ritmo calculado con las tres mediciones", async () => {
+    const user = userEvent.setup()
+    const m11 = metric("2026-10-11", 80)
+    const m01 = metric("2026-10-01", 81)
+    const m06 = metric("2026-10-06", 80.5)
+    getProfileMock.mockResolvedValue(
+      makeProfileResponse({ date_of_birth: "1996-10-12" }, BASE_PROFILE)
+    )
+    vi.mocked(createBodyMetric).mockResolvedValue(m01)
+    listMock
+      .mockReset()
+      .mockResolvedValueOnce([m11])
+      .mockResolvedValueOnce([m01, m11])
+      .mockResolvedValue([m01, m06, m11])
+    renderPage()
+
+    await registerWeight(user, "2026-10-01", "81")
+    await registerWeight(user, "2026-10-06", "80.5")
+    await waitFor(() =>
+      expect(screen.queryByText("Faltan registros para calcularlo")).not.toBeInTheDocument()
+    )
+    await user.click(await screen.findByRole("button", { name: BUTTON }))
+
+    await waitFor(() => expect(analyzeMock).toHaveBeenCalledTimes(1))
+    const request = firstArg() as {
+      indicators: { rate: string | null; total_records: number }
+      rate_kg_per_week: number | null
+    }
+    expect(request.indicators.total_records).toBe(3)
+    expect(request.indicators.rate).not.toBeNull()
+    expect(request.rate_kg_per_week).not.toBeNull()
   })
 })

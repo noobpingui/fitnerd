@@ -7,6 +7,12 @@ export function parseLocalDate(isoDate: string) {
   return new Date(year, month - 1, day)
 }
 
+// Suma (o resta, con días negativos) días a una fecha "YYYY-MM-DD" y devuelve
+// otra "YYYY-MM-DD". Opera en UTC para no depender del huso ni del horario de verano.
+export function shiftIsoDate(_isoDate: string, _days: number): string {
+  throw new Error("not implemented")
+}
+
 // Fecha de hoy en formato "YYYY-MM-DD", en hora LOCAL: new Date().toISOString()
 // siempre convierte a UTC primero.
 export function todayIsoDate() {

@@ -822,3 +822,153 @@ def test_update_rejects_a_huge_integer_weight_and_keeps_metric_and_profile():
     assert existing.weight == 80
     assert profile.weight == 80
     assert env.uow.committed is False
+
+
+# --------------------------------------------------------------------------
+# Spec 016: mediciones con fecha pasada (el servidor está en 2026-10-12)
+# --------------------------------------------------------------------------
+
+DATE_TOO_OLD = "La fecha de la medición no puede tener más de un año de antigüedad"
+
+
+# SDD: 016 REQ-005 AC-005.1
+def test_save_accepts_a_date_366_days_before_the_server():
+    """El 2025-10-11 (366 días antes del 2026-10-12) se acepta."""
+    env = make_env()
+
+    result = env.service.save_metric(USER, {"weight": 80, "recorded_at": "2025-10-11"})
+
+    assert result.created is True
+    assert result.metric.recorded_at == date(2025, 10, 11)
+    assert env.uow.committed is True
+
+
+# SDD: 016 REQ-005 AC-005.2
+def test_save_rejects_a_date_367_days_before_the_server():
+    """El 2025-10-10 (367 días antes) se rechaza sin crear ni confirmar nada."""
+    assert_save_rejected({"weight": 80, "recorded_at": "2025-10-10"}, DATE_TOO_OLD)
+
+
+# SDD: 016 REQ-005 AC-005.2
+def test_a_too_old_date_leaves_metrics_and_profile_untouched():
+    """Un registro rechazado por antigüedad no toca mediciones ni perfil ni bloquea al usuario."""
+    existing = make_metric(recorded_at=date(2026, 10, 11), weight=78)
+    profile = make_profile(weight=78)
+    env = make_env([existing], {USER: profile})
+
+    with pytest.raises(ValidationError) as excinfo:
+        env.service.save_metric(USER, {"weight": 60, "recorded_at": "2025-10-10"})
+
+    assert excinfo.value.message == DATE_TOO_OLD
+    assert existing.weight == 78
+    assert profile.weight == 78
+    assert env.metrics.created == []
+    assert env.uow.committed is False
+    assert env.users.for_update_calls == []
+
+
+# SDD: 016 REQ-005 AC-005.3
+def test_a_future_date_still_gets_the_future_message():
+    """El 2026-10-14 sigue dando el mensaje de fecha futura, no el de antigüedad."""
+    assert_save_rejected({"weight": 80, "recorded_at": "2026-10-14"}, DATE_FUTURE)
+
+
+# SDD: 016 REQ-003 AC-003.7
+def test_save_creates_a_past_metric_when_that_day_has_none():
+    """Sin medición el 2026-10-05, se crea (created=True) con esa fecha."""
+    env = make_env()
+
+    result = env.service.save_metric(USER, {"weight": 80, "recorded_at": "2026-10-05"})
+
+    assert result.created is True
+    assert result.metric.recorded_at == date(2026, 10, 5)
+    assert result.metric.weight == 80
+
+
+# SDD: 016 REQ-003 AC-003.8
+def test_save_merges_into_the_existing_past_metric_of_that_day():
+    """Con una medición del 2026-10-05 (80, grasa 20), enviar 79 conserva id y grasa."""
+    existing = make_metric(recorded_at=date(2026, 10, 5), weight=80, fat=20)
+    env = make_env([existing])
+
+    result = env.service.save_metric(USER, {"weight": 79, "recorded_at": "2026-10-05"})
+
+    assert result.created is False
+    assert result.metric.id == existing.id
+    assert result.metric.weight == 79
+    assert result.metric.body_fat_percentage == 20
+    assert len(env.metrics.list_by_user(USER)) == 1
+
+
+# SDD: 016 REQ-006 AC-006.1
+def test_a_past_weight_before_the_latest_one_keeps_the_profile_weight():
+    """Perfil en 78 y medición del 11: registrar 80 el día 5 no lo cambia."""
+    latest = make_metric(recorded_at=date(2026, 10, 11), weight=78)
+    profile = make_profile(weight=78)
+    env = make_env([latest], {USER: profile})
+
+    env.service.save_metric(USER, {"weight": 80, "recorded_at": "2026-10-05"})
+
+    assert profile.weight == 78
+
+
+# SDD: 016 REQ-006 AC-006.2
+def test_a_past_weight_that_becomes_the_latest_moves_the_profile_weight():
+    """Con una única medición del día 1, la del día 5 (77) pasa a ser la última."""
+    only = make_metric(recorded_at=date(2026, 10, 1), weight=78)
+    profile = make_profile(weight=78)
+    env = make_env([only], {USER: profile})
+
+    env.service.save_metric(USER, {"weight": 77, "recorded_at": "2026-10-05"})
+
+    assert profile.weight == 77
+
+
+# SDD: 016 REQ-006 AC-006.3
+def test_a_past_weight_keeps_a_profile_in_pounds_unchanged():
+    """Perfil en lb (172) y medición del 11 de 78 kg: registrar 80 kg el día 5 lo deja igual."""
+    latest = make_metric(recorded_at=date(2026, 10, 11), weight=78)
+    profile = make_profile(weight=172, weight_unit="lb")
+    env = make_env([latest], {USER: profile})
+
+    env.service.save_metric(USER, {"weight": 80, "recorded_at": "2026-10-05"})
+
+    assert profile.weight == 172
+    assert profile.weight_unit == "lb"
+
+
+# SDD: 016 REQ-006 AC-006.4
+def test_a_past_metric_without_weight_keeps_the_profile_weight():
+    """Registrar solo grasa en una fecha pasada deja el peso del perfil en 78."""
+    latest = make_metric(recorded_at=date(2026, 10, 11), weight=78)
+    profile = make_profile(weight=78)
+    env = make_env([latest], {USER: profile})
+
+    env.service.save_metric(USER, {"body_fat_percentage": 20, "recorded_at": "2026-10-05"})
+
+    assert profile.weight == 78
+
+
+# SDD: 016 REQ-006 AC-006.6
+def test_a_past_metric_without_a_profile_does_not_create_one():
+    """Sin perfil, la medición pasada se guarda y no se crea ningún perfil."""
+    env = make_env()
+
+    result = env.service.save_metric(USER, {"weight": 80, "recorded_at": "2026-10-05"})
+
+    assert result.created is True
+    assert env.profiles.profiles == {}
+    assert env.uow.committed is True
+
+
+# SDD: 016 REQ-009 AC-009.5
+def test_a_metric_of_today_keeps_the_weight_of_a_later_dated_metric():
+    """Con una medición del día 13 (80), registrar 79 el día 12 deja el perfil en 80."""
+    later = make_metric(recorded_at=date(2026, 10, 13), weight=80)
+    profile = make_profile(weight=80)
+    env = make_env([later], {USER: profile})
+
+    result = env.service.save_metric(USER, {"weight": 79, "recorded_at": "2026-10-12"})
+
+    assert result.created is True
+    assert profile.weight == 80

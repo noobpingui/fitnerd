@@ -5,6 +5,7 @@ import type { WeightUnit } from "@/features/onboarding/types"
 import { KG_PER_LB } from "@/features/onboarding/units"
 import type {
   BodyMetric,
+  CreateBodyMetricPayload,
   UpdateBodyMetricPayload,
 } from "@/features/body-metrics/types"
 
@@ -72,6 +73,40 @@ export function makeMetricCorrectionSchema(
         })
       }
     })
+}
+
+export const REGISTRATION_PAST_DAYS = 365
+
+export type MetricRegistrationValues = {
+  date: string // "YYYY-MM-DD" o "" si el usuario la borró
+  weight: string
+  fat: string
+  muscle: string
+}
+
+export type MetricRegistrationErrorKey =
+  | "date"
+  | "weight"
+  | "fat"
+  | "muscle"
+  | "values"
+
+// `today` es la fecha del dispositivo ("YYYY-MM-DD"). El aviso "Registra al
+// menos un valor" va en la ruta ["values"] para que `fieldMessages` lo recoja.
+export function makeMetricRegistrationSchema(
+  _weightUnit: WeightUnit,
+  _today: string
+): z.ZodType<MetricRegistrationValues, MetricRegistrationValues> {
+  throw new Error("not implemented")
+}
+
+// Cuerpo del POST: la fecha siempre; cada valor solo si está relleno; el peso
+// convertido a kg (si la unidad es lb) y redondeado a un decimal.
+export function registrationPayload(
+  _values: MetricRegistrationValues,
+  _weightUnit: WeightUnit
+): CreateBodyMetricPayload {
+  throw new Error("not implemented")
 }
 
 function orNull(text: string) {

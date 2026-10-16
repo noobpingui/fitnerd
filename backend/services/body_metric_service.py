@@ -19,7 +19,9 @@ FAT_MESSAGE = "El porcentaje de grasa corporal debe estar entre 3 y 60"
 MUSCLE_MESSAGE = "El porcentaje de masa muscular debe estar entre 10 y 70"
 INVALID_DATE_MESSAGE = "La fecha de la medición no es válida"
 FUTURE_DATE_MESSAGE = "La fecha de la medición no puede ser futura"
+TOO_OLD_DATE_MESSAGE = "La fecha de la medición no puede tener más de un año de antigüedad"
 NOT_FOUND_MESSAGE = "Registro no encontrado"
+PAST_LIMIT_DAYS = 366
 
 WEIGHT_RANGE = (29.9, 300)
 FAT_RANGE = (3, 60)
