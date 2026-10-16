@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "language": "es",
+  "base_branch": "main",
+  "branches": {
+    "feature": "feat",
+    "fix": "fix",
+    "refactor": "fix"
+  },
+  "commits": {
+    "language": "en",
+    "style": "imperative, no conventional prefixes"
+  },
+  "max_iterations": 3,
+  "gate_mode": "flow",
+  "paths": {
+    "specs": "specs",
+    "adr": "docs/sdd/decisions",
+    "docs": [
+      "README.md",
+      "frontend/README.md",
+      "docs/**"
+    ],
+    "env_examples": [
+      "**/.env.example"
+    ],
+    "backlog": "docs/backlog.md"
+  },
+  "scopes": {
+    "backend": {
+      "root": "backend",
+      "prod": [
+        "backend/{app,config,extensions,wsgi}.py",
+        "backend/{routes,services,repositories,models,utils,decorators,exceptions,unit_of_work,migrations}/**"
+      ],
+      "tests": [
+        "backend/tests/**"
+      ],
+      "commands": {
+        "test": "\".venv/Scripts/python.exe\" -m pytest -q",
+        "test_files": "\".venv/Scripts/python.exe\" -m pytest -q {files}",
+        "test_check": "\".venv/Scripts/python.exe\" -m pytest --collect-only -q {files}",
+        "lint": null,
+        "lint_ratchet": {
+          "format": "ruff",
+          "cmd": "\".venv/Scripts/python.exe\" -m ruff check --output-format json --stdin-filename {file} -"
+        },
+        "typecheck": null,
+        "build": null
+      },
+      "env_hint": "Levanta Postgres con `docker compose up -d postgres redis` (puerto 5433), comprueba `backend/.env` (TEST_DATABASE_URL y claves JWT: `python -m scripts.generate_jwt_keys`) y que `backend/.venv` tenga requirements.txt y requirements-dev.txt instalados."
+    },
+    "frontend": {
+      "root": "frontend",
+      "prod": [
+        "frontend/src/**",
+        "frontend/index.html",
+        "frontend/vite.config.ts",
+        "frontend/public/**"
+      ],
+      "tests": [
+        "frontend/src/**/*.test.{ts,tsx}",
+        "frontend/src/test/**"
+      ],
+      "commands": {
+        "test": "npm test",
+        "test_files": "npx vitest run {files}",
+        "test_check": "npx vitest list {files}",
+        "lint": "npm run lint",
+        "lint_ratchet": null,
+        "typecheck": "npx tsc -b",
+        "build": "npm run build"
+      },
+      "env_hint": "Instala las dependencias con `npm ci` en frontend/."
+    }
+  },
+  "models": {}
+}
