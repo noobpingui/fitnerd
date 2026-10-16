@@ -30,6 +30,7 @@ Como **responsable del servicio**, quiero **que el log de errores del proveedor 
 - Validar el formato del correo en el servidor al registrarse.
 - Que el login nunca responda con un error interno ante una contraseña demasiado larga o un campo ausente o que no sea texto.
 - Escapar los caracteres de control del fragmento de error de Resend que se escribe en el log.
+- Que los formularios de registro, login y solicitud de restablecimiento acepten un correo con espacios al principio o al final, igual que el servidor (hallazgo F5 de la revisión).
 
 **Fuera de alcance:**
 - Traducir al español los mensajes de error actuales del registro y el login (`Wrong Credentials`, `Email already registered`).
@@ -144,6 +145,15 @@ WHEN Resend responde con un error HTTP y se escribe en el log el fragmento de su
 - **AC-012.5:** Given que Resend responde `403` con un cuerpo de 200 saltos de línea seguidos de 300 letras `b`, When se intenta enviar un correo, Then la entrada del log contiene los 200 saltos de línea escapados como `\n` y ninguna letra `b` (el recorte a 200 caracteres se aplica sobre el texto original, antes de escapar).
 - **AC-012.6:** Given que Resend responde `401` con un cuerpo que contiene la API key seguida de un salto de línea, When se intenta enviar un correo, Then la entrada del log no contiene la API key y la excepción y la respuesta al usuario no cambian (`503` con "No se pudo enviar el correo. Inténtalo de nuevo más tarde.").
 
+### REQ-013 — Correo con espacios en los formularios
+WHEN el usuario envía el formulario de registro, de login o de solicitud de restablecimiento THE SYSTEM SHALL quitar los espacios del principio y del final del correo antes de validar su formato y enviar la petición con el correo sin esos espacios. IF el correo, sin esos espacios, no tiene formato de correo THEN THE SYSTEM SHALL mostrar "Email inválido" junto al campo y no enviar ninguna petición.
+
+- **AC-013.1:** Given el formulario de registro con los demás campos válidos y el correo `"  Ana@Example.COM "`, When el usuario lo envía, Then no se muestra "Email inválido" y se envía la petición de registro con el correo `"Ana@Example.COM"`.
+- **AC-013.2:** Given el formulario de login con el correo `" ana@example.com  "` y la contraseña `Clave123`, When el usuario lo envía, Then no se muestra "Email inválido" y se envía la petición de login con el correo `"ana@example.com"`.
+- **AC-013.3:** Given el formulario de solicitud de restablecimiento con el correo `"  Ana@Example.com "`, When el usuario lo envía, Then no se muestra "Email inválido" y se envía la solicitud con el correo `"Ana@Example.com"`.
+- **AC-013.4:** Given el formulario de registro con los demás campos válidos y el correo `"   "` (solo espacios), When el usuario lo envía, Then se muestra "Email inválido" junto al campo y no se envía ninguna petición.
+- **AC-013.5:** Given el formulario de registro con los demás campos válidos y el correo `" no-es-un-correo "`, When el usuario lo envía, Then se muestra "Email inválido" junto al campo y no se envía ninguna petición.
+
 ## 5. Requisitos no funcionales
 
 ### NFR-001 — Sin regresiones en la autenticación existente
@@ -158,6 +168,7 @@ THE SYSTEM SHALL mantener el comportamiento de la autenticación definido en las
 - Se guarda y se devuelve (`GET /api/auth/me`, campo `email`) en minúsculas.
 - El correo de restablecimiento se envía a la dirección guardada, en minúsculas.
 - En el registro, el formato se valida con la misma regla que ya usa la solicitud de restablecimiento.
+- En los formularios de registro, login y solicitud de restablecimiento se quitan los espacios del principio y del final antes de validar el formato, y la petición lleva el correo sin esos espacios; las mayúsculas se conservan en el formulario y las convierte el servidor (REQ-013).
 
 **Contraseña (registro y restablecimiento):**
 - Mínimo 8 caracteres, contados como puntos de código Unicode (un emoji cuenta como uno).

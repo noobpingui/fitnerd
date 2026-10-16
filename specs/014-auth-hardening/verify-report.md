@@ -1,14 +1,14 @@
 # Verify report 014 — Endurecer la autenticación: token de reset atómico, emails en minúsculas, reglas de contraseña unificadas y logs saneados
 
-- **Modo:** full (etapa verify), iteración 1
-- **Fecha:** 2026-10-16T02:31:35.910Z · **Rama:** `feat/014-auth-hardening` @ `f5f152c` · **Base:** `main`
-- **Resultado:** FAIL
+- **Modo:** full (etapa verify), iteración 2
+- **Fecha:** 2026-10-16T02:33:09.954Z · **Rama:** `feat/014-auth-hardening` @ `e2a3976` · **Base:** `main`
+- **Resultado:** PASS
 
 ## 1. Comandos ejecutados
 | Ámbito | Comando (cwd) | Resultado | Resumen de la salida |
 |---|---|---|---|
 | backend | `".venv/Scripts/python.exe" -m pytest -q` (`backend`) | ✅ | 804 passed (suite completa, incluidos los tests nuevos con marcador `SDD: 014`) |
-| backend | ratchet ruff: `node …/lint-ratchet.mjs backend` (raíz del repo) | ❌ | 6 violaciones E501 nuevas respecto a `main` (ver sección 4). Resto de archivos del ámbito sin violaciones nuevas. |
+| backend | ratchet ruff: `node …/lint-ratchet.mjs backend` (raíz del repo) | ✅ | Sin violaciones nuevas respecto a `main` (exit 0). Los 6 E501 de la iteración 1 están corregidos. |
 | frontend | `npm test` (`frontend`) | ✅ | 494 passed en 42 archivos |
 | frontend | `npm run lint` (`frontend`) | ✅ | 0 errores. 2 warnings previos fuera del diff (`src/components/ui/button.tsx:64`, `src/components/ui/form.tsx:159`) |
 | frontend | `npx tsc -b` (`frontend`) | ✅ | Sin errores |
@@ -40,17 +40,15 @@ Los 55 AC de `spec.md` aparecen en al menos un marcador `SDD: 014` de un test, y
 - AC sin test: —
 - REQ sin tarea: —
 - Tareas sin marcar `[x]`: —
-- `skip`, `xfail`, `.only` o equivalentes nuevos en el diff: ninguno (escaneo de `.py`, `.ts` y `.tsx` del diff `main...HEAD`; sin `unittest.mock` ni `monkeypatch` en los tests nuevos)
+- `skip`, `xfail`, `.only` o equivalentes nuevos en el diff: ninguno (escaneo del diff `main` en `backend` y `frontend`; sin `unittest.mock` ni `monkeypatch` en los tests nuevos)
+- Integridad de los tests tras la red check: los hashes SHA-256 de los 9 archivos de test coinciden con `tests_snapshot` de `state.json`, salvo `LoginForm.test.tsx`, cuyo blob en git (`ba93e2f` y `HEAD`) sí coincide con el snapshot; la diferencia de hash en el disco se debe solo a los fines de línea CRLF de la copia de trabajo, y `git status` no lo marca como modificado.
+- Cambios de test tras la red check (`ba93e2f` → `HEAD`): solo docstrings (corrección E501 de la iteración 1). Sin cambios de aserciones.
 
 ## 3. Criterios de aceptación manuales
 - Ninguno. Los AC de UX del aviso de `/login` (AC-011.1 a AC-011.5) tienen test automatizado.
 
 ## 4. Fallos (si los hay)
-| # | Qué falló | Salida relevante (recortada) | Responsable probable (test-author · implementer · entorno) |
-|---|---|---|---|
-| 1 | Ratchet de ruff (backend): 6 violaciones E501 nuevas respecto a `main` | `test_password_reset_routes.py` L656 (101 > 100) y L671 (103 > 100); `test_auth_service.py` L31 (115 > 100) y L149 (108 > 100); `test_email_sender.py` L263 (106 > 100); `test_password_reset_service.py` L668 (103 > 100) | test-author (son líneas de los tests de la etapa tests; el implementer ya lo anotó en `state.json` y no las corrigió) |
-
-Entorno: Postgres y Redis activos (`fitnerd-postgres-1`, `fitnerd-redis-1`). No hay errores de entorno.
+Ninguno. El fallo 1 de la iteración 1 (6 E501 nuevos en tests del ratchet de ruff backend) queda resuelto.
 
 ## Comentarios del usuario
 
