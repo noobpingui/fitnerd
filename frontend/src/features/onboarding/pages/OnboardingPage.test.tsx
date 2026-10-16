@@ -754,3 +754,43 @@ describe("OnboardingPage - envío (spec 015)", () => {
     expect(saveMock).toHaveBeenCalledTimes(1)
   })
 })
+
+describe("OnboardingPage - preguntas obligatorias sin responder (regresión F1)", () => {
+  beforeEach(() => {
+    getProfileMock.mockReset()
+    saveMock.mockReset()
+    localStorage.clear()
+    getProfileMock.mockResolvedValue(makePendingResponse("1996-03-01"))
+  })
+
+  // SDD: 015 REQ-007 AC-007.4
+  it("en el género sin elegir no hay botón 'Siguiente'", async () => {
+    renderOnboarding()
+
+    await screen.findByText("Masculino")
+
+    expect(screen.queryByRole("button", { name: "Siguiente" })).not.toBeInTheDocument()
+  })
+
+  // SDD: 015 REQ-007 AC-007.4
+  it("en la meta sin elegir, 'Comenzar' está deshabilitado y no se envía nada", async () => {
+    const user = userEvent.setup()
+    renderOnboarding()
+    await toDateStep(user)
+    await next(user)
+    await heading("¿Cuánto mides?")
+    await user.type(screen.getByPlaceholderText("Ej. 175"), "175")
+    await next(user)
+    await heading("¿Cuánto pesas?")
+    await user.type(screen.getByPlaceholderText("Ej. 72"), "72")
+    await next(user)
+    await heading("¿Cuál es tu nivel de actividad física?")
+    await user.click(screen.getByText("Moderado"))
+    await heading("¿Cuál es tu meta?")
+
+    const button = screen.getByRole("button", { name: "Comenzar" })
+    expect(button).toBeDisabled()
+    await user.click(button)
+    expect(saveMock).not.toHaveBeenCalled()
+  })
+})

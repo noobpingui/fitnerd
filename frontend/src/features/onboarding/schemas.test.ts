@@ -241,3 +241,23 @@ describe("fieldMessages", () => {
     expect(result.weight).toBe("Entre 30 y 300 kg")
   })
 })
+
+describe("esquema compartido - enums obligatorios (regresión F1 de la review)", () => {
+  // SDD: 015 REQ-007 AC-007.4
+  it("gender null no es válido y da un mensaje en la clave gender", () => {
+    expect(isValid({ gender: null })).toBe(false)
+    expect(messages({ gender: null }).gender).toBeTruthy()
+  })
+
+  // SDD: 015 REQ-007 AC-007.4
+  it("activityLevel null no es válido y da un mensaje en la clave activityLevel", () => {
+    expect(isValid({ activityLevel: null })).toBe(false)
+    expect(messages({ activityLevel: null }).activityLevel).toBeTruthy()
+  })
+
+  // SDD: 015 REQ-007 AC-007.4
+  it("goal null no es válido y da un mensaje en la clave goal", () => {
+    expect(isValid({ goal: null })).toBe(false)
+    expect(messages({ goal: null }).goal).toBeTruthy()
+  })
+})

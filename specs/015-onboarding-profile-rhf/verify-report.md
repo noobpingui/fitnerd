@@ -1,56 +1,52 @@
 # Verify report 015 — Migrar los formularios de onboarding y de datos físicos a react-hook-form con zod
 
-- **Modo:** red (tras la etapa tests)
-- **Fecha:** 2026-10-16T04:50:48.718Z · **Rama:** `fix/015-onboarding-profile-rhf` @ `2dc8b48` · **Base:** `main`
+- **Modo:** red (tras la etapa tests, ciclo de review 1, comprobación de F2)
+- **Fecha:** 2026-10-16T08:41:55.785Z · **Rama:** `fix/015-onboarding-profile-rhf` @ `84e7e3d` (con cambios sin commitear en los tests de F2) · **Base:** `main`
 - **Resultado:** PASS
 
 ## 1. Comandos ejecutados
 | Ámbito | Comando (cwd) | Resultado | Resumen de la salida |
 |---|---|---|---|
-| frontend | `npx vitest run` sobre los 5 archivos con marcador `SDD:` (`frontend`) | ❌ (esperado en rojo) | 139 tests en total: 102 pasan, 37 fallan. Los 37 fallos son rojos legítimos (`not implemented` del esqueleto o aserción sobre AC-003.5). Ningún error de sintaxis, configuración, fixture o import fuera del plan. |
+| frontend | `npx vitest run src/features/onboarding/schemas.test.ts src/features/onboarding/pages/OnboardingPage.test.tsx` (`frontend`) | ✅ (red legítimo esperado) | 72 tests en 2 archivos: 67 pasan, 5 fallan. Los 5 fallos son los tests nuevos de F2 (marcador `SDD: 015 REQ-007 AC-007.4`), todos por aserción |
 
-Archivos ejecutados: `src/features/onboarding/pages/OnboardingPage.test.tsx`, `src/features/onboarding/schemas.test.ts`, `src/features/onboarding/units.test.ts`, `src/features/profile/schemas.test.ts`, `src/features/profile/pages/ProfilePage.test.tsx`. Salida JSON de vitest en `C:/Users/alber/AppData/Local/Temp/claude/C--Users-alber-source-repos-fitnerd/9d9ae304-66b6-4231-b812-d0cd7bf97228/scratchpad/vitest015.json`.
-
-Excepción de caracterización (confirmada por el usuario en la iteración 1, ver "Comentarios del usuario"): los tests nuevos en verde son comportamiento ya existente (caracterización), incluidos los de T-016, T-018, T-023 y T-024. Se aceptan como guardas.
-
-Comandos no ejecutados en modo red: `lint`, `typecheck` y `build` (solo se ejecutan en verify).
+Alcance: solo los 5 tests nuevos de F2 (`schemas.test.ts`: 3; `OnboardingPage.test.tsx`: 2). Los 67 restantes son los de la iteración anterior, que ya estaban en verde por caracterización aceptada por el usuario.
 
 ## 2. Trazabilidad
+Esta comprobación es de modo red: el alcance es el rojo legítimo de los tests nuevos. La trazabilidad completa se revisará en `verify`.
+
 | REQ / NFR | AC | Tareas | Tests con `SDD:` | Estado del test |
 |---|---|---|---|---|
-| REQ-001 | AC-001.1 … AC-001.4 | T-010, T-011, T-012, T-017, T-023 | `onboarding/schemas.test.ts`, `onboarding/pages/OnboardingPage.test.tsx`, `profile/pages/ProfilePage.test.tsx` | ❌ rojo legítimo (scaffold) en los unitarios; ✅ en los de interfaz (caracterización) |
-| REQ-002 | AC-002.1, AC-002.2 | T-011, T-015, T-023 | `onboarding/schemas.test.ts`, `profile/schemas.test.ts`, `ProfilePage.test.tsx` | ❌ rojo legítimo (scaffold); ✅ en interfaz (caracterización) |
-| REQ-003 | AC-003.1 … AC-003.5 | T-013, T-016, T-018, T-019, T-024 | los cuatro archivos de test | ❌ rojo legítimo en AC-003.5 y en unitarios; ✅ en el resto (caracterización) |
-| REQ-004 | AC-004.1 … AC-004.3 | T-014, T-018, T-019, T-024 | `schemas.test.ts`, `OnboardingPage.test.tsx`, `ProfilePage.test.tsx` | ❌ rojo legítimo en unitarios; ✅ en interfaz (caracterización) |
-| REQ-005 | AC-005.1 … AC-005.3 | T-015, T-025 | `profile/schemas.test.ts`, `ProfilePage.test.tsx` | ❌ rojo legítimo (scaffold); ✅ en interfaz (caracterización) |
-| REQ-006 | AC-006.1 … AC-006.4 | T-016, T-020, T-026 | `onboarding/units.test.ts`, `OnboardingPage.test.tsx`, `ProfilePage.test.tsx` | ❌ rojo legítimo en AC-003.5 (`5.5` ft); ✅ en el resto (caracterización) |
-| REQ-007 | AC-007.1 … AC-007.5 | T-021 | `OnboardingPage.test.tsx` | ✅ (caracterización) |
-| REQ-008 | AC-008.1 … AC-008.3 | T-022 | `OnboardingPage.test.tsx` | ✅ (caracterización) |
-| REQ-009 | AC-009.1 … AC-009.6 | T-027, T-028 | `ProfilePage.test.tsx` | ✅ (caracterización) |
-| REQ-010 | AC-010.1, AC-010.2 | T-029 | `ProfilePage.test.tsx` | ✅ (caracterización) |
+| REQ-007 | AC-007.4 | T-021, T-044 | `onboarding/schemas.test.ts` ("gender null…", "activityLevel null…", "goal null…"); `onboarding/pages/OnboardingPage.test.tsx` ("en el género sin elegir…", "en la meta sin elegir…") | ❌ falla de forma legítima (rojo esperado, F1 sin corregir) |
 
-- AC sin test: — (los 37 AC de `spec.md` aparecen en al menos un marcador `SDD:` de los tests)
-- REQ sin tarea: —
-- Tareas sin marcar `[x]`: — (T-001 a T-030 marcadas; T-040 a T-046 son de la fase B, fuera de este modo)
-- `skip`, `xfail`, `.only`, `.skip` o equivalentes nuevos en el diff: —
-- Scaffold (T-001 a T-003): en `onboarding/schemas.ts` y `profile/schemas.ts` las funciones solo lanzan `not implemented`; las constantes de mensaje y los enums llevan su valor definitivo; `physicalDataShape` es un objeto de definición de tipos de zod. En `profile/types.ts` solo hay tipos. Sin lógica.
-- `onboarding/validation.test.ts` eliminado (T-030, borrado por el usuario; sus casos están trasladados en T-012).
+Detalle de los fallos legítimos:
+- `schemas.test.ts:248` (y los homólogos de `activityLevel` y `goal`): `expect(isValid({ gender: null })).toBe(false)` recibe `true`. El esquema acepta `null` en el enum. Es una aserción de comportamiento ausente, no un error de test.
+- `OnboardingPage.test.tsx:772`: en el paso de género sin elegir hay un botón "Siguiente" habilitado (`expect(...).not.toBeInTheDocument()` falla). Comportamiento ausente de F1.
+- `OnboardingPage.test.tsx:792`: en la meta sin elegir, "Comenzar" no está deshabilitado (`expect(button).toBeDisabled()` falla). Comportamiento ausente de F1.
+
+Ningún fallo es de sintaxis, configuración, fixture, ni import fuera del plan. El test "en la meta…" llega hasta el paso de meta antes de fallar, por lo que el flujo de los helpers `toDateStep`, `next` y `heading` funciona.
+
+Comprobaciones de la fase de scaffold (Art. B5.6 / paso 3 del modo red): `grep "not implemented" frontend/src` no devuelve coincidencias. Los esqueletos ya se sustituyeron por la implementación en la etapa implement, así que no hay esqueletos que comprobar en este ciclo.
+
+Estado de las tareas de la matriz: sin cambios en este ciclo (T-021, T-044 ya `[x]`).
+
+- AC sin test: — (no se evalúa en modo red)
+- REQ sin tarea: — (no se evalúa en modo red)
+- Tareas sin marcar `[x]`: — (no se evalúa en modo red)
+- `skip`, `xfail`, `.only` o equivalentes nuevos en el diff: ninguno. El diff de los tests desde `84e7e3d` solo añade líneas (60 inserciones, 0 borrados).
 
 ## 3. Criterios de aceptación manuales
-No se evalúan en modo red. Los AC visuales o de UX se revisarán en la etapa verify.
+Ninguno en este ciclo.
 
 ## 4. Fallos (si los hay)
-Ninguno bloqueante. Los 37 tests en rojo son rojos legítimos:
+Ningún fallo bloquea el PASS del modo red. Los 5 rojos son los esperados por la regresión F1 de la review (rojo legítimo):
 
 | # | Qué falló | Salida relevante (recortada) | Responsable probable (test-author · implementer · entorno) |
 |---|---|---|---|
-| 1 | 24 tests de `onboarding/schemas.test.ts` (traslado de 006 y casos de 015) fallan por esqueleto (`makePhysicalDataSchema`, `fieldMessages`). Rojo legítimo. | `Error: not implemented` (schemas.ts) | ninguno (rojo legítimo) |
-| 2 | 8 tests de `profile/schemas.test.ts` fallan por esqueleto (`makeProfileFormSchema`). Rojo legítimo. | `Error: not implemented` (profile/schemas.ts) | ninguno (rojo legítimo) |
-| 3 | 1 test de `units.test.ts` (AC-003.5, `5.5` ft no se convierte) falla por aserción: la conversión actual pasa a `168` cm. Rojo legítimo. | `expected { heightUnit: 'cm', heightCm: '168' } to deeply equal { heightUnit: 'cm' }` | ninguno (rojo legítimo) |
-| 4 | 2 tests de `OnboardingPage.test.tsx` (AC-003.5, `5.5` ft y `5` ft con `2.5` in) fallan por aserción: "Siguiente" sigue habilitado. Rojo legítimo. | `expect(element).toBeDisabled()` | ninguno (rojo legítimo) |
-| 5 | 2 tests de `ProfilePage.test.tsx` (AC-003.5, decimales en ft/in) fallan porque no aparece "Entre 3 y 8 ft". Rojo legítimo. | `Unable to find an element with the text: Entre 3 y 8 ft` | ninguno (rojo legítimo) |
-
-Los tests nuevos que pasan sin implementación son caracterización de comportamiento existente, aceptados por la excepción confirmada por el usuario.
+| R1 | `schemas.test.ts` › gender null no es válido | `expected true to be false` (`schemas.test.ts:248`) | rojo legítimo (implementer corrige F1) |
+| R2 | `schemas.test.ts` › activityLevel null no es válido | `expected true to be false` | rojo legítimo (implementer corrige F1) |
+| R3 | `schemas.test.ts` › goal null no es válido | `expected true to be false` | rojo legítimo (implementer corrige F1) |
+| R4 | `OnboardingPage.test.tsx` › en el género sin elegir no hay "Siguiente" | `expect(element).not.toBeInTheDocument()` encuentra `<button>Siguiente</button>` (`OnboardingPage.test.tsx:772`) | rojo legítimo (implementer corrige F1) |
+| R5 | `OnboardingPage.test.tsx` › en la meta sin elegir, "Comenzar" deshabilitado | `expect(element).toBeDisabled()` recibe un botón habilitado (`OnboardingPage.test.tsx:792`) | rojo legítimo (implementer corrige F1) |
 
 ## Comentarios del usuario
 

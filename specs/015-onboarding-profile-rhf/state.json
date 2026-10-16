@@ -9,7 +9,7 @@
   "branch": "fix/015-onboarding-profile-rhf",
   "base_branch": "main",
   "created_at": "2026-10-16T04:11:19.304Z",
-  "stage": "verify",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,13 +25,10 @@
       "note": "auto (gate_mode=flow): 31 tareas (3 scaffold, 21 test, 7 impl), 37 AC cubiertos"
     },
     "tests": {
-      "at": "2026-10-16T04:52:56.125Z",
-      "note": "auto (gate_mode=flow): red check PASS iteración 2 con excepción confirmada por el usuario"
+      "at": "2026-10-16T08:43:51.339Z",
+      "note": "auto (gate_mode=flow): 5 tests de F2 en rojo legítimo"
     },
-    "implement": {
-      "at": "2026-10-16T08:34:38.155Z",
-      "note": "auto (gate_mode=flow): RHF+zodResolver en los dos formularios, validation.ts eliminado"
-    },
+    "implement": null,
     "verify": null,
     "review": null,
     "docs": null,
@@ -41,17 +38,18 @@
     "spec": "aea1091",
     "plan": "618cba5",
     "tasks": "2dc8b48",
-    "tests": "6bb94e7"
+    "tests": "6bb94e7",
+    "implement": "84e7e3d"
   },
   "iterations": {
     "tests": 1,
     "implement": 0,
-    "review": 0
+    "review": 1
   },
   "max_iterations": 3,
   "red_check": {
     "result": "PASS",
-    "at": "2026-10-16T04:52:47.430Z"
+    "at": "2026-10-16T08:43:33.379Z"
   },
   "verify": {
     "result": null,
@@ -62,11 +60,11 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-16T04:52:56.014Z",
-    "reason": "Tests de 015 tras red check PASS (iteración 2)",
+    "at": "2026-10-16T08:43:51.224Z",
+    "reason": "Tests de F2 (review ciclo 1)",
     "sha256": {
-      "frontend/src/features/onboarding/pages/OnboardingPage.test.tsx": "5fbfbefaf2189f63a5943f68558d9dc55f732b7ead10fd1dec7bc3962a572d3c",
-      "frontend/src/features/onboarding/schemas.test.ts": "5230e1bd665cded9cc5e0544447312a38de85add9cd2a42314218bae187115e2",
+      "frontend/src/features/onboarding/pages/OnboardingPage.test.tsx": "3ce2a01422499eb19b7757ae7205997163c6618b62f64ca590706473911da2e6",
+      "frontend/src/features/onboarding/schemas.test.ts": "10a9dbd518525992d97f032dc26ff25746361a0be43f7eb6dc0240e4cd301827",
       "frontend/src/features/onboarding/units.test.ts": "c982fced06a653b16c62d54704d915d285ec09e3d35243892a26dca8b1814509",
       "frontend/src/features/profile/pages/ProfilePage.test.tsx": "9a2d602f6b4f830d80dbd9e485fb7c7ddc271d20b5acaeff263fc47d223d3084",
       "frontend/src/features/profile/schemas.test.ts": "1e59110d7d384ee9b0cab360545a607d3606dbca56ae1e199e0d2d0b31edce03"
@@ -259,6 +257,90 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): RHF+zodResolver en los dos formularios, validation.ts eliminado"
+    },
+    {
+      "at": "2026-10-16T08:34:43.796Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 84e7e3d"
+    },
+    {
+      "at": "2026-10-16T08:34:43.887Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa"
+    },
+    {
+      "at": "2026-10-16T08:36:52.559Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Full: frontend npm test 607/607, lint 0 errores (4 warnings, 2 nuevos por form.watch), tsc OK, build OK; 37/37 AC con test SDD verde; tareas [x]; sin skip/only nuevos"
+    },
+    {
+      "at": "2026-10-16T08:37:03.497Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS: 607 tests, lint/tsc/build OK, 37/37 AC"
+    },
+    {
+      "at": "2026-10-16T08:37:03.574Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-16T08:37:03.654Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review del diff"
+    },
+    {
+      "at": "2026-10-16T08:39:19.611Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "CHANGES_REQUESTED"
+    },
+    {
+      "at": "2026-10-16T08:39:19.702Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Review CHANGES_REQUESTED: F2 (tests de género/actividad/meta obligatorios) y después F1 (implementer) · review 1/3"
+    },
+    {
+      "at": "2026-10-16T08:41:42.430Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Ciclo de review 1: verifier modo red sobre los 5 tests de F2"
+    },
+    {
+      "at": "2026-10-16T08:43:28.656Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: x"
+    },
+    {
+      "at": "2026-10-16T08:43:33.379Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red check iteracion 2 del ciclo de review 1 (F2): 5 tests nuevos de F2 fallan por aserción (rojo legítimo, F1 sin corregir); 67 de caracterización en verde; el registro FAIL con nota 'x' fue un error del verifier y queda sustituido por este PASS"
+    },
+    {
+      "at": "2026-10-16T08:43:51.138Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS ciclo de review 1: 5 rojos legítimos de F2"
+    },
+    {
+      "at": "2026-10-16T08:43:51.224Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "5 archivo(s) de test: Tests de F2 (review ciclo 1)"
+    },
+    {
+      "at": "2026-10-16T08:43:51.339Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 5 tests de F2 en rojo legítimo"
     }
   ]
 }
