@@ -45,3 +45,6 @@
 - [ ] Recortar los espacios de los correos ya guardados (la migración solo pasa a minúsculas).
 - [ ] Contraseñas antiguas de más de 72 bytes dejan de entrar en el login (REQ-009); se recuperan con el restablecimiento.
 - [ ] Documentar en docs/deploy-runbook.md el paso manual de la migración a7d3f9c1e5b2 (etapa docs, Art. P4).
+
+## tasks (iteración 2) · task-breaker
+- [ ] Las tildes pendientes en textos anteriores a la 014, por ejemplo el docstring de `FakePasswordResetRepository`, no se tocan. El plan ya los manda al backlog.

@@ -21,6 +21,17 @@
 - [x] T-019 [REQ-008, AC-008.1, AC-008.2, AC-008.3, AC-008.4, AC-008.5, AC-008.6] (test) Formulario de registro: reglas y mensajes de contraseña sin enviar petición, envío con 72 bytes y error `400` del servidor mostrado — `frontend/src/features/auth/components/RegisterForm.test.tsx`
 - [x] T-020 [REQ-011, AC-011.1, AC-011.2, AC-011.3, AC-011.4, AC-011.5] (test) Aviso de contraseña actualizada en `/login`: visible en la visita, persiste con edición y `401`, no depende del historial tras recargar ni con "atrás" y ausente sin venir de un restablecimiento — `frontend/src/features/auth/components/LoginForm.test.tsx`
 
+### Iteración 2 — correcciones de la review (F1–F5, REQ-013)
+- [ ] T-021 [REQ-010, AC-010.1, AC-010.2, AC-010.3] (test) F1: `FakePasswordResetRepository` gana `get_by_token_hash_for_update` (registra la llamada y ejecuta el gancho `before_lock`) y tres tests de `reset_password`: `"corta"` no toma el bloqueo ni consume el enlace, carrera perdida con `rollback` sin `commit`, y orden lectura sin bloqueo → relectura con bloqueo — `backend/tests/test_services/test_password_reset_service.py`
+- [ ] T-022 [REQ-010, AC-010.1, AC-010.2, AC-010.3] (test) F4: en `concurrent_resets`, `assert` en español sobre el resultado de `wait_until`; para AC-010.3 la condición pasa a `done[0] and waiters >= 1` — `backend/tests/test_routes/test_password_reset_routes.py`
+- [ ] T-023 [NFR-001, AC-N001.1] (test) F2: tildes en docstrings, comentarios, mensajes de `assert` y nombres de tests añadidos por la 014 (bloque "Spec 014"), sin cambiar aserciones ni marcadores — `backend/tests/test_routes/test_password_reset_routes.py`, `backend/tests/test_services/test_email_sender.py`
+- [ ] T-024 [NFR-001, AC-N001.1] (test) F2: tildes en lo añadido por la 014 en los tests de autenticación y reglas de credenciales, sin cambiar aserciones ni marcadores — `backend/tests/test_routes/test_auth_routes.py`, `backend/tests/test_services/test_auth_service.py`, `backend/tests/test_services/test_credential_rules.py`
+- [ ] T-025 [NFR-001, AC-N001.1] (test) F2: tildes en lo añadido por la 014 en los tests de migración y de restablecimiento (solo lo de la 014), sin cambiar aserciones ni marcadores — `backend/tests/test_services/test_lowercase_emails_migration.py`, `backend/tests/test_services/test_password_reset_service.py`
+- [ ] T-026 [NFR-001, AC-N001.1] (test) F2: tildes en nombres de tests, comentarios y docstrings de la 014 en los tests de formularios, sin cambiar aserciones ni marcadores — `frontend/src/features/auth/components/LoginForm.test.tsx`, `frontend/src/features/auth/components/RegisterForm.test.tsx`
+- [ ] T-027 [REQ-013, AC-013.1, AC-013.4, AC-013.5] (test) Registro: correo `"  Ana@Example.COM "` se envía recortado y con sus mayúsculas; correo de solo espacios y `" no-es-un-correo "` dan "Email inválido" sin llamar a `register` — `frontend/src/features/auth/components/RegisterForm.test.tsx`
+- [ ] T-028 [REQ-013, AC-013.2] (test) Login: correo `" ana@example.com  "` no da "Email inválido" y el cuerpo de la petición lleva `email: "ana@example.com"` — `frontend/src/features/auth/components/LoginForm.test.tsx`
+- [ ] T-029 [REQ-013, AC-013.3] (test) Solicitud de restablecimiento: correo `"  Ana@Example.com "` no da "Email inválido" y el cuerpo de la petición lleva `email: "Ana@Example.com"` — `frontend/src/features/auth/components/ForgotPasswordForm.test.tsx`
+
 ## Fase B — Implementación (implementer)
 - [x] T-030 [REQ-001, REQ-006, REQ-007, REQ-009] (impl) Implementar `normalize_email`, `validate_email`, `validate_new_password` y `exceeds_bcrypt_limit` según el plan — `backend/services/credential_rules.py`
 - [x] T-031 [REQ-001, REQ-002, REQ-003, REQ-004, REQ-005] (impl) `UserRepository.get_by_email` sin distinguir mayúsculas (`func.lower`, orden por `created_at` e `id`) — `backend/repositories/user_repository.py`
@@ -31,6 +42,12 @@
 - [x] T-036 [REQ-005] (migration) Migración de datos `a7d3f9c1e5b2` (`down_revision = 'f2c4e6a8b0d1'`): correos a minúsculas con `RuntimeError` y lista de correos ante conflictos, downgrade sin acción — `backend/migrations/versions/a7d3f9c1e5b2_lowercase_user_emails.py`
 - [x] T-037 [REQ-008] (impl) `newPasswordSchema` compartido por `registerSchema` y `resetPasswordSchema`, y actualizar el comentario de cabecera — `frontend/src/features/auth/schemas.ts`
 - [x] T-038 [REQ-011] (impl) Implementar `usePasswordResetNotice` (estado fijado al montar y `navigate` con `replace` y `state: null`) y usarlo en `LoginForm` — `frontend/src/features/auth/hooks.ts`, `frontend/src/features/auth/components/LoginForm.tsx`
+
+### Iteración 2 — correcciones de la review (F1–F5, REQ-013)
+- [ ] T-039 [REQ-010, AC-010.1, AC-010.2, AC-010.3] (impl) F1: `get_by_token_hash` vuelve a ser lectura sin bloqueo y nuevo `get_by_token_hash_for_update` con `.with_for_update()` y `populate_existing=True`, con comentario del bloqueo — `backend/repositories/password_reset_repository.py`
+- [ ] T-040 [REQ-010, AC-010.1, AC-010.2, AC-010.3, AC-010.4] (impl) F1: `reset_password` lee sin bloqueo, valida enlace y contraseña, calcula bcrypt, relee con `get_by_token_hash_for_update` y revalida con `_ensure_link_is_usable`, todo dentro del `try` con `rollback` — `backend/services/password_reset_service.py`
+- [ ] T-041 [REQ-012, AC-012.2] (impl) F3: claves de U+2028 y U+2029 en `_NAMED_ESCAPES` escritas como `" "` y `" "`, sin cambiar el comportamiento — `backend/utils/email_sender.py`
+- [ ] T-042 [REQ-013, AC-013.1, AC-013.2, AC-013.3, AC-013.4, AC-013.5] (impl) F5: `emailSchema = z.string().trim().pipe(z.email("Email inválido"))` usado por `loginSchema`, `registerSchema` y `forgotPasswordSchema`, y actualizar el comentario de cabecera — `frontend/src/features/auth/schemas.ts`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |
@@ -74,19 +91,24 @@
 | REQ-009 | AC-009.3 | T-011, T-016 | T-030, T-033 |
 | REQ-009 | AC-009.4 | T-011, T-016 | T-030, T-033 |
 | REQ-009 | AC-009.5 | T-011, T-016 | T-030, T-033 |
-| REQ-010 | AC-010.1 | T-018 | T-032, T-034 |
-| REQ-010 | AC-010.2 | T-018 | T-032, T-034 |
-| REQ-010 | AC-010.3 | T-018 | T-032, T-034 |
-| REQ-010 | AC-010.4 | T-017 | T-032, T-034 |
+| REQ-010 | AC-010.1 | T-018, T-021, T-022 | T-032, T-034, T-039, T-040 |
+| REQ-010 | AC-010.2 | T-018, T-021, T-022 | T-032, T-034, T-039, T-040 |
+| REQ-010 | AC-010.3 | T-018, T-021, T-022 | T-032, T-034, T-039, T-040 |
+| REQ-010 | AC-010.4 | T-017 | T-032, T-034, T-040 |
 | REQ-011 | AC-011.1 | T-020 | T-038 |
 | REQ-011 | AC-011.2 | T-020 | T-038 |
 | REQ-011 | AC-011.3 | T-020 | T-038 |
 | REQ-011 | AC-011.4 | T-020 | T-038 |
 | REQ-011 | AC-011.5 | T-020 | T-038 |
 | REQ-012 | AC-012.1 | T-013 | T-035 |
-| REQ-012 | AC-012.2 | T-013 | T-035 |
+| REQ-012 | AC-012.2 | T-013 | T-035, T-041 |
 | REQ-012 | AC-012.3 | T-013 | T-035 |
 | REQ-012 | AC-012.4 | T-013 | T-035 |
 | REQ-012 | AC-012.5 | T-013 | T-035 |
 | REQ-012 | AC-012.6 | T-013, T-017 | T-035 |
-| NFR-001 | AC-N001.1 | T-017 | T-033, T-034 |
+| REQ-013 | AC-013.1 | T-027 | T-042 |
+| REQ-013 | AC-013.2 | T-028 | T-042 |
+| REQ-013 | AC-013.3 | T-029 | T-042 |
+| REQ-013 | AC-013.4 | T-027 | T-042 |
+| REQ-013 | AC-013.5 | T-027 | T-042 |
+| NFR-001 | AC-N001.1 | T-017, T-023, T-024, T-025, T-026 | T-033, T-034 |

@@ -10,7 +10,7 @@
   "branch": "feat/014-auth-hardening",
   "base_branch": "main",
   "created_at": "2026-10-16T01:36:04.914Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -21,7 +21,10 @@
       "at": "2026-10-16T03:01:03.784Z",
       "note": "auto (gate_mode=flow): plan iteración 2, get_by_token_hash_for_update tras validar (F1), emailSchema con trim (REQ-013)"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-16T03:01:51.678Z",
+      "note": "auto (gate_mode=flow): 13 tareas nuevas para REQ-013 y F1-F4"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -36,7 +39,8 @@
     "tests": "ba93e2f",
     "implement": "f5f152c",
     "tests-fix": "e2a3976",
-    "spec-fix": "34d1ae8"
+    "spec-fix": "34d1ae8",
+    "plan-fix": "c925722"
   },
   "iterations": {
     "tests": 2,
@@ -408,6 +412,36 @@
       "stage": "plan",
       "event": "approved",
       "note": "auto (gate_mode=flow): plan iteración 2, get_by_token_hash_for_update tras validar (F1), emailSchema con trim (REQ-013)"
+    },
+    {
+      "at": "2026-10-16T03:01:03.986Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan-fix: c925722"
+    },
+    {
+      "at": "2026-10-16T03:01:04.079Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Iteración 2: nuevo get_by_token_hash_for_update con populate_existing tras validar; emailSchema trim+email en 3 formularios; ADR-0025 actualizada; nuevas guardas en verde AC-013.4/013.5 y concurrencia"
+    },
+    {
+      "at": "2026-10-16T03:01:04.152Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Actualizar tareas: REQ-013 y F1-F4"
+    },
+    {
+      "at": "2026-10-16T03:01:51.598Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "13 tareas nuevas (T-021..T-029, T-039..T-042)"
+    },
+    {
+      "at": "2026-10-16T03:01:51.678Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 13 tareas nuevas para REQ-013 y F1-F4"
     }
   ]
 }
