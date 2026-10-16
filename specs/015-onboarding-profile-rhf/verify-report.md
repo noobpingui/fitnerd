@@ -1,52 +1,76 @@
 # Verify report 015 — Migrar los formularios de onboarding y de datos físicos a react-hook-form con zod
 
-- **Modo:** red (tras la etapa tests, ciclo de review 1, comprobación de F2)
-- **Fecha:** 2026-10-16T08:41:55.785Z · **Rama:** `fix/015-onboarding-profile-rhf` @ `84e7e3d` (con cambios sin commitear en los tests de F2) · **Base:** `main`
+- **Modo:** full (etapa verify, tras la corrección F3-F8 de la etapa implement)
+- **Fecha:** 2026-10-16T09:05:30.873Z · **Rama:** `fix/015-onboarding-profile-rhf` @ `81f118b` · **Base:** `main`
 - **Resultado:** PASS
 
 ## 1. Comandos ejecutados
 | Ámbito | Comando (cwd) | Resultado | Resumen de la salida |
 |---|---|---|---|
-| frontend | `npx vitest run src/features/onboarding/schemas.test.ts src/features/onboarding/pages/OnboardingPage.test.tsx` (`frontend`) | ✅ (red legítimo esperado) | 72 tests en 2 archivos: 67 pasan, 5 fallan. Los 5 fallos son los tests nuevos de F2 (marcador `SDD: 015 REQ-007 AC-007.4`), todos por aserción |
+| frontend | `npm test` (`frontend`) | ✅ | 44 archivos, 612/612 tests en verde |
+| frontend | `npm run lint` (`frontend`) | ✅ | exit 0; 0 errores; ⚠️ 2 warnings, ambos en archivos no tocados por la feature (`react(only-export-components)` en `components/ui/button.tsx:64` y `components/ui/form.tsx:159`). Los 2 warnings de `watch` de react-hook-form de la verificación anterior ya no aparecen (`useWatch`). Ningún warning nuevo (Art. P2.5) |
+| frontend | `npx tsc -b` (`frontend`) | ✅ | Sin errores (exit 0) |
+| frontend | `npm run build` (`frontend`) | ✅ | `tsc -b && vite build` correcto (exit 0). Aviso de Vite por chunk > 500 kB (no bloquea) |
 
-Alcance: solo los 5 tests nuevos de F2 (`schemas.test.ts`: 3; `OnboardingPage.test.tsx`: 2). Los 67 restantes son los de la iteración anterior, que ya estaban en verde por caracterización aceptada por el usuario.
+Ámbitos tocados (`changed --json`): solo `frontend`. Coinciden con `state.json.scope`. No hay cambios de backend, así que no se ejecuta ningún comando de backend. No hay cambios de modelo ni migraciones (Art. P4 no aplica).
 
 ## 2. Trazabilidad
-Esta comprobación es de modo red: el alcance es el rojo legítimo de los tests nuevos. La trazabilidad completa se revisará en `verify`.
+Requisitos: REQ-001 a REQ-010. No hay NFR en la spec. Los AC son 37 (AC-001.1 a AC-010.2). Los tests son los marcadores `SDD: 015 …` de los archivos de `frontend/src/features/onboarding/` y `frontend/src/features/profile/`. Todos pasan (612/612).
 
 | REQ / NFR | AC | Tareas | Tests con `SDD:` | Estado del test |
 |---|---|---|---|---|
-| REQ-007 | AC-007.4 | T-021, T-044 | `onboarding/schemas.test.ts` ("gender null…", "activityLevel null…", "goal null…"); `onboarding/pages/OnboardingPage.test.tsx` ("en el género sin elegir…", "en la meta sin elegir…") | ❌ falla de forma legítima (rojo esperado, F1 sin corregir) |
+| REQ-001 | AC-001.1 | T-010, T-012, T-017, T-023 | onboarding/schemas.test.ts; onboarding/pages/OnboardingPage.test.tsx; profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-001 | AC-001.2 | T-010, T-012, T-017, T-023 | onboarding/schemas.test.ts; onboarding/pages/OnboardingPage.test.tsx; profile/schemas.test.ts; profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-001 | AC-001.3 | T-010, T-012, T-017, T-023 | onboarding/schemas.test.ts; onboarding/pages/OnboardingPage.test.tsx; profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-001 | AC-001.4 | T-012, T-017 | onboarding/schemas.test.ts; onboarding/pages/OnboardingPage.test.tsx | ✅ |
+| REQ-002 | AC-002.1 | T-011, T-015, T-023 | onboarding/schemas.test.ts; profile/schemas.test.ts; profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-002 | AC-002.2 | T-023 | profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-003 | AC-003.1 | T-013, T-019, T-024 | onboarding/schemas.test.ts; onboarding/pages/OnboardingPage.test.tsx; profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-003 | AC-003.2 | T-013, T-018, T-024 | onboarding/schemas.test.ts; onboarding/pages/OnboardingPage.test.tsx; profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-003 | AC-003.3 | T-013, T-019, T-024 | onboarding/schemas.test.ts; onboarding/pages/OnboardingPage.test.tsx; profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-003 | AC-003.4 | T-013, T-018, T-024 | onboarding/schemas.test.ts; onboarding/pages/OnboardingPage.test.tsx; profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-003 | AC-003.5 | T-013, T-016, T-018, T-024 | onboarding/schemas.test.ts; onboarding/units.test.ts; onboarding/pages/OnboardingPage.test.tsx; profile/schemas.test.ts; profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-004 | AC-004.1 | T-014, T-019, T-024 | onboarding/schemas.test.ts; onboarding/pages/OnboardingPage.test.tsx; profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-004 | AC-004.2 | T-014, T-018, T-024 | onboarding/schemas.test.ts; onboarding/pages/OnboardingPage.test.tsx; profile/schemas.test.ts; profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-004 | AC-004.3 | T-014, T-018, T-024 | onboarding/schemas.test.ts; onboarding/pages/OnboardingPage.test.tsx; profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-005 | AC-005.1 | T-015, T-025 | profile/schemas.test.ts; profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-005 | AC-005.2 | T-015, T-025 | profile/schemas.test.ts; profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-005 | AC-005.3 | T-015, T-025 | profile/schemas.test.ts; profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-006 | AC-006.1 | T-016, T-020, T-026 | onboarding/units.test.ts; onboarding/pages/OnboardingPage.test.tsx; profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-006 | AC-006.2 | T-016 | onboarding/units.test.ts | ✅ |
+| REQ-006 | AC-006.3 | T-016, T-026 | onboarding/units.test.ts; profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-006 | AC-006.4 | T-016, T-020 | onboarding/units.test.ts; onboarding/pages/OnboardingPage.test.tsx | ✅ |
+| REQ-007 | AC-007.1 | T-021 | onboarding/pages/OnboardingPage.test.tsx | ✅ |
+| REQ-007 | AC-007.2 | T-021 | onboarding/pages/OnboardingPage.test.tsx | ✅ |
+| REQ-007 | AC-007.3 | T-021 | onboarding/pages/OnboardingPage.test.tsx | ✅ |
+| REQ-007 | AC-007.4 | T-021, T-044 | onboarding/schemas.test.ts; onboarding/pages/OnboardingPage.test.tsx | ✅ |
+| REQ-007 | AC-007.5 | T-021 | onboarding/pages/OnboardingPage.test.tsx | ✅ |
+| REQ-008 | AC-008.1 | T-022 | onboarding/pages/OnboardingPage.test.tsx | ✅ |
+| REQ-008 | AC-008.2 | T-022 | onboarding/pages/OnboardingPage.test.tsx | ✅ |
+| REQ-008 | AC-008.3 | T-022 | onboarding/pages/OnboardingPage.test.tsx | ✅ |
+| REQ-009 | AC-009.1 | T-027 | profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-009 | AC-009.2 | T-027 | profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-009 | AC-009.3 | T-027 | profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-009 | AC-009.4 | T-027 | profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-009 | AC-009.5 | T-028 | profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-009 | AC-009.6 | T-028 | profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-010 | AC-010.1 | T-029 | profile/pages/ProfilePage.test.tsx | ✅ |
+| REQ-010 | AC-010.2 | T-029 | profile/pages/ProfilePage.test.tsx; onboarding/schemas.test.ts | ✅ |
 
-Detalle de los fallos legítimos:
-- `schemas.test.ts:248` (y los homólogos de `activityLevel` y `goal`): `expect(isValid({ gender: null })).toBe(false)` recibe `true`. El esquema acepta `null` en el enum. Es una aserción de comportamiento ausente, no un error de test.
-- `OnboardingPage.test.tsx:772`: en el paso de género sin elegir hay un botón "Siguiente" habilitado (`expect(...).not.toBeInTheDocument()` falla). Comportamiento ausente de F1.
-- `OnboardingPage.test.tsx:792`: en la meta sin elegir, "Comenzar" no está deshabilitado (`expect(button).toBeDisabled()` falla). Comportamiento ausente de F1.
-
-Ningún fallo es de sintaxis, configuración, fixture, ni import fuera del plan. El test "en la meta…" llega hasta el paso de meta antes de fallar, por lo que el flujo de los helpers `toDateStep`, `next` y `heading` funciona.
-
-Comprobaciones de la fase de scaffold (Art. B5.6 / paso 3 del modo red): `grep "not implemented" frontend/src` no devuelve coincidencias. Los esqueletos ya se sustituyeron por la implementación en la etapa implement, así que no hay esqueletos que comprobar en este ciclo.
-
-Estado de las tareas de la matriz: sin cambios en este ciclo (T-021, T-044 ya `[x]`).
-
-- AC sin test: — (no se evalúa en modo red)
-- REQ sin tarea: — (no se evalúa en modo red)
-- Tareas sin marcar `[x]`: — (no se evalúa en modo red)
-- `skip`, `xfail`, `.only` o equivalentes nuevos en el diff: ninguno. El diff de los tests desde `84e7e3d` solo añade líneas (60 inserciones, 0 borrados).
+- AC sin test: ninguno (37/37 AC con marcador `SDD: 015 …` y test en verde; comparación automática del conjunto de IDs de `spec.md` con los marcadores: sin diferencias).
+- REQ sin tarea: ninguno (REQ-001 a REQ-010 aparecen en `tasks.md`).
+- Tareas sin marcar `[x]`: ninguna (31 de 31: T-001 a T-003, T-010 a T-030 y T-040 a T-046).
+- `skip`, `xfail`, `.only`, `.skip` o equivalentes nuevos en el diff (`git diff main...HEAD -- frontend`): ninguno. La única coincidencia de la búsqueda es el nombre de un test ("todo valor…"), no un skip.
+- Tests de la feature sin modificar desde el snapshot de la etapa tests (`state.json.tests_snapshot`): los hashes de contenido (sin finales de línea) de los 3 archivos de test de onboarding y perfil coinciden con el commit `cf1da40`; las diferencias de hash en el árbol de trabajo son solo CRLF del checkout local. `git diff cf1da40 HEAD -- frontend/src/**/*.test.*` está vacío.
+- `validation.ts` y `validation.test.ts` ya no existen y no quedan importaciones de ellos (T-046 y T-030).
 
 ## 3. Criterios de aceptación manuales
-Ninguno en este ciclo.
+Ninguno. Los 37 AC son comprobables con los tests automáticos del marcador `SDD:`.
 
 ## 4. Fallos (si los hay)
-Ningún fallo bloquea el PASS del modo red. Los 5 rojos son los esperados por la regresión F1 de la review (rojo legítimo):
+Ninguno. Todas las comprobaciones de la etapa verify están en verde.
 
-| # | Qué falló | Salida relevante (recortada) | Responsable probable (test-author · implementer · entorno) |
-|---|---|---|---|
-| R1 | `schemas.test.ts` › gender null no es válido | `expected true to be false` (`schemas.test.ts:248`) | rojo legítimo (implementer corrige F1) |
-| R2 | `schemas.test.ts` › activityLevel null no es válido | `expected true to be false` | rojo legítimo (implementer corrige F1) |
-| R3 | `schemas.test.ts` › goal null no es válido | `expected true to be false` | rojo legítimo (implementer corrige F1) |
-| R4 | `OnboardingPage.test.tsx` › en el género sin elegir no hay "Siguiente" | `expect(element).not.toBeInTheDocument()` encuentra `<button>Siguiente</button>` (`OnboardingPage.test.tsx:772`) | rojo legítimo (implementer corrige F1) |
-| R5 | `OnboardingPage.test.tsx` › en la meta sin elegir, "Comenzar" deshabilitado | `expect(element).toBeDisabled()` recibe un botón habilitado (`OnboardingPage.test.tsx:792`) | rojo legítimo (implementer corrige F1) |
+<!-- Nota del verifier: esta verificación sustituye a la anterior (commit 4db5316). Los hallazgos F3-F8 de la revisión quedan corregidos en 81f118b; no se han modificado tests. -->
 
 ## Comentarios del usuario
 

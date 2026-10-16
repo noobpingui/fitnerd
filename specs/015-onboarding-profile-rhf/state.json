@@ -9,7 +9,7 @@
   "branch": "fix/015-onboarding-profile-rhf",
   "base_branch": "main",
   "created_at": "2026-10-16T04:11:19.304Z",
-  "stage": "verify",
+  "stage": "docs",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -32,8 +32,14 @@
       "at": "2026-10-16T09:05:20.928Z",
       "note": "auto (gate_mode=flow): F3-F8 (useWatch, inRange compartido, sin updateBody/alias, dirty por campo, CHOOSE_OPTION_MESSAGE)"
     },
-    "verify": null,
-    "review": null,
+    "verify": {
+      "at": "2026-10-16T09:08:16.299Z",
+      "note": "auto (gate_mode=flow): verify PASS, 612 tests, lint sin warnings nuevos"
+    },
+    "review": {
+      "at": "2026-10-16T09:37:16.291Z",
+      "note": "Si"
+    },
     "docs": null,
     "close": null
   },
@@ -44,7 +50,8 @@
     "tests": "6bb94e7",
     "implement": "84e7e3d",
     "tests-fix": "cf1da40",
-    "implement-fix": "4db5316"
+    "implement-fix": "4db5316",
+    "implement-fix-2": "81f118b"
   },
   "iterations": {
     "tests": 1,
@@ -57,12 +64,12 @@
     "at": "2026-10-16T08:43:33.379Z"
   },
   "verify": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-16T09:08:07.105Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-10-16T09:10:46.787Z"
   },
   "tests_snapshot": {
     "at": "2026-10-16T08:43:51.224Z",
@@ -436,6 +443,60 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): F3-F8 (useWatch, inRange compartido, sin updateBody/alias, dirty por campo, CHOOSE_OPTION_MESSAGE)"
+    },
+    {
+      "at": "2026-10-16T09:05:21.160Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement-fix-2: 81f118b"
+    },
+    {
+      "at": "2026-10-16T09:05:21.249Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa, ciclo de review 2"
+    },
+    {
+      "at": "2026-10-16T09:08:07.105Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: verify PASS (tras corrección F3-F8, 81f118b): frontend npm test 612/612; lint exit 0 sin errores (2 warnings preexistentes en ui/, ninguno nuevo); tsc OK; build OK; 37/37 AC con test SDD: 015 en verde; REQ-001..010 con tarea; 31/31 tareas [x]; sin skip/only nuevos; tests sin modificar desde cf1da40"
+    },
+    {
+      "at": "2026-10-16T09:08:16.212Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS: 612 tests, sin warnings nuevos"
+    },
+    {
+      "at": "2026-10-16T09:08:16.299Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS, 612 tests, lint sin warnings nuevos"
+    },
+    {
+      "at": "2026-10-16T09:08:16.390Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review ciclo 3"
+    },
+    {
+      "at": "2026-10-16T09:10:46.787Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-16T09:10:52.599Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED iteración 3: F1-F8 resueltos, 0 hallazgos abiertos"
+    },
+    {
+      "at": "2026-10-16T09:37:16.291Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Si"
     }
   ]
 }
