@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from repositories.base_repository import BaseRepository
 from models import User
@@ -15,7 +15,12 @@ class UserRepository(BaseRepository): #Since BaseRepository already receives ses
                                         #self.model = User
 
     def get_by_email(self, email):
-        stmt = select(self.model).where(self.model.email == email) #Same as stmt = select(User).where(User.email == email)
+        # Sin distinguir mayúsculas (ADR-0025); con varias coincidencias antiguas gana la cuenta más vieja.
+        stmt = (
+            select(self.model)
+            .where(func.lower(self.model.email) == email.lower())
+            .order_by(self.model.created_at, self.model.id)
+        )
 
         return self.session.scalars(stmt).first() #Execute the query and return the first user found or None if it does not exist
 

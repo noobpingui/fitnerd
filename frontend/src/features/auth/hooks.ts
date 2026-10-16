@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useNavigate } from "react-router"
+import { useEffect, useState } from "react"
+import { useLocation, useNavigate } from "react-router"
 import {
   getCurrentUser,
   login,
@@ -76,8 +77,24 @@ export function useResetPassword() {
   })
 }
 
+// Aviso de "contraseña actualizada" en /login. El valor se fija al montar y no
+// cambia durante la visita; después se limpia location.state (replace) para que
+// una recarga o volver con "atrás" no lo muestre otra vez.
 export function usePasswordResetNotice(): boolean {
-  throw new Error("not implemented");
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [show] = useState(() => location.state?.passwordReset === true)
+
+  useEffect(() => {
+    if (location.state?.passwordReset === true) {
+      navigate(
+        { pathname: location.pathname, search: location.search, hash: location.hash },
+        { replace: true, state: null },
+      )
+    }
+  }, [location, navigate])
+
+  return show
 }
 
 export function useRegister() {

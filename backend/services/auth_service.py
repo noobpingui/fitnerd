@@ -7,11 +7,19 @@ from repositories.user_repository import UserRepository
 from unit_of_work.unit_of_work import UnitOfWork
 from utils.jwt_utils import JWTManager
 from exceptions.custom_exceptions import ConflictError, AuthenticationError, ResourceNotFoundError
+from services.credential_rules import (
+    exceeds_bcrypt_limit,
+    normalize_email,
+    validate_email,
+    validate_new_password,
+)
 
 
 
-def verify_google_id_token(_id_token_str: str, _client_id: str | None) -> dict:
-    raise NotImplementedError("not implemented")
+def verify_google_id_token(id_token_str: str, client_id: str | None) -> dict:
+    # Valida la firma con las llaves públicas de Google, la caducidad y el "audience".
+    # Lanza ValueError si el token no es válido.
+    return google_id_token.verify_oauth2_token(id_token_str, google_requests.Request(), client_id)
 
 
 class AuthService():
@@ -25,6 +33,9 @@ class AuthService():
 
     #To create/register a new user
     def register(self, email, password, first_name, last_name, date_of_birth):
+        # Primero el correo y después la contraseña; ambos antes de consultar duplicados.
+        email = validate_email(email)
+        validate_new_password(password)
 
         try:
             #Validation to avoid duplicated users
@@ -66,7 +77,16 @@ class AuthService():
     #To login
     def login(self, email: str, password: str):
 
-        user = self.user_repository.get_by_email(email)
+        # Datos anómalos: mismo error que unas credenciales incorrectas, sin consultar la base.
+        # No se exige el mínimo de 8: cuentas antiguas pueden tener contraseñas más cortas.
+        if (
+            not isinstance(email, str)
+            or not isinstance(password, str)
+            or exceeds_bcrypt_limit(password)
+        ):
+            raise AuthenticationError("Wrong Credentials")
+
+        user = self.user_repository.get_by_email(normalize_email(email))
         if not user:
             raise AuthenticationError("Wrong Credentials")
 
@@ -99,9 +119,7 @@ class AuthService():
             #llaves publicas de Google), que no este vencido, y que el "audience"
             #(para que app fue emitido) coincida con nuestro GOOGLE_CLIENT_ID -
             #eso ultimo evita que un token emitido para OTRA app pueda usarse aca.
-            claims = google_id_token.verify_oauth2_token(
-                id_token_str, google_requests.Request(), self.google_client_id
-            )
+            claims = self.google_token_verifier(id_token_str, self.google_client_id)
         except ValueError:
             raise AuthenticationError("Invalid Google token")
 
@@ -111,7 +129,7 @@ class AuthService():
         if not claims.get("email_verified"):
             raise AuthenticationError("Google email not verified")
 
-        email = claims["email"]
+        email = normalize_email(claims["email"])
         google_id = claims["sub"]  #Identificador estable de ESA cuenta de Google
 
         user = self.user_repository.get_by_email(email)

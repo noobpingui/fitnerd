@@ -21,3 +21,9 @@
 - [ ] Opcional: unitarios directos de `escape_log_text` más allá del que ya hay.
 - [ ] Pendiente de la implementación (hoy sin esqueleto): el test de migración depende de que T-036 cree `a7d3f9c1e5b2_lowercase_user_emails.py` con `down_revision = 'f2c4e6a8b0d1'`.
 - [ ] El test de concurrencia necesita Postgres y un pool con al menos 4 conexiones (el valor por defecto de SQLAlchemy basta).
+
+## implement · implementer
+- [ ] Los correos guardados con espacios no se recortan en la migración (la spec solo pide minúsculas).
+- [ ] Las contraseñas antiguas de más de 72 bytes dejan de poder entrar. Se recuperan con el restablecimiento.
+- [ ] `lower()` de Postgres y `str.lower()` de Python difieren en letras no ASCII (anotado en ADR-0025).
+- [ ] 6 líneas largas (E501) en los tests de la feature hacen fallar el ratchet de backend.

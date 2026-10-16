@@ -22,15 +22,15 @@
 - [x] T-020 [REQ-011, AC-011.1, AC-011.2, AC-011.3, AC-011.4, AC-011.5] (test) Aviso de contraseña actualizada en `/login`: visible en la visita, persiste con edición y `401`, no depende del historial tras recargar ni con "atrás" y ausente sin venir de un restablecimiento — `frontend/src/features/auth/components/LoginForm.test.tsx`
 
 ## Fase B — Implementación (implementer)
-- [ ] T-030 [REQ-001, REQ-006, REQ-007, REQ-009] (impl) Implementar `normalize_email`, `validate_email`, `validate_new_password` y `exceeds_bcrypt_limit` según el plan — `backend/services/credential_rules.py`
-- [ ] T-031 [REQ-001, REQ-002, REQ-003, REQ-004, REQ-005] (impl) `UserRepository.get_by_email` sin distinguir mayúsculas (`func.lower`, orden por `created_at` e `id`) — `backend/repositories/user_repository.py`
-- [ ] T-032 [REQ-010] (impl) `get_by_token_hash` con `.with_for_update()` y comentario del bloqueo — `backend/repositories/password_reset_repository.py`
-- [ ] T-033 [REQ-001, REQ-002, REQ-004, REQ-005, REQ-006, REQ-007, REQ-009, NFR-001] (impl) `AuthService`: `verify_google_id_token` real, registro con correo y contraseña validados antes del duplicado, login robusto con correo normalizado y Google con correo en minúsculas — `backend/services/auth_service.py`
-- [ ] T-034 [REQ-003, REQ-006, REQ-010, NFR-001] (impl) `PasswordResetService`: importar reglas de `credential_rules` (conservando los nombres como atributos del módulo), `request_reset` con correo normalizado y `reset_password` con la lectura bloqueante dentro del `try` — `backend/services/password_reset_service.py`
-- [ ] T-035 [REQ-012] (impl) Implementar `escape_log_text` y aplicarla en `ResendTransport._error_snippet` tras quitar la key y recortar — `backend/utils/email_sender.py`
-- [ ] T-036 [REQ-005] (migration) Migración de datos `a7d3f9c1e5b2` (`down_revision = 'f2c4e6a8b0d1'`): correos a minúsculas con `RuntimeError` y lista de correos ante conflictos, downgrade sin acción — `backend/migrations/versions/a7d3f9c1e5b2_lowercase_user_emails.py`
-- [ ] T-037 [REQ-008] (impl) `newPasswordSchema` compartido por `registerSchema` y `resetPasswordSchema`, y actualizar el comentario de cabecera — `frontend/src/features/auth/schemas.ts`
-- [ ] T-038 [REQ-011] (impl) Implementar `usePasswordResetNotice` (estado fijado al montar y `navigate` con `replace` y `state: null`) y usarlo en `LoginForm` — `frontend/src/features/auth/hooks.ts`, `frontend/src/features/auth/components/LoginForm.tsx`
+- [x] T-030 [REQ-001, REQ-006, REQ-007, REQ-009] (impl) Implementar `normalize_email`, `validate_email`, `validate_new_password` y `exceeds_bcrypt_limit` según el plan — `backend/services/credential_rules.py`
+- [x] T-031 [REQ-001, REQ-002, REQ-003, REQ-004, REQ-005] (impl) `UserRepository.get_by_email` sin distinguir mayúsculas (`func.lower`, orden por `created_at` e `id`) — `backend/repositories/user_repository.py`
+- [x] T-032 [REQ-010] (impl) `get_by_token_hash` con `.with_for_update()` y comentario del bloqueo — `backend/repositories/password_reset_repository.py`
+- [x] T-033 [REQ-001, REQ-002, REQ-004, REQ-005, REQ-006, REQ-007, REQ-009, NFR-001] (impl) `AuthService`: `verify_google_id_token` real, registro con correo y contraseña validados antes del duplicado, login robusto con correo normalizado y Google con correo en minúsculas — `backend/services/auth_service.py`
+- [x] T-034 [REQ-003, REQ-006, REQ-010, NFR-001] (impl) `PasswordResetService`: importar reglas de `credential_rules` (conservando los nombres como atributos del módulo), `request_reset` con correo normalizado y `reset_password` con la lectura bloqueante dentro del `try` — `backend/services/password_reset_service.py`
+- [x] T-035 [REQ-012] (impl) Implementar `escape_log_text` y aplicarla en `ResendTransport._error_snippet` tras quitar la key y recortar — `backend/utils/email_sender.py`
+- [x] T-036 [REQ-005] (migration) Migración de datos `a7d3f9c1e5b2` (`down_revision = 'f2c4e6a8b0d1'`): correos a minúsculas con `RuntimeError` y lista de correos ante conflictos, downgrade sin acción — `backend/migrations/versions/a7d3f9c1e5b2_lowercase_user_emails.py`
+- [x] T-037 [REQ-008] (impl) `newPasswordSchema` compartido por `registerSchema` y `resetPasswordSchema`, y actualizar el comentario de cabecera — `frontend/src/features/auth/schemas.ts`
+- [x] T-038 [REQ-011] (impl) Implementar `usePasswordResetNotice` (estado fijado al montar y `navigate` con `replace` y `state: null`) y usarlo en `LoginForm` — `frontend/src/features/auth/hooks.ts`, `frontend/src/features/auth/components/LoginForm.tsx`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

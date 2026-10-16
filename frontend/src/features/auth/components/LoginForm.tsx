@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Link, useLocation } from "react-router"
+import { Link } from "react-router"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -12,7 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { loginSchema, type LoginFormValues } from "@/features/auth/schemas"
-import { useLogin } from "@/features/auth/hooks"
+import { useLogin, usePasswordResetNotice } from "@/features/auth/hooks"
 import { GoogleSignInButton } from "@/features/auth/components/GoogleSignInButton"
 import { ApiError } from "@/lib/apiClient"
 
@@ -22,8 +22,7 @@ export function LoginForm() {
     defaultValues: { email: "", password: "" },
   })
   const { mutate, isPending, error } = useLogin()
-  const location = useLocation()
-  const passwordReset = location.state?.passwordReset === true
+  const passwordReset = usePasswordResetNotice()
 
   function onSubmit(values: LoginFormValues) {
     mutate(values)
