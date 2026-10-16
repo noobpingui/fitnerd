@@ -9,8 +9,8 @@
   "branch": "fix/015-onboarding-profile-rhf",
   "base_branch": "main",
   "created_at": "2026-10-16T04:11:19.304Z",
-  "stage": "close",
-  "status": "in_progress",
+  "stage": "done",
+  "status": "done",
   "approvals": {
     "spec": {
       "at": "2026-10-16T04:18:23.388Z",
@@ -44,7 +44,10 @@
       "at": "2026-10-16T09:37:46.365Z",
       "note": "auto (gate_mode=flow): fila Perfil y onboarding de CLAUDE.md"
     },
-    "close": null
+    "close": {
+      "at": "2026-10-16T09:48:47.214Z",
+      "note": "1 a 3 ahora y el resto despues de probar la preview"
+    }
   },
   "commits": {
     "spec": "aea1091",
@@ -55,7 +58,8 @@
     "tests-fix": "cf1da40",
     "implement-fix": "4db5316",
     "implement-fix-2": "81f118b",
-    "review": "e3f8a10"
+    "review": "e3f8a10",
+    "docs": "91285ce"
   },
   "iterations": {
     "tests": 1,
@@ -525,6 +529,36 @@
       "stage": "docs",
       "event": "approved",
       "note": "auto (gate_mode=flow): fila Perfil y onboarding de CLAUDE.md"
+    },
+    {
+      "at": "2026-10-16T09:37:46.582Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: 91285ce"
+    },
+    {
+      "at": "2026-10-16T09:37:46.675Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Checklist, backlog global e integración"
+    },
+    {
+      "at": "2026-10-16T09:37:58.739Z",
+      "stage": "close",
+      "event": "done",
+      "note": "Checklist OK; 9 puntos al backlog global"
+    },
+    {
+      "at": "2026-10-16T09:48:47.214Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "1 a 3 ahora y el resto despues de probar la preview"
+    },
+    {
+      "at": "2026-10-16T09:48:47.214Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
     }
   ]
 }
