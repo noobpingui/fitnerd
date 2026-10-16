@@ -1,4 +1,6 @@
-import { useEffect, useState, type ReactNode } from "react"
+import { useEffect, useMemo, useState, type ReactNode } from "react"
+import { useForm, useWatch } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,7 +18,6 @@ import {
   ACTIVITY_OPTIONS,
   GENDER_OPTIONS,
   GOAL_OPTIONS,
-  LIMITS,
 } from "@/features/onboarding/constants"
 import type {
   ActivityLevel,
@@ -30,28 +31,19 @@ import {
   KG_PER_LB,
 } from "@/features/onboarding/units"
 import { useCreateBodyMetric } from "@/features/body-metrics/hooks"
-import { FAT_LIMITS, MUSCLE_LIMITS } from "@/features/body-metrics/schemas"
-import {
-  dateOfBirthError,
-  isHeightValid,
-  isWeightValid,
-} from "@/features/onboarding/validation"
+import { fieldMessages } from "@/features/onboarding/schemas"
+import { makeProfileFormSchema } from "@/features/profile/schemas"
+import type {
+  BodyComposition,
+  PhysicalDataFormValues,
+} from "@/features/profile/types"
+import type { ProfileFormErrorKey } from "@/features/profile/schemas"
 import { todayIsoDate } from "@/lib/dates"
 import { useSaveProfile } from "@/features/profile/hooks"
 import { payloadFromAnswers } from "@/features/profile/mappers"
 
 // Los mismos datos del onboarding, pero todos a la vista en un formulario:
 // aquí el usuario ya sabe qué es cada cosa y solo quiere cambiar una o dos.
-// Composición corporal opcional (texto mientras se edita, "" = sin dato).
-export type BodyComposition = { fat: string; muscle: string }
-
-// Opcional: vacío es válido; si hay algo escrito, debe estar en rango.
-function optionalInRange(value: string, { min, max }: { min: number; max: number }) {
-  if (value.trim() === "") return true
-  const n = Number(value)
-  return Number.isFinite(n) && n >= min && n <= max
-}
-
 export function PhysicalDataForm({
   initial,
   initialBody,
@@ -59,13 +51,25 @@ export function PhysicalDataForm({
   initial: OnboardingAnswers
   initialBody: BodyComposition
 }) {
-  const [saved, setSaved] = useState(initial)
-  const [draft, setDraft] = useState(initial)
-  const [savedBody, setSavedBody] = useState(initialBody)
-  const [body, setBody] = useState(initialBody)
+  const defaultValues: PhysicalDataFormValues = { ...initial, ...initialBody }
+  const [saved, setSaved] = useState<PhysicalDataFormValues>(defaultValues)
   const [justSaved, setJustSaved] = useState(false)
   const createMetric = useCreateBodyMetric()
   const saveProfile = useSaveProfile()
+  const schema = useMemo(() => makeProfileFormSchema(), [])
+  const form = useForm<PhysicalDataFormValues>({
+    resolver: zodResolver(schema),
+    defaultValues,
+  })
+  const draft = useWatch({ control: form.control }) as PhysicalDataFormValues
+  // Los mensajes salen del mismo esquema, evaluado de forma síncrona.
+  const errors = fieldMessages<ProfileFormErrorKey>(schema, draft)
+  const dobOk = !errors.dateOfBirth
+  const heightOk = !errors.height
+  const weightOk = !errors.weight
+  const fatOk = !errors.fat
+  const muscleOk = !errors.muscle
+  const allValid = Object.keys(errors).length === 0
 
   // El aviso "Cambios guardados" desaparece solo a los 3 segundos.
   useEffect(() => {
@@ -74,23 +78,12 @@ export function PhysicalDataForm({
     return () => clearTimeout(id)
   }, [justSaved])
 
-  function update(patch: Partial<OnboardingAnswers>) {
-    setDraft((current) => ({ ...current, ...patch }))
+  function update(patch: Partial<PhysicalDataFormValues>) {
+    for (const key of Object.keys(patch) as (keyof PhysicalDataFormValues)[]) {
+      form.setValue(key, patch[key] as never, { shouldDirty: true })
+    }
     setJustSaved(false)
   }
-
-  function updateBody(patch: Partial<BodyComposition>) {
-    setBody((current) => ({ ...current, ...patch }))
-    setJustSaved(false)
-  }
-
-  const dobError = dateOfBirthError(draft)
-  const dobOk = dobError === null
-  const heightOk = isHeightValid(draft)
-  const weightOk = isWeightValid(draft)
-  const fatOk = optionalInRange(body.fat, FAT_LIMITS)
-  const muscleOk = optionalInRange(body.muscle, MUSCLE_LIMITS)
-  const allValid = dobOk && heightOk && weightOk && fatOk && muscleOk
 
   const weightKg = (a: OnboardingAnswers) =>
     a.weightUnit === "kg" ? Number(a.weight) : Number(a.weight) * KG_PER_LB
@@ -98,27 +91,21 @@ export function PhysicalDataForm({
   // cambiar la unidad sin cambiar el peso no cuenta como medición.
   const measurementChanged =
     Math.abs(weightKg(draft) - weightKg(saved)) > 0.05 ||
-    body.fat !== savedBody.fat ||
-    body.muscle !== savedBody.muscle
-  // Comparar el JSON basta aquí: son objetos planos con el mismo orden de
-  // claves, así que "hay cambios" equivale a "el texto es distinto".
+    draft.fat !== saved.fat ||
+    draft.muscle !== saved.muscle
+  // Comparación campo a campo: no depende del orden de las claves.
   const dirty =
-    JSON.stringify(draft) !== JSON.stringify(saved) || measurementChanged
+    (Object.keys(saved) as (keyof PhysicalDataFormValues)[]).some(
+      (key) => draft[key] !== saved[key]
+    ) || measurementChanged
 
-  function commit() {
-    setSaved(draft)
-    setSavedBody(body)
-    setJustSaved(true)
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  async function onSave(values: PhysicalDataFormValues) {
     if (!dirty || !allValid) return
     createMetric.reset()
     saveProfile.reset()
     // 1. Perfil completo (PUT, idempotente). Si falla, no se toca `saved`.
     try {
-      await saveProfile.mutateAsync(payloadFromAnswers(draft))
+      await saveProfile.mutateAsync(payloadFromAnswers(values))
     } catch {
       return
     }
@@ -129,32 +116,31 @@ export function PhysicalDataForm({
     // si fuera nueva. Si falla, `saved` no se actualiza: un reintento vuelve
     // a detectar el cambio y registra la medición.
     if (measurementChanged) {
-      const fatChanged = body.fat.trim() !== "" && body.fat !== savedBody.fat
+      const fatChanged = values.fat.trim() !== "" && values.fat !== saved.fat
       const muscleChanged =
-        body.muscle.trim() !== "" && body.muscle !== savedBody.muscle
+        values.muscle.trim() !== "" && values.muscle !== saved.muscle
       try {
         await createMetric.mutateAsync({
-          weight: Math.round(weightKg(draft) * 10) / 10,
+          weight: Math.round(weightKg(values) * 10) / 10,
           recorded_at: todayIsoDate(),
-          ...(fatChanged && { body_fat_percentage: Number(body.fat) }),
-          ...(muscleChanged && { muscle_mass_percentage: Number(body.muscle) }),
+          ...(fatChanged && { body_fat_percentage: Number(values.fat) }),
+          ...(muscleChanged && { muscle_mass_percentage: Number(values.muscle) }),
         })
       } catch {
         return
       }
     }
-    commit()
+    setSaved(values)
+    form.reset(values)
+    setJustSaved(true)
   }
 
   function discard() {
-    setDraft(saved)
-    setBody(savedBody)
+    form.reset(saved)
   }
 
-  const weightLimits = draft.weightUnit === "kg" ? LIMITS.kg : LIMITS.lb
-
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+    <form onSubmit={form.handleSubmit(onSave)} className="flex flex-col gap-5">
       <div className="grid gap-5 sm:grid-cols-2">
         <Field label="Género">
           <UnitToggle
@@ -167,10 +153,7 @@ export function PhysicalDataForm({
         <Field
           label="Fecha de nacimiento"
           htmlFor="profile-dob"
-          error={
-            dobError ||
-            (draft.dateOfBirth === "" ? "Indica tu fecha de nacimiento" : undefined)
-          }
+          error={errors.dateOfBirth}
         >
           <Input
             id="profile-dob"
@@ -194,13 +177,7 @@ export function PhysicalDataForm({
               onChange={(unit) => update(convertHeight(draft, unit))}
             />
           }
-          error={
-            heightOk
-              ? undefined
-              : draft.heightUnit === "cm"
-                ? `Entre ${LIMITS.heightCm.min} y ${LIMITS.heightCm.max} cm`
-                : `Entre ${LIMITS.heightFt.min} y ${LIMITS.heightFt.max} ft`
-          }
+          error={errors.height}
         >
           {draft.heightUnit === "cm" ? (
             <NumberField
@@ -241,11 +218,7 @@ export function PhysicalDataForm({
               onChange={(unit) => update(convertWeight(draft, unit))}
             />
           }
-          error={
-            weightOk
-              ? undefined
-              : `Entre ${weightLimits.min} y ${weightLimits.max} ${draft.weightUnit}`
-          }
+          error={errors.weight}
         >
           <NumberField
             value={draft.weight}
@@ -258,16 +231,12 @@ export function PhysicalDataForm({
         <Field
           label="% Grasa corporal (opcional)"
           htmlFor="profile-fat"
-          error={
-            fatOk
-              ? undefined
-              : `Entre ${FAT_LIMITS.min} y ${FAT_LIMITS.max} %`
-          }
+          error={errors.fat}
         >
           <NumberField
             id="profile-fat"
-            value={body.fat}
-            onChange={(fat) => updateBody({ fat })}
+            value={draft.fat}
+            onChange={(fat) => update({ fat })}
             suffix="%"
             invalid={!fatOk}
           />
@@ -276,16 +245,12 @@ export function PhysicalDataForm({
         <Field
           label="% Masa muscular (opcional)"
           htmlFor="profile-muscle"
-          error={
-            muscleOk
-              ? undefined
-              : `Entre ${MUSCLE_LIMITS.min} y ${MUSCLE_LIMITS.max} %`
-          }
+          error={errors.muscle}
         >
           <NumberField
             id="profile-muscle"
-            value={body.muscle}
-            onChange={(muscle) => updateBody({ muscle })}
+            value={draft.muscle}
+            onChange={(muscle) => update({ muscle })}
             suffix="%"
             invalid={!muscleOk}
           />
