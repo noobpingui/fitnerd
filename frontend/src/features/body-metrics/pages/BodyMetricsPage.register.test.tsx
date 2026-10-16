@@ -253,6 +253,39 @@ describe("BodyMetricsPage - botón y textos del registro", () => {
     await waitFor(() => expect(openButton()).toBeEnabled())
   })
 
+  // SDD: 016 REQ-001 AC-001.4
+  it("si el perfil falla, el botón se habilita en cuanto falla la primera vez, sin esperar los reintentos", async () => {
+    const user = userEvent.setup()
+    getProfileMock.mockRejectedValue(new Error("perfil no disponible"))
+    listMock.mockResolvedValue([metric("2026-10-11", 80)])
+    // Cliente con reintentos reales (la espera entre ellos es larga, como en
+    // producción): la consulta del perfil sigue "cargando" tras el 1.er fallo.
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: 3, retryDelay: 60_000 },
+        mutations: { retry: false },
+      },
+    })
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={["/body-metrics"]}>
+          <Routes>
+            <Route path="/body-metrics" element={<BodyMetricsPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+
+    const button = await screen.findByRole("button", { name: "Registrar medición" })
+    await waitFor(() => expect(button).toBeEnabled())
+    // Sigue en el primer intento fallido: no se ha esperado a los reintentos.
+    expect(getProfileMock).toHaveBeenCalledTimes(1)
+
+    await user.click(button)
+    expect(await screen.findByLabelText("Peso (kg)")).toBeInTheDocument()
+    queryClient.clear()
+  })
+
   // SDD: 016 REQ-010 AC-010.1
   it("muestra el subtítulo nuevo con mediciones", async () => {
     listMock.mockResolvedValue([metric("2026-10-11", 80)])
