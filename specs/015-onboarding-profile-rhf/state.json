@@ -9,7 +9,7 @@
   "branch": "fix/015-onboarding-profile-rhf",
   "base_branch": "main",
   "created_at": "2026-10-16T04:11:19.304Z",
-  "stage": "docs",
+  "stage": "close",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -40,7 +40,10 @@
       "at": "2026-10-16T09:37:16.291Z",
       "note": "Si"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-16T09:37:46.365Z",
+      "note": "auto (gate_mode=flow): fila Perfil y onboarding de CLAUDE.md"
+    },
     "close": null
   },
   "commits": {
@@ -51,7 +54,8 @@
     "implement": "84e7e3d",
     "tests-fix": "cf1da40",
     "implement-fix": "4db5316",
-    "implement-fix-2": "81f118b"
+    "implement-fix-2": "81f118b",
+    "review": "e3f8a10"
   },
   "iterations": {
     "tests": 1,
@@ -497,6 +501,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Si"
+    },
+    {
+      "at": "2026-10-16T09:37:16.548Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: e3f8a10"
+    },
+    {
+      "at": "2026-10-16T09:37:16.634Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Actualizar documentación"
+    },
+    {
+      "at": "2026-10-16T09:37:46.278Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "CLAUDE.md actualizado"
+    },
+    {
+      "at": "2026-10-16T09:37:46.365Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): fila Perfil y onboarding de CLAUDE.md"
     }
   ]
 }
