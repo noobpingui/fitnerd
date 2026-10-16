@@ -39,3 +39,9 @@
 - [ ] F5 (NIT, spec-writer): `registerSchema.email` no recorta los espacios, así que el formulario rechaza un correo con espacios que el servidor ya acepta.
 - [ ] Etapa docs: documentar en `docs/deploy-runbook.md` el volcado previo y el `flask db upgrade` de la migración `a7d3f9c1e5b2` (Art. P4).
 - [ ] Etapa docs: pasar ADR-0025 a "Aceptada" si el usuario la aprueba en el gate.
+
+## plan (iteración 2) · planner
+- [ ] Tildes en textos de tests anteriores a la spec 014 (p. ej. test_password_reset_service.py, docstring de FakePasswordResetRepository).
+- [ ] Recortar los espacios de los correos ya guardados (la migración solo pasa a minúsculas).
+- [ ] Contraseñas antiguas de más de 72 bytes dejan de entrar en el login (REQ-009); se recuperan con el restablecimiento.
+- [ ] Documentar en docs/deploy-runbook.md el paso manual de la migración a7d3f9c1e5b2 (etapa docs, Art. P4).
