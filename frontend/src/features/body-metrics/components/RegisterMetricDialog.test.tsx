@@ -397,6 +397,47 @@ describe("RegisterMetricDialog - accesibilidad", () => {
     expect(screen.getByLabelText("% Masa muscular")).toBeInTheDocument()
   })
 
+  // SDD: 016 NFR-002 AC-N002.1
+  it.each([
+    ["Peso (kg)", "301", "Entre 30 y 300 kg"],
+    ["% Grasa corporal", "61", "Entre 3 y 60 %"],
+    ["% Masa muscular", "71", "Entre 10 y 70 %"],
+  ])("el error de '%s' queda enlazado a su campo con aria-describedby", async (label, value, message) => {
+    const user = userEvent.setup()
+    renderDialog()
+
+    await type(user, label, value)
+
+    await screen.findByText(message)
+    const input = screen.getByLabelText(label)
+    expect(input).toHaveAttribute("aria-describedby")
+    expect(input).toHaveAccessibleDescription(message)
+  })
+
+  // SDD: 016 NFR-002 AC-N002.1
+  it("el error de fecha queda enlazado al campo 'Fecha'", async () => {
+    renderDialog()
+
+    setDate("2026-10-13")
+
+    await screen.findByText("La fecha no puede ser futura")
+    expect(screen.getByLabelText("Fecha")).toHaveAccessibleDescription(
+      "La fecha no puede ser futura"
+    )
+  })
+
+  // SDD: 016 NFR-002 AC-N002.1
+  it("'Registra al menos un valor' queda enlazado a los campos de valores", async () => {
+    renderDialog()
+
+    await screen.findByText("Registra al menos un valor")
+    for (const label of ["Peso (kg)", "% Grasa corporal", "% Masa muscular"]) {
+      expect(screen.getByLabelText(label)).toHaveAccessibleDescription(
+        /Registra al menos un valor/
+      )
+    }
+  })
+
   // SDD: 016 NFR-002 AC-N002.2
   it("el error de guardado tiene el rol 'alert'", async () => {
     const user = userEvent.setup()

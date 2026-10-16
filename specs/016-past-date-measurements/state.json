@@ -10,7 +10,7 @@
   "branch": "feat/016-past-date-measurements",
   "base_branch": "main",
   "created_at": "2026-10-16T10:30:55.104Z",
-  "stage": "verify",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -26,13 +26,10 @@
       "note": "auto (gate_mode=flow): tasks.md sin cambios tras el rework de spec (AC-007.6)"
     },
     "tests": {
-      "at": "2026-10-16T20:19:32.039Z",
-      "note": "auto (gate_mode=flow): red check PASS repetido tras corregir AC-007.6"
+      "at": "2026-10-16T21:12:07.789Z",
+      "note": "auto (gate_mode=flow): red check PASS"
     },
-    "implement": {
-      "at": "2026-10-16T20:21:48.095Z",
-      "note": "auto (gate_mode=flow): todo en verde"
-    },
+    "implement": null,
     "verify": null,
     "review": null,
     "docs": null,
@@ -42,17 +39,18 @@
     "spec": "4779ea7",
     "plan": "27516a5",
     "tasks": "74fd138",
-    "tests": "b1bd525"
+    "tests": "b1bd525",
+    "implement": "3527d19"
   },
   "iterations": {
     "tests": 0,
     "implement": 0,
-    "review": 0
+    "review": 1
   },
   "max_iterations": 3,
   "red_check": {
     "result": "PASS",
-    "at": "2026-10-16T20:19:17.695Z"
+    "at": "2026-10-16T21:11:57.510Z"
   },
   "verify": {
     "result": null,
@@ -63,17 +61,17 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-16T19:26:47.352Z",
-    "reason": "Corrección de AC-007.6 (peso 80 y grasa 20) y E501 tras rework de spec",
+    "at": "2026-10-16T21:12:07.653Z",
+    "reason": "Tests de la corrección de review (F1, F2, F3, F5)",
     "sha256": {
       "backend/tests/test_routes/test_body_metric_routes.py": "e9d8db14baebe1340e934d9034a9aefde7bb9d9a313c34342d0aab7b7ca42091",
       "backend/tests/test_services/test_body_metric_service.py": "b494c87ecc1481ab5483ddd6f8a30ce743e1ad37d216498b082a5bfbb74e3da1",
-      "frontend/src/features/body-metrics/components/RegisterMetricDialog.test.tsx": "32249952bbab9badd1ad8ea6223be21dcaea46775406a54d5b875125653b9b8d",
+      "frontend/src/features/body-metrics/components/RegisterMetricDialog.test.tsx": "fb6e692e6d573b31a5519367e9b9d92d9f99effd3fb28c9ec207bef80f523702",
       "frontend/src/features/body-metrics/laterWeight.test.ts": "aec5e7ed5572c21e7427bd13d25209754448314fdb77550b4add571a8adb0a2a",
-      "frontend/src/features/body-metrics/pages/BodyMetricsPage.analysis.test.tsx": "dbdb8195aaf11ac5c80e460b1a042db3b0742320a93eeabeb57d5a24da852f39",
-      "frontend/src/features/body-metrics/pages/BodyMetricsPage.register.test.tsx": "ded31cfed6d1ca90ab1f87bea08d07e8bde02632f5659fcd130fa46c3ba5087a",
+      "frontend/src/features/body-metrics/pages/BodyMetricsPage.analysis.test.tsx": "3e351f69074aaf1326e7180cca92c1b195d996e08d106e4a8fc6580400377338",
+      "frontend/src/features/body-metrics/pages/BodyMetricsPage.register.test.tsx": "a473df8508d68cd7b17f5d94e443589d479a9dbe110374e11cba7b6e96652767",
       "frontend/src/features/body-metrics/schemas.test.ts": "d3210b19d002c8120d2fdf27fd046cd0fc46c174c13aed7e6ce12b9893b93533",
-      "frontend/src/features/profile/pages/ProfilePage.test.tsx": "3406cc56523830cb61f82323b7172978d0613a202c71464cd458fc1fb7cadf1c",
+      "frontend/src/features/profile/pages/ProfilePage.test.tsx": "8b3b37fc3c75636a100fa3388e0b859422d9f2ed371a350f55c8917391624c9e",
       "frontend/src/lib/dates.test.ts": "de703fc4de14148262ffe54e1ca99c134a251d7867ce479504fe12bf7d9d26ff"
     }
   },
@@ -348,6 +346,90 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): todo en verde"
+    },
+    {
+      "at": "2026-10-16T20:21:48.380Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 3527d19"
+    },
+    {
+      "at": "2026-10-16T20:21:48.536Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa"
+    },
+    {
+      "at": "2026-10-16T20:25:07.981Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify full: backend 831 passed, ratchet OK; frontend 680 passed, lint 0 errores (2 warnings previos), tsc OK, build OK; 59/59 AC con test SDD en verde; REQ/NFR en tareas; 27/27 tareas [x]; sin skip/only nuevos; sin AC manuales"
+    },
+    {
+      "at": "2026-10-16T20:25:15.523Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS: 831 backend, 680 frontend, 59/59 AC"
+    },
+    {
+      "at": "2026-10-16T20:25:15.622Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-16T20:25:15.798Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review independiente"
+    },
+    {
+      "at": "2026-10-16T20:27:33.274Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-16T20:27:33.383Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED: 0 bloqueantes, 0 mayores, 2 menores, 4 nit"
+    },
+    {
+      "at": "2026-10-16T21:08:03.045Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "El usuario pide corregir F1 a F6 de la review: tests primero (F3 y tests de F1, F2, F5), luego implement (F1, F2, F4, F5) · review 1/3"
+    },
+    {
+      "at": "2026-10-16T21:10:26.239Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check de los tests de F1, F2, F3 y F5"
+    },
+    {
+      "at": "2026-10-16T21:11:57.510Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red check tras corregir F1, F2, F3 y F5. Backend: 176 passed. Frontend: 6 fallos legítimos por comportamiento ausente (4 aria-describedby F1, 1 botón habilitado F2, 1 aviso REQ-009 sin perfil F5); 154 passed, incluidos el test de fecha de NFR-002 y el AC-007.7 reescrito (comportamiento ya existente). Sin skip/only nuevos. Snapshot de tests desactualizado."
+    },
+    {
+      "at": "2026-10-16T21:12:07.564Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS: 6 tests nuevos en rojo (F1 x4, F2, F5)"
+    },
+    {
+      "at": "2026-10-16T21:12:07.653Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "9 archivo(s) de test: Tests de la corrección de review (F1, F2, F3, F5)"
+    },
+    {
+      "at": "2026-10-16T21:12:07.789Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS"
     }
   ]
 }

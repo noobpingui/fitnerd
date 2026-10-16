@@ -401,7 +401,10 @@ describe("BodyMetricsPage - análisis tras registrar con fecha pasada (spec 016)
     date: string,
     weight: string
   ) {
-    await user.click(await screen.findByRole("button", { name: "Registrar medición" }))
+    const openBtn = await screen.findByRole("button", { name: "Registrar medición" })
+    // Se habilita cuando cargan las mediciones y el perfil.
+    await waitFor(() => expect(openBtn).toBeEnabled())
+    await user.click(openBtn)
     const dialog = await screen.findByRole("dialog", { name: "Registrar medición" })
     fireEvent.change(within(dialog).getByLabelText("Fecha"), { target: { value: date } })
     await user.type(within(dialog).getByLabelText("Peso (kg)"), weight)

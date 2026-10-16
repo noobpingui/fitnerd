@@ -19,3 +19,15 @@
 
 ## spec (rework) · spec-writer
 - [ ] Hay que actualizar el test de AC-007.6 para que registre peso y grasa en la medición del 2026-10-05.
+
+## verify · verifier
+- [ ] Warnings de oxlint react(only-export-components) en frontend/src/components/ui/button.tsx:64 y frontend/src/components/ui/form.tsx:159 (previos a la feature, no tocados).
+- [ ] Build de frontend avisa de chunk de 1,087 kB (>500 kB); no bloquea.
+
+## review · reviewer
+- [ ] F1 (MENOR): en RegisterMetricDialog.tsx:112-151, los errores de peso, grasa y masa muscular y el mensaje "Registra al menos un valor" no están enlazados a su campo con aria-describedby (el plan §3.4 lo pide), porque NumberField no acepta esa prop.
+- [ ] F2 (MENOR): en BodyMetricsPage.tsx:51 y :79, "Registrar medición" se puede pulsar antes de que cargue el perfil. Mientras tanto la unidad vale kg, así que un usuario con el perfil en lb puede ver cómo la etiqueta y la conversión del peso cambian con el número ya escrito.
+- [ ] F3 (NIT): el test de AC-007.7 sustituye TrendChart por un stub y no comprueba el periodo de 1 mes.
+- [ ] F4 (NIT): las importaciones nuevas de PhysicalDataForm.tsx quedan intercaladas sin orden.
+- [ ] F5 (NIT): en PhysicalDataForm.tsx, si hay una medición posterior pero no hay perfil en caché, aparece el aviso con el peso escrito, no el del perfil (ya está en el backlog del implementer).
+- [ ] F6 (NIT): backlog.md:21 tiene la entrada de AC-007.6 aunque ya está resuelta en b1bd525.

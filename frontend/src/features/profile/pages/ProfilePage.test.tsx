@@ -12,7 +12,9 @@ import { getProfile, saveProfile } from "@/features/profile/api"
 import { HomePage } from "@/features/home/pages/HomePage"
 import { MacrosPage } from "@/features/macros/pages/MacrosPage"
 import { ProfilePage } from "./ProfilePage"
-import { makeProfileResponse } from "@/test/profileFixtures"
+import { bodyMetricsKeys } from "@/features/body-metrics/hooks"
+import { PhysicalDataForm } from "@/features/profile/components/PhysicalDataForm"
+import { makeAnswers, makeProfileResponse } from "@/test/profileFixtures"
 
 vi.mock("@/features/profile/api", () => ({
   getProfile: vi.fn(),
@@ -1048,5 +1050,33 @@ describe("ProfilePage - medición posterior a hoy y relectura (spec 016)", () =>
 
     expect(saveButton()).toBeDisabled()
     expect(discardButton()).not.toBeInTheDocument()
+  })
+
+  // SDD: 016 REQ-009 AC-009.1
+  it("con medición posterior pero sin perfil en la caché no muestra el aviso ni un peso ajeno al perfil", async () => {
+    const user = userEvent.setup()
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    })
+    // Hay mediciones en la caché (con una posterior a hoy) pero ningún perfil.
+    queryClient.setQueryData(bodyMetricsKeys.list, [LATER])
+    render(
+      <QueryClientProvider client={queryClient}>
+        <PhysicalDataForm
+          initial={makeAnswers({ weight: "80" })}
+          initialBody={{ fat: "", muscle: "" }}
+        />
+      </QueryClientProvider>
+    )
+
+    await typeInto(user, spinbuttons()[1], "79")
+    await user.click(saveButton())
+
+    // Sin perfil no se sabe qué peso tiene el perfil: no se afirma nada de él,
+    // se guarda como siempre y el campo conserva lo escrito.
+    expect(await screen.findByText("Cambios guardados")).toBeInTheDocument()
+    expect(screen.queryByText(/Guardamos tu medición de hoy/)).not.toBeInTheDocument()
+    expect(createMetricMock).toHaveBeenCalledTimes(1)
+    expect(spinbuttons()[1]).toHaveValue(79)
   })
 })

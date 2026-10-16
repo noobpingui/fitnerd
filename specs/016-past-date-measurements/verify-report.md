@@ -1,51 +1,46 @@
 # Verify report 016 — Registrar mediciones corporales con fecha pasada (incluye 008 F2)
 
 - **Modo:** red (tras la etapa tests)
-- **Fecha:** 2026-10-16T20:18:53.891Z · **Rama:** `feat/016-past-date-measurements` @ `4779ea7` (con cambios sin commit en tests: AC-007.6 y E501; producción fuera del árbol por stash temporal del orquestador) · **Base:** `main`
+- **Fecha:** 2026-10-16T21:11:30.934Z · **Rama:** `feat/016-past-date-measurements` @ `3527d19` · **Base:** `main`
 - **Resultado:** PASS
 
 ## 1. Comandos ejecutados
 | Ámbito | Comando (cwd) | Resultado | Resumen de la salida |
 |---|---|---|---|
-| backend | `".venv/Scripts/python.exe" -m pytest -q tests/test_routes/test_body_metric_routes.py tests/test_services/test_body_metric_service.py` (`backend`) | ❌ (rojo legítimo, esperado) | 173 passed, 3 failed. Los 3 fallos son AC-005.2 y fallan por aserción: `assert 201 == 400` (`test_post_rejects_a_date_367_days_ago_and_changes_nothing`) y `DID NOT RAISE ValidationError` (×2: `test_save_rejects_a_date_367_days_before_the_server`, `test_a_too_old_date_leaves_metrics_and_profile_untouched`). Los demás tests nuevos de regresión pasan en verde por diseño (plan §5). |
-| frontend | `npx vitest run` sobre los 7 archivos de test nuevos o modificados con marcador `SDD: 016` (`frontend`) | ❌ (rojo legítimo, esperado) | 86 passed, 67 failed. Los 67 fallos son tests nuevos de la feature: `Error: not implemented` (esqueletos de `shiftIsoDate`, `laterWeightMetric`, `makeMetricRegistrationSchema`, `registrationPayload` y `RegisterMetricDialog`), elemento ausente (botón "Registrar medición", textos nuevos del subtítulo y del estado vacío, aviso de la página de perfil) y 1 aserción (`expected 1 to be greater than 1`, relectura del perfil tras guardar). Ningún error de sintaxis, import, configuración ni fixture. |
-| frontend | `npx tsc -b` (`frontend`) | ✅ | Sin errores de tipos (exit 0), también en los tests nuevos. |
+| backend | `".venv/Scripts/python.exe" -m pytest -q tests/test_routes/test_body_metric_routes.py tests/test_services/test_body_metric_service.py` (`backend`) | ✅ | 176 passed. Incluye los tests de AC-005.2 que estaban en rojo en el red check anterior (ahora en verde por T-030). |
+| frontend | `npx vitest run` sobre los 7 archivos de test de la feature (`frontend`) | ❌ | 154 passed, 6 failed de 160. Los 6 fallos son los tests nuevos de la corrección de la review (F1, F2 y F5), en rojo por comportamiento ausente (ver §4). |
 
-Comandos no ejecutados en modo red (no aplica): `lint` / `lint_ratchet`, `build` y la suite completa de cada ámbito (se ejecutan en verify).
-
-Comprobación de la etapa tests:
-- Hash de los 9 archivos de test frente a `state.json.tests_snapshot` (con CRLF normalizado): coinciden los 9. No hay cambios de tests desde la aprobación del snapshot.
-- Ningún test nuevo tiene `skip`, `xfail`, `.only`, `.skip`, `it.todo` ni `pytest.mark.skip` (búsqueda en `backend/tests` y `frontend/src`).
-- Los esqueletos `(scaffold)` de T-001 a T-005 solo lanzan `not implemented` (frontend) o declaran constantes (backend, `_parse_recorded_at` sin cambios). Ninguno contiene lógica.
-- Ningún error de sintaxis, de configuración, de fixture ni de import fuera del plan en los tests nuevos.
+Modo red: solo se ejecutan los tests de la feature (archivos con marcador `SDD: 016`). Lint, typecheck y build se ejecutan en la etapa verify.
 
 ## 2. Trazabilidad
-Parcial (modo red). Se comprueban los marcadores `SDD:` de los tests; el resto de la trazabilidad se evalúa en verify.
+Tests nuevos o reescritos de esta iteración:
 
 | REQ / NFR | AC | Tareas | Tests con `SDD:` | Estado del test |
 |---|---|---|---|---|
-| REQ-005 | AC-005.2 | T-010, T-012 | `backend/tests/test_services/test_body_metric_service.py::test_save_rejects_a_date_367_days_before_the_server`, `::test_a_too_old_date_leaves_metrics_and_profile_untouched`; `backend/tests/test_routes/test_body_metric_routes.py::test_post_rejects_a_date_367_days_ago_and_changes_nothing` | ❌ rojo legítimo (aserción) |
-| REQ-002 | AC-002.2, AC-002.3 | T-014, T-015, T-018 | `frontend/src/lib/dates.test.ts`, `frontend/src/features/body-metrics/schemas.test.ts`, `RegisterMetricDialog.test.tsx` | ❌ rojo legítimo (`not implemented`) |
-| REQ-009 | AC-009.1, AC-009.3 | T-017, T-023 | `frontend/src/features/body-metrics/laterWeight.test.ts`, `ProfilePage.test.tsx` | ❌ rojo legítimo (`not implemented` / elemento ausente) |
-| REQ-001 a REQ-010, NFR-001, NFR-002 (resto de AC) | 59 AC en total | Según `tasks.md` | Los 59 AC de `spec.md` aparecen en al menos un marcador `SDD: 016` | Ver §4 |
+| NFR-002 | AC-N002.1 | T-018, T-035 | `RegisterMetricDialog.test.tsx` (aria-describedby de Peso, % Grasa, % Masa muscular, "Registra al menos un valor" y Fecha) | ❌ (Peso, % Grasa, % Masa muscular y "Registra al menos un valor"); ✅ (Fecha, ya existente) |
+| REQ-001 | AC-001.4 | T-020, T-036 | `BodyMetricsPage.register.test.tsx` ("'Registrar medición' no se puede pulsar hasta que carga el perfil") | ❌ |
+| REQ-009 | AC-009.1 | T-023, T-037 | `ProfilePage.test.tsx` (medición posterior sin perfil en la caché) | ❌ |
+| REQ-007 | AC-007.7 | T-021 | `BodyMetricsPage.register.test.tsx` (reescrito con stub que filtra por periodo) | ✅ (esperado: verifica comportamiento ya existente) |
 
-- AC sin test: ninguno (los 59 AC de `spec.md` aparecen en algún marcador `SDD: 016`).
-- REQ sin tarea: no evaluado en modo red (se comprueba en verify).
-- Tareas sin marcar `[x]`: no evaluado en modo red (se comprueba en verify). Ver observación en §4.
-- `skip`, `xfail`, `.only` o equivalentes nuevos en el diff: ninguno.
+- Tests `SDD:` de esta iteración con marcador correcto: todos.
+- AC sin test: ninguno nuevo. La comprobación completa de trazabilidad se hace en la etapa verify.
+- Tareas sin marcar `[x]`: no se comprueba en modo red.
+- `skip`, `xfail`, `.only`, `.skip` o equivalentes nuevos en el diff de tests: ninguno.
+- Pasan sin implementación nueva (esperado): el test de fecha de NFR-002 y el test reescrito de AC-007.7. Verifican comportamiento que ya existe en `3527d19`, no son vacíos.
 
 ## 3. Criterios de aceptación manuales
-Ninguno identificado en modo red. Los AC de la feature se comprueban con tests automáticos.
+Ninguno en esta etapa.
 
 ## 4. Fallos (si los hay)
-Ninguno. Todos los tests nuevos fallan por comportamiento ausente, o pasan en verde por diseño según el plan §5:
+Los 6 fallos son aserciones sobre comportamiento ausente en `3527d19`. Ninguno es de sintaxis, fixture, configuración ni import.
 
 | # | Qué falló | Salida relevante (recortada) | Responsable probable (test-author · implementer · entorno) |
 |---|---|---|---|
-| — | Ninguno | — | — |
+| 1 | `RegisterMetricDialog.test.tsx`: error de "Peso (kg)" enlazado con aria-describedby (F1) | `expect(element).toHaveAttribute("aria-describedby")`: el input no tiene el atributo | implementer |
+| 2 | `RegisterMetricDialog.test.tsx`: error de "% Grasa corporal" enlazado (F1) | `expect(element).toHaveAttribute("aria-describedby")` | implementer |
+| 3 | `RegisterMetricDialog.test.tsx`: error de "% Masa muscular" enlazado (F1) | `expect(element).toHaveAttribute("aria-describedby")` | implementer |
+| 4 | `RegisterMetricDialog.test.tsx`: "Registra al menos un valor" enlazado a los campos de valores (F1) | `expect(element).toHaveAccessibleDescription(/Registra al menos un valor/)` | implementer |
+| 5 | `BodyMetricsPage.register.test.tsx`: "Registrar medición" deshabilitado hasta cargar el perfil (F2) | `expect(element).toBeDisabled()`: el botón está habilitado con las mediciones cargadas y el perfil pendiente | implementer |
+| 6 | `ProfilePage.test.tsx`: sin perfil en la caché no hay aviso REQ-009 y se muestra "Cambios guardados" (F5) | `TestingLibraryElementError: Unable to find an element with the text: Cambios guardados` (en su lugar aparece el aviso de REQ-009) | implementer |
 
-Detalle de los rojos legítimos (esperados hasta la fase implement):
-- Backend, AC-005.2: `assert 201 == 400` y `DID NOT RAISE ValidationError` (×2). Corresponde a T-030.
-- Frontend: esqueletos sin implementar (`not implemented`), botón "Registrar medición" y textos nuevos ausentes en la página, aviso del perfil ausente y la relectura del perfil tras guardar (`ProfilePage.test.tsx`, AC-008.3). Corresponde a T-031 a T-037.
-
-Observación (no es un fallo de red, no cambia el resultado): en el árbol de trabajo, `specs/016-past-date-measurements/tasks.md` tiene marcadas `[x]` las tareas de implementación T-030 a T-037, cuando su código no está en el árbol (stash temporal). Lo marcó la etapa implement; el orquestador debe revisarlo antes de verify.
+Nota para el orquestador: `state.json.tests_snapshot` no coincide con los archivos de test modificados en esta iteración. Hay que volver a tomar el snapshot tras esta corrección.

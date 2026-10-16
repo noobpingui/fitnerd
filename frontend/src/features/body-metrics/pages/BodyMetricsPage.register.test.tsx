@@ -37,15 +37,35 @@ vi.mock("@/features/auth/api", () => ({
   requestPasswordReset: vi.fn(),
   resetPassword: vi.fn(),
 }))
-vi.mock("@/features/body-metrics/components/TrendChart", () => ({
-  TrendChart: ({ metrics }: { metrics: { recorded_at: string }[] }) => (
-    <ul aria-label="Puntos del gráfico">
-      {metrics.map((m) => (
-        <li key={m.recorded_at}>{m.recorded_at}</li>
-      ))}
-    </ul>
-  ),
-}))
+vi.mock("@/features/body-metrics/components/TrendChart", async () => {
+  const { useState } = await import("react")
+  const { periodStart } = await import("@/features/body-metrics/dateUtils")
+  const { trendChartData } = await import("@/features/body-metrics/insights")
+  const { todayIsoDate } = await import("@/lib/dates")
+  // Stub con el mismo filtrado por periodo que el gráfico real (3M por
+  // defecto, 1M al pulsarlo) y que pinta las fechas de los puntos.
+  return {
+    TrendChart: ({ metrics }: { metrics: { recorded_at: string }[] }) => {
+      const [months, setMonths] = useState(3)
+      const data = trendChartData(
+        metrics as Parameters<typeof trendChartData>[0],
+        "weight",
+        periodStart(todayIsoDate(), months),
+        (kg: number) => kg
+      )
+      return (
+        <div>
+          <button onClick={() => setMonths(1)}>1M</button>
+          <ul aria-label="Puntos del gráfico">
+            {data.map((p) => (
+              <li key={p.date}>{p.date}</li>
+            ))}
+          </ul>
+        </div>
+      )
+    },
+  }
+})
 vi.mock("@/features/body-metrics/components/ProgressAnalysis", () => ({
   ProgressAnalysis: () => <div>Análisis</div>,
 }))
@@ -106,13 +126,20 @@ const stat = kpi
 
 const openButton = () => screen.getByRole("button", { name: "Registrar medición" })
 
+// El botón se habilita cuando cargan las mediciones y el perfil.
+async function findEnabledOpenButton() {
+  const button = await screen.findByRole("button", { name: "Registrar medición" })
+  await waitFor(() => expect(button).toBeEnabled())
+  return button
+}
+
 // Abre el diálogo, rellena la fecha y los valores, guarda y espera a que se
 // cierre.
 async function register(
   user: User,
   values: { date: string; weight?: string; fat?: string }
 ) {
-  await user.click(await screen.findByRole("button", { name: "Registrar medición" }))
+  await user.click(await findEnabledOpenButton())
   const dialog = await screen.findByRole("dialog", { name: "Registrar medición" })
   fireEvent.change(within(dialog).getByLabelText("Fecha"), {
     target: { value: values.date },
@@ -181,7 +208,7 @@ describe("BodyMetricsPage - botón y textos del registro", () => {
     listMock.mockResolvedValue([])
     renderPage()
 
-    await user.click(await screen.findByRole("button", { name: "Registrar medición" }))
+    await user.click(await findEnabledOpenButton())
 
     expect(await screen.findByLabelText("Peso (kg)")).toBeInTheDocument()
   })
@@ -191,7 +218,7 @@ describe("BodyMetricsPage - botón y textos del registro", () => {
     const user = userEvent.setup()
     listMock.mockResolvedValue([metric("2026-10-11", 80)])
     renderPage()
-    await user.click(await screen.findByRole("button", { name: "Registrar medición" }))
+    await user.click(await findEnabledOpenButton())
     const dialog = await screen.findByRole("dialog", { name: "Registrar medición" })
     await user.type(within(dialog).getByLabelText("Peso (kg)"), "75")
 
@@ -202,6 +229,28 @@ describe("BodyMetricsPage - botón y textos del registro", () => {
     )
     expect(createMock).not.toHaveBeenCalled()
     expect(screen.getAllByRole("row").slice(1)).toHaveLength(1)
+  })
+
+  // SDD: 016 REQ-001 AC-001.4
+  it("'Registrar medición' no se puede pulsar hasta que carga el perfil", async () => {
+    let resolveProfile: (r: Awaited<ReturnType<typeof getProfile>>) => void = () => {}
+    getProfileMock.mockReturnValue(
+      new Promise((resolve) => {
+        resolveProfile = resolve
+      })
+    )
+    listMock.mockResolvedValue([metric("2026-10-11", 80)])
+    renderPage()
+
+    expect(
+      await screen.findByRole("button", { name: "Registrar medición" })
+    ).toBeDisabled()
+
+    resolveProfile(
+      makeProfileResponse({}, { weight_unit: "lb", weight: 176, height_cm: 175 })
+    )
+
+    await waitFor(() => expect(openButton()).toBeEnabled())
   })
 
   // SDD: 016 REQ-010 AC-010.1
@@ -368,24 +417,26 @@ describe("BodyMetricsPage - tras registrar con fecha pasada", () => {
   })
 
   // SDD: 016 REQ-007 AC-007.7
-  it("el gráfico incluye un punto en la fecha registrada", async () => {
+  it("el gráfico en el periodo de 1 mes incluye un punto en la fecha registrada", async () => {
     const user = userEvent.setup()
     const m11 = metric("2026-10-11", 78)
     const m05 = metric("2026-10-05", 80)
-    listMock.mockResolvedValueOnce([m11]).mockResolvedValue([m05, m11])
+    const old = metric("2026-08-20", 82)
+    listMock.mockResolvedValueOnce([old, m11]).mockResolvedValue([old, m05, m11])
     renderPage()
-    const chart = await screen.findByRole("list", { name: "Puntos del gráfico" })
-    expect(within(chart).queryByText("2026-10-05")).not.toBeInTheDocument()
+    await screen.findByRole("list", { name: "Puntos del gráfico" })
+    await user.click(screen.getByRole("button", { name: "1M" }))
+    const chart = () => screen.getByRole("list", { name: "Puntos del gráfico" })
+    expect(within(chart()).queryByText("2026-10-05")).not.toBeInTheDocument()
 
     await register(user, { date: "2026-10-05", weight: "80" })
 
     await waitFor(() =>
-      expect(
-        within(screen.getByRole("list", { name: "Puntos del gráfico" })).getByText(
-          "2026-10-05"
-        )
-      ).toBeInTheDocument()
+      expect(within(chart()).getByText("2026-10-05")).toBeInTheDocument()
     )
+    // El periodo de 1 mes sigue activo: la medición antigua queda fuera.
+    expect(within(chart()).getByText("2026-10-11")).toBeInTheDocument()
+    expect(within(chart()).queryByText("2026-08-20")).not.toBeInTheDocument()
   })
 })
 
