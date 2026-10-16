@@ -41,7 +41,13 @@ function fadeIn(index: number) {
 export function BodyMetricsPage() {
   const [registering, setRegistering] = useState(false)
   const { data: metrics, isLoading, isError, error } = useBodyMetrics()
-  const { data: profileResponse, isLoading: profileLoading } = useProfile()
+  const {
+    data: profileResponse,
+    isLoading: profileLoading,
+    failureCount: profileFailureCount,
+  } = useProfile()
+  // Si el perfil ya falló una vez, no se espera a los reintentos: se usa kg.
+  const profilePending = profileLoading && profileFailureCount === 0
   const profile = useMemo(
     () => (profileResponse ? answersFromProfile(profileResponse) : null),
     [profileResponse]
@@ -79,7 +85,7 @@ export function BodyMetricsPage() {
       {!isLoading && !isError && (
         <Button
           className="mb-6"
-          disabled={profileLoading}
+          disabled={profilePending}
           onClick={() => setRegistering(true)}
         >
           Registrar medición

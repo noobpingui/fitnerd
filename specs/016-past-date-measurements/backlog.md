@@ -33,4 +33,4 @@
 - [x] F6 (NIT): backlog.md:21 tiene la entrada de AC-007.6 aunque ya está resuelta en b1bd525.
 
 ## review (iteración 2) · reviewer
-- [ ] F7 (NIT, implementer): en BodyMetricsPage.tsx:83, si GET /api/profile falla, "Registrar medición" queda deshabilitado mientras TanStack Query reintenta (varios segundos) y después se habilita en kg. Un usuario con el perfil en lb tendría que escribir el peso en kg; la etiqueta muestra la unidad, así que no hay conversión silenciosa.
+- [x] F7 (NIT, implementer): en BodyMetricsPage.tsx:83, si GET /api/profile falla, "Registrar medición" queda deshabilitado mientras TanStack Query reintenta (varios segundos) y después se habilita en kg. Un usuario con el perfil en lb tendría que escribir el peso en kg; la etiqueta muestra la unidad, así que no hay conversión silenciosa.

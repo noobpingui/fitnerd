@@ -10,7 +10,7 @@
   "branch": "feat/016-past-date-measurements",
   "base_branch": "main",
   "created_at": "2026-10-16T10:30:55.104Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,7 +29,10 @@
       "at": "2026-10-16T22:10:36.776Z",
       "note": "auto (gate_mode=flow): red check PASS"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-16T22:12:56.278Z",
+      "note": "auto (gate_mode=flow): todo en verde"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -39,7 +42,7 @@
     "spec": "4779ea7",
     "plan": "27516a5",
     "tasks": "74fd138",
-    "tests": "df02ae5",
+    "tests": "953f2ec",
     "implement": "46faf15"
   },
   "iterations": {
@@ -544,6 +547,30 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS"
+    },
+    {
+      "at": "2026-10-16T22:10:37.027Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 953f2ec"
+    },
+    {
+      "at": "2026-10-16T22:10:37.179Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Corregir F7 de review.md"
+    },
+    {
+      "at": "2026-10-16T22:12:56.198Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F7 corregido; pytest 831, vitest 688"
+    },
+    {
+      "at": "2026-10-16T22:12:56.278Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): todo en verde"
     }
   ]
 }
