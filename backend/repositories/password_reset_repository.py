@@ -37,6 +37,18 @@ class PasswordResetRepository(BaseRepository):
         stmt = select(PasswordResetRequest).where(PasswordResetRequest.token_hash == token_hash)
         return self.session.scalars(stmt).first()
 
+    def get_by_token_hash_for_update(self, token_hash):
+        # FOR UPDATE: bloquea la fila hasta el commit o el rollback (enlace de un solo uso).
+        # populate_existing refresca el objeto ya cargado por la lectura sin bloqueo, para
+        # ver lo que otra petición haya confirmado mientras esta esperaba el bloqueo.
+        stmt = (
+            select(PasswordResetRequest)
+            .where(PasswordResetRequest.token_hash == token_hash)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        return self.session.scalars(stmt).first()
+
     def invalidate_active_for_user(self, user_id, at):
         stmt = (
             update(PasswordResetRequest)

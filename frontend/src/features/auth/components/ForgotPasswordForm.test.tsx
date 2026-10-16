@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { MemoryRouter } from "react-router"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -126,5 +126,25 @@ describe("ForgotPasswordForm", () => {
     expect(
       screen.getByRole("link", { name: "Volver al login" })
     ).toHaveAttribute("href", "/login")
+  })
+})
+
+describe("ForgotPasswordForm - correo con espacios (spec 014)", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  // SDD: 014 REQ-013 AC-013.3
+  it("envía el correo recortado y no muestra Email inválido", async () => {
+    const fakeFetch = stubFetchWith(200, { message: "ok" })
+    renderForm()
+
+    await submitEmail("  Ana@Example.com ")
+
+    await waitFor(() => expect(fakeFetch).toHaveBeenCalledTimes(1))
+    const [url, init] = fakeFetch.mock.calls[0]
+    expect(String(url)).toContain("/api/auth/forgot-password")
+    expect(JSON.parse(init.body)).toEqual({ email: "Ana@Example.com" })
+    expect(screen.queryByText("Email inválido")).not.toBeInTheDocument()
   })
 })

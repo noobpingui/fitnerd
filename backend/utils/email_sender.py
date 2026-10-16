@@ -35,6 +35,28 @@ class InMemoryTransport:
         self.fail_with = None
 
 
+_NAMED_ESCAPES = {
+    "\n": "\\n",
+    "\r": "\\r",
+    "\t": "\\t",
+    "\u2028": "\\u2028",
+    "\u2029": "\\u2029",
+}
+
+
+def escape_log_text(text: str) -> str:
+    """Escapa saltos y caracteres de control para que no falseen líneas del log."""
+    out = []
+    for ch in text:
+        if ch in _NAMED_ESCAPES:
+            out.append(_NAMED_ESCAPES[ch])
+        elif ord(ch) < 0x20 or 0x7F <= ord(ch) <= 0x9F:
+            out.append(f"\\x{ord(ch):02x}")
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
 class ResendTransport:
     """Envía el correo con la API HTTP de Resend (ADR-0014)."""
 
@@ -60,7 +82,7 @@ class ResendTransport:
         # Primero se quita la key y después se recorta, para no dejar un prefijo suyo.
         if self.api_key:
             text = text.replace(self.api_key, "[REDACTED]")
-        return text[: self.ERROR_BODY_MAX_CHARS]
+        return escape_log_text(text[: self.ERROR_BODY_MAX_CHARS])
 
     def send(self, message: EmailMessage) -> None:
         if not self.api_key:

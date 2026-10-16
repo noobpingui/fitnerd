@@ -8,14 +8,17 @@ la cabecera X-Forwarded-For (TestingConfig.PROXY_FIX_X_FOR = 1).
 
 import itertools
 import re
+import threading
+import time
 from datetime import timedelta
 
 import bcrypt
-from sqlalchemy import select, update
+from sqlalchemy import select, text, update
 
 from extensions import db, email_sender
 from models.password_reset_request import PasswordResetRequest
 from models.user import User
+from services.password_reset_service import hash_token
 from tests.fakes import FakeLogger, FakeOpener
 from utils.email_sender import ResendTransport
 
@@ -532,3 +535,202 @@ def test_resend_403_body_never_reaches_forgot_password_response(client):
     assert response.status_code == 503
     assert response.get_json() == SEND_FAILED
     assert "1010" not in response.get_data(as_text=True)
+
+
+# ---------------------------------------------------------------- Spec 014
+
+API_KEY = "re_test_123"
+
+
+def wait_until(condition, timeout=10.0):
+    """Espera activa con tiempo máximo; devuelve si la condición se cumplió."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if condition():
+            return True
+        time.sleep(0.05)
+    return condition()
+
+
+def count_lock_waiters(monitor):
+    """«Backends» de esta base de datos que esperan un bloqueo de fila."""
+    return monitor.execute(
+        text(
+            "SELECT count(*) FROM pg_stat_activity "
+            "WHERE datname = current_database() AND wait_event_type = 'Lock' "
+            "AND pid <> pg_backend_pid()"
+        )
+    ).scalar()
+
+
+def concurrent_resets(app, token, passwords, ready):
+    """Bloquea la fila del token desde una conexión propia, lanza un
+    reset-password por contraseña en hilos distintos (cada uno con su
+    `test_client`), espera con `ready(threads_done, waiters)` a que las
+    peticiones queden en espera, libera el bloqueo y devuelve las respuestas
+    en el mismo orden que `passwords` como (status, json)."""
+    results = {}
+
+    def worker(index, password):
+        response = app.test_client().post(
+            "/api/auth/reset-password", json={"token": token, "password": password}
+        )
+        results[index] = (response.status_code, response.get_json())
+
+    with app.app_context():
+        lock_conn = db.engine.connect()
+        monitor = db.engine.connect().execution_options(isolation_level="AUTOCOMMIT")
+        lock_tx = lock_conn.begin()
+        threads = []
+        try:
+            lock_conn.execute(
+                text(
+                    "SELECT id FROM public.password_reset_requests "
+                    "WHERE token_hash = :h FOR UPDATE"
+                ),
+                {"h": hash_token(token)},
+            )
+            threads = [
+                threading.Thread(target=worker, args=(i, password), daemon=True)
+                for i, password in enumerate(passwords)
+            ]
+            for thread in threads:
+                thread.start()
+            reached = wait_until(
+                lambda: ready(
+                    [not t.is_alive() for t in threads], count_lock_waiters(monitor)
+                )
+            )
+            assert reached, (
+                "las peticiones no llegaron a esperar el bloqueo de la fila: "
+                "el test no habría probado la concurrencia"
+            )
+        finally:
+            lock_tx.rollback()
+            lock_conn.close()
+            for thread in threads:
+                thread.join(timeout=15)
+            monitor.close()
+
+    assert all(not t.is_alive() for t in threads), "una petición quedó colgada"
+    return [results[i] for i in range(len(passwords))]
+
+
+# SDD: 014 REQ-003 AC-003.1
+def test_forgot_password_with_uppercase_email_sends_the_link_to_the_stored_address(client):
+    """'Ana@Example.com' da 200 genérico y el correo sale a 'ana@example.com'."""
+    register(client, "ana@example.com")
+
+    response = forgot(client, "Ana@Example.com")
+
+    assert response.status_code == 200
+    assert response.get_json() == ACCEPTED
+    assert len(outbox()) == 1
+    assert outbox()[0].to == "ana@example.com"
+
+
+# SDD: 014 REQ-003 AC-003.2
+def test_email_cooldown_ignores_letter_case(client, app):
+    """Una solicitud hace 30 s para 'ana@example.com' bloquea 'ANA@EXAMPLE.COM' con 429."""
+    register(client, "ana@example.com")
+    assert forgot(client, "ana@example.com").status_code == 200
+    age_requests(app, "ana@example.com", seconds=30)
+
+    response = forgot(client, "ANA@EXAMPLE.COM")
+
+    assert response.status_code == 429
+    assert response.get_json() == EMAIL_LIMIT
+    assert len(outbox()) == 1
+
+
+# SDD: 014 REQ-003 AC-003.3
+def test_link_requested_with_uppercase_email_resets_the_account_password(client):
+    """El enlace recibido tras pedirlo con mayúsculas cambia la contraseña y el login funciona."""
+    register(client, "ana@example.com")
+    token = request_token(client, "Ana@Example.com")
+
+    response = reset(client, token, "NuevaClave123")
+
+    assert response.status_code == 200
+    assert login(client, "ana@example.com", "NuevaClave123").status_code == 200
+
+
+# SDD: 014 REQ-010 AC-010.4 NFR-001 AC-N001.1
+def test_used_link_is_rejected_and_the_password_does_not_change(client):
+    """Un enlace usado con éxito da 400 al reusarlo y la contraseña no cambia."""
+    register(client, "ana@example.com")
+    token = request_token(client)
+    assert reset(client, token, "NuevaClave123").status_code == 200
+
+    response = reset(client, token, "OtraClave456")
+
+    assert response.status_code == 400
+    assert response.get_json() == INVALID_LINK
+    assert login(client, "ana@example.com", "NuevaClave123").status_code == 200
+    assert login(client, "ana@example.com", "OtraClave456").status_code == 401
+
+
+# SDD: 014 REQ-012 AC-012.6
+def test_resend_error_with_api_key_and_newline_is_sanitized_end_to_end(client):
+    """Resend 401 con la clave y un salto de línea: 503 fijo y el log sin la clave ni saltos."""
+    register(client, "ana@example.com")
+    logger = FakeLogger()
+    email_sender.transport = ResendTransport(
+        API_KEY,
+        opener=FakeOpener(status=401, body=f"{API_KEY}\nsegunda línea".encode("utf-8")),
+        logger=logger,
+    )
+
+    response = forgot(client, "ana@example.com")
+
+    assert response.status_code == 503
+    assert response.get_json() == SEND_FAILED
+    assert logger.records
+    assert all(API_KEY not in r for r in logger.records)
+    assert all("\n" not in r for r in logger.records)
+
+
+# SDD: 014 REQ-010 AC-010.1 AC-010.2
+def test_two_simultaneous_resets_with_the_same_link_only_one_wins(client, app):
+    """Dos reset-password simultáneos con el mismo token: un 200 y un 400 de enlace
+    no válido; solo la contraseña de la petición ganadora permite entrar."""
+    register(client, "ana@example.com")
+    token = request_token(client)
+    passwords = ["ClaveUno123", "ClaveDos123"]
+
+    results = concurrent_resets(
+        app, token, passwords, ready=lambda done, waiters: waiters >= 2
+    )
+
+    statuses = sorted(status for status, _ in results)
+    assert statuses == [200, 400]
+    for status, body in results:
+        if status == 200:
+            assert body == {"message": "Contraseña actualizada"}
+        else:
+            assert body == INVALID_LINK
+    winner = next(p for p, (status, _) in zip(passwords, results) if status == 200)
+    loser = next(p for p, (status, _) in zip(passwords, results) if status == 400)
+    assert login(client, "ana@example.com", winner).status_code == 200
+    assert login(client, "ana@example.com", loser).status_code == 401
+
+
+# SDD: 014 REQ-010 AC-010.3
+def test_invalid_password_in_a_simultaneous_reset_does_not_consume_the_link(client, app):
+    """Con dos peticiones simultáneas, la de 'corta' da 400 de mínimo y la válida da 200."""
+    register(client, "ana@example.com")
+    token = request_token(client)
+
+    results = concurrent_resets(
+        app,
+        token,
+        ["corta", "ClaveDos123"],
+        ready=lambda done, waiters: done[0] and waiters >= 1,
+    )
+
+    (short_status, short_body), (valid_status, valid_body) = results
+    assert short_status == 400
+    assert short_body == TOO_SHORT
+    assert valid_status == 200
+    assert valid_body == {"message": "Contraseña actualizada"}
+    assert login(client, "ana@example.com", "ClaveDos123").status_code == 200

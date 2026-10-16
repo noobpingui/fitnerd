@@ -1,6 +1,6 @@
 # Runbook de despliegue a producción
 
-Guía paso a paso para llevar una rama a producción sin sustos. Recoge lo que se hizo en los despliegues del rediseño (006–010, 13-oct-2026), de la 011, de la retirada del catálogo (012, 14-oct-2026) y del pulido 013 (15-oct-2026).
+Guía paso a paso para llevar una rama a producción sin sustos. Recoge lo que se hizo en los despliegues del rediseño (006–010, 13-oct-2026), de la 011, de la retirada del catálogo (012, 14-oct-2026), del pulido 013 (15-oct-2026) y del endurecimiento de la autenticación (014).
 
 **Piezas que intervienen:**
 
@@ -36,6 +36,7 @@ git diff --name-only origin/main...HEAD -- backend/migrations/versions/
 |---|---|---|
 | **A. Sin migraciones** | 011, 013 | Solo PR, merge y comprobaciones (pasos 2, 5 y 6). |
 | **B. Migración aditiva** (tabla o columna nueva, restricción que el código nuevo necesita) | 006 (`c6a1f0d2e9b4`), 008 (`d8e4b2a7c1f5`) | Backup y migración **antes** del merge (*expand*): el código viejo sigue funcionando con el esquema nuevo. |
+| **B'. Migración de datos no reversible** (reescribe valores existentes, p. ej. pasar columnas a minúsculas) | 014 (`a7d3f9c1e5b2`) | Como el caso B: backup completo y migración **antes** del merge, porque el código nuevo busca el correo en minúsculas. Su `downgrade()` no restaura nada: los valores originales solo vuelven del backup. |
 | **C. Migración destructiva** (borrar tablas o columnas, renombrar, `NOT NULL` sobre datos existentes) | 012 (`f2c4e6a8b0d1`) | Backup completo, merge y **después** del CD la migración (*contract*): el código que ya no usa esas tablas tiene que estar desplegado antes de borrarlas. |
 
 Si una migración mezcla las dos cosas, sepárala en dos despliegues: primero la parte aditiva, después la destructiva.
@@ -129,6 +130,15 @@ La revisión que devuelve tiene que ser la `down_revision` de la primera migraci
 3. Repite la comprobación de solo lectura: revisión nueva, tablas o restricciones creadas, recuento de filas sin cambios.
 4. Merge del PR (`gh pr merge N --merge`) y paso 6.
 
+### Caso B' (datos no reversible): 014, correos en minúsculas
+
+Igual que el caso B, con estas diferencias:
+
+1. Backup completo (paso 3) **verificado**. Es la única vía para recuperar las mayúsculas originales.
+2. Antes de migrar, puedes buscar los conflictos a mano (solo lectura): `SELECT lower(email), array_agg(email) FROM public.users GROUP BY lower(email) HAVING count(*) > 1;`
+3. Aplica `flask db upgrade`. Si hay cuentas cuyos correos solo se diferencian en mayúsculas, la migración **falla sin modificar nada** y el error lista los correos en conflicto. Resuélvelos a mano (no se fusionan ni se borran solos) y vuelve a aplicarla.
+4. Comprobación de solo lectura: revisión nueva y ningún correo con mayúsculas (`SELECT count(*) FROM public.users WHERE email <> lower(email);` devuelve 0); el número de usuarios, igual que antes.
+
 ### Caso C (destructiva): migración después del CD
 
 1. Backup completo (paso 3) **verificado**, con el recuento de filas de lo que se va a borrar.
@@ -181,5 +191,6 @@ Merge del PR y paso 6.
 | 2026-10-14 | 011, ritmo poco realista | #4, `863ec4b` | — | — |
 | 2026-10-14 | 012, retirada del catálogo | #6, `ebb3003` | `f2c4e6a8b0d1`, aplicada después del CD (5 tablas borradas) | `prod-2026-10-14.dump` |
 | 2026-10-15 | 013, pulido de 006–010 | #7, `0596d9e` | — | — |
+| pendiente | 014, endurecimiento de la autenticación | — | `a7d3f9c1e5b2`, a aplicar antes del merge (correos a minúsculas; falla si hay conflictos) | pendiente |
 
 Añade una fila en cada despliegue.

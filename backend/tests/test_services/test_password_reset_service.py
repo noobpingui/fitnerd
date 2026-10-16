@@ -69,6 +69,7 @@ class FakePasswordResetRepository:
         self.rows = []
         self.locked_keys = []
         self.calls = []
+        self.before_lock = None
 
     def lock_keys(self, keys):
         self.calls.append("lock_keys")
@@ -85,6 +86,17 @@ class FakePasswordResetRepository:
 
     def get_by_token_hash(self, token_hash):
         self.calls.append("get_by_token_hash")
+        for row in self.rows:
+            if row.token_hash == token_hash:
+                return row
+        return None
+
+    def get_by_token_hash_for_update(self, token_hash):
+        """Relectura con bloqueo. `before_lock` (opcional) simula lo que
+        confirma otra petición mientras esta espera el bloqueo."""
+        self.calls.append("get_by_token_hash_for_update")
+        if self.before_lock is not None:
+            self.before_lock()
         for row in self.rows:
             if row.token_hash == token_hash:
                 return row
@@ -646,3 +658,88 @@ def test_request_reset_takes_email_and_ip_advisory_locks_before_reading():
     assert "password-reset:email:ana@example.com" in ctx.repo.locked_keys
     assert f"password-reset:ip:{IP}" in ctx.repo.locked_keys
     assert ctx.repo.calls[0] == "lock_keys"
+
+
+# ---------------------------------------------------------------- Spec 014
+
+# SDD: 014 REQ-003 AC-003.1
+def test_request_reset_normalizes_the_email_for_lock_lookup_row_and_delivery():
+    """Con 'Ana@Example.com' la clave de lock, la fila y el envío usan el correo en minúsculas."""
+    ctx = make_service([make_user("ana@example.com")])
+
+    ctx.service.request_reset("  Ana@Example.com ", IP)
+
+    assert "password-reset:email:ana@example.com" in ctx.repo.locked_keys
+    assert ctx.repo.rows[0].email == "ana@example.com"
+    assert len(ctx.email.sent) == 1
+    assert ctx.email.sent[0]["to"] == "ana@example.com"
+
+
+# SDD: 014 REQ-003 AC-003.2
+def test_request_reset_applies_the_email_cooldown_ignoring_case():
+    """Segunda solicitud 30 s después con 'ANA@EXAMPLE.COM': RateLimitError sin correo."""
+    ctx = make_service([make_user("ana@example.com")])
+    ctx.service.request_reset("ana@example.com", IP)
+    ctx.clock.advance(seconds=30)
+
+    with pytest.raises(RateLimitError) as exc_info:
+        ctx.service.request_reset("ANA@EXAMPLE.COM", OTHER_IP)
+
+    assert str(exc_info.value) == EMAIL_LIMIT
+    assert len(ctx.email.sent) == 1
+
+
+# SDD: 014 REQ-010 AC-010.3
+def test_reset_password_with_short_password_does_not_lock_nor_consume_the_link():
+    """Con 'corta' no se toma el bloqueo, el enlace sigue sin usar y la contraseña no cambia."""
+    user = make_user("ana@example.com")
+    original_hash = user.password_hash
+    ctx = make_service([user])
+    token = request_and_get_token(ctx)
+
+    with pytest.raises(ValidationError) as exc_info:
+        ctx.service.reset_password(token, "corta")
+
+    assert exc_info.value.message == TOO_SHORT
+    assert "get_by_token_hash_for_update" not in ctx.repo.calls
+    assert ctx.repo.rows[0].used_at is None
+    assert user.password_hash == original_hash
+
+
+# SDD: 014 REQ-010 AC-010.1 AC-010.2
+def test_reset_password_lost_race_gives_invalid_link_and_rolls_back_without_commit():
+    """Si otra petición usa el enlace mientras se espera el bloqueo: enlace no válido,
+    contraseña sin cambios y rollback sin commit."""
+    user = make_user("ana@example.com")
+    original_hash = user.password_hash
+    ctx = make_service([user])
+    token = request_and_get_token(ctx)
+    ctx.uow.committed = False
+    ctx.repo.before_lock = lambda: setattr(ctx.repo.rows[0], "used_at", T0)
+
+    with pytest.raises(ValidationError) as exc_info:
+        ctx.service.reset_password(token, "NuevaClave123")
+
+    assert exc_info.value.message == INVALID_LINK
+    assert user.password_hash == original_hash
+    assert ctx.uow.rolled_back is True
+    assert ctx.uow.committed is False
+
+
+# SDD: 014 REQ-010 AC-010.1
+def test_reset_password_reads_without_lock_before_rereading_with_lock():
+    """Sin carrera: primero la lectura sin bloqueo, después la relectura con bloqueo,
+    y el cambio se confirma."""
+    user = make_user("ana@example.com")
+    ctx = make_service([user])
+    token = request_and_get_token(ctx)
+    ctx.uow.committed = False
+    ctx.repo.calls.clear()
+
+    ctx.service.reset_password(token, "NuevaClave123")
+
+    assert ctx.repo.calls.index("get_by_token_hash") < ctx.repo.calls.index(
+        "get_by_token_hash_for_update"
+    )
+    assert bcrypt.checkpw(b"NuevaClave123", user.password_hash.encode("utf-8"))
+    assert ctx.uow.committed is True

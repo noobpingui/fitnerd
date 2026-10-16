@@ -1,6 +1,5 @@
 import hashlib
 import logging
-import re
 import secrets
 from datetime import datetime, timedelta, timezone
 
@@ -8,6 +7,16 @@ import bcrypt
 
 from exceptions.custom_exceptions import RateLimitError, ServiceUnavailableError, ValidationError
 from models.password_reset_request import PasswordResetRequest
+from services.credential_rules import (  # noqa: F401  (se reexportan: otros módulos las importan desde aquí)
+    EMAIL_PATTERN,
+    INVALID_EMAIL_MESSAGE,
+    MAX_PASSWORD_BYTES,
+    MIN_PASSWORD_CHARS,
+    PASSWORD_TOO_LONG_MESSAGE,
+    PASSWORD_TOO_SHORT_MESSAGE,
+    validate_email,
+    validate_new_password,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -15,25 +24,17 @@ REQUEST_ACCEPTED_MESSAGE = (
     "Si el correo pertenece a una cuenta con contraseña, recibirás un enlace para restablecerla."
 )
 PASSWORD_UPDATED_MESSAGE = "Contraseña actualizada"
-INVALID_EMAIL_MESSAGE = "Email inválido"
 IP_RATE_LIMITED_MESSAGE = "Has hecho demasiadas solicitudes. Inténtalo de nuevo más tarde."
 EMAIL_RATE_LIMITED_MESSAGE = (
     "Ya se envió un enlace hace menos de 2 minutos. Inténtalo de nuevo más tarde."
 )
 EMAIL_SEND_FAILED_MESSAGE = "No se pudo enviar el correo. Inténtalo de nuevo más tarde."
 INVALID_LINK_MESSAGE = "El enlace no es válido o ha caducado. Solicita uno nuevo."
-PASSWORD_TOO_SHORT_MESSAGE = "La contraseña debe tener al menos 8 caracteres"
-PASSWORD_TOO_LONG_MESSAGE = "La contraseña es demasiado larga"
 
 EMAIL_COOLDOWN = timedelta(minutes=2)
 IP_WINDOW = timedelta(minutes=10)
 IP_MAX_REQUESTS = 3
 TOKEN_TTL = timedelta(minutes=5)
-
-MIN_PASSWORD_CHARS = 8
-MAX_PASSWORD_BYTES = 72
-
-EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
 def utc_now():
@@ -56,9 +57,7 @@ class PasswordResetService:
         self.clock = clock
 
     def request_reset(self, email, client_ip):
-        if not isinstance(email, str) or not EMAIL_PATTERN.match(email.strip()):
-            raise ValidationError(INVALID_EMAIL_MESSAGE)
-        email = email.strip()
+        email = validate_email(email)
 
         repo = self.password_reset_repository
         try:
@@ -117,32 +116,42 @@ class PasswordResetService:
             self.unit_of_work.rollback()
             raise
 
-    def reset_password(self, token, password):
-        if not isinstance(token, str) or not token:
-            raise ValidationError(INVALID_LINK_MESSAGE)
-
-        row = self.password_reset_repository.get_by_token_hash(hash_token(token))
-        now = self.clock()
+    def _ensure_link_is_usable(self, row):
         if (
             row is None
             or row.user_id is None
             or row.used_at is not None
             or row.invalidated_at is not None
-            or now - row.created_at >= TOKEN_TTL
+            or self.clock() - row.created_at >= TOKEN_TTL
         ):
             raise ValidationError(INVALID_LINK_MESSAGE)
 
-        if not isinstance(password, str) or len(password) < MIN_PASSWORD_CHARS:
-            raise ValidationError(PASSWORD_TOO_SHORT_MESSAGE)
-        if len(password.encode("utf-8")) > MAX_PASSWORD_BYTES:
-            raise ValidationError(PASSWORD_TOO_LONG_MESSAGE)
-
-        user = self.user_repository.get_by_id(row.user_id)
-        if user is None:
+    def reset_password(self, token, password):
+        if not isinstance(token, str) or not token:
             raise ValidationError(INVALID_LINK_MESSAGE)
 
         try:
+            token_hash = hash_token(token)
+            repo = self.password_reset_repository
+
+            # Primero sin bloqueo: un enlace o una contraseña inválidos fallan sin esperar
+            # ni consumir el enlace.
+            row = repo.get_by_token_hash(token_hash)
+            self._ensure_link_is_usable(row)
+            validate_new_password(password)
             hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+
+            # Después se relee con FOR UPDATE y se revalida: si otra petición consumió el
+            # enlace mientras esperábamos, esta recibe "enlace no válido". El rollback de
+            # abajo libera el bloqueo también cuando se lanza un ValidationError.
+            row = repo.get_by_token_hash_for_update(token_hash)
+            self._ensure_link_is_usable(row)
+
+            user = self.user_repository.get_by_id(row.user_id)
+            if user is None:
+                raise ValidationError(INVALID_LINK_MESSAGE)
+
+            now = self.clock()
             user.password_hash = hashed.decode("utf-8")
             row.used_at = now
             self.unit_of_work.commit()

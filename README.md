@@ -17,8 +17,8 @@ I built it as a personal project - both because I wanted exactly this tool for m
 - **Calories and macros** - daily target from Mifflin-St Jeor with a calorie floor, a protein cap for high body weights and a 100 g carb minimum, computed in the frontend
 - **AI progress analysis** - on the metrics screen, the coach reads the measurements together with the profile (sex, age, height, activity, goal), the progress indicators and the calorie target, and when the weekly pace does not fit the goal it shows a suggested calorie adjustment (midpoint of the goal's pace range, 7700 kcal/kg, steps of 50, capped at 500 kcal/day, never below the calorie floor); the figure is computed by the server with a fixed rule, not by the model, which only explains it; with an unrealistic pace the analysis still works but gives no calorie suggestion and asks the user to review the measurement
 - **AI Coach** - a RAG-grounded chat that only answers from real fitness content, with multi-turn conversation memory and a thumbs up/down rating on every answer
-- Email/password auth **and** Google Sign-In
-- **Password recovery by email** - a reset link (valid 5 minutes, single use) sent through Resend, with per-email and per-IP rate limits
+- Email/password auth **and** Google Sign-In (emails are case-insensitive and stored in lowercase; passwords need 8+ characters and at most 72 bytes, the same rule on sign-up and on reset)
+- **Password recovery by email** - a reset link (valid 5 minutes, strictly single use even with simultaneous requests) sent through Resend, with per-email and per-IP rate limits
 - A feedback widget built right into the app
 - Fully responsive, with an "add to home screen" shortcut for mobile
 
