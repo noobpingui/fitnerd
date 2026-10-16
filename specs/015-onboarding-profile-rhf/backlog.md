@@ -16,3 +16,7 @@
 ## tests · test-author
 - [ ] Los tests nuevos de `OnboardingPage.test.tsx` repiten algunas pruebas de fecha que ya existen con el marcador 006 (por ejemplo, la fecha prerrellenada de 1900). Se pueden simplificar cuando se cierre la feature.
 - [ ] Los tests de fecha de `ProfilePage.test.tsx` (reglas de validación de la 015) comprueban 14 y 100 años con `fireEvent.change` sobre el `input type=date`. Un test de integración con un navegador real sería más fiel, pero queda fuera de Vitest.
+
+## implement · implementer
+- [ ] Los warnings "incompatible-library" de react-hook-form watch() (se podría usar useWatch).
+- [ ] Eliminar updateBody redundante en PhysicalDataForm.

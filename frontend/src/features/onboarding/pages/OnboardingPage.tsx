@@ -1,4 +1,6 @@
-import { useRef, useState, type ReactNode } from "react"
+import { useMemo, useRef, useState, type ReactNode } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { useNavigate } from "react-router"
 import { AnimatePresence, motion } from "motion/react"
 import { ArrowLeft } from "lucide-react"
@@ -17,10 +19,11 @@ import {
 import type { OnboardingAnswers } from "@/features/onboarding/types"
 import { convertHeight, convertWeight } from "@/features/onboarding/units"
 import {
-  dateOfBirthError,
-  isHeightValid,
-  isWeightValid,
-} from "@/features/onboarding/validation"
+  DOB_REQUIRED_MESSAGE,
+  fieldMessages,
+  makePhysicalDataSchema,
+  type PhysicalDataErrorKey,
+} from "@/features/onboarding/schemas"
 import { todayIsoDate } from "@/lib/dates"
 import { useSaveProfile } from "@/features/profile/hooks"
 import { payloadFromAnswers } from "@/features/profile/mappers"
@@ -51,10 +54,16 @@ export function OnboardingPage({
 }) {
   const navigate = useNavigate()
   const saveProfile = useSaveProfile()
-  const [answers, setAnswers] = useState<OnboardingAnswers>({
-    ...EMPTY_ANSWERS,
-    dateOfBirth: initialDateOfBirth ?? "",
+  const schema = useMemo(() => makePhysicalDataSchema(), [])
+  const form = useForm<OnboardingAnswers>({
+    resolver: zodResolver(schema),
+    defaultValues: { ...EMPTY_ANSWERS, dateOfBirth: initialDateOfBirth ?? "" },
   })
+  const answers = form.watch()
+  // Los mensajes salen del mismo esquema, evaluado de forma síncrona.
+  const errors = fieldMessages<PhysicalDataErrorKey>(schema, answers)
+  const validFor = (keys: PhysicalDataErrorKey[]) =>
+    keys.every((key) => !errors[key])
   const [stepIndex, setStepIndex] = useState(0)
   const [direction, setDirection] = useState(1)
   // Evita que un doble clic rápido en una opción salte dos preguntas.
@@ -63,7 +72,9 @@ export function OnboardingPage({
   const submitting = useRef(false)
 
   function update(patch: Partial<OnboardingAnswers>) {
-    setAnswers((current) => ({ ...current, ...patch }))
+    for (const key of Object.keys(patch) as (keyof OnboardingAnswers)[]) {
+      form.setValue(key, patch[key] as never, { shouldDirty: true })
+    }
   }
 
   // Elegir una opción guarda la respuesta y, tras una pausa corta para que
@@ -80,14 +91,18 @@ export function OnboardingPage({
     }, 250)
   }
 
-  const dobError = dateOfBirthError(answers)
+  // La fecha vacía o incompleta no pinta mensaje: solo deshabilita "Siguiente".
+  const dobError =
+    errors.dateOfBirth && errors.dateOfBirth !== DOB_REQUIRED_MESSAGE
+      ? errors.dateOfBirth
+      : null
 
   const steps: Step[] = [
     {
       id: "gender",
       title: "¿Cuál es tu género?",
       subtitle: "Lo usamos para estimar tu gasto calórico.",
-      isValid: answers.gender !== null,
+      isValid: validFor(["gender"]),
       autoAdvance: true,
       content: (
         <ChoiceList
@@ -100,7 +115,7 @@ export function OnboardingPage({
     {
       id: "date-of-birth",
       title: "¿Cuál es tu fecha de nacimiento?",
-      isValid: dobError === null,
+      isValid: validFor(["dateOfBirth"]),
       autoAdvance: false,
       content: (
         <div className="flex flex-col gap-2">
@@ -123,7 +138,7 @@ export function OnboardingPage({
     {
       id: "height",
       title: "¿Cuánto mides?",
-      isValid: isHeightValid(answers),
+      isValid: validFor(["height"]),
       autoAdvance: false,
       content: (
         <div className="flex flex-col items-center gap-4">
@@ -172,7 +187,7 @@ export function OnboardingPage({
     {
       id: "weight",
       title: "¿Cuánto pesas?",
-      isValid: isWeightValid(answers),
+      isValid: validFor(["weight"]),
       autoAdvance: false,
       content: (
         <div className="flex flex-col items-center gap-4">
@@ -198,7 +213,7 @@ export function OnboardingPage({
     {
       id: "activity",
       title: "¿Cuál es tu nivel de actividad física?",
-      isValid: answers.activityLevel !== null,
+      isValid: validFor(["activityLevel"]),
       autoAdvance: true,
       content: (
         <ChoiceList
@@ -211,7 +226,7 @@ export function OnboardingPage({
     {
       id: "goal",
       title: "¿Cuál es tu meta?",
-      isValid: answers.goal !== null,
+      isValid: validFor(["goal"]),
       // Última pregunta: no avanza sola, el usuario confirma con el botón.
       autoAdvance: false,
       content: (
@@ -233,12 +248,18 @@ export function OnboardingPage({
     if (isLast) {
       if (submitting.current) return
       submitting.current = true
-      saveProfile.mutate(payloadFromAnswers(answers), {
-        onSuccess: () => navigate("/home", { replace: true }),
-        onError: () => {
+      void form.handleSubmit(
+        (values) =>
+          saveProfile.mutate(payloadFromAnswers(values), {
+            onSuccess: () => navigate("/home", { replace: true }),
+            onError: () => {
+              submitting.current = false
+            },
+          }),
+        () => {
           submitting.current = false
-        },
-      })
+        }
+      )()
       return
     }
     setDirection(1)

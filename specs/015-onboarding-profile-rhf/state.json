@@ -9,7 +9,7 @@
   "branch": "fix/015-onboarding-profile-rhf",
   "base_branch": "main",
   "created_at": "2026-10-16T04:11:19.304Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -28,7 +28,10 @@
       "at": "2026-10-16T04:52:56.125Z",
       "note": "auto (gate_mode=flow): red check PASS iteración 2 con excepción confirmada por el usuario"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-16T08:34:38.155Z",
+      "note": "auto (gate_mode=flow): RHF+zodResolver en los dos formularios, validation.ts eliminado"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -37,7 +40,8 @@
   "commits": {
     "spec": "aea1091",
     "plan": "618cba5",
-    "tasks": "2dc8b48"
+    "tasks": "2dc8b48",
+    "tests": "6bb94e7"
   },
   "iterations": {
     "tests": 1,
@@ -231,6 +235,30 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS iteración 2 con excepción confirmada por el usuario"
+    },
+    {
+      "at": "2026-10-16T04:53:02.101Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 6bb94e7"
+    },
+    {
+      "at": "2026-10-16T04:53:02.182Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar tareas impl"
+    },
+    {
+      "at": "2026-10-16T08:34:38.066Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-040 a T-046; 607 tests, tsc/build/lint OK"
+    },
+    {
+      "at": "2026-10-16T08:34:38.155Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): RHF+zodResolver en los dos formularios, validation.ts eliminado"
     }
   ]
 }

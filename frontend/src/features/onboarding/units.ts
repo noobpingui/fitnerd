@@ -3,7 +3,7 @@ import type {
   OnboardingAnswers,
   WeightUnit,
 } from "@/features/onboarding/types"
-import { isHeightValid, isWeightValid } from "@/features/onboarding/validation"
+import { isHeightValid, isWeightValid } from "@/features/onboarding/schemas"
 
 export const KG_PER_LB = 0.45359237
 export const CM_PER_IN = 2.54

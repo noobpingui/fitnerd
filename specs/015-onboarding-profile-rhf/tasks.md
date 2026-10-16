@@ -37,13 +37,13 @@ Los marcadores nuevos llevan `// SDD: 015 REQ-… AC-…`. Los tests de caracter
 ## Fase B — Implementación (implementer)
 Orden: reglas → unidades → tipos y esquema del perfil → formularios → limpieza.
 
-- [ ] T-040 [REQ-001, REQ-002, REQ-003, REQ-004] (impl) Implementar las reglas compartidas: `dateOfBirthMessage` (portada de `dateOfBirthError`, vacía = `DOB_REQUIRED_MESSAGE`), `isHeightValid` (ft/in enteros), `isWeightValid`, mensajes de rango, `physicalDataShape`, `addPhysicalDataIssues`, `makePhysicalDataSchema` y `fieldMessages` — `frontend/src/features/onboarding/schemas.ts`
-- [ ] T-041 [REQ-003, REQ-006] (impl) Cambiar el import de `isHeightValid`/`isWeightValid` a `schemas.ts` — `frontend/src/features/onboarding/units.ts`
-- [ ] T-042 [REQ-005, REQ-009] (impl) Completar `BodyComposition` y `PhysicalDataFormValues` (moviendo `BodyComposition` desde `PhysicalDataForm.tsx`) — `frontend/src/features/profile/types.ts`
-- [ ] T-043 [REQ-002, REQ-005] (impl) Implementar `makeProfileFormSchema` con grasa y músculo (`FAT_LIMITS`, `MUSCLE_LIMITS`) y pasar `profileResponseSchema`/`saveProfilePayloadSchema` a los enums compartidos sin cambiar su comportamiento — `frontend/src/features/profile/schemas.ts`
-- [ ] T-044 [REQ-001, REQ-003, REQ-004, REQ-006, REQ-007, REQ-008] (impl) Migrar el asistente a `useForm` + `zodResolver` con validez de cada paso desde `fieldMessages`, aviso de fecha sin el de vacía, `handleSubmit` con guardia de envío único — `frontend/src/features/onboarding/pages/OnboardingPage.tsx`
-- [ ] T-045 [REQ-001, REQ-002, REQ-003, REQ-004, REQ-005, REQ-006, REQ-009, REQ-010] (impl) Migrar el formulario Datos físicos a `useForm` + `zodResolver` con mensajes síncronos desde el esquema, `saved` + `reset`, `onSave` con la secuencia actual y sin `optionalInRange` — `frontend/src/features/profile/components/PhysicalDataForm.tsx`
-- [ ] T-046 [REQ-001] (impl) Eliminar el módulo de validación propio, ya sin uso — `frontend/src/features/onboarding/validation.ts`
+- [x] T-040 [REQ-001, REQ-002, REQ-003, REQ-004] (impl) Implementar las reglas compartidas: `dateOfBirthMessage` (portada de `dateOfBirthError`, vacía = `DOB_REQUIRED_MESSAGE`), `isHeightValid` (ft/in enteros), `isWeightValid`, mensajes de rango, `physicalDataShape`, `addPhysicalDataIssues`, `makePhysicalDataSchema` y `fieldMessages` — `frontend/src/features/onboarding/schemas.ts`
+- [x] T-041 [REQ-003, REQ-006] (impl) Cambiar el import de `isHeightValid`/`isWeightValid` a `schemas.ts` — `frontend/src/features/onboarding/units.ts`
+- [x] T-042 [REQ-005, REQ-009] (impl) Completar `BodyComposition` y `PhysicalDataFormValues` (moviendo `BodyComposition` desde `PhysicalDataForm.tsx`) — `frontend/src/features/profile/types.ts`
+- [x] T-043 [REQ-002, REQ-005] (impl) Implementar `makeProfileFormSchema` con grasa y músculo (`FAT_LIMITS`, `MUSCLE_LIMITS`) y pasar `profileResponseSchema`/`saveProfilePayloadSchema` a los enums compartidos sin cambiar su comportamiento — `frontend/src/features/profile/schemas.ts`
+- [x] T-044 [REQ-001, REQ-003, REQ-004, REQ-006, REQ-007, REQ-008] (impl) Migrar el asistente a `useForm` + `zodResolver` con validez de cada paso desde `fieldMessages`, aviso de fecha sin el de vacía, `handleSubmit` con guardia de envío único — `frontend/src/features/onboarding/pages/OnboardingPage.tsx`
+- [x] T-045 [REQ-001, REQ-002, REQ-003, REQ-004, REQ-005, REQ-006, REQ-009, REQ-010] (impl) Migrar el formulario Datos físicos a `useForm` + `zodResolver` con mensajes síncronos desde el esquema, `saved` + `reset`, `onSave` con la secuencia actual y sin `optionalInRange` — `frontend/src/features/profile/components/PhysicalDataForm.tsx`
+- [x] T-046 [REQ-001] (impl) Eliminar el módulo de validación propio, ya sin uso — `frontend/src/features/onboarding/validation.ts`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

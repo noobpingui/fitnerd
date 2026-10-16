@@ -1,21 +1,56 @@
 import { z } from "zod"
+import { FAT_LIMITS, MUSCLE_LIMITS } from "@/features/body-metrics/schemas"
 import { LIMITS } from "@/features/onboarding/constants"
-import type { PhysicalDataErrorKey } from "@/features/onboarding/schemas"
+import {
+  activityLevelSchema,
+  addPhysicalDataIssues,
+  genderSchema,
+  goalSchema,
+  heightUnitSchema,
+  physicalDataShape,
+  weightUnitSchema,
+  type PhysicalDataErrorKey,
+} from "@/features/onboarding/schemas"
 import type { PhysicalDataFormValues } from "@/features/profile/types"
 
 export type ProfileFormErrorKey = PhysicalDataErrorKey | "fat" | "muscle"
 
-export function makeProfileFormSchema(
-  _today?: Date
-): z.ZodType<PhysicalDataFormValues, PhysicalDataFormValues> {
-  throw new Error("not implemented")
+// Opcional: vacío es válido; si hay algo escrito, debe estar en rango.
+function optionalInRange(value: string, { min, max }: { min: number; max: number }) {
+  if (value.trim() === "") return true
+  const n = Number(value)
+  return Number.isFinite(n) && n >= min && n <= max
 }
 
-const gender = z.enum(["male", "female"])
-const heightUnit = z.enum(["cm", "ft"])
-const weightUnit = z.enum(["kg", "lb"])
-const activityLevel = z.enum(["low", "moderate", "high", "very_high", "athlete"])
-const goal = z.enum(["lose", "lose_slow", "maintain", "gain_slow", "gain"])
+export function makeProfileFormSchema(
+  today?: Date
+): z.ZodType<PhysicalDataFormValues, PhysicalDataFormValues> {
+  return z
+    .object({ ...physicalDataShape, fat: z.string(), muscle: z.string() })
+    .superRefine((values, ctx) => {
+      addPhysicalDataIssues(values, ctx, today ?? new Date())
+      if (!optionalInRange(values.fat, FAT_LIMITS)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["fat"],
+          message: `Entre ${FAT_LIMITS.min} y ${FAT_LIMITS.max} %`,
+        })
+      }
+      if (!optionalInRange(values.muscle, MUSCLE_LIMITS)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["muscle"],
+          message: `Entre ${MUSCLE_LIMITS.min} y ${MUSCLE_LIMITS.max} %`,
+        })
+      }
+    })
+}
+
+const gender = genderSchema
+const heightUnit = heightUnitSchema
+const weightUnit = weightUnitSchema
+const activityLevel = activityLevelSchema
+const goal = goalSchema
 
 const serverProfileSchema = z.object({
   gender,
