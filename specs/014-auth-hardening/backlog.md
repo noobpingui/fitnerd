@@ -56,3 +56,14 @@
 ## tests red (iteración 2) · verifier
 - [ ] Observación para el orquestador: test_two_simultaneous_resets_with_the_same_link_only_one_wins pasa con la implementación actual. Su helper concurrent_resets gana una aserción de precondición (T-022), pero el test solo cambia tildes, así que queda dentro de la excepción F2. El comportamiento de AC-010.1 ya se cumple.
 - [ ] Pendiente de decisión: si el orquestador considera que el rojo de AC-010.3 por precondición no es legítimo, habría que reformular el test de ruta.
+
+## verify (iteración 2) · verifier
+- [ ] Documentar el paso manual de producción de la migración a7d3f9c1e5b2 (volcado previo, conflictos de correo, aplicación con flask db upgrade) en docs/deploy-runbook.md o docs-report.md (Art. P4), en la etapa docs.
+- [ ] Prueba manual en navegador real de AC-011.3 y AC-011.4 (aviso de /login y botón atrás).
+
+## review (iteración 2) · reviewer
+- [ ] NIT (implementer): `_ensure_link_is_usable` lee `self.clock()` en cada llamada en lugar de usar un solo `now`, como pide el plan §3.3 (password_reset_service.py:125,154).
+- [ ] NIT (implementer): la comprobación de `user is None` llega después de tomar el FOR UPDATE; es inofensivo (password_reset_service.py:150-152).
+- [ ] Etapa docs: documentar en docs/deploy-runbook.md el volcado previo y el `flask db upgrade` de la migración a7d3f9c1e5b2 (Art. P4).
+- [ ] Etapa docs: pasar ADR-0025 a "Aceptada" si el usuario la aprueba en el gate.
+- [ ] Tildes en textos de tests anteriores a la 014 (p. ej. el describe "LoginForm - recuperacion de contraseña" y el docstring de FakePasswordResetRepository).

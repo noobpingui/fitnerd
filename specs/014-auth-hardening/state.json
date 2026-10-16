@@ -10,7 +10,7 @@
   "branch": "feat/014-auth-hardening",
   "base_branch": "main",
   "created_at": "2026-10-16T01:36:04.914Z",
-  "stage": "verify",
+  "stage": "docs",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -33,8 +33,14 @@
       "at": "2026-10-16T03:09:54.672Z",
       "note": "auto (gate_mode=flow): F1 (relectura con bloqueo tras validar), F3 (escapes), REQ-013 (emailSchema)"
     },
-    "verify": null,
-    "review": null,
+    "verify": {
+      "at": "2026-10-16T03:12:38.350Z",
+      "note": "auto (gate_mode=flow): verify PASS, todo en verde, 60/60 AC"
+    },
+    "review": {
+      "at": "2026-10-16T03:25:31.713Z",
+      "note": "Aprobado, los NIT al backlog"
+    },
     "docs": null,
     "close": null
   },
@@ -48,7 +54,8 @@
     "spec-fix": "34d1ae8",
     "plan-fix": "c925722",
     "tasks-fix": "ead2cfb",
-    "tests-fix-2": "1290032"
+    "tests-fix-2": "1290032",
+    "implement-fix": "1ac3b26"
   },
   "iterations": {
     "tests": 2,
@@ -61,12 +68,12 @@
     "at": "2026-10-16T03:07:21.046Z"
   },
   "verify": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-16T03:12:28.299Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-10-16T03:14:36.389Z"
   },
   "tests_snapshot": {
     "at": "2026-10-16T03:07:35.977Z",
@@ -524,6 +531,60 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): F1 (relectura con bloqueo tras validar), F3 (escapes), REQ-013 (emailSchema)"
+    },
+    {
+      "at": "2026-10-16T03:09:54.872Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement-fix: 1ac3b26"
+    },
+    {
+      "at": "2026-10-16T03:09:54.953Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa, ciclo de review 2"
+    },
+    {
+      "at": "2026-10-16T03:12:28.299Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Ciclo de review 2: backend 807 passed, ratchet sin violaciones nuevas; frontend 504 passed, lint sin errores (2 warnings previos), tsc y build OK; trazabilidad completa (60 AC, REQ-001 a REQ-013, NFR-001), tareas [x], sin skips"
+    },
+    {
+      "at": "2026-10-16T03:12:38.258Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS ciclo de review 2: 807 + 504, 60/60 AC"
+    },
+    {
+      "at": "2026-10-16T03:12:38.350Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS, todo en verde, 60/60 AC"
+    },
+    {
+      "at": "2026-10-16T03:12:38.433Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review, ciclo 2"
+    },
+    {
+      "at": "2026-10-16T03:14:36.389Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-16T03:14:36.484Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED iteración 2: F1-F5 resueltos, 2 NIT"
+    },
+    {
+      "at": "2026-10-16T03:25:31.713Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Aprobado, los NIT al backlog"
     }
   ]
 }

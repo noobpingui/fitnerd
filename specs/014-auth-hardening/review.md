@@ -1,68 +1,67 @@
 # Review 014 — Endurecer la autenticación: token de reset atómico, emails en minúsculas, reglas de contraseña unificadas y logs saneados
 
-- **Iteración:** 1 de 3
-- **Diff revisado:** `git diff main...feat/014-auth-hardening` @ `e2a3976` (+ cambios sin commitear: solo `state.json` y `verify-report.md` de la feature)
+- **Iteración:** 2 de 3
+- **Diff revisado:** `git diff main...feat/014-auth-hardening` @ `1ac3b26` (+ cambios sin commitear: solo `backlog.md`, `state.json` y `verify-report.md` de la feature). Foco en el delta `e2a3976..1ac3b26` (corrección de F1–F5).
 - **Veredicto:** APPROVED
 
 ## 1. Resumen
-El cambio concentra la normalización del correo y las reglas de contraseña en `services/credential_rules.py`, hace que `UserRepository.get_by_email` no distinga mayúsculas, bloquea la fila del token de restablecimiento con `FOR UPDATE`, añade una migración solo de datos que pasa los correos a minúsculas y falla ante conflictos, escapa los caracteres de control del log de Resend y, en el frontend, comparte `newPasswordSchema` y muestra el aviso de `/login` una sola vez. La implementación es limpia, sigue el plan y respeta las capas. Solo quedan hallazgos menores y NIT.
+La iteración 2 corrige los cinco hallazgos de la review anterior. F1: `reset_password` valida el enlace y la contraseña con una lectura sin bloqueo y después relee con `FOR UPDATE` y `populate_existing` y revalida el enlace, así que una contraseña inválida ya no toma el bloqueo ni depende del orden de llegada. F2: tildes corregidas en los textos nuevos de los tests. F3: los escapes de U+2028 y U+2029 se escriben como `" "` y `" "`. F4: `concurrent_resets` comprueba que las peticiones llegaron a esperar el bloqueo. F5: se añadió REQ-013 a la spec, aprobada por el usuario, y un `emailSchema` con `trim` compartido por los tres formularios. El cambio es pequeño y está bien acotado. Las suites afectadas pasan: 106 tests de backend de reset y correo, y 49 tests del frontend de `features/auth`, ejecutados en esta revisión.
 
 ## 2. Cumplimiento de la spec
 | REQ / AC | ¿Implementado como se especificó? | Evidencia (archivo:línea o test) |
 |---|---|---|
-| AC-001.1, AC-001.2 | Sí | `backend/services/auth_service.py:37` (`validate_email` devuelve el correo normalizado), `:42` (duplicado) y `:52` (`User(email=email…)`); `backend/repositories/user_repository.py:17-23`; tests `test_register_stores_and_returns_the_email_trimmed_and_lowercase`, `test_register_rejects_a_duplicate_email_that_differs_only_in_case` |
-| AC-002.1 – AC-002.3 | Sí | `backend/services/auth_service.py:89` (`normalize_email`); `test_auth_routes.py` y `test_auth_service.py` |
-| AC-003.1 – AC-003.3 | Sí | `backend/services/password_reset_service.py:60` (`validate_email`), correo normalizado en lock (`:64`), límite (`:70`), búsqueda (`:74`) y fila (`:108`); envío a `user.email` (`:85`) |
-| AC-004.1, AC-004.2 | Sí | `backend/services/auth_service.py:122` (verificador inyectado) y `:132` (`normalize_email(claims["email"])`); unitarios en `test_auth_service.py` |
-| AC-005.1, AC-005.2 | Sí | `backend/repositories/user_repository.py:20-22` (`func.lower`); tests con `insert_legacy_user` |
-| AC-005.3, AC-005.4 | Sí | `backend/migrations/versions/a7d3f9c1e5b2_lowercase_user_emails.py:24-39`; `test_lowercase_emails_migration.py` |
-| AC-006.1 – AC-006.10 | Sí | `backend/services/credential_rules.py:25-30`; orden correo → contraseña → duplicado en `auth_service.py:37-44` |
-| AC-007.1 – AC-007.4 | Sí | `backend/services/credential_rules.py:19-22` (`isinstance` antes de `strip`, sin 5xx) |
-| AC-008.1 – AC-008.6 | Sí | `frontend/src/features/auth/schemas.ts:10-16` y `:26`; `RegisterForm.test.tsx` |
-| AC-009.1 – AC-009.5 | Sí | `backend/services/auth_service.py:82-87` (tipos y `exceeds_bcrypt_limit` antes de consultar) |
-| AC-010.1, AC-010.2, AC-010.4 | Sí | `backend/repositories/password_reset_repository.py:36-43` (`with_for_update`); `password_reset_service.py:123-147` (lectura dentro del `try`, `rollback` libera el bloqueo) |
-| AC-010.3 | Parcial (ver F1) | El intento con contraseña inválida no consume el enlace, pero el mensaje que recibe depende del orden en la cola del bloqueo |
-| AC-011.1 – AC-011.5 | Sí | `frontend/src/features/auth/hooks.ts:83-98` (`useState` al montar + `navigate(…, { replace: true, state: null })`); `LoginForm.tsx:25` |
-| AC-012.1 – AC-012.6 | Sí | `backend/utils/email_sender.py:38-57` (`escape_log_text`) y `:85` (quitar key → recortar → escapar, el orden de la spec) |
-| AC-N001.1 | Sí | Suites completas en verde (verify: backend 804, frontend 494); ningún test existente modificado, borrado ni saltado |
+| AC-001.1 – AC-009.5, AC-011.1 – AC-012.6 | Sí (sin cambios desde la iteración 1, ver su review) | Diff `e2a3976..1ac3b26` no toca esas rutas salvo `email_sender.py:42-43` (solo la forma de escribir las claves, mismo valor) |
+| AC-010.1, AC-010.2 | Sí | `backend/services/password_reset_service.py:147-148` (relectura con bloqueo y revalidación); `backend/repositories/password_reset_repository.py:40-49` (`with_for_update` + `populate_existing`); tests `test_two_simultaneous_resets_with_the_same_link_only_one_wins`, `test_reset_password_lost_race_gives_invalid_link_and_rolls_back_without_commit` |
+| AC-010.3 | Sí (F1 resuelto) | `password_reset_service.py:139-141`: `validate_new_password` corre antes de cualquier bloqueo; el test de ruta ahora exige `done[0] and waiters >= 1` (`test_password_reset_routes.py:728`), es decir, que la petición "corta" termine mientras la válida espera el bloqueo, lo que la hace determinista; unitario `test_reset_password_with_short_password_does_not_lock_nor_consume_the_link` |
+| AC-010.4 | Sí | `password_reset_service.py:119-127` (`_ensure_link_is_usable` con `used_at`); `test_used_link_is_rejected_and_the_password_does_not_change` |
+| AC-013.1 – AC-013.3 | Sí | `frontend/src/features/auth/schemas.ts:21` (`z.string().trim().pipe(z.email("Email inválido"))`), usado en `:24`, `:30` y `:39`; tests en `schemas.test.ts`, `RegisterForm.test.tsx`, `LoginForm.test.tsx` y `ForgotPasswordForm.test.tsx` |
+| AC-013.4, AC-013.5 | Sí | `schemas.ts:21` (tras el `trim`, `"   "` y `"no-es-un-correo"` fallan en `z.email`); `RegisterForm.test.tsx` usa `fireEvent.submit` para saltarse la validación nativa de jsdom y llegar a zod (comentado en el helper) |
+| AC-N001.1 | Sí | Verify: backend 807 y frontend 504 en verde; snapshot idéntico |
 
 ## 3. Cumplimiento del plan
-- Sin desviaciones relevantes: archivos, firmas, orden de validación, migración (`revision a7d3f9c1e5b2`, `down_revision f2c4e6a8b0d1`, única cabeza) y esquema del frontend coinciden con `plan.md` §2–§3.
-- `test_auth_service.py` usa un `FakeUserRepository` con comparación exacta en lugar de la comparación sin mayúsculas descrita en el plan (§5). Es más estricto (solo pasa si el servicio normaliza antes de consultar) y está explicado en su docstring: desviación justificada.
-- El diseño de `reset_password` (bloqueo antes de validar la contraseña, plan §3.3) es el origen de F1.
+- La implementación sigue el plan de la iteración 2 (§3.3 pasos 1-6, ADR-0025 punto 4 actualizado): nueva `get_by_token_hash_for_update` con `populate_existing`, `get_by_token_hash` vuelve a ser una lectura sin bloqueo y el bcrypt se calcula antes de bloquear.
+- Pequeña desviación: el plan (§3.3 paso 6) dice reutilizar el mismo `now` en las dos validaciones, pero `_ensure_link_is_usable` llama a `self.clock()` en cada validación (`password_reset_service.py:125`) y hay una tercera lectura en `:154`. El efecto es más estricto (la caducidad se vuelve a comprobar ya con el bloqueo) y no contradice ningún AC (ver F1, NIT).
+- `emailSchema` conserva las mayúsculas en el cliente, como fija la spec en §6.
 
 ## 4. Checklist de la constitución
 ### Parte I (base)
-- [x] B2: cada agente se mantuvo en su rol; `snapshot --check` es idéntico, y los cambios de tests posteriores a `commits.tests` (`ba93e2f` → `e2a3976`) son solo docstrings acortados, con `rework tests` y `snapshot` registrados en `history`
-- [x] B4: los marcadores `SDD: 014 …` son coherentes con los AC que prueban (revisados por muestreo en `test_auth_routes.py`, `test_password_reset_routes.py`, `test_lowercase_emails_migration.py`, `LoginForm.test.tsx`, `RegisterForm.test.tsx`)
-- [x] B5: no hay tests borrados, saltados ni debilitados; sin `skip`/`xfail`/`.only`; sin llamadas reales a Google ni Resend (verificador de Google inyectado, `FakeOpener`); esqueletos sustituidos
-- [x] B5.7: ratchet de ruff sin violaciones nuevas; `npm run lint`, `tsc -b` y `build` en verde (verify-report)
-- [x] B6.5: sin secretos; no hay variables nuevas
+- [x] B2: `snapshot --check` idéntico (11 archivos, snapshot del 03:07:35). Los cambios de tests de esta iteración llegan por el `rework` de review → spec → tests, con red check PASS y `snapshot` registrados en `history`. El commit de implementación `1ac3b26` no toca tests.
+- [x] B4: marcadores `SDD: 014 REQ-010 …` y `SDD: 014 REQ-013 AC-013.x` coherentes con lo que prueba cada test
+- [x] B5: no hay tests borrados, saltados ni debilitados. El único cambio de aserción en un test existente (`ready` de AC-010.3) lo hace más estricto. No hay llamadas externas reales.
+- [x] B5.7: ratchet de ruff sin violaciones nuevas; lint, `tsc -b` y build del frontend en verde (verify-report)
+- [x] B6.5: sin secretos ni variables nuevas
 
 ### Parte II (proyecto)
-- [x] P1 general: marcador con número de spec (ADR-0022)
-- [ ] P1.2 / P2 general: docstrings, comentarios y nombres de tests en español correcto — varios sin tildes (F2)
-- [x] P1 backend: tests en `test_services/` y `test_routes/`, nombres en inglés, fakes a mano, sin `unittest.mock` ni `monkeypatch`
-- [x] P1 frontend: `vi.mock` de la `api` en `RegisterForm.test.tsx`; `fetch` simulado en `LoginForm.test.tsx`, excepción justificada en `plan.md` §7
-- [x] P2.1–P2.3: lógica en `services/`, consultas en `repositories/`, solo `UnitOfWork` hace commit/rollback, errores con `ValidationError`/`ConflictError`/`AuthenticationError`; rutas sin cambios
-- [x] P2.4: sin cambio de modelo; la migración de datos está incluida, revisada a mano y encadenada a la cabeza actual
-- [x] P2.5: se reutiliza `utils/email_sender.py`; `EMAIL_PATTERN` y reglas movidas sin duplicar (reexportadas desde `password_reset_service`)
-- [x] P2 frontend: cambios dentro de `features/auth`, zod y hooks; sin llamadas HTTP nuevas
-- [x] P3.2: correo y contraseña del registro validados en el servicio y con zod
-- [x] P3.4: SQL estático en la migración y parámetros enlazados en el test de concurrencia
-- [ ] P4: el paso manual en producción (volcado + `flask db upgrade` de `a7d3f9c1e5b2`) aún no está en `docs/deploy-runbook.md`; corresponde a la etapa `docs` (anotado en el backlog de la feature)
+- [x] P1 general: marcadores con número de spec; docstrings y comentarios de los tests nuevos en español con tildes (F2 resuelto)
+- [x] P1 backend: fake `FakePasswordResetRepository` escrito a mano con el gancho `before_lock`, sin `mock` ni `monkeypatch`
+- [x] P1 frontend: nombres `it("…")` en español, `vitest` importado explícitamente, red simulada con `vi.mock` de la `api` o `fetch`, como en la iteración 1
+- [x] P2.1–P2.3: el bloqueo vive en el repositorio y la lógica en el servicio; solo `UnitOfWork` hace commit o rollback; errores con `ValidationError`
+- [x] P2.4: sin cambios de modelo en esta iteración; la migración `a7d3f9c1e5b2` no cambia
+- [x] P2.5: no se duplican utilidades
+- [x] P2 frontend: `emailSchema` en `schemas.ts` (zod), dentro de `features/auth`
+- [x] P2 general: textos visibles sin cambios ("Email inválido" ya existía)
+- [x] P3.2: el correo se valida con zod en el cliente y con `validate_email` en el servidor
+- [x] P3.4: el ORM con parámetros enlazados
+- [ ] P4: el paso manual de producción (volcado y `flask db upgrade` de `a7d3f9c1e5b2`) sigue pendiente para la etapa `docs`, como estaba previsto
 
 ## 5. Hallazgos
+### Estado de los hallazgos de la iteración 1
+| # | Estado | Evidencia |
+|---|---|---|
+| F1 | Resuelto | `password_reset_service.py:139-148`; ADR-0025 punto 4; unitarios nuevos y test de ruta determinista (`:728`) |
+| F2 | Resuelto | Ninguna línea añadida en `main...HEAD` bajo `backend/tests` o `frontend/src` contiene las palabras sin tilde señaladas. Quedan textos anteriores a la 014 (p. ej. el `describe` "LoginForm - recuperacion de contraseña"), anotados en el backlog y fuera de alcance. |
+| F3 | Resuelto | `backend/utils/email_sender.py:42-43` |
+| F4 | Resuelto | `backend/tests/test_routes/test_password_reset_routes.py:599-607` (`reached = wait_until(...)` + `assert reached`) |
+| F5 | Resuelto | REQ-013 en `spec.md` y `frontend/src/features/auth/schemas.ts:21` |
+
+### Hallazgos nuevos
 | # | Severidad | Archivo:línea | Hallazgo | Responsable |
 |---|---|---|---|---|
-| F1 | MENOR | `backend/services/password_reset_service.py:126-137` | AC-010.3 exige que, con dos peticiones simultáneas (`"corta"` y `ClaveDos123`), la de `"corta"` reciba "La contraseña debe tener al menos 8 caracteres". Como el `FOR UPDATE` se toma antes de validar la contraseña y la precedencia "enlace no válido" se conserva, si la petición válida entra antes en la cola del bloqueo, la de `"corta"` relee la fila con `used_at` fijado y recibe "El enlace no es válido…". El test `test_invalid_password_in_a_simultaneous_reset_does_not_consume_the_link` pasa (20/20 ejecuciones) solo porque el primer hilo arrancado suele llegar antes a Postgres. Lo esencial del AC (un intento inválido no consume el enlace) sí se cumple. Arreglo posible sin romper la precedencia existente: leer el token sin bloqueo, validar enlace y contraseña, y después releer con `FOR UPDATE` y revalidar el enlace. | implementer |
-| F2 | MENOR | `backend/tests/test_routes/test_password_reset_routes.py:546,567-570,611,644,656,671,691-692,716`; `backend/tests/test_services/test_email_sender.py:213,263`; `frontend/src/features/auth/components/LoginForm.test.tsx:209`; `frontend/src/features/auth/components/RegisterForm.test.tsx:60,70,82,94` | Docstrings, comentarios y nombres de tests nuevos sin tildes ("maximo", "condicion", "conexion", "contrasena", "peticion", "exito", "linea", "simultaneos", "envia"…), contra Art. P1.2 y P2 general ("español correcto, con tildes"). | test-author |
-| F3 | NIT | `backend/utils/email_sender.py:42-43` | Las claves de U+2028 y U+2029 en `_NAMED_ESCAPES` son los caracteres literales, invisibles en el editor y en los diffs. Más legible con `" "` y `" "`. | implementer |
-| F4 | NIT | `backend/tests/test_routes/test_password_reset_routes.py:599` | `concurrent_resets` ignora el resultado de `wait_until`: si se agota el tiempo sin que las peticiones lleguen a esperar el bloqueo, el test sigue y puede pasar sin haber probado la concurrencia. Un `assert` sobre ese resultado haría explícito el fallo de sincronización. | test-author |
-| F5 | NIT | `frontend/src/features/auth/schemas.ts:25` | `registerSchema.email` usa `z.email` sin `trim`, así que el formulario rechaza `"  Ana@Example.COM "` aunque el servidor ya lo acepta (AC-001.1). Fuera del alcance de la spec; mejora de UX posible. | spec-writer |
+| F1 | NIT | `backend/services/password_reset_service.py:125,154` | `_ensure_link_is_usable` lee el reloj en cada llamada, en vez de usar un único `now` como dice el plan §3.3. Si el enlace caduca justo durante el bcrypt (unos 250 ms), la petición recibe "enlace no válido" después de haber calculado el hash. Es correcto (el enlace ya caducó), pero difiere del plan. Pasar `now` como parámetro alinearía código y plan. Opcional. | implementer |
+| F2 | NIT | `backend/services/password_reset_service.py:150-152` | La comprobación `user is None` va después del `FOR UPDATE`, así que una fila huérfana toma el bloqueo un instante antes de rechazarse. Es inofensivo (`user_id` es FK, así que no debería pasar). Solo como observación. | implementer |
 
 ## 6. Decisión
-APPROVED: no hay hallazgos BLOQUEANTES ni MAYORES. F1 y F2 son menores y pueden ir al backlog con la aprobación del usuario en el gate; F3–F5 son sugerencias opcionales. Pendiente para `docs`: documentar el paso manual de la migración `a7d3f9c1e5b2` en `docs/deploy-runbook.md` (Art. P4) y pasar ADR-0025 a "Aceptada" si el usuario la aprueba en este gate.
+APPROVED: los cinco hallazgos de la iteración 1 están resueltos y no hay hallazgos BLOQUEANTES ni MAYORES. Los dos NIT nuevos son opcionales. Pendiente para `docs`: documentar el paso manual de la migración `a7d3f9c1e5b2` en `docs/deploy-runbook.md` (Art. P4) y pasar ADR-0025 a "Aceptada" si el usuario la aprueba en este gate. Las tildes de los textos de tests anteriores a la 014 quedan en el backlog.
 
 ## Comentarios del usuario
 
