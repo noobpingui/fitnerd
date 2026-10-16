@@ -260,7 +260,7 @@ def test_logged_error_body_is_truncated_before_escaping():
 
 # SDD: 014 REQ-012 AC-012.6
 def test_logged_error_body_with_api_key_and_newline_leaks_no_key():
-    """Con la API key seguida de un salto de linea, el log no contiene la key y la excepcion no cambia."""
+    """Con la API key y un salto de linea, el log no contiene la key."""
     transport, _, logger = make_transport(
         status=401, body=f"{API_KEY}\nsegunda linea".encode("utf-8")
     )

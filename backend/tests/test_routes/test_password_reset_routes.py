@@ -653,7 +653,7 @@ def test_link_requested_with_uppercase_email_resets_the_account_password(client)
 
 # SDD: 014 REQ-010 AC-010.4 NFR-001 AC-N001.1
 def test_used_link_is_rejected_and_the_password_does_not_change(client):
-    """Un enlace usado con exito da 400 de enlace no valido al reusarlo y la contrasena no cambia."""
+    """Un enlace usado con exito da 400 al reusarlo y la contrasena no cambia."""
     register(client, "ana@example.com")
     token = request_token(client)
     assert reset(client, token, "NuevaClave123").status_code == 200
@@ -668,7 +668,7 @@ def test_used_link_is_rejected_and_the_password_does_not_change(client):
 
 # SDD: 014 REQ-012 AC-012.6
 def test_resend_error_with_api_key_and_newline_is_sanitized_end_to_end(client):
-    """Resend 401 con la API key y un salto de linea: 503 fijo y el log sin la key ni saltos reales."""
+    """Resend 401 con key y salto de linea: 503 fijo y el log sin la key ni saltos."""
     register(client, "ana@example.com")
     logger = FakeLogger()
     email_sender.transport = ResendTransport(

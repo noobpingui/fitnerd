@@ -10,7 +10,7 @@
   "branch": "feat/014-auth-hardening",
   "base_branch": "main",
   "created_at": "2026-10-16T01:36:04.914Z",
-  "stage": "verify",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -26,13 +26,10 @@
       "note": "auto (gate_mode=flow): 24 tareas (4 scaffold, 11 test, 8 impl, 1 migration), 54 AC cubiertos"
     },
     "tests": {
-      "at": "2026-10-16T02:25:03.011Z",
-      "note": "auto (gate_mode=flow): red check PASS iteración 2, guardas de no regresión exceptuadas por el usuario"
+      "at": "2026-10-16T02:32:51.716Z",
+      "note": "auto (gate_mode=flow): corrección E501 en docstrings de tests, sin cambios de aserciones"
     },
-    "implement": {
-      "at": "2026-10-16T02:29:12.818Z",
-      "note": "auto (gate_mode=flow): T-030 a T-038, tests en verde; ratchet backend con 6 E501 en tests"
-    },
+    "implement": null,
     "verify": null,
     "review": null,
     "docs": null,
@@ -42,10 +39,11 @@
     "spec": "466b39f",
     "plan": "69e130c",
     "tasks": "6617a78",
-    "tests": "ba93e2f"
+    "tests": "ba93e2f",
+    "implement": "f5f152c"
   },
   "iterations": {
-    "tests": 1,
+    "tests": 2,
     "implement": 0,
     "review": 0
   },
@@ -63,16 +61,16 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-16T02:25:02.897Z",
-    "reason": "Tests de 014 tras red check PASS (iteración 2)",
+    "at": "2026-10-16T02:32:51.589Z",
+    "reason": "Corrección E501 de verify iteración 1 (solo docstrings)",
     "sha256": {
       "backend/tests/test_routes/test_auth_routes.py": "2766e9347dce0022f31f5ca10619826f316281f943cf4b8011a772080f2af2ee",
-      "backend/tests/test_routes/test_password_reset_routes.py": "49e8bc696b8735c44be373e8adc47aa05f5f1d722a843e87a92ca6e6e2212eea",
-      "backend/tests/test_services/test_auth_service.py": "7d80230ec9b58b88df823969520934aede38383371d8c756b681095fe15f8f99",
+      "backend/tests/test_routes/test_password_reset_routes.py": "11cc63fe232f305ef6c94dfe1a5776d94e2a68cef838dbad724b49fb0129989f",
+      "backend/tests/test_services/test_auth_service.py": "0711a43b9954d918426285ea76415bbb63e8e37d9e1fbd1ce2a1acbe83638abe",
       "backend/tests/test_services/test_credential_rules.py": "bcce519609ffdcdd63bceaae0f308c72fc567a6b3c35fcc02ebbfced92a0d371",
-      "backend/tests/test_services/test_email_sender.py": "aca5d6ae0adba7e4aaf2861ff9785aa131763095ff9f71abb8d3ad8739e15e66",
+      "backend/tests/test_services/test_email_sender.py": "7453c5e352059260cacfc86cb0960a0e6ac1bc4800f9a5317879982b4e205aa2",
       "backend/tests/test_services/test_lowercase_emails_migration.py": "ae0c82a9a36ee246cfb538e863bc671148f3d0c5511b9506beae9b8b3048466a",
-      "backend/tests/test_services/test_password_reset_service.py": "51f90d46e8b4baf45636cb9c5f3bf8dcce4d90b4b1f325aee2eb7defaa442243",
+      "backend/tests/test_services/test_password_reset_service.py": "a048c625fce8eaba7fd28c5a79ec3dfadb22a48a71479d35f8c11dacd21fef5c",
       "frontend/src/features/auth/components/LoginForm.test.tsx": "cc3f7a9345a8524dcb1070cff7a94cf15b9f7d18e8a7446022b233cacf893b30",
       "frontend/src/features/auth/components/RegisterForm.test.tsx": "6ac679e4878e782ed0d8baff4f0ef3cd9b199a6627a5c455df2bfc858d37bd8d"
     }
@@ -264,6 +262,54 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): T-030 a T-038, tests en verde; ratchet backend con 6 E501 en tests"
+    },
+    {
+      "at": "2026-10-16T02:29:20.021Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: f5f152c"
+    },
+    {
+      "at": "2026-10-16T02:29:20.110Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "get_by_email con func.lower; FOR UPDATE en token; migración a7d3f9c1e5b2 RuntimeError si hay conflictos; U+2028/2029 literales en escape_log_text; reexport en password_reset_service"
+    },
+    {
+      "at": "2026-10-16T02:29:20.270Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa"
+    },
+    {
+      "at": "2026-10-16T02:31:52.762Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify FAIL: Suite backend 804 passed y frontend 494 passed; typecheck, build y lint frontend en verde. Ratchet backend FAIL: 6 E501 nuevos en tests. Trazabilidad completa: 55 AC con test, todas las tareas [x]."
+    },
+    {
+      "at": "2026-10-16T02:32:05.649Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Verify FAIL iteración 1: 6 E501 en tests (ratchet ruff backend) · tests 2/3"
+    },
+    {
+      "at": "2026-10-16T02:32:51.512Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "E501 corregidos en 4 archivos de test (solo docstrings)"
+    },
+    {
+      "at": "2026-10-16T02:32:51.589Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "9 archivo(s) de test: Corrección E501 de verify iteración 1 (solo docstrings)"
+    },
+    {
+      "at": "2026-10-16T02:32:51.716Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección E501 en docstrings de tests, sin cambios de aserciones"
     }
   ]
 }

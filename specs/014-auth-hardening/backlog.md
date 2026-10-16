@@ -27,3 +27,6 @@
 - [ ] Las contraseñas antiguas de más de 72 bytes dejan de poder entrar. Se recuperan con el restablecimiento.
 - [ ] `lower()` de Postgres y `str.lower()` de Python difieren en letras no ASCII (anotado en ADR-0025).
 - [ ] 6 líneas largas (E501) en los tests de la feature hacen fallar el ratchet de backend.
+
+## verify · verifier
+- [ ] Antes de desplegar, la migración a7d3f9c1e5b2 (correos a minúsculas, falla con RuntimeError ante conflictos) necesita `flask db upgrade` en la instancia y su paso documentado en docs/deploy-runbook.md (Art. P4).

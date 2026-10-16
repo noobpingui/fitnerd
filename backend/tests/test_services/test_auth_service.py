@@ -28,8 +28,8 @@ class FakeUserRepository:
     """Guarda usuarios en memoria. `queried_emails` registra el argumento de
     cada `get_by_email`; la comparación es exacta (los correos guardados ya
     están en minúsculas tras la migración), así que solo encuentra la cuenta
-    si el servicio normaliza el correo antes de consultar. `create` asigna id y rol, porque los valores por defecto
-    del modelo solo existen tras el flush."""
+    si el servicio normaliza el correo antes de consultar. `create` asigna id y rol,
+    porque los valores por defecto del modelo solo existen tras el flush."""
 
     def __init__(self, users=None):
         self.users = list(users or [])
@@ -146,7 +146,7 @@ def test_register_rejects_a_duplicate_email_ignoring_case():
 
 # SDD: 014 REQ-006 AC-006.10
 def test_register_validates_the_password_before_checking_duplicates():
-    """Con cuenta existente y contraseña corta gana el error de contraseña y no se consulta el duplicado."""
+    """Con cuenta existente y contraseña corta gana el error de contraseña."""
     service, repo, _, _ = make_service([make_user("ana@example.com")])
 
     with pytest.raises(ValidationError) as exc_info:

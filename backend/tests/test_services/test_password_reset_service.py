@@ -665,7 +665,7 @@ def test_request_reset_normalizes_the_email_for_lock_lookup_row_and_delivery():
 
 # SDD: 014 REQ-003 AC-003.2
 def test_request_reset_applies_the_email_cooldown_ignoring_case():
-    """Una segunda solicitud 30 s despues con 'ANA@EXAMPLE.COM' da RateLimitError y no envia correo."""
+    """Segunda solicitud 30 s despues con 'ANA@EXAMPLE.COM': RateLimitError sin correo."""
     ctx = make_service([make_user("ana@example.com")])
     ctx.service.request_reset("ana@example.com", IP)
     ctx.clock.advance(seconds=30)
