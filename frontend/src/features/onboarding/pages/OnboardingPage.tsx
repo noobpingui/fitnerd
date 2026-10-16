@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type ReactNode } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useNavigate } from "react-router"
 import { AnimatePresence, motion } from "motion/react"
@@ -59,7 +59,7 @@ export function OnboardingPage({
     resolver: zodResolver(schema),
     defaultValues: { ...EMPTY_ANSWERS, dateOfBirth: initialDateOfBirth ?? "" },
   })
-  const answers = form.watch()
+  const answers = useWatch({ control: form.control }) as OnboardingAnswers
   // Los mensajes salen del mismo esquema, evaluado de forma síncrona.
   const errors = fieldMessages<PhysicalDataErrorKey>(schema, answers)
   const validFor = (keys: PhysicalDataErrorKey[]) =>

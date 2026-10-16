@@ -31,6 +31,7 @@ export const goalSchema = z.enum([
 export const DOB_REQUIRED_MESSAGE = "Indica tu fecha de nacimiento"
 export const DOB_FUTURE_MESSAGE = "La fecha de nacimiento no puede ser futura"
 export const DOB_AGE_RANGE_MESSAGE = "Debes tener entre 14 y 100 años"
+export const CHOOSE_OPTION_MESSAGE = "Elige una opción"
 
 // "height" es una clave virtual que agrupa cm, ft e in.
 export type PhysicalDataErrorKey =
@@ -53,7 +54,7 @@ export function weightRangeMessage(unit: WeightUnit): string {
 }
 
 // Un texto vacío no es válido: todas las preguntas son obligatorias.
-function inRange(
+export function inRange(
   value: string,
   { min, max }: { min: number; max: number },
   integer = false
@@ -125,7 +126,11 @@ export function addPhysicalDataIssues(
 ): void {
   for (const key of ["gender", "activityLevel", "goal"] as const) {
     if (values[key] === null) {
-      ctx.addIssue({ code: "custom", path: [key], message: "Elige una opción" })
+      ctx.addIssue({
+        code: "custom",
+        path: [key],
+        message: CHOOSE_OPTION_MESSAGE,
+      })
     }
   }
   const dobMessage = dateOfBirthMessage(values.dateOfBirth, today)

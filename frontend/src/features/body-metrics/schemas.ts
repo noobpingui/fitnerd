@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { LIMITS } from "@/features/onboarding/constants"
+import { inRange } from "@/features/onboarding/schemas"
 import type { WeightUnit } from "@/features/onboarding/types"
 import { KG_PER_LB } from "@/features/onboarding/units"
 import type {
@@ -17,11 +18,6 @@ export type MetricCorrectionValues = {
   weight: string
   fat: string
   muscle: string
-}
-
-function inRange(text: string, { min, max }: { min: number; max: number }) {
-  const n = Number(text)
-  return Number.isFinite(n) && n >= min && n <= max
 }
 
 // originalWeightDisplay y originalWeightKg describen el peso con el que se

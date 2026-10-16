@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -61,7 +61,7 @@ export function PhysicalDataForm({
     resolver: zodResolver(schema),
     defaultValues,
   })
-  const draft = form.watch()
+  const draft = useWatch({ control: form.control }) as PhysicalDataFormValues
   // Los mensajes salen del mismo esquema, evaluado de forma síncrona.
   const errors = fieldMessages<ProfileFormErrorKey>(schema, draft)
   const dobOk = !errors.dateOfBirth
@@ -85,10 +85,6 @@ export function PhysicalDataForm({
     setJustSaved(false)
   }
 
-  function updateBody(patch: Partial<BodyComposition>) {
-    update(patch)
-  }
-
   const weightKg = (a: OnboardingAnswers) =>
     a.weightUnit === "kg" ? Number(a.weight) : Number(a.weight) * KG_PER_LB
   // Una medición nueva solo si cambió algo medible (peso o composición);
@@ -97,10 +93,11 @@ export function PhysicalDataForm({
     Math.abs(weightKg(draft) - weightKg(saved)) > 0.05 ||
     draft.fat !== saved.fat ||
     draft.muscle !== saved.muscle
-  // Comparar el JSON basta aquí: son objetos planos con el mismo orden de
-  // claves, así que "hay cambios" equivale a "el texto es distinto".
+  // Comparación campo a campo: no depende del orden de las claves.
   const dirty =
-    JSON.stringify(draft) !== JSON.stringify(saved) || measurementChanged
+    (Object.keys(saved) as (keyof PhysicalDataFormValues)[]).some(
+      (key) => draft[key] !== saved[key]
+    ) || measurementChanged
 
   async function onSave(values: PhysicalDataFormValues) {
     if (!dirty || !allValid) return
@@ -239,7 +236,7 @@ export function PhysicalDataForm({
           <NumberField
             id="profile-fat"
             value={draft.fat}
-            onChange={(fat) => updateBody({ fat })}
+            onChange={(fat) => update({ fat })}
             suffix="%"
             invalid={!fatOk}
           />
@@ -253,7 +250,7 @@ export function PhysicalDataForm({
           <NumberField
             id="profile-muscle"
             value={draft.muscle}
-            onChange={(muscle) => updateBody({ muscle })}
+            onChange={(muscle) => update({ muscle })}
             suffix="%"
             invalid={!muscleOk}
           />

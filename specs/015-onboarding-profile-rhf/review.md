@@ -1,64 +1,64 @@
 # Review 015 — Migrar los formularios de onboarding y de datos físicos a react-hook-form con zod
 
-- **Iteración:** 1 de 3
-- **Diff revisado:** `git diff main...fix/015-onboarding-profile-rhf` @ `84e7e3d` (+ cambios sin commitear solo en `specs/015-onboarding-profile-rhf/`: `backlog.md`, `state.json`, `verify-report.md`)
-- **Veredicto:** CHANGES_REQUESTED
+- **Iteración:** 2 de 3
+- **Diff revisado:** `git diff main...fix/015-onboarding-profile-rhf` @ `4db5316` (foco en `cf1da40` y `4db5316`, correcciones de F2 y F1; cambios sin commitear solo en `specs/015-onboarding-profile-rhf/`: `backlog.md`, `state.json`, `verify-report.md`, más `.claudecodeignore` sin trackear, ajeno a la feature)
+- **Veredicto:** APPROVED
 
 ## 1. Resumen
-El cambio mueve el onboarding y el formulario Datos físicos a `useForm` con `zodResolver`, con un esquema compartido en `onboarding/schemas.ts` y los mensajes calculados de forma síncrona con `fieldMessages`. Los tests no se tocaron después de la etapa `tests` y el traslado de `validation.test.ts` está completo. Pero hay una regresión funcional en el onboarding que ningún test detecta: el esquema acepta `null` en género, nivel de actividad y meta, y como la validez de esos pasos sale ahora del esquema, el usuario puede saltarse esas preguntas.
+Los dos hallazgos MAYORES de la iteración 1 están resueltos. F1: `addPhysicalDataIssues` añade ahora un issue "Elige una opción" cuando `gender`, `activityLevel` o `goal` son `null` (`frontend/src/features/onboarding/schemas.ts:126-130`). Así, `validFor([...])` vuelve a exigir la elección en esos pasos y `handleSubmit` no deja pasar enums vacíos. F2: hay tres tests unitarios del esquema y dos de página que cubren la regresión. Se añadieron con `rework tests`, un red check y un snapshot posterior, y `snapshot --check` da `identical: true`. Los hallazgos MENORES y NIT de la iteración 1 (F3 a F7) siguen abiertos y están en el backlog de la feature.
 
 ## 2. Cumplimiento de la spec
 | REQ / AC | ¿Implementado como se especificó? | Evidencia (archivo:línea o test) |
 |---|---|---|
-| AC-001.1 … AC-001.3 | Sí | `onboarding/schemas.ts:87-106` (`dateOfBirthMessage`), pintado en `OnboardingPage.tsx:95-98,128-134` y `PhysicalDataForm.tsx:156-169`; tests en `onboarding/schemas.test.ts:71-92`, `OnboardingPage.test.tsx`, `ProfilePage.test.tsx` |
-| AC-001.4 | Sí | `OnboardingPage.tsx:95-98` oculta `DOB_REQUIRED_MESSAGE`; `validFor(["dateOfBirth"])` en `:118` |
-| AC-002.1, AC-002.2 | Sí | `PhysicalDataForm.tsx:159,167` (`errors.dateOfBirth` + `aria-invalid`), `profile/schemas.ts` hereda `addPhysicalDataIssues` |
-| AC-003.1 … AC-003.4 | Sí | `onboarding/schemas.ts:67-78`, `:130-136`; `PhysicalDataForm.tsx:183-207` |
-| AC-003.5 | Sí | `onboarding/schemas.ts:59-65,75-76` (`Number.isInteger`); `units.ts:6` reutiliza el predicado, así que `5.5` ft no se convierte |
-| AC-004.1 … AC-004.3 | Sí | `onboarding/schemas.ts:80-84,137-143`; `PhysicalDataForm.tsx:224-231` |
-| AC-005.1 … AC-005.3 | Sí | `profile/schemas.ts` (`makeProfileFormSchema`, issues `fat`/`muscle` con `FAT_LIMITS`/`MUSCLE_LIMITS`); `PhysicalDataForm.tsx:237,251` |
-| AC-006.1 … AC-006.4 | Sí | `OnboardingPage.tsx:151,200` y `PhysicalDataForm.tsx:180,221` siguen usando `convertHeight`/`convertWeight` vía `update` |
-| AC-007.1 … AC-007.3, AC-007.5 | Sí | `OnboardingPage.tsx:83-92`, `:246-273`, valores conservados por RHF |
-| AC-007.4 / REQ-007 (flujo actual) | **Parcial** | Elegir la meta habilita "Comenzar", pero "Comenzar" ya está habilitado **antes** de elegir, y el paso de género muestra "Siguiente" habilitado desde el inicio: `OnboardingPage.tsx:105,216,229` + `onboarding/schemas.ts:109,117-118` (ver F1). |
-| AC-008.1 … AC-008.3 | Sí | `OnboardingPage.tsx:246-264` (`handleSubmit` + guardia `submitting`); `payloadFromAnswers` sin cambios |
-| AC-009.1 … AC-009.6 | Sí | `PhysicalDataForm.tsx:55,96-103,105-143` (`saved` + `form.reset`, `dirty`, `measurementChanged`) |
-| AC-010.1, AC-010.2 | Sí | `PhysicalDataForm.tsx:64-66`: `fieldMessages` en cada render, sin esperar a enviar |
-| Tabla de la sección 6 ("Género", "Nivel de actividad", "Meta": obligatorios) | **No** en el onboarding | Ver F1 |
+| AC-001.1 … AC-001.4 | Sí (sin cambios desde la iteración 1) | `onboarding/schemas.ts` (`dateOfBirthMessage`), `OnboardingPage.tsx:95-98,118`, `PhysicalDataForm.tsx:159` |
+| AC-002.1, AC-002.2 | Sí | `PhysicalDataForm.tsx:159,167`; `profile/schemas.ts` hereda `addPhysicalDataIssues` |
+| AC-003.1 … AC-003.5 | Sí | `onboarding/schemas.ts:59-84,137-150`; `units.ts:6` |
+| AC-004.1 … AC-004.3 | Sí | `onboarding/schemas.ts:144-150`; `PhysicalDataForm.tsx:224-231` |
+| AC-005.1 … AC-005.3 | Sí | `profile/schemas.ts` (issues `fat`/`muscle`); `PhysicalDataForm.tsx:237,251` |
+| AC-006.1 … AC-006.4 | Sí | `OnboardingPage.tsx:151,200`; `PhysicalDataForm.tsx:180,221` |
+| AC-007.1 … AC-007.3, AC-007.5 | Sí | `OnboardingPage.tsx:83-92,246-273` |
+| AC-007.4 / REQ-007 (flujo actual) | **Sí (corregido)** | `onboarding/schemas.ts:126-130` hace que `validFor(["gender"])`, `validFor(["activityLevel"])` y `validFor(["goal"])` (`OnboardingPage.tsx:105,216,229`) sean falsos hasta elegir; por eso `OnboardingPage.tsx:356` no muestra "Siguiente" en el género y "Comenzar" queda `disabled`. Tests: `OnboardingPage.test.tsx:758-796`, `onboarding/schemas.test.ts:245-263` |
+| AC-008.1 … AC-008.3 | Sí | `OnboardingPage.tsx:246-264`; `handleSubmit` ya no acepta enums `null`, así que `payloadFromAnswers` no recibe `null` |
+| AC-009.1 … AC-009.6 | Sí | `PhysicalDataForm.tsx:55,96-143` |
+| AC-010.1, AC-010.2 | Sí | `PhysicalDataForm.tsx:64-66` |
+| Sección 6 ("Género", "Nivel de actividad", "Meta" obligatorios) | **Sí (corregido)** | `onboarding/schemas.ts:126-130` |
 
 ## 3. Cumplimiento del plan
-- **Desviación no justificada (F1):** el plan (3.2, tabla de rutas de issues) fija que `gender`, `activityLevel` y `goal` en `null` producen un issue ("Elige una opción", no se pinta) y que cada paso del onboarding calcula `isValid` con `validFor([clave])`. La implementación hace lo segundo pero no lo primero: `addPhysicalDataIssues` (`onboarding/schemas.ts:121-144`) no añade ningún issue para esas claves, y `physicalDataShape` las declara `.nullable()` (`:109,117,118`). El resultado es que `validFor(["gender"])`, `validFor(["activityLevel"])` y `validFor(["goal"])` son siempre `true`.
-- `optionalInRange` no "desaparece" como dice el plan (3.4): se trasladó a `profile/schemas.ts`. Es inocuo, pero duplica el `inRange` de `body-metrics/schemas.ts:22` (F4).
-- El resto del plan se sigue: `fieldMessages` síncrono, `saved` + `form.reset`, `handleSubmit` con guardia y `validation.ts` eliminado. No hay dependencias nuevas.
+- La desviación de la iteración 1 (plan 3.2: issue "Elige una opción" para los enums en `null`) está corregida tal como fija el plan. El mensaje no se pinta en la UI: ni `OnboardingPage.tsx` ni `PhysicalDataForm.tsx` leen `errors.gender`, `errors.activityLevel` ni `errors.goal`. Esto coincide con el plan.
+- En Datos físicos el issue nuevo no tiene efecto: `answersFromProfile` parte de un perfil del servidor validado por `serverProfileSchema`, con los enums obligatorios, así que nunca llegan en `null`.
+- Sigue vigente la observación menor de la iteración 1 sobre `optionalInRange` (F4).
 
 ## 4. Checklist de la constitución
 ### Parte I (base)
-- [x] B2: cada agente se mantuvo en su rol. `snapshot --check` da `identical: true`, y `git diff 6bb94e7 HEAD` no muestra cambios en los archivos de test.
-- [x] B4: los marcadores `SDD:` son coherentes. Los 006 trasladados llevan el prefijo `006` y los nuevos, `015`.
-- [x] B5: no hay tests borrados (`validation.test.ts` se trasladó íntegro a `onboarding/schemas.test.ts:28-68`, con los mismos valores y el mismo hoy fijo), ni saltados ni debilitados; tampoco hay llamadas externas ni queda ningún `not implemented`.
-- [x] B5.7: sin errores de lint ni de tipos. Hay 2 warnings nuevos `incompatible-library` por `form.watch()` (F3).
+- [x] B2: los roles se respetaron. El commit `4db5316` (implementer) solo toca `onboarding/schemas.ts` y `state.json`, y el commit `cf1da40` (test-author) solo toca tests y artefactos de la feature.
+- [x] B4: los marcadores de los tests nuevos son coherentes (`SDD: 015 REQ-007 AC-007.4`).
+- [x] B5: los tests cambiados después de la etapa `tests` están autorizados: `history` registra `rework tests` (08:39:19), red check PASS (08:43:33) y `snapshot` (08:43:51), y `snapshot --check` da `identical: true`. No se borró ni se debilitó ningún test, y los tests nuevos prueban de verdad el AC: la ausencia del botón, el botón deshabilitado y que no se llama a `saveMock`.
+- [x] B5.7: según verify, lint da 0 errores (4 warnings, 2 de ellos nuevos de la feature, F3), y `tsc` y build pasan. He ejecutado `npx vitest run src/features/onboarding src/features/profile`: 152/152 en verde.
 - [x] B6.5: sin secretos ni variables nuevas.
 
 ### Parte II (proyecto)
-- [x] P1.1 / P1 frontend 1–4: marcadores con número de spec, tests junto al archivo, imports de `vitest`, nombres en español y red simulada en `api.ts`.
-- [x] P2 frontend 1: reglas en `schemas.ts` y tipos en `types.ts` de cada feature.
-- [ ] P2 frontend 3: los formularios usan RHF con zod, pero el esquema no recoge todas las reglas de los datos (F1): la obligatoriedad de género, actividad y meta se perdió al pasar la validez al esquema.
+- [x] P1.1 / P1 frontend 1–4: tests junto al archivo, marcadores con número de spec y nombres en español.
+- [x] P2 frontend 1 y 3: el esquema zod recoge ahora todas las reglas de los datos del formulario, incluida la obligatoriedad de los enums.
 - [x] P2 frontend 5: sin errores de oxlint.
-- [x] P2 General 1: textos en español sin cambios.
-- [ ] P3.2: la entrada del onboarding no se valida por completo con zod antes del envío: `handleSubmit` deja pasar `null` en los enums y solo lo para `saveProfilePayloadSchema.parse` dentro de `api.ts:13`, con el mensaje genérico de error (F1).
+- [x] P2 General 1: el texto nuevo "Elige una opción" está en español, aunque no se pinta.
+- [x] P3.2: la entrada del onboarding se valida por completo con zod antes del envío.
 - [x] P4: sin migraciones ni pasos manuales.
 
 ## 5. Hallazgos
 | # | Severidad | Archivo:línea | Hallazgo | Responsable |
 |---|---|---|---|---|
-| F1 | MAYOR | `frontend/src/features/onboarding/schemas.ts:109,117-118,121-144`; `frontend/src/features/onboarding/pages/OnboardingPage.tsx:105,216,229,356-367` | **Regresión: género, nivel de actividad y meta dejan de ser obligatorios en el onboarding.** `physicalDataShape` declara esos enums `.nullable()` y `addPhysicalDataIssues` no añade issue cuando son `null` (comprobado: `z.enum([...]).nullable().safeParse(null).success === true`). Como el paso calcula `isValid` con `validFor(["gender"])` (antes, `answers.gender !== null`), pasan tres cosas. (1) En la primera pantalla aparece desde el inicio un botón "Siguiente" habilitado (`!step.autoAdvance \|\| step.isValid` es verdadero), que antes no existía hasta elegir. (2) El usuario puede avanzar sin género ni nivel de actividad. (3) En la meta, "Comenzar" está habilitado sin elegir nada, `handleSubmit` acepta los valores y `payloadFromAnswers` envía `null` con `!`, así que `saveProfilePayloadSchema.parse` falla en `profile/api.ts:13` y se muestra "No se pudo guardar tu perfil. Inténtalo de nuevo.". Esto incumple REQ-007 ("conservar el flujo actual"), la sección 6 (los tres campos son obligatorios) y el plan 3.2 (issue "Elige una opción" para `null`). **Corrección esperada:** añadir en `addPhysicalDataIssues` un issue por cada enum `null` (`gender`, `activityLevel` y `goal`), como fija el plan. | implementer |
-| F2 | MAYOR | `frontend/src/features/onboarding/schemas.test.ts` (bloque sin cubrir); `frontend/src/features/onboarding/pages/OnboardingPage.test.tsx:608-655` | **Falta un test para la regresión de F1.** Ningún test comprueba que el esquema rechace `gender`, `activityLevel` o `goal` en `null`, ni que en el onboarding el paso de género no muestre "Siguiente" o que "Comenzar" esté deshabilitado antes de elegir la meta. AC-007.4 solo comprueba el estado después de elegir. Hay que añadir casos unitarios del esquema compartido (clave `gender`/`activityLevel`/`goal` presente con `null`) y un caso de página (por ejemplo, "Comenzar" deshabilitado al llegar a la meta sin elegir). Como corrige tests después de la etapa `tests`, debe hacerse con `rework tests` y un snapshot nuevo. | test-author |
-| F3 | MENOR | `frontend/src/features/onboarding/pages/OnboardingPage.tsx:62`; `frontend/src/features/profile/components/PhysicalDataForm.tsx:64` | Dos warnings nuevos de oxlint `react(incompatible-library)` por `form.watch()`. No son errores (P2 frontend 5), pero `useWatch({ control: form.control })` los evitaría. Ya está en el backlog. | implementer |
-| F4 | MENOR | `frontend/src/features/profile/schemas.ts` (`optionalInRange`); `frontend/src/features/body-metrics/schemas.ts:22` | `optionalInRange` (que el plan decía eliminar) duplica la lógica de rango de `body-metrics/schemas.ts` y de `inRange` de `onboarding/schemas.ts:56`. Una utilidad de rango compartida evitaría que tres copias diverjan. | implementer |
-| F5 | NIT | `frontend/src/features/profile/components/PhysicalDataForm.tsx:88-90` | `updateBody` ya solo delega en `update`: se puede eliminar y llamar a `update` directamente. Ya está en el backlog. | implementer |
-| F6 | NIT | `frontend/src/features/profile/schemas.ts` (`const gender = genderSchema` … `const goal = goalSchema`) | Alias locales redundantes de los enums compartidos. Se pueden usar los nombres importados directamente en `serverProfileSchema` y `saveProfilePayloadSchema`. | implementer |
-| F7 | NIT | `frontend/src/features/profile/components/PhysicalDataForm.tsx:100-103` | `dirty` compara `JSON.stringify(draft)` con `saved`. Ahora `saved` sale de la salida del resolver (el orden de las claves es el de `physicalDataShape`) y `draft` de `watch()` (el orden de `defaultValues`). Hoy coinciden, pero es frágil: si cambia el orden de `answersFromProfile` o del shape, "Descartar" quedaría visible sin cambios. Conviene comparar campo a campo. | implementer |
+| F1 | ~~MAYOR~~ RESUELTO | `frontend/src/features/onboarding/schemas.ts:126-130` | Corregido en `4db5316`: issue por cada enum en `null`. | implementer |
+| F2 | ~~MAYOR~~ RESUELTO | `frontend/src/features/onboarding/schemas.test.ts:245-263`; `frontend/src/features/onboarding/pages/OnboardingPage.test.tsx:758-796` | Corregido en `cf1da40`, con `rework tests` y un snapshot nuevo. Los 5 tests fallaron antes de la corrección (red check) y ahora pasan. | test-author |
+| F3 | MENOR | `frontend/src/features/onboarding/pages/OnboardingPage.tsx:62`; `frontend/src/features/profile/components/PhysicalDataForm.tsx:64` | Sigue abierto: dos warnings nuevos de oxlint `react(incompatible-library)` por `form.watch()`; `useWatch` los evitaría. Está en el backlog. | implementer |
+| F4 | MENOR | `frontend/src/features/profile/schemas.ts` (`optionalInRange`); `frontend/src/features/body-metrics/schemas.ts:22`; `frontend/src/features/onboarding/schemas.ts:56` | Sigue abierto: hay tres copias de la lógica de rango. Está en el backlog. | implementer |
+| F5 | NIT | `frontend/src/features/profile/components/PhysicalDataForm.tsx:88-90` | Sigue abierto: `updateBody` es redundante. Está en el backlog. | implementer |
+| F6 | NIT | `frontend/src/features/profile/schemas.ts` (alias `const gender = genderSchema`…) | Sigue abierto: alias locales redundantes. Está en el backlog. | implementer |
+| F7 | NIT | `frontend/src/features/profile/components/PhysicalDataForm.tsx:100-103` | Sigue abierto: `dirty` depende del orden de las claves al comparar con `JSON.stringify`. Está en el backlog. | implementer |
+| F8 | NIT | `frontend/src/features/onboarding/schemas.ts:128` | El literal "Elige una opción" está escrito en la llamada, mientras que los demás mensajes del esquema son constantes exportadas (`DOB_REQUIRED_MESSAGE`…). Si algún día se pinta o se testea por texto, conviene extraerlo a una constante. | implementer |
 
 ## 6. Decisión
-**CHANGES_REQUESTED.** Quedan dos hallazgos MAYORES abiertos. F1 es una regresión funcional del flujo del onboarding: permite saltarse preguntas obligatorias y el envío termina en un error genérico. F2 es la falta de cobertura que la dejó pasar. Los MENORES y los NIT pueden ir al backlog si el usuario lo aprueba.
+**APPROVED.** No quedan hallazgos BLOQUEANTES ni MAYORES. F1 y F2 están resueltos y verificados: el diff es correcto, el snapshot es idéntico y los tests de onboarding y perfil pasan (152/152). F3 a F8 son MENORES o NIT y pueden ir al backlog.
 
 ## Comentarios del usuario
+
+Vamos a corregirlos todos. Desde f3 hasta f8

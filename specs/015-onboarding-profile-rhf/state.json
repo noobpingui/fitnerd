@@ -29,8 +29,8 @@
       "note": "auto (gate_mode=flow): 5 tests de F2 en rojo legítimo"
     },
     "implement": {
-      "at": "2026-10-16T08:45:15.536Z",
-      "note": "auto (gate_mode=flow): F1, issue Elige una opción para enums null"
+      "at": "2026-10-16T09:05:20.928Z",
+      "note": "auto (gate_mode=flow): F3-F8 (useWatch, inRange compartido, sin updateBody/alias, dirty por campo, CHOOSE_OPTION_MESSAGE)"
     },
     "verify": null,
     "review": null,
@@ -43,12 +43,13 @@
     "tasks": "2dc8b48",
     "tests": "6bb94e7",
     "implement": "84e7e3d",
-    "tests-fix": "cf1da40"
+    "tests-fix": "cf1da40",
+    "implement-fix": "4db5316"
   },
   "iterations": {
     "tests": 1,
     "implement": 0,
-    "review": 1
+    "review": 2
   },
   "max_iterations": 3,
   "red_check": {
@@ -369,6 +370,72 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): F1, issue Elige una opción para enums null"
+    },
+    {
+      "at": "2026-10-16T08:45:15.760Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement-fix: 4db5316"
+    },
+    {
+      "at": "2026-10-16T08:45:15.857Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa, ciclo de review 1"
+    },
+    {
+      "at": "2026-10-16T08:47:39.115Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Full (ciclo de review 1): frontend test 612/612, lint 0 errores (4 warnings), tsc OK, build OK; 37/37 AC con test SDD verde; REQ-001..010 con tarea; tareas [x]; sin skip/only nuevos"
+    },
+    {
+      "at": "2026-10-16T08:47:49.664Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS ciclo de review 1: 612 tests"
+    },
+    {
+      "at": "2026-10-16T08:47:49.771Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS, 612 tests, 37/37 AC"
+    },
+    {
+      "at": "2026-10-16T08:47:49.872Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review ciclo 2"
+    },
+    {
+      "at": "2026-10-16T08:49:52.066Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-16T08:49:52.152Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED iteración 2: F1-F2 resueltos; 2 MENOR, 4 NIT"
+    },
+    {
+      "at": "2026-10-16T09:03:15.833Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "Usuario pide corregir F3-F8 (todos del implementer) · review 2/3"
+    },
+    {
+      "at": "2026-10-16T09:05:20.838Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F3-F8 corregidos; 612 tests, lint sin warnings nuevos"
+    },
+    {
+      "at": "2026-10-16T09:05:20.928Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F3-F8 (useWatch, inRange compartido, sin updateBody/alias, dirty por campo, CHOOSE_OPTION_MESSAGE)"
     }
   ]
 }

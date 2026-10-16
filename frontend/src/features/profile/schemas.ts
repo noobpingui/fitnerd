@@ -7,6 +7,7 @@ import {
   genderSchema,
   goalSchema,
   heightUnitSchema,
+  inRange,
   physicalDataShape,
   weightUnitSchema,
   type PhysicalDataErrorKey,
@@ -17,9 +18,7 @@ export type ProfileFormErrorKey = PhysicalDataErrorKey | "fat" | "muscle"
 
 // Opcional: vacío es válido; si hay algo escrito, debe estar en rango.
 function optionalInRange(value: string, { min, max }: { min: number; max: number }) {
-  if (value.trim() === "") return true
-  const n = Number(value)
-  return Number.isFinite(n) && n >= min && n <= max
+  return value.trim() === "" || inRange(value, { min, max })
 }
 
 export function makeProfileFormSchema(
@@ -46,22 +45,16 @@ export function makeProfileFormSchema(
     })
 }
 
-const gender = genderSchema
-const heightUnit = heightUnitSchema
-const weightUnit = weightUnitSchema
-const activityLevel = activityLevelSchema
-const goal = goalSchema
-
 const serverProfileSchema = z.object({
-  gender,
-  height_unit: heightUnit,
+  gender: genderSchema,
+  height_unit: heightUnitSchema,
   height_cm: z.number().nullable(),
   height_ft: z.number().nullable(),
   height_in: z.number().nullable(),
-  weight_unit: weightUnit,
+  weight_unit: weightUnitSchema,
   weight: z.number(),
-  activity_level: activityLevel,
-  goal,
+  activity_level: activityLevelSchema,
+  goal: goalSchema,
 })
 
 export const profileResponseSchema = z.object({
@@ -75,8 +68,8 @@ export const profileResponseSchema = z.object({
 export const saveProfilePayloadSchema = z
   .object({
     date_of_birth: z.iso.date(),
-    gender,
-    height_unit: heightUnit,
+    gender: genderSchema,
+    height_unit: heightUnitSchema,
     height_cm: z
       .number()
       .min(LIMITS.heightCm.min)
@@ -94,10 +87,10 @@ export const saveProfilePayloadSchema = z
       .min(LIMITS.heightIn.min)
       .max(LIMITS.heightIn.max)
       .nullable(),
-    weight_unit: weightUnit,
+    weight_unit: weightUnitSchema,
     weight: z.number(),
-    activity_level: activityLevel,
-    goal,
+    activity_level: activityLevelSchema,
+    goal: goalSchema,
   })
   .strict()
   .refine(
