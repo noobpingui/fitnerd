@@ -10,25 +10,16 @@
   "branch": "feat/016-past-date-measurements",
   "base_branch": "main",
   "created_at": "2026-10-16T10:30:55.104Z",
-  "stage": "implement",
+  "stage": "plan",
   "status": "in_progress",
   "approvals": {
     "spec": {
-      "at": "2026-10-16T10:40:17.024Z",
-      "note": "si"
+      "at": "2026-10-16T19:25:55.117Z",
+      "note": "Si"
     },
-    "plan": {
-      "at": "2026-10-16T10:49:19.463Z",
-      "note": "auto (gate_mode=flow): plan sin migración, deps ni ADR"
-    },
-    "tasks": {
-      "at": "2026-10-16T10:51:30.592Z",
-      "note": "auto (gate_mode=flow): 27 tareas, cobertura completa"
-    },
-    "tests": {
-      "at": "2026-10-16T11:03:55.642Z",
-      "note": "auto (gate_mode=flow): red check PASS"
-    },
+    "plan": null,
+    "tasks": null,
+    "tests": null,
     "implement": null,
     "verify": null,
     "review": null,
@@ -38,7 +29,8 @@
   "commits": {
     "spec": "2db1af0",
     "plan": "27516a5",
-    "tasks": "74fd138"
+    "tasks": "74fd138",
+    "tests": "f13f042"
   },
   "iterations": {
     "tests": 0,
@@ -47,8 +39,8 @@
   },
   "max_iterations": 3,
   "red_check": {
-    "result": "PASS",
-    "at": "2026-10-16T11:03:44.721Z"
+    "result": null,
+    "at": null
   },
   "verify": {
     "result": null,
@@ -206,6 +198,42 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS"
+    },
+    {
+      "at": "2026-10-16T11:03:55.944Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: f13f042"
+    },
+    {
+      "at": "2026-10-16T11:03:56.093Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar tareas impl T-030 en adelante"
+    },
+    {
+      "at": "2026-10-16T11:08:36.237Z",
+      "stage": "implement",
+      "event": "needs_input",
+      "note": "AC-007.6 y su test chocan con composition() (peso y grasa en la misma medición); E501 en test de rutas L952"
+    },
+    {
+      "at": "2026-10-16T19:24:51.021Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "AC-007.6 choca con composition(); el usuario eligió la opción (a): corregir AC y test"
+    },
+    {
+      "at": "2026-10-16T19:25:12.275Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "AC-007.6 corregido (opción a): medición del 05/10 con peso 80 y grasa 20"
+    },
+    {
+      "at": "2026-10-16T19:25:55.117Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Si"
     }
   ]
 }

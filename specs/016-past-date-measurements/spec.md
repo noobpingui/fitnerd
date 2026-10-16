@@ -125,7 +125,7 @@ WHEN el usuario registra con éxito una medición con fecha pasada THE SYSTEM SH
 - **AC-007.3:** Given mediciones del 2026-10-12 y del 2026-09-28 y la racha en "1 semana", When registra una medición del 2026-10-07, Then la racha muestra "3 semanas".
 - **AC-007.4:** Given una medición del 2026-10-11, When registra una medición del 2026-10-05, Then "Último registro" sigue mostrando la fecha del 2026-10-11 y "Últimos 30 días" suma un registro.
 - **AC-007.5:** Given una medición del 2026-10-11 con peso 78, When registra una medición del 2026-10-05 con peso 80, Then el KPI "Peso" sigue mostrando "78 kg".
-- **AC-007.6:** Given una medición del 2026-10-11 con peso y sin grasa, When registra una medición del 2026-10-05 con grasa 20, Then la sección "Composición corporal" dice "Según tu medición del {fecha}" con la fecha del 2026-10-05.
+- **AC-007.6:** Given una medición del 2026-10-11 con peso y sin grasa, When registra una medición del 2026-10-05 con peso 80 y grasa 20, Then la sección "Composición corporal" dice "Según tu medición del {fecha}" con la fecha del 2026-10-05.
 - **AC-007.7:** Given el gráfico de "Evolución" en el periodo de 1 mes, When registra una medición del 2026-10-05, Then el gráfico incluye un punto en esa fecha.
 
 ### REQ-008 — Las pantallas reflejan cualquier registro sin recargar
@@ -220,3 +220,9 @@ Los demás campos, sus rangos y sus mensajes no cambian (spec 008, sección 6).
 - **Medición de peso de fecha más reciente:** la medición del usuario con peso cuya fecha es la mayor, sin importar cuándo se guardó. Es la que determina el peso del perfil (spec 008, REQ-005).
 - **Formulario de registro:** el diálogo "Registrar medición" de Métricas.
 - **Hoy:** la fecha del dispositivo del usuario, salvo en el servidor, donde es la fecha UTC.
+
+## Comentarios del usuario
+
+Sobre AC-007.6 y `composition()` (opciones: (a) corregir el AC y su test; (b) ampliar el alcance), el usuario respondió:
+
+> A

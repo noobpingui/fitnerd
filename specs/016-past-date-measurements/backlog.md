@@ -13,3 +13,9 @@
 ## tests · test-author
 - [ ] Los tests de la página con navegación (AC-008.1, AC-008.2 y AC-008.4) comprueban el valor que devuelve `getProfile` mockeado; la sincronización real del servidor ya está cubierta en el backend. No hay test de extremo a extremo.
 - [ ] Si las cuatro filas de mediciones superan el tamaño de página del historial ("Mostrar más"), los tests de orden de AC-003.4 habría que revisarlos. Hoy usan 3 filas.
+
+## implement · implementer
+- [ ] Si falla la relectura de mediciones o del perfil tras registrar, no se ve el aviso REQ-009 (riesgo del plan §6).
+
+## spec (rework) · spec-writer
+- [ ] Hay que actualizar el test de AC-007.6 para que registre peso y grasa en la medición del 2026-10-05.
