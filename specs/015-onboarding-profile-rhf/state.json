@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "feature": "015-onboarding-profile-rhf",
+  "title": "Migrar los formularios de onboarding y de datos físicos a react-hook-form con zod",
+  "type": "refactor",
+  "scope": [
+    "frontend"
+  ],
+  "branch": "fix/015-onboarding-profile-rhf",
+  "base_branch": "main",
+  "created_at": "2026-10-16T04:11:19.304Z",
+  "stage": "plan",
+  "status": "in_progress",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-16T04:18:23.388Z",
+      "note": "Si"
+    },
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
+    "verify": null,
+    "review": null,
+    "docs": null,
+    "close": null
+  },
+  "commits": {},
+  "iterations": {
+    "tests": 0,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": null,
+    "at": null
+  },
+  "verify": {
+    "result": null,
+    "at": null
+  },
+  "review": {
+    "verdict": null,
+    "at": null
+  },
+  "tests_snapshot": null,
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-16T04:11:19.304Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama fix/015-onboarding-profile-rhf desde main"
+    },
+    {
+      "at": "2026-10-16T04:11:45.952Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Redactar spec.md desde idea.md"
+    },
+    {
+      "at": "2026-10-16T04:14:24.752Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "Q1 traslado de tests de validation.ts; Q2 ft/in enteros"
+    },
+    {
+      "at": "2026-10-16T04:17:22.945Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "Spec lista: 10 REQ, 37 AC; Q1-Q2 resueltas"
+    },
+    {
+      "at": "2026-10-16T04:18:23.388Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Si"
+    }
+  ]
+}
