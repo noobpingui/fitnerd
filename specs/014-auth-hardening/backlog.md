@@ -11,3 +11,8 @@
 - [ ] Un cuerpo que no sea JSON en `/register` y `/login` (`request.get_json()` devuelve None) y un `date_of_birth` ausente siguen dando 500 (fuera de alcance según la spec).
 - [ ] Las contraseñas antiguas de más de 72 bytes, truncadas por el bcrypt antiguo, ya no pueden entrar con login (401) y tendrán que restablecerse.
 - [ ] Documentar en `docs/deploy-runbook.md` el volcado previo y el `flask db upgrade` de esta migración (tarea del doc-keeper, Art. P4).
+
+## tasks · task-breaker
+- [ ] Los correos guardados con espacios no se recortan en la migración, porque la spec solo pide minúsculas.
+- [ ] Las contraseñas antiguas de más de 72 bytes dejan de entrar en el login (REQ-009) y se recuperan con el restablecimiento.
+- [ ] Los mensajes del registro y el login siguen en inglés (`Wrong Credentials`, `Email already registered`), fuera del alcance de la spec.
