@@ -27,3 +27,6 @@ Opciones consideradas:
 - (−) Plan, tasks, tests, implement, verify y docs ya no tienen gate propio: el usuario los revisa en el gate de `review` (Art. B7).
 - (−) Hasta que se retire el harness propio, sus hooks y los del plugin están activos a la vez y pueden chocar; conviene retirarlo antes de la próxima feature.
 - (−) Los `state.json` de las specs 000–013 usan el formato del harness propio (`scope` como objeto); como están cerradas, no se migran.
+
+## Seguimiento
+- 2026-10-15: el harness propio se retiró en la rama `chore/retire-sdd-harness` (agentes, skills `/sdd-*`, hook `sdd-guard`, `.claude/sdd/`, `specs/constitution.md`, `specs/_templates/`, `docs/sdd/GUIA-DE-USO.md` y `docs/sdd/hooks.md`). Desde entonces solo están activos los hooks del plugin.
