@@ -10,7 +10,7 @@
   "branch": "feat/016-past-date-measurements",
   "base_branch": "main",
   "created_at": "2026-10-16T10:30:55.104Z",
-  "stage": "docs",
+  "stage": "close",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -41,7 +41,10 @@
       "at": "2026-10-17T03:01:22.192Z",
       "note": "Si"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-17T03:01:52.544Z",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
     "close": null
   },
   "commits": {
@@ -49,7 +52,8 @@
     "plan": "27516a5",
     "tasks": "74fd138",
     "tests": "ac42e38",
-    "implement": "c4e57df"
+    "implement": "c4e57df",
+    "review": "9242361"
   },
   "iterations": {
     "tests": 0,
@@ -745,6 +749,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Si"
+    },
+    {
+      "at": "2026-10-17T03:01:22.477Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: 9242361"
+    },
+    {
+      "at": "2026-10-17T03:01:22.640Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Actualizar documentación afectada"
+    },
+    {
+      "at": "2026-10-17T03:01:52.444Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "README y CLAUDE.md actualizados"
+    },
+    {
+      "at": "2026-10-17T03:01:52.544Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): docs actualizados"
     }
   ]
 }
