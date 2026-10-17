@@ -1,43 +1,35 @@
 # Verify report 016 — Registrar mediciones corporales con fecha pasada (incluye 008 F2)
 
-- **Modo:** red (tras la etapa tests, red check de la corrección de review F7)
-- **Fecha:** 2026-10-16T22:09:03.208Z · **Rama:** `feat/016-past-date-measurements` @ `46faf15` · **Base:** `main`
+- **Modo:** red (tras la etapa tests, red check del test de F8)
+- **Fecha:** 2026-10-17T02:49:46.225Z · **Rama:** `feat/016-past-date-measurements` @ `0da0cbd` · **Base:** `main`
 - **Resultado:** PASS
 
 ## 1. Comandos ejecutados
-Solo tests nuevos (archivos de test con marcador `SDD: 016`). Ámbitos tocados: backend, frontend.
+Ámbitos tocados: backend, frontend. Los comandos a `null` no se listan. Modo red: solo los archivos de test cambiados de la feature (con marcador `SDD:`).
 
 | Ámbito | Comando (cwd) | Resultado | Resumen de la salida |
 |---|---|---|---|
-| frontend | `npx vitest run` con los 7 archivos de test nuevos (`frontend`) | ❌ (1 rojo esperado) | 1 failed, 160 passed (161). El único fallo es el test F7 de `BodyMetricsPage.register.test.tsx` (AC-001.4) |
-| backend | `".venv/Scripts/python.exe" -m pytest -q` sobre `tests/test_routes/test_body_metric_routes.py` y `tests/test_services/test_body_metric_service.py` (`backend`) | ✅ | 176 passed |
+| frontend | `npx vitest run` sobre los 7 archivos de test de la feature (`frontend`) | ❌ (1 esperado) | 161 passed, 1 failed: el test de F8 (`BodyMetricsPage.register.test.tsx`, AC-001.4/AC-001.7), rojo legítimo por aserción. Los 6 archivos restantes en verde. |
+| backend | `".venv/Scripts/python.exe" -m pytest -q tests/test_routes/test_body_metric_routes.py tests/test_services/test_body_metric_service.py` (`backend`) | ✅ | 176 passed (sin cambios en esta iteración) |
 
-Comandos de lint, typecheck y build no se ejecutan en modo red.
-
-Detalle del test en rojo:
-- `BodyMetricsPage.register.test.tsx` > "si el perfil falla, el botón se habilita en cuanto falla la primera vez, sin esperar los reintentos" (AC-001.4).
-- Clasificación: **rojo legítimo**, por aserción. `expect(element).toBeEnabled()` falla: el botón "Registrar medición" sigue deshabilitado mientras la consulta del perfil reintenta tras el primer fallo.
-- Tests del archivo sin cambios: en verde.
+Comprobación de la forma de los tests nuevos: el test de F8 lleva el marcador `// SDD: 016 REQ-001 AC-001.4 AC-001.7` en la línea anterior a `it(`. Sin `skip`, `xfail`, `.only` ni `.skip` en el diff sin commitear.
 
 ## 2. Trazabilidad
-Solo el AC del test nuevo de esta iteración. La matriz completa de la verificación anterior (46faf15, 59/59 AC) no se repite aquí.
+Modo red: se evalúa el test nuevo de esta iteración. La implementación ya está commiteada (0da0cbd), así que los demás tests nuevos de la feature pasan; esto es lo esperado.
 
 | REQ / NFR | AC | Tareas | Tests con `SDD:` | Estado del test |
 |---|---|---|---|---|
-| REQ-001 | AC-001.4 | T-018 / T-035 | `BodyMetricsPage.register.test.tsx` (test F7) | ❌ rojo legítimo (aserción `toBeEnabled`) |
+| REQ-001 | AC-001.4, AC-001.7 | T-035 (corrección F8) | `BodyMetricsPage.register.test.tsx:289`: "si el perfil llega en lb con el diálogo abierto, la unidad no cambia y se guarda el peso en kg tal como se escribió" | ❌ rojo legítimo (aserción: la etiqueta pasa a "Peso (lb)" mientras el diálogo está abierto y el valor 80 no se conserva bajo "Peso (kg)") |
 
-- AC sin test: —
-- REQ sin tarea: —
-- Tareas sin marcar `[x]`: —
-- `skip`, `xfail`, `.only` o equivalentes nuevos en el diff: — (revisado sobre el test F7: sin `skip` ni `only`)
-- Scaffolds (`(scaffold)`): no se re-comprueban en esta iteración. T-001 a T-005 ya tienen implementación (commits 3527d19 y 46faf15).
+- Resto de tests nuevos de la feature (frontend, 7 archivos; backend, 2 archivos): ✅ en verde.
+- Nota: `state.json.tests_snapshot` registra el sha256 de `BodyMetricsPage.register.test.tsx` anterior al test de F8; el orquestador debe actualizarlo al registrar la etapa.
 
 ## 3. Criterios de aceptación manuales
-Ninguno en este modo.
+Ninguno en esta comprobación.
 
 ## 4. Fallos (si los hay)
-Ninguno en el criterio de PASS. El test F7 está en rojo como se espera en modo red. La implementación de la corrección F7 es la siguiente etapa.
+Ninguno en el sentido de la comprobación: el único test en rojo es el esperado y su fallo es legítimo.
 
 | # | Qué falló | Salida relevante (recortada) | Responsable probable (test-author · implementer · entorno) |
 |---|---|---|---|
-| — | Ninguno (rojo esperado: test F7, AC-001.4) | `Error: expect(element).toBeEnabled() Received element is not enabled` | — (rojo legítimo, pendiente de implementer) |
+| — | Ninguno (el test de F8 falla por comportamiento ausente, como se espera en red) | `TestingLibraryElementError: Unable to find a label with the text of: Peso (kg)`; el DOM muestra `Peso (lb)` con el diálogo abierto, `register-date` = 2026-10-05 | — |

@@ -4,7 +4,7 @@
 // (vi.mock). El análisis de IA se sustituye por un stub y el gráfico por otro
 // que pinta las fechas recibidas.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react"
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { Link, MemoryRouter, Route, Routes } from "react-router"
@@ -283,6 +283,66 @@ describe("BodyMetricsPage - botón y textos del registro", () => {
 
     await user.click(button)
     expect(await screen.findByLabelText("Peso (kg)")).toBeInTheDocument()
+    queryClient.clear()
+  })
+
+  // SDD: 016 REQ-001 AC-001.4 AC-001.7
+  it("si el perfil llega en lb con el diálogo abierto, la unidad no cambia y se guarda el peso en kg tal como se escribió", async () => {
+    const user = userEvent.setup()
+    let releaseProfile: (value: Awaited<ReturnType<typeof getProfile>>) => void = () => {}
+    const laterProfile = new Promise<Awaited<ReturnType<typeof getProfile>>>(
+      (resolve) => {
+        releaseProfile = resolve
+      }
+    )
+    // 1.ª llamada: falla; el reintento queda pendiente hasta que el test lo suelte.
+    getProfileMock
+      .mockReset()
+      .mockRejectedValueOnce(new Error("perfil no disponible"))
+      .mockReturnValueOnce(laterProfile)
+    listMock.mockResolvedValue([metric("2026-10-11", 80)])
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: 3, retryDelay: 10 },
+        mutations: { retry: false },
+      },
+    })
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={["/body-metrics"]}>
+          <Routes>
+            <Route path="/body-metrics" element={<BodyMetricsPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+
+    await user.click(await findEnabledOpenButton())
+    const dialog = await screen.findByRole("dialog", { name: "Registrar medición" })
+    fireEvent.change(within(dialog).getByLabelText("Fecha"), {
+      target: { value: "2026-10-05" },
+    })
+    await user.type(within(dialog).getByLabelText("Peso (kg)"), "80")
+
+    // El reintento trae un perfil en lb con el diálogo todavía abierto.
+    await waitFor(() => expect(getProfileMock).toHaveBeenCalledTimes(2))
+    await act(async () => {
+      releaseProfile(
+        makeProfileResponse({}, { weight_unit: "lb", weight: 176, height_cm: 175 })
+      )
+      await laterProfile
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+
+    // La etiqueta no cambia mientras el diálogo sigue abierto.
+    expect(within(dialog).getByLabelText("Peso (kg)")).toHaveValue(80)
+    expect(within(dialog).queryByLabelText("Peso (lb)")).not.toBeInTheDocument()
+
+    await user.click(within(dialog).getByRole("button", { name: "Guardar" }))
+    await waitFor(() => expect(createMock).toHaveBeenCalledTimes(1))
+    expect(createMock).toHaveBeenCalledWith(
+      expect.objectContaining({ recorded_at: "2026-10-05", weight: 80 })
+    )
     queryClient.clear()
   })
 

@@ -1,78 +1,72 @@
 # Review 016 — Registrar mediciones corporales con fecha pasada (incluye 008 F2)
 
-- **Iteración:** 2 de 3
-- **Diff revisado:** `git diff main...feat/016-past-date-measurements` @ `46faf15`, con foco en `git diff 3527d19 46faf15` (corrección de F1 a F6). Sin commitear solo hay cambios en `specs/016-past-date-measurements/state.json` y `verify-report.md`.
-- **Veredicto:** APPROVED
+- **Iteración:** 3 de 3
+- **Diff revisado:** `git diff main...feat/016-past-date-measurements` @ `0da0cbd`, con foco en `git diff 46faf15 0da0cbd` (test de F7 en `953f2ec` y corrección en `0da0cbd`). Sin commitear solo hay cambios en `specs/016-past-date-measurements/state.json` y `verify-report.md`.
+- **Veredicto:** CHANGES_REQUESTED
 
 ## 1. Resumen
 
-Revisión de seguimiento. La iteración 1 quedó APPROVED con F1 a F6 (2 MENOR y 4 NIT), y el usuario pidió corregirlos todos. Los seis están resueltos:
-- `df02ae5` añade los tests de F1, F2 y F5 y reescribe el de AC-007.7 (F3);
-- `46faf15` corrige F1, F2, F4 y F5 sin tocar ningún test;
-- el backlog marca F6.
+Revisión de seguimiento tras corregir F7, a petición del usuario. F7 está resuelto tal como se describió: si `GET /api/profile` falla, el botón "Registrar medición" se habilita tras el primer fallo, sin esperar a los reintentos. F1 a F6 siguen resueltos, `snapshot --check` da idéntico y he vuelto a ejecutar vitest sobre `body-metrics` y `profile` (412 tests en verde).
 
-No hay regresiones: los AC de la iteración 1 siguen como estaban, `snapshot --check` da idéntico y he vuelto a ejecutar vitest sobre `body-metrics`, `profile` y `onboarding` (492 tests en verde).
+Sin embargo, la corrección abre un caso que antes era muy improbable y que afecta a los datos (F8, MAYOR):
+1. El botón se habilita mientras TanStack Query sigue reintentando el perfil.
+2. Si un reintento acierta con el formulario abierto, `weightUnit` pasa de `kg` a `lb` en mitad de la edición.
+3. El valor que el usuario escribió pensando en kg se guarda como libras.
 
 ## 2. Cumplimiento de la spec
 
-La tabla completa de la iteración 1 sigue siendo válida: el cambio de esta iteración no toca el backend ni la lógica de registro. Solo cambian estas filas:
+La tabla de la iteración 1, con los cambios de la iteración 2, sigue siendo válida. Esta iteración solo toca `BodyMetricsPage.tsx`. Solo cambian estas filas:
 
 | REQ / AC | ¿Implementado como se especificó? | Evidencia (archivo:línea o test) |
 |---|---|---|
-| AC-001.4 | Sí, ahora sin la ventana en `kg` | `frontend/src/features/body-metrics/pages/BodyMetricsPage.tsx:44`, `:80-86` (`disabled={profileLoading}`); test "'Registrar medición' no se puede pulsar hasta que carga el perfil" en `BodyMetricsPage.register.test.tsx` |
-| AC-007.7 | Sí | `BodyMetricsPage.register.test.tsx`: el stub de `TrendChart` usa `trendChartData` y `periodStart` reales, pulsa "1M" y comprueba que entra la medición del 05/10 y queda fuera la del 20/08 |
-| AC-009.1 | Sí, también sin perfil en la caché | `frontend/src/features/profile/components/PhysicalDataForm.tsx:117-121` (`hadProfile` antes del PUT) y `:161-167` (aviso y peso real solo si había perfil); test nuevo en `ProfilePage.test.tsx` |
-| AC-N002.1 (y plan §3.4) | Sí | `RegisterMetricDialog.tsx:57-63` (`describedBy`), `:131`, `:142`, `:157` y `:162` (`id="register-values-error"`); `frontend/src/features/onboarding/components/NumberField.tsx:17`, `:28`, `:40` |
+| AC-001.4 / AC-001.7 | Sí en la apertura; no se mantiene si el perfil llega con el formulario ya abierto (F8) | `frontend/src/features/body-metrics/pages/BodyMetricsPage.tsx:43-49` (`profilePending = profileLoading && profileFailureCount === 0`), `:88`; test "si el perfil falla, el botón se habilita en cuanto falla la primera vez, sin esperar los reintentos" en `BodyMetricsPage.register.test.tsx` |
+| Supuesto de la spec (spec.md:48: "los pesos se guardan en kg y se muestran en la unidad del perfil") | No siempre: ver F8 | `BodyMetricsPage.tsx:97-101` pasa `weightUnit` reactivo; `RegisterMetricDialog.tsx:44` (esquema) y `:75` (`registrationPayload(values, weightUnit)`) usan la unidad del momento de guardar, no la que se mostró al escribir |
 
 ## 3. Cumplimiento del plan
 
-- La desviación de la iteración 1 (plan §3.4, `aria-describedby` solo en "Fecha") está corregida: peso, grasa y masa muscular enlazan su propio error y, cuando aparece, "Registra al menos un valor".
-- **Decisiones del implementer** (registradas en `history`):
-  - si falla la carga del perfil, el botón se habilita;
-  - el aviso de REQ-009 solo se muestra si había perfil en la caché antes del PUT.
-
-  Las dos son coherentes con el plan y con la spec. En el primer caso, la etiqueta "Peso (kg)" deja ver la unidad, así que no hay conversión silenciosa.
-- `NumberField` recibe una prop opcional nueva. El resto de sus usos (onboarding y perfil) no cambia.
+- La corrección de F7 es mínima y está localizada: usa `failureCount` de `useQuery`, sin dependencias nuevas.
+- No hay desviaciones del plan. El plan no contemplaba que la unidad cambiara con el formulario abierto, porque hasta F7 el botón esperaba a que la consulta del perfil terminara del todo.
 - Sin migración, sin dependencias nuevas y sin ADR.
 
 ## 4. Checklist de la constitución
 
 ### Parte I (base)
-- [x] B1.3: la corrección pasó por `rework tests` con la petición del usuario (comentario de la iteración 1) y por las etapas tests, implement y verify.
-- [x] B2: `snapshot --check` da idéntico al snapshot del 2026-10-16T21:12:07, que se rehízo tras el `rework tests` autorizado. `git diff df02ae5 HEAD` (commit `tests`) no toca ningún archivo de test: implement solo cambió código de producción.
-- [x] B4: los tests nuevos llevan marcadores `SDD: 016` con el AC que prueban (AC-N002.1, AC-001.4, AC-009.1 y AC-007.7).
-- [x] B5: el `rework tests` no borró ni debilitó ningún test. El de AC-007.7 se reforzó: añade la comprobación del periodo de 1 mes. El red check mostró los 6 tests nuevos en rojo por comportamiento ausente. No hay `skip` ni `only`.
-- [x] B5.7: según verify (`46faf15`), el ratchet de ruff no tiene violaciones nuevas, oxlint da 0 errores y `tsc -b` y `build` pasan.
+- [x] B1.3: la corrección pasó por `rework tests` con la petición del usuario y por las etapas tests, implement y verify.
+- [x] B2: `snapshot --check` da idéntico al snapshot del 2026-10-16T22:10:36, que se rehízo tras el `rework tests` autorizado. `git diff 953f2ec HEAD` (commit `tests`) solo toca `BodyMetricsPage.tsx`, `backlog.md` y `state.json`: implement no cambió ningún test.
+- [x] B4: el test nuevo lleva `// SDD: 016 REQ-001 AC-001.4`.
+- [x] B5: no se borró ni debilitó ningún test. El red check mostró el test de F7 en rojo por aserción. No hay `skip` ni `only`.
+- [x] B5.7: según verify (`0da0cbd`), el ratchet de ruff no tiene violaciones nuevas, el lint da 0 errores y `tsc -b` y `build` pasan.
+- [ ] Integridad de datos: F8 permite guardar un peso en una unidad distinta de la que el usuario vio al escribirlo.
 - [x] B6.5: sin secretos y sin variables nuevas.
 
 ### Parte II (proyecto)
-- [x] P1 frontend: tests junto al archivo, `it("…")` en español y red simulada con `vi.mock`.
-- [x] P2 frontend: organización por feature, TanStack Query y componentes de `components/ui`. Las importaciones de `PhysicalDataForm.tsx` vuelven a estar agrupadas.
-- [x] P2 general: textos y comentarios en español correcto.
+- [x] P1 frontend: test junto al archivo, `it("…")` en español y red simulada con mocks. El test usa su propio `QueryClient` con `retryDelay` largo y lo limpia al final.
+- [x] P2 frontend: organización por feature y TanStack Query. El comentario de `BodyMetricsPage.tsx:48` está en español correcto.
 - [x] P3 y P4: sin cambios en el backend ni en la autorización; sin migración.
 
 ## 5. Hallazgos
 
-### Seguimiento de la iteración 1
+### Seguimiento de iteraciones anteriores
 
 | # | Severidad | Estado | Evidencia |
 |---|---|---|---|
-| F1 | MENOR | Resuelto | `RegisterMetricDialog.tsx:57-63`, `:131`, `:142`, `:157`, `:162`; `NumberField.tsx:17`, `:40`. Lo cubren 5 tests de accesibilidad con `toHaveAccessibleDescription` en `RegisterMetricDialog.test.tsx` |
-| F2 | MENOR | Resuelto | `BodyMetricsPage.tsx:44`, `:80-86`. El test deja el perfil pendiente, comprueba que el botón está deshabilitado y que se habilita al llegar un perfil en lb |
-| F3 | NIT | Resuelto | `BodyMetricsPage.register.test.tsx`: el stub filtra por periodo con la lógica real y el test pulsa "1M" |
-| F4 | NIT | Resuelto | `PhysicalDataForm.tsx:1-25`: `useQueryClient` junto a las demás librerías y los módulos de `body-metrics` antes de los de `onboarding` |
-| F5 | NIT | Resuelto | `PhysicalDataForm.tsx:117-121`, `:161-167`; test nuevo en `ProfilePage.test.tsx` (sin aviso y campo con 79) |
-| F6 | NIT | Resuelto | `specs/016-past-date-measurements/backlog.md:21` marcada `[x]` |
+| F1 | MENOR | Resuelto (sin cambios) | `RegisterMetricDialog.tsx:57-63` y `NumberField.tsx`; tests de accesibilidad en verde |
+| F2 | MENOR | Resuelto, matizado por F7 | `BodyMetricsPage.tsx:49`, `:88`: sigue deshabilitado mientras el perfil carga por primera vez; el test de F2 sigue en verde |
+| F3 | NIT | Resuelto (sin cambios) | `BodyMetricsPage.register.test.tsx`, test de AC-007.7 con "1M" |
+| F4 | NIT | Resuelto (sin cambios) | `PhysicalDataForm.tsx:1-25` |
+| F5 | NIT | Resuelto (sin cambios) | `PhysicalDataForm.tsx:117-121`, `:161-167` |
+| F6 | NIT | Resuelto (sin cambios) | `backlog.md:21` |
+| F7 | NIT | Resuelto, pero introduce F8 | `BodyMetricsPage.tsx:43-49`, `:88`; test nuevo en `BodyMetricsPage.register.test.tsx`; `backlog.md` lo marca `[x]` |
 
 ### Nuevos
 
 | # | Severidad | Archivo:línea | Hallazgo | Responsable |
 |---|---|---|---|---|
-| F7 | NIT | `frontend/src/features/body-metrics/pages/BodyMetricsPage.tsx:83` | Si `GET /api/profile` falla, el botón queda deshabilitado mientras TanStack Query reintenta (3 reintentos con espera creciente, varios segundos) y después se habilita en `kg`. No hay error de datos, porque la etiqueta muestra la unidad, pero un usuario con perfil en lb tendría que escribir el peso en kg. Basta con pasarlo al backlog. | implementer |
+| F8 | MAYOR | `frontend/src/features/body-metrics/pages/BodyMetricsPage.tsx:49`, `:97-101`; `frontend/src/features/body-metrics/components/RegisterMetricDialog.tsx:44`, `:75` | Con F7, el botón se habilita tras el primer fallo de `GET /api/profile`, pero la consulta sigue reintentando (por defecto, 3 reintentos en unos 7 s). `weightUnit` se pasa al formulario de forma reactiva y el formulario lo usa al guardar (`registrationPayload(values, weightUnit)`). Si un reintento devuelve un perfil en lb con el formulario abierto, la etiqueta pasa a "Peso (lb)" y el valor ya escrito no cambia. Ejemplo: el usuario escribe 80 viendo "Peso (kg)" y se guardan 80 lb (36,3 kg). Por REQ-009, ese valor puede acabar también como peso del perfil. 80 lb está dentro del rango válido, así que el esquema no lo detiene. Para reproducirlo: perfil que falla una vez y después devuelve lb; abrir el formulario, escribir 80, dejar que el reintento acierte y pulsar "Guardar"; el payload lleva `weight_kg` ≈ 36,3. Corrección propuesta: fijar la unidad al abrir el formulario (guardarla en estado en el `onClick` del botón) o impedir que cambie mientras está abierto. Hace falta un test de este caso (test-author) antes de corregirlo (implementer). | implementer (y test-author para el test) |
 
 ## 6. Decisión
 
-**APPROVED.** F1 a F6 están resueltos, no hay regresiones y los tests coinciden con el snapshot autorizado. No quedan hallazgos BLOQUEANTES ni MAYORES. F7 es un NIT para el backlog del proyecto.
+**CHANGES_REQUESTED.** F1 a F7 están resueltos y los tests coinciden con el snapshot autorizado. Pero la corrección de F7 introduce F8 (MAYOR): un peso puede guardarse en una unidad distinta de la que vio el usuario. Esta es la iteración 3 de 3, así que el orquestador debe escalarlo al usuario. Si se prefiere no corregirlo ahora, la alternativa es revertir `0da0cbd`: F7 era un NIT y, sin él, la ventana de F8 se reduce a un reintento por foco de ventana después del error final.
 
 ## Comentarios del usuario
 
@@ -81,3 +75,5 @@ La tabla completa de la iteración 1 sigue siendo válida: el cambio de esta ite
 > F1 a F6, vamos a arreglarlas todas de una vez
 
 > Corrige ahora el F7
+
+> a

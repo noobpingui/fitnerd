@@ -10,7 +10,7 @@
   "branch": "feat/016-past-date-measurements",
   "base_branch": "main",
   "created_at": "2026-10-16T10:30:55.104Z",
-  "stage": "verify",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -26,13 +26,10 @@
       "note": "auto (gate_mode=flow): tasks.md sin cambios tras el rework de spec (AC-007.6)"
     },
     "tests": {
-      "at": "2026-10-16T22:10:36.776Z",
+      "at": "2026-10-17T02:51:18.781Z",
       "note": "auto (gate_mode=flow): red check PASS"
     },
-    "implement": {
-      "at": "2026-10-16T22:12:56.278Z",
-      "note": "auto (gate_mode=flow): todo en verde"
-    },
+    "implement": null,
     "verify": null,
     "review": null,
     "docs": null,
@@ -43,17 +40,17 @@
     "plan": "27516a5",
     "tasks": "74fd138",
     "tests": "953f2ec",
-    "implement": "46faf15"
+    "implement": "0da0cbd"
   },
   "iterations": {
     "tests": 0,
     "implement": 0,
-    "review": 2
+    "review": 3
   },
   "max_iterations": 3,
   "red_check": {
     "result": "PASS",
-    "at": "2026-10-16T22:10:24.926Z"
+    "at": "2026-10-17T02:51:04.604Z"
   },
   "verify": {
     "result": null,
@@ -64,15 +61,15 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-16T22:10:36.666Z",
-    "reason": "Test de F7 (AC-001.4, perfil que falla con reintentos)",
+    "at": "2026-10-17T02:51:18.651Z",
+    "reason": "Test de F8 (unidad fija al abrir el diálogo)",
     "sha256": {
       "backend/tests/test_routes/test_body_metric_routes.py": "e9d8db14baebe1340e934d9034a9aefde7bb9d9a313c34342d0aab7b7ca42091",
       "backend/tests/test_services/test_body_metric_service.py": "b494c87ecc1481ab5483ddd6f8a30ce743e1ad37d216498b082a5bfbb74e3da1",
       "frontend/src/features/body-metrics/components/RegisterMetricDialog.test.tsx": "fb6e692e6d573b31a5519367e9b9d92d9f99effd3fb28c9ec207bef80f523702",
       "frontend/src/features/body-metrics/laterWeight.test.ts": "aec5e7ed5572c21e7427bd13d25209754448314fdb77550b4add571a8adb0a2a",
       "frontend/src/features/body-metrics/pages/BodyMetricsPage.analysis.test.tsx": "3e351f69074aaf1326e7180cca92c1b195d996e08d106e4a8fc6580400377338",
-      "frontend/src/features/body-metrics/pages/BodyMetricsPage.register.test.tsx": "2df4dd86f2142b19e3150c21850c04929e87b71f897bd2f29e9df2bdac815e1c",
+      "frontend/src/features/body-metrics/pages/BodyMetricsPage.register.test.tsx": "e0a546098b3f98a387c5630f5749b1c30059c8cb060e1d03a340004ca90bf66f",
       "frontend/src/features/body-metrics/schemas.test.ts": "d3210b19d002c8120d2fdf27fd046cd0fc46c174c13aed7e6ce12b9893b93533",
       "frontend/src/features/profile/pages/ProfilePage.test.tsx": "8b3b37fc3c75636a100fa3388e0b859422d9f2ed371a350f55c8917391624c9e",
       "frontend/src/lib/dates.test.ts": "de703fc4de14148262ffe54e1ca99c134a251d7867ce479504fe12bf7d9d26ff"
@@ -571,6 +568,90 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): todo en verde"
+    },
+    {
+      "at": "2026-10-16T22:12:56.506Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 0da0cbd"
+    },
+    {
+      "at": "2026-10-16T22:12:56.578Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa tras F7"
+    },
+    {
+      "at": "2026-10-16T22:16:22.659Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify full tras corregir F7 (0da0cbd): backend 831 passed, ratchet OK; frontend 688 passed, lint 0 errores (2 warnings previos), tsc OK, build OK; 59/59 AC con test SDD en verde; 27/27 tareas [x]; sin skip/only nuevos; sin AC manuales"
+    },
+    {
+      "at": "2026-10-16T22:16:31.612Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS tras F7: 831 backend, 688 frontend, 59/59 AC"
+    },
+    {
+      "at": "2026-10-16T22:16:31.689Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-16T22:16:31.844Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review iteración 3 tras F7"
+    },
+    {
+      "at": "2026-10-16T22:17:53.415Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "CHANGES_REQUESTED"
+    },
+    {
+      "at": "2026-10-16T22:17:53.503Z",
+      "stage": "review",
+      "event": "needs_input",
+      "note": "F8 (MAYOR) introducido por la corrección de F7; límite de iteraciones de review alcanzado, decisión del usuario"
+    },
+    {
+      "at": "2026-10-17T02:47:27.819Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "El usuario elige la opción (a) para F8: fijar la unidad al abrir el diálogo · review 3/3"
+    },
+    {
+      "at": "2026-10-17T02:49:42.564Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check del test de F8"
+    },
+    {
+      "at": "2026-10-17T02:51:04.604Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red check del test de F8 (AC-001.4/AC-001.7, unidad fijada al abrir el diálogo): 1 rojo legítimo por aserción (etiqueta Peso (lb) con el diálogo abierto). Frontend: 161 passed, 1 failed en 7 archivos de test de la feature. Backend: 176 passed en body-metric routes y service."
+    },
+    {
+      "at": "2026-10-17T02:51:18.559Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS: 1 test nuevo en rojo (F8)"
+    },
+    {
+      "at": "2026-10-17T02:51:18.651Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "9 archivo(s) de test: Test de F8 (unidad fija al abrir el diálogo)"
+    },
+    {
+      "at": "2026-10-17T02:51:18.781Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS"
     }
   ]
 }
