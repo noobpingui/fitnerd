@@ -1,0 +1,5 @@
+# Idea original · 016-past-date-measurements
+
+Fecha: 2026-10-16T10:30:55.162Z
+
+Permitir registrar mediciones corporales con una fecha pasada desde Métricas, para poder rellenar un día olvidado (hoy solo se guarda la fecha de hoy, y eso impidió probar la 011 en producción: el ritmo necesita al menos 3 pesos en 28 días que abarquen 10 días o más). Se mantiene una medición por usuario y día: si ya existe una en esa fecha, se actualiza (como el POST actual). El peso del perfil sigue a la medición de peso con la fecha más reciente, no a la última guardada: registrar un día pasado no debe cambiar el peso del perfil si hay una medición más nueva. Decidir si se aceptan fechas futuras (propuesta: no) y el límite hacia atrás. Los indicadores de progreso, la racha y el análisis con IA deben reflejar las mediciones con fecha pasada. Incluye 008 F2: al guardar desde el perfil, el POST de la medición de hoy puede devolver el peso del perfil al de una medición con fecha posterior (por zona horaria) sin avisar, y useCreateBodyMetric no invalida ["profile"], así que la UI muestra un valor que no es el guardado hasta recargar.

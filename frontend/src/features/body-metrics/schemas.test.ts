@@ -5,7 +5,12 @@ import {
   analysisRequestSchema,
   correctionPayload,
   makeMetricCorrectionSchema,
+  makeMetricRegistrationSchema,
+  registrationPayload,
+  type MetricRegistrationErrorKey,
+  type MetricRegistrationValues,
 } from "@/features/body-metrics/schemas"
+import { fieldMessages } from "@/features/onboarding/schemas"
 import type {
   BodyMetric,
   UpdateBodyMetricPayload,
@@ -253,5 +258,155 @@ describe("analysisRequestSchema - ritmo poco realista", () => {
   it("acepta el estado unrealistic y sigue rechazando un estado desconocido", () => {
     expect(() => analysisRequestSchema.parse(request("unrealistic"))).not.toThrow()
     expect(() => analysisRequestSchema.parse(request("mágico"))).toThrow()
+  })
+})
+
+// --- Spec 016: formulario de registro con fecha ---------------------------
+
+const TODAY = "2026-10-12"
+
+const VALID: MetricRegistrationValues = {
+  date: TODAY,
+  weight: "80",
+  fat: "",
+  muscle: "",
+}
+
+function registrationMessages(
+  unit: "kg" | "lb",
+  values: Partial<MetricRegistrationValues>
+) {
+  return fieldMessages<MetricRegistrationErrorKey>(
+    makeMetricRegistrationSchema(unit, TODAY),
+    { ...VALID, ...values }
+  )
+}
+
+describe("makeMetricRegistrationSchema", () => {
+  // SDD: 016 REQ-002 AC-002.1
+  it("rechaza una fecha posterior a hoy con 'La fecha no puede ser futura'", () => {
+    expect(registrationMessages("kg", { date: "2026-10-13" }).date).toBe(
+      "La fecha no puede ser futura"
+    )
+  })
+
+  // SDD: 016 REQ-002 AC-002.2
+  it("rechaza una fecha de más de un año con 'Solo puedes registrar mediciones del último año'", () => {
+    expect(registrationMessages("kg", { date: "2025-10-11" }).date).toBe(
+      "Solo puedes registrar mediciones del último año"
+    )
+  })
+
+  // SDD: 016 REQ-002 AC-002.3
+  it("acepta hoy y hoy menos 365 días", () => {
+    const schema = makeMetricRegistrationSchema("kg", TODAY)
+
+    expect(schema.safeParse({ ...VALID, date: "2025-10-12" }).success).toBe(true)
+    expect(schema.safeParse({ ...VALID, date: TODAY }).success).toBe(true)
+    expect(registrationMessages("kg", { date: "2025-10-12" }).date).toBeUndefined()
+  })
+
+  // SDD: 016 REQ-002 AC-002.4
+  it("pide elegir una fecha cuando está vacía", () => {
+    expect(registrationMessages("kg", { date: "" }).date).toBe("Elige una fecha")
+  })
+
+  // SDD: 016 REQ-002 AC-002.5
+  it("pide al menos un valor cuando los tres están vacíos, en la ruta 'values'", () => {
+    expect(registrationMessages("kg", { weight: "" }).values).toBe(
+      "Registra al menos un valor"
+    )
+    expect(
+      registrationMessages("kg", { weight: " ", fat: " ", muscle: "" }).values
+    ).toBe("Registra al menos un valor")
+  })
+
+  // SDD: 016 REQ-002 AC-002.5
+  it("acepta un solo valor relleno", () => {
+    const schema = makeMetricRegistrationSchema("kg", TODAY)
+
+    expect(
+      schema.safeParse({ ...VALID, weight: "", fat: "18" }).success
+    ).toBe(true)
+    expect(
+      schema.safeParse({ ...VALID, weight: "", muscle: "40" }).success
+    ).toBe(true)
+  })
+
+  // SDD: 016 REQ-002 AC-002.6
+  it("limita el peso a 30–300 kg", () => {
+    expect(registrationMessages("kg", { weight: "301" }).weight).toBe(
+      "Entre 30 y 300 kg"
+    )
+    expect(registrationMessages("kg", { weight: "29.9" }).weight).toBe(
+      "Entre 30 y 300 kg"
+    )
+    expect(registrationMessages("kg", { weight: "30" }).weight).toBeUndefined()
+    expect(registrationMessages("kg", { weight: "300" }).weight).toBeUndefined()
+  })
+
+  // SDD: 016 REQ-002 AC-002.6
+  it("limita el peso a 66–660 lb", () => {
+    expect(registrationMessages("lb", { weight: "661" }).weight).toBe(
+      "Entre 66 y 660 lb"
+    )
+    expect(registrationMessages("lb", { weight: "65.9" }).weight).toBe(
+      "Entre 66 y 660 lb"
+    )
+    expect(registrationMessages("lb", { weight: "66" }).weight).toBeUndefined()
+    expect(registrationMessages("lb", { weight: "660" }).weight).toBeUndefined()
+  })
+
+  // SDD: 016 REQ-002 AC-002.6
+  it("limita la grasa a 3–60 % y la masa muscular a 10–70 %", () => {
+    expect(registrationMessages("kg", { fat: "61" }).fat).toBe("Entre 3 y 60 %")
+    expect(registrationMessages("kg", { fat: "2.9" }).fat).toBe("Entre 3 y 60 %")
+    expect(registrationMessages("kg", { fat: "3" }).fat).toBeUndefined()
+    expect(registrationMessages("kg", { muscle: "71" }).muscle).toBe(
+      "Entre 10 y 70 %"
+    )
+    expect(registrationMessages("kg", { muscle: "9" }).muscle).toBe(
+      "Entre 10 y 70 %"
+    )
+    expect(registrationMessages("kg", { muscle: "70" }).muscle).toBeUndefined()
+  })
+})
+
+describe("registrationPayload", () => {
+  // SDD: 016 REQ-003 AC-003.1
+  it("envía la fecha y solo los valores rellenos, sin claves de los vacíos", () => {
+    const payload = registrationPayload(
+      { date: "2026-10-05", weight: "80", fat: "20", muscle: "" },
+      "kg"
+    )
+
+    expect(payload).toEqual({
+      recorded_at: "2026-10-05",
+      weight: 80,
+      body_fat_percentage: 20,
+    })
+    expect(payload).not.toHaveProperty("muscle_mass_percentage")
+  })
+
+  // SDD: 016 REQ-003 AC-003.2
+  it("convierte el peso de libras a kilos con un decimal", () => {
+    const payload = registrationPayload(
+      { date: "2026-10-05", weight: "160", fat: "", muscle: "" },
+      "lb"
+    )
+
+    expect(payload.weight).toBe(72.6)
+  })
+
+  // SDD: 016 REQ-003 AC-003.3
+  it("con solo la grasa rellena no envía peso ni masa muscular", () => {
+    const payload = registrationPayload(
+      { date: "2026-10-05", weight: "", fat: "18", muscle: "" },
+      "kg"
+    )
+
+    expect(payload).toEqual({ recorded_at: "2026-10-05", body_fat_percentage: 18 })
+    expect(payload).not.toHaveProperty("weight")
+    expect(payload).not.toHaveProperty("muscle_mass_percentage")
   })
 })

@@ -35,3 +35,14 @@ Feature: [specs/015-onboarding-profile-rhf/](../specs/015-onboarding-profile-rhf
 - [ ] Warnings previos `only-export-components` en components/ui/form.tsx:159 y components/ui/button.tsx:64 (no tocados por la feature).
 - [x] Hay un archivo sin trackear `.claudecodeignore` en la raíz del repo que no creó esta feature; decidir si se versiona, se añade a .gitignore o se borra.
 - [ ] Valorar mover inRange a una utilidad compartida en src/lib (hoy body-metrics la importa de onboarding/schemas, que la documenta como regla del onboarding).
+
+## 016-past-date-measurements · Registrar mediciones corporales con fecha pasada (incluye 008 F2) (2026-10-17)
+
+Feature: [specs/016-past-date-measurements/](../specs/016-past-date-measurements/)
+
+- [ ] Inyectar un reloj configurable en la app para los tests de rutas, si hacen falta fechas absolutas (hoy usan fechas relativas).
+- [ ] Mostrar un error o reintento si falla la relectura de mediciones o del perfil tras registrar (hoy no se vería el aviso de REQ-009).
+- [ ] Desplegar el Historial ("Mostrar más") hasta la medición recién registrada (fuera de alcance de la spec).
+- [ ] Test de extremo a extremo de la sincronización del peso del perfil: los tests de la página comprueban el valor que devuelve `getProfile` mockeado.
+- [ ] Revisar los tests de orden de AC-003.4 si las filas de mediciones superan el tamaño de página del Historial (hoy usan 3 filas).
+- [ ] Chunk de frontend de 1,087 kB (>500 kB) en el build; no bloquea.

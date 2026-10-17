@@ -32,19 +32,16 @@ export function useCreateBodyMetric() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: createBodyMetric,
-    // Un registro nuevo cambia el historial completo (y su orden) - la
-    // forma mas simple y confiable de mantener la lista al dia es pedirle
-    // a TanStack Query que la vuelva a traer, en vez de intentar insertar
-    // el nuevo registro "a mano" en la cache existente.
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: bodyMetricsKeys.list })
-    },
+    mutationFn: (payload: Parameters<typeof createBodyMetric>[0]) =>
+      createBodyMetric(payload),
+    // Un registro nuevo cambia el historial completo (y su orden) y puede
+    // cambiar el peso del perfil: se recarga todo.
+    onSuccess: () => invalidateMetricsAndProfile(queryClient),
   })
 }
 
-// Corregir o borrar una medición cambia también el peso del perfil (lo
-// sincroniza el servidor). Se devuelve la promesa para que la mutación siga
+// Registrar, corregir o borrar una medición cambia también el peso del perfil
+// (lo sincroniza el servidor). Se devuelve la promesa para que la mutación siga
 // pendiente hasta que las queries activas se recarguen.
 function invalidateMetricsAndProfile(queryClient: QueryClient) {
   return Promise.all([

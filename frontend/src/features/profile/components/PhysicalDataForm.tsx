@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Check } from "lucide-react"
@@ -12,6 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { formatDate } from "@/features/body-metrics/dateUtils"
+import {
+  bodyMetricsKeys,
+  useCreateBodyMetric,
+} from "@/features/body-metrics/hooks"
+import { laterWeightMetric } from "@/features/body-metrics/laterWeight"
+import type { BodyMetric } from "@/features/body-metrics/types"
 import { NumberField } from "@/features/onboarding/components/NumberField"
 import { UnitToggle } from "@/features/onboarding/components/UnitToggle"
 import {
@@ -30,17 +38,17 @@ import {
   convertWeight,
   KG_PER_LB,
 } from "@/features/onboarding/units"
-import { useCreateBodyMetric } from "@/features/body-metrics/hooks"
 import { fieldMessages } from "@/features/onboarding/schemas"
 import { makeProfileFormSchema } from "@/features/profile/schemas"
 import type {
   BodyComposition,
   PhysicalDataFormValues,
+  ProfileResponse,
 } from "@/features/profile/types"
 import type { ProfileFormErrorKey } from "@/features/profile/schemas"
 import { todayIsoDate } from "@/lib/dates"
-import { useSaveProfile } from "@/features/profile/hooks"
-import { payloadFromAnswers } from "@/features/profile/mappers"
+import { profileKeys, useSaveProfile } from "@/features/profile/hooks"
+import { answersFromProfile, payloadFromAnswers } from "@/features/profile/mappers"
 
 // Los mismos datos del onboarding, pero todos a la vista en un formulario:
 // aquí el usuario ya sabe qué es cada cosa y solo quiere cambiar una o dos.
@@ -54,6 +62,8 @@ export function PhysicalDataForm({
   const defaultValues: PhysicalDataFormValues = { ...initial, ...initialBody }
   const [saved, setSaved] = useState<PhysicalDataFormValues>(defaultValues)
   const [justSaved, setJustSaved] = useState(false)
+  const [laterDate, setLaterDate] = useState<string | null>(null)
+  const queryClient = useQueryClient()
   const createMetric = useCreateBodyMetric()
   const saveProfile = useSaveProfile()
   const schema = useMemo(() => makeProfileFormSchema(), [])
@@ -83,6 +93,7 @@ export function PhysicalDataForm({
       form.setValue(key, patch[key] as never, { shouldDirty: true })
     }
     setJustSaved(false)
+    setLaterDate(null)
   }
 
   const weightKg = (a: OnboardingAnswers) =>
@@ -103,6 +114,11 @@ export function PhysicalDataForm({
     if (!dirty || !allValid) return
     createMetric.reset()
     saveProfile.reset()
+    // Sin perfil en la caché al empezar no se sabe qué peso tiene el perfil:
+    // no se afirma nada de él (ni aviso ni peso ajeno).
+    const hadProfile = !!queryClient.getQueryData<ProfileResponse>(
+      profileKeys.detail
+    )?.profile
     // 1. Perfil completo (PUT, idempotente). Si falla, no se toca `saved`.
     try {
       await saveProfile.mutateAsync(payloadFromAnswers(values))
@@ -130,9 +146,35 @@ export function PhysicalDataForm({
         return
       }
     }
-    setSaved(values)
-    form.reset(values)
-    setJustSaved(true)
+    // 3. Si quedó una medición de peso posterior a hoy, el servidor mantiene
+    // en el perfil el peso de esa medición: se muestra el peso real y se
+    // avisa, en vez de "Cambios guardados".
+    let next = values
+    let later: ReturnType<typeof laterWeightMetric> = null
+    if (measurementChanged) {
+      const cachedMetrics = queryClient.getQueryData<BodyMetric[]>(
+        bodyMetricsKeys.list
+      )
+      const cachedProfile = queryClient.getQueryData<ProfileResponse>(
+        profileKeys.detail
+      )
+      if (hadProfile && cachedMetrics && cachedProfile?.profile) {
+        later = laterWeightMetric(cachedMetrics, todayIsoDate())
+        if (later) {
+          const real = answersFromProfile(cachedProfile)
+          next = { ...values, weight: real.weight, weightUnit: real.weightUnit }
+        }
+      }
+    }
+    setSaved(next)
+    form.reset(next)
+    if (later) {
+      setLaterDate(later.recorded_at)
+      setJustSaved(false)
+    } else {
+      setLaterDate(null)
+      setJustSaved(true)
+    }
   }
 
   function discard() {
@@ -279,6 +321,13 @@ export function PhysicalDataForm({
           >
             <Check className="h-4 w-4" />
             Cambios guardados
+          </span>
+        )}
+        {laterDate && (
+          <span role="status" className="text-sm text-muted-foreground">
+            Guardamos tu medición de hoy, pero tu peso del perfil es el de tu
+            medición más reciente, del {formatDate(laterDate)}. Puedes
+            corregirla o borrarla en Métricas.
           </span>
         )}
         {saveProfile.isError && (

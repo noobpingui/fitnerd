@@ -780,3 +780,187 @@ def test_post_with_a_5000_digit_weight_is_400_and_never_500(client, registered_u
 
     assert response.status_code == 400
     assert response.get_json() == {"error": BODY_INVALID}
+
+
+# --------------------------------------------------------------------------
+# Spec 016: mediciones con fecha pasada
+# --------------------------------------------------------------------------
+
+DATE_TOO_OLD = "La fecha de la medición no puede tener más de un año de antigüedad"
+
+
+# SDD: 016 REQ-005 AC-005.1
+def test_post_accepts_a_date_366_days_ago(client, registered_user):
+    """Hace 366 días se acepta (201)."""
+    headers = registered_user["headers"]
+
+    response = post(client, headers, {"weight": 80, "recorded_at": day(-366)})
+
+    assert response.status_code == 201
+    assert listing(client, headers)[0]["recorded_at"] == day(-366)
+
+
+# SDD: 016 REQ-005 AC-005.2
+def test_post_rejects_a_date_367_days_ago_and_changes_nothing(client, registered_user):
+    """Hace 367 días: 400 con el mensaje y ni el historial ni el perfil cambian."""
+    headers = registered_user["headers"]
+    save_profile(client, headers, PROFILE_KG)
+    assert post(client, headers, {"weight": 80, "recorded_at": day(-1)}).status_code == 201
+    history_before = listing(client, headers)
+    profile_before = read_profile(client, headers)
+
+    response = post(client, headers, {"weight": 60, "recorded_at": day(-367)})
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": DATE_TOO_OLD}
+    assert listing(client, headers) == history_before
+    assert read_profile(client, headers) == profile_before
+
+
+# SDD: 016 REQ-005 AC-005.3
+def test_post_two_days_ahead_still_gets_the_future_message(client, registered_user):
+    """Dentro de dos días sigue dando 400 de fecha futura."""
+    response = post(client, registered_user["headers"], {"weight": 80, "recorded_at": day(2)})
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": DATE_FUTURE}
+
+
+# SDD: 016 REQ-005 AC-005.4
+def test_an_old_metric_can_still_be_corrected_and_deleted(client, app, registered_user):
+    """Una medición de hace 600 días admite PUT (200) y DELETE (204)."""
+    headers = registered_user["headers"]
+    user_id = read_user_id(app, "test@example.com")
+    with app.app_context():
+        db.session.add(
+            BodyMetric(user_id=user_id, weight=80, recorded_at=today() - timedelta(days=600))
+        )
+        db.session.commit()
+    metric_id = listing(client, headers)[0]["id"]
+
+    corrected = put(client, headers, metric_id, {"weight": 79})
+    assert corrected.status_code == 200
+    assert corrected.get_json()["weight"] == 79
+
+    assert delete(client, headers, metric_id).status_code == 204
+    assert listing(client, headers) == []
+
+
+# SDD: 016 REQ-005 AC-005.5
+def test_an_old_metric_is_listed_unchanged(client, app, registered_user):
+    """Una medición de hace 600 días aparece en el historial sin cambios."""
+    headers = registered_user["headers"]
+    user_id = read_user_id(app, "test@example.com")
+    old_day = today() - timedelta(days=600)
+    with app.app_context():
+        db.session.add(BodyMetric(user_id=user_id, weight=80, recorded_at=old_day))
+        db.session.commit()
+
+    items = listing(client, headers)
+
+    assert len(items) == 1
+    assert items[0]["recorded_at"] == old_day.isoformat()
+    assert items[0]["weight"] == 80
+
+
+# SDD: 016 REQ-003 AC-003.7
+def test_post_creates_a_past_metric_with_201(client, registered_user):
+    """Sin medición hace 7 días, el POST crea con 201."""
+    headers = registered_user["headers"]
+
+    response = post(client, headers, {"weight": 80, "recorded_at": day(-7)})
+
+    assert response.status_code == 201
+    assert response.get_json()["recorded_at"] == day(-7)
+
+
+# SDD: 016 REQ-003 AC-003.8
+def test_post_on_a_past_day_merges_with_200_and_the_same_id(client, registered_user):
+    """Segundo POST de la misma fecha pasada: 200, mismo id, conserva la grasa."""
+    headers = registered_user["headers"]
+    first = post(
+        client, headers, {"weight": 80, "body_fat_percentage": 20, "recorded_at": day(-7)}
+    )
+    assert first.status_code == 201
+
+    second = post(client, headers, {"weight": 79, "recorded_at": day(-7)})
+
+    assert second.status_code == 200
+    data = second.get_json()
+    assert data["id"] == first.get_json()["id"]
+    assert data["weight"] == 79
+    assert data["body_fat_percentage"] == 20
+    assert len(listing(client, headers)) == 1
+
+
+# SDD: 016 REQ-006 AC-006.5
+def test_a_past_post_leaves_the_rest_of_the_profile_untouched(client, registered_user):
+    """Un POST pasado solo puede cambiar el peso: el resto del perfil queda igual."""
+    headers = registered_user["headers"]
+    save_profile(client, headers, PROFILE_KG)
+    before = read_profile(client, headers)
+
+    response = post(client, headers, {"weight": 75, "recorded_at": day(-10)})
+
+    assert response.status_code == 201
+    after = read_profile(client, headers)
+    assert after["profile"]["weight"] == 75
+    before["profile"]["weight"] = after["profile"]["weight"]
+    assert after == before
+
+
+# SDD: 016 REQ-009 AC-009.5
+def test_a_metric_of_today_keeps_the_profile_weight_of_a_later_dated_metric(
+    client, registered_user
+):
+    """Con una medición de mañana (80), registrar 79 hoy deja el perfil en 80."""
+    headers = registered_user["headers"]
+    save_profile(client, headers, PROFILE_KG)
+    assert post(client, headers, {"weight": 80, "recorded_at": day(1)}).status_code == 201
+
+    response = post(client, headers, {"weight": 79, "recorded_at": day(0)})
+
+    assert response.status_code == 201
+    assert read_profile(client, headers)["profile"]["weight"] == 80
+
+
+# SDD: 016 NFR-001 AC-N001.1
+@pytest.mark.parametrize(
+    "headers",
+    [{}, {"Authorization": "Bearer token-invalido"}],
+    ids=["sin-token", "token-invalido"],
+)
+def test_post_with_a_past_date_requires_a_valid_session(client, registered_user, headers):
+    """Sin token o con uno inválido: 401 y ninguna medición ni perfil cambia."""
+    own = registered_user["headers"]
+    save_profile(client, own, PROFILE_KG)
+    profile_before = read_profile(client, own)
+
+    response = post(client, headers, {"weight": 70, "recorded_at": day(-5)})
+
+    assert response.status_code == 401
+    assert listing(client, own) == []
+    assert read_profile(client, own) == profile_before
+
+
+# SDD: 016 NFR-001 AC-N001.2
+def test_a_past_post_with_the_user_id_of_another_user_creates_its_own(client, app):
+    """A envía el user_id de B con la fecha en que B ya tiene medición: 201 propio y B intacto."""
+    user_a = create_user(app, "a@example.com")
+    user_b = create_user(app, "b@example.com")
+    save_profile(client, user_b["headers"], PROFILE_KG)
+    seeded = post(client, user_b["headers"], {"weight": 80, "recorded_at": day(-5)})
+    assert seeded.status_code == 201
+    b_history = listing(client, user_b["headers"])
+    b_profile = read_profile(client, user_b["headers"])
+
+    response = post(
+        client,
+        user_a["headers"],
+        {"weight": 70, "user_id": user_b["id"], "recorded_at": day(-5)},
+    )
+
+    assert response.status_code == 201
+    assert len(listing(client, user_a["headers"])) == 1
+    assert listing(client, user_b["headers"]) == b_history
+    assert read_profile(client, user_b["headers"]) == b_profile
