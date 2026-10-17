@@ -34,3 +34,9 @@
 
 ## review (iteración 2) · reviewer
 - [x] F7 (NIT, implementer): en BodyMetricsPage.tsx:83, si GET /api/profile falla, "Registrar medición" queda deshabilitado mientras TanStack Query reintenta (varios segundos) y después se habilita en kg. Un usuario con el perfil en lb tendría que escribir el peso en kg; la etiqueta muestra la unidad, así que no hay conversión silenciosa.
+
+## verify (iteración 3) · verifier
+- [x] Los hashes crudos de los archivos de test en el working tree (Windows, CRLF) no coinciden con `tests_snapshot` de state.json; coinciden sin CR. Si el check del snapshot compara en crudo, daría falso positivo. Revisar la normalización de finales de línea.
+
+## review (iteración 3) · reviewer
+- [x] F8 (MAYOR) resuelto en la review de la iteración 3 (unidad fijada al abrir el diálogo).

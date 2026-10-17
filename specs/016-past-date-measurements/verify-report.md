@@ -1,35 +1,59 @@
 # Verify report 016 — Registrar mediciones corporales con fecha pasada (incluye 008 F2)
 
-- **Modo:** red (tras la etapa tests, red check del test de F8)
-- **Fecha:** 2026-10-17T02:49:46.225Z · **Rama:** `feat/016-past-date-measurements` @ `0da0cbd` · **Base:** `main`
+- **Modo:** full (etapa verify, tras corregir F8 de review)
+- **Fecha:** 2026-10-17T02:55:22.236Z · **Rama:** `feat/016-past-date-measurements` @ `c4e57df` · **Base:** `main`
 - **Resultado:** PASS
 
 ## 1. Comandos ejecutados
-Ámbitos tocados: backend, frontend. Los comandos a `null` no se listan. Modo red: solo los archivos de test cambiados de la feature (con marcador `SDD:`).
+Ámbitos tocados: backend, frontend. Los comandos a `null` no se listan.
 
 | Ámbito | Comando (cwd) | Resultado | Resumen de la salida |
 |---|---|---|---|
-| frontend | `npx vitest run` sobre los 7 archivos de test de la feature (`frontend`) | ❌ (1 esperado) | 161 passed, 1 failed: el test de F8 (`BodyMetricsPage.register.test.tsx`, AC-001.4/AC-001.7), rojo legítimo por aserción. Los 6 archivos restantes en verde. |
-| backend | `".venv/Scripts/python.exe" -m pytest -q tests/test_routes/test_body_metric_routes.py tests/test_services/test_body_metric_service.py` (`backend`) | ✅ | 176 passed (sin cambios en esta iteración) |
-
-Comprobación de la forma de los tests nuevos: el test de F8 lleva el marcador `// SDD: 016 REQ-001 AC-001.4 AC-001.7` en la línea anterior a `it(`. Sin `skip`, `xfail`, `.only` ni `.skip` en el diff sin commitear.
+| backend | `".venv/Scripts/python.exe" -m pytest -q` (`backend`) | ✅ | 831 passed |
+| backend | ratchet ruff: `lint-ratchet.mjs backend` (raíz) | ✅ | Sin violaciones nuevas respecto a main (`body_metric_service.py`, `test_body_metric_routes.py`, `test_body_metric_service.py` OK) |
+| frontend | `npm test` (`frontend`) | ✅ | 47 archivos, 689 passed |
+| frontend | `npm run lint` (`frontend`) | ✅ | 0 errores; 2 warnings previos fuera de la feature (`src/components/ui/form.tsx:159`, `src/components/ui/button.tsx:64`) |
+| frontend | `npx tsc -b` (`frontend`) | ✅ | Sin errores (exit 0) |
+| frontend | `npm run build` (`frontend`) | ✅ | Build correcto (aviso habitual de chunk > 500 kB, no bloqueante) |
 
 ## 2. Trazabilidad
-Modo red: se evalúa el test nuevo de esta iteración. La implementación ya está commiteada (0da0cbd), así que los demás tests nuevos de la feature pasan; esto es lo esperado.
 
 | REQ / NFR | AC | Tareas | Tests con `SDD:` | Estado del test |
 |---|---|---|---|---|
-| REQ-001 | AC-001.4, AC-001.7 | T-035 (corrección F8) | `BodyMetricsPage.register.test.tsx:289`: "si el perfil llega en lb con el diálogo abierto, la unidad no cambia y se guarda el peso en kg tal como se escribió" | ❌ rojo legítimo (aserción: la etiqueta pasa a "Peso (lb)" mientras el diálogo está abierto y el valor 80 no se conserva bajo "Peso (kg)") |
+| REQ-001 | AC-001.1, AC-001.2 | T-020, T-036 | `BodyMetricsPage.register.test.tsx` | ✅ |
+| REQ-001 | AC-001.3, AC-001.5, AC-001.6 | T-005, T-018, T-035 | `RegisterMetricDialog.test.tsx` | ✅ |
+| REQ-001 | AC-001.4, AC-001.7 | T-018, T-035 | `RegisterMetricDialog.test.tsx`, `BodyMetricsPage.register.test.tsx:289` (test de F8) | ✅ |
+| REQ-002 | AC-002.1 … AC-002.7 | T-003, T-014, T-015, T-018, T-031, T-032, T-035 | `dates.test.ts`, `schemas.test.ts`, `RegisterMetricDialog.test.tsx` | ✅ |
+| REQ-003 | AC-003.1, AC-003.2, AC-003.3 | T-016, T-019, T-032 | `schemas.test.ts`, `RegisterMetricDialog.test.tsx` | ✅ |
+| REQ-003 | AC-003.4, AC-003.9 | T-020, T-036 | `BodyMetricsPage.register.test.tsx` | ✅ |
+| REQ-003 | AC-003.5, AC-003.6 | T-019, T-035 | `RegisterMetricDialog.test.tsx` | ✅ |
+| REQ-003 | AC-003.7, AC-003.8 | T-010, T-013, T-030 | `test_body_metric_service.py`, `test_body_metric_routes.py` | ✅ |
+| REQ-004 | AC-004.1, AC-004.2, AC-004.3 | T-019, T-035 | `RegisterMetricDialog.test.tsx` | ✅ |
+| REQ-005 | AC-005.1 … AC-005.5 | T-001, T-010, T-012, T-030 | `test_body_metric_service.py`, `test_body_metric_routes.py` | ✅ |
+| REQ-006 | AC-006.1 … AC-006.4, AC-006.6 | T-011, T-030 | `test_body_metric_service.py` | ✅ |
+| REQ-006 | AC-006.5 | T-013, T-030 | `test_body_metric_routes.py` | ✅ |
+| REQ-007 | AC-007.1, AC-007.3 … AC-007.7 | T-021, T-034 | `BodyMetricsPage.register.test.tsx` | ✅ |
+| REQ-007 | AC-007.2 | T-022, T-034 | `BodyMetricsPage.analysis.test.tsx` | ✅ |
+| REQ-008 | AC-008.1, AC-008.2, AC-008.4 | T-021, T-034 | `BodyMetricsPage.register.test.tsx` | ✅ |
+| REQ-008 | AC-008.3 | T-023, T-034, T-037 | `ProfilePage.test.tsx` | ✅ |
+| REQ-009 | AC-009.1 … AC-009.4 | T-017, T-023, T-033, T-037 | `laterWeight.test.ts`, `ProfilePage.test.tsx` | ✅ |
+| REQ-009 | AC-009.5 | T-011, T-013, T-030 | `test_body_metric_service.py`, `test_body_metric_routes.py` | ✅ |
+| REQ-010 | AC-010.1, AC-010.2 | T-020, T-036 | `BodyMetricsPage.register.test.tsx` | ✅ |
+| NFR-001 | AC-N001.1, AC-N001.2 | T-013, T-030 | `test_body_metric_routes.py` | ✅ |
+| NFR-002 | AC-N002.1 | T-005, T-019, T-035 | `RegisterMetricDialog.test.tsx` | ✅ |
+| NFR-002 | AC-N002.2 | T-019, T-035 | `RegisterMetricDialog.test.tsx` | ✅ |
 
-- Resto de tests nuevos de la feature (frontend, 7 archivos; backend, 2 archivos): ✅ en verde.
-- Nota: `state.json.tests_snapshot` registra el sha256 de `BodyMetricsPage.register.test.tsx` anterior al test de F8; el orquestador debe actualizarlo al registrar la etapa.
+- Los 59 AC de `spec.md` tienen al menos un marcador `SDD: 016` y todos sus tests pasan (backend 831 passed, frontend 689 passed).
+- AC sin test: —
+- REQ sin tarea: —
+- Tareas sin marcar `[x]`: — (27/27 marcadas)
+- `skip`, `xfail`, `.only`, `.skip` o equivalentes nuevos en el diff: — (ninguno en `git diff main...HEAD`)
+- Tests de la feature sin cambios desde su snapshot (`state.json.tests_snapshot`): sí. Los sha256 de los 9 archivos coinciden con el snapshot una vez normalizados los finales de línea (CRLF en el working tree de Windows). El último commit que toca tests es `ac42e38`.
 
 ## 3. Criterios de aceptación manuales
-Ninguno en esta comprobación.
+Ninguno. Todos los AC de la spec tienen comprobación automática en verde.
 
 ## 4. Fallos (si los hay)
-Ninguno en el sentido de la comprobación: el único test en rojo es el esperado y su fallo es legítimo.
-
 | # | Qué falló | Salida relevante (recortada) | Responsable probable (test-author · implementer · entorno) |
 |---|---|---|---|
-| — | Ninguno (el test de F8 falla por comportamiento ausente, como se espera en red) | `TestingLibraryElementError: Unable to find a label with the text of: Peso (kg)`; el DOM muestra `Peso (lb)` con el diálogo abierto, `register-date` = 2026-10-05 | — |
+| — | Ninguno | — | — |
