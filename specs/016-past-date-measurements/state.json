@@ -10,8 +10,8 @@
   "branch": "feat/016-past-date-measurements",
   "base_branch": "main",
   "created_at": "2026-10-16T10:30:55.104Z",
-  "stage": "close",
-  "status": "in_progress",
+  "stage": "done",
+  "status": "done",
   "approvals": {
     "spec": {
       "at": "2026-10-16T19:25:55.117Z",
@@ -45,7 +45,10 @@
       "at": "2026-10-17T03:01:52.544Z",
       "note": "auto (gate_mode=flow): docs actualizados"
     },
-    "close": null
+    "close": {
+      "at": "2026-10-17T03:03:22.045Z",
+      "note": "Si"
+    }
   },
   "commits": {
     "spec": "4779ea7",
@@ -53,7 +56,8 @@
     "tasks": "74fd138",
     "tests": "ac42e38",
     "implement": "c4e57df",
-    "review": "9242361"
+    "review": "9242361",
+    "docs": "8f8e295"
   },
   "iterations": {
     "tests": 0,
@@ -773,6 +777,30 @@
       "stage": "docs",
       "event": "approved",
       "note": "auto (gate_mode=flow): docs actualizados"
+    },
+    {
+      "at": "2026-10-17T03:01:52.804Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: 8f8e295"
+    },
+    {
+      "at": "2026-10-17T03:02:05.274Z",
+      "stage": "close",
+      "event": "done",
+      "note": "Checklist de hecho completo; backlog global actualizado"
+    },
+    {
+      "at": "2026-10-17T03:03:22.045Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Si"
+    },
+    {
+      "at": "2026-10-17T03:03:22.045Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
     }
   ]
 }
