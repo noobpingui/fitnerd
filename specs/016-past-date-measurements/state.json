@@ -10,7 +10,7 @@
   "branch": "feat/016-past-date-measurements",
   "base_branch": "main",
   "created_at": "2026-10-16T10:30:55.104Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,7 +29,10 @@
       "at": "2026-10-17T02:51:18.781Z",
       "note": "auto (gate_mode=flow): red check PASS"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-17T02:55:17.566Z",
+      "note": "auto (gate_mode=flow): todo en verde"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -39,7 +42,7 @@
     "spec": "4779ea7",
     "plan": "27516a5",
     "tasks": "74fd138",
-    "tests": "953f2ec",
+    "tests": "ac42e38",
     "implement": "0da0cbd"
   },
   "iterations": {
@@ -652,6 +655,36 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS"
+    },
+    {
+      "at": "2026-10-17T02:51:19.044Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: ac42e38"
+    },
+    {
+      "at": "2026-10-17T02:51:19.216Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Corregir F8: fijar la unidad al abrir el diálogo"
+    },
+    {
+      "at": "2026-10-17T02:55:17.380Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "F8: unidad fijada al pulsar Registrar (registeringUnit); useCreateBodyMetric pasa solo el payload a createBodyMetric"
+    },
+    {
+      "at": "2026-10-17T02:55:17.476Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F8 corregido; pytest 831, vitest 689"
+    },
+    {
+      "at": "2026-10-17T02:55:17.566Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): todo en verde"
     }
   ]
 }

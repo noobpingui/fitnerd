@@ -32,7 +32,8 @@ export function useCreateBodyMetric() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: createBodyMetric,
+    mutationFn: (payload: Parameters<typeof createBodyMetric>[0]) =>
+      createBodyMetric(payload),
     // Un registro nuevo cambia el historial completo (y su orden) y puede
     // cambiar el peso del perfil: se recarga todo.
     onSuccess: () => invalidateMetricsAndProfile(queryClient),

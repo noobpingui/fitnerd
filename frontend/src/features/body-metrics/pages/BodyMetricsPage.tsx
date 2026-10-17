@@ -29,6 +29,7 @@ import {
 import { useProfile } from "@/features/profile/hooks"
 import { answersFromProfile } from "@/features/profile/mappers"
 import { KG_PER_LB } from "@/features/onboarding/units"
+import type { WeightUnit } from "@/features/onboarding/types"
 
 function fadeIn(index: number) {
   return {
@@ -39,7 +40,9 @@ function fadeIn(index: number) {
 }
 
 export function BodyMetricsPage() {
-  const [registering, setRegistering] = useState(false)
+  // Unidad de peso fijada al abrir el diálogo (null = cerrado): si el perfil
+  // llega o cambia con el diálogo abierto, la etiqueta y lo guardado no cambian.
+  const [registeringUnit, setRegisteringUnit] = useState<WeightUnit | null>(null)
   const { data: metrics, isLoading, isError, error } = useBodyMetrics()
   const {
     data: profileResponse,
@@ -86,17 +89,17 @@ export function BodyMetricsPage() {
         <Button
           className="mb-6"
           disabled={profilePending}
-          onClick={() => setRegistering(true)}
+          onClick={() => setRegisteringUnit(weightUnit)}
         >
           Registrar medición
         </Button>
       )}
 
-      {registering && (
+      {registeringUnit && (
         <RegisterMetricDialog
           metrics={metrics ?? []}
-          weightUnit={weightUnit}
-          onClose={() => setRegistering(false)}
+          weightUnit={registeringUnit}
+          onClose={() => setRegisteringUnit(null)}
         />
       )}
 
