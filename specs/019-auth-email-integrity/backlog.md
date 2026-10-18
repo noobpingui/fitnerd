@@ -25,3 +25,17 @@
 
 ## implement · implementer
 - [ ] Incidente de proceso: el implementer escribió la migración con un script de Python lanzado desde la shell en vez de con Write o Edit; el resultado se revisó.
+
+## verify · verifier
+- [ ] state.json, nota del hito spec: dice «6 REQ, 23 AC», pero la spec tiene 21 AC. Es un error de recuento sin efecto en la cobertura.
+- [ ] Las 2 violaciones E501 de backend/models/user.py (línea 52 en main) son previas y están toleradas por el ratchet.
+
+## review · reviewer
+- [ ] F1 (MENOR, planner/doc-keeper): las consultas de comprobación del caso B' (plan.md:69-70) llevan [[:space:]], y text() de la plantilla del paso 4 del runbook toma ":spac" como parámetro enlazado y falla. En el runbook hay que usar exec_driver_sql, escapar "\:" o cambiar la expresión.
+- [ ] F3 (MENOR, implementer): incidencia de proceso Art. B2.4. La migración se escribió con un script de Python desde la shell; el contenido está revisado y es correcto.
+- [ ] F2 (NIT): ADR-0027 sigue «Propuesta»; si el usuario lo aprueba en el gate de review, pasarla a «Aceptada» en el ADR y en docs/sdd/decisions/README.md.
+- [ ] F4 (NIT): la migración repite la expresión en CANONICAL_EMAIL_SQL y CANONICAL_EMAIL_EXPR; derivar una de la otra.
+- [ ] F5 (NIT): op.get_bind() impide el modo offline (--sql), igual que en la 014.
+- [ ] F6 (NIT): «INTEGRACION» sin tilde en test_canonical_email_routes.py:1.
+- [ ] F7 (NIT): plan.md dice «23 AC» en lugar de 21.
+- [ ] F8 (NIT): no hay test de que se recorten tabuladores ni saltos de línea con [[:space:]].

@@ -9,7 +9,7 @@
   "branch": "fix/019-auth-email-integrity",
   "base_branch": "main",
   "created_at": "2026-10-18T21:00:43.404Z",
-  "stage": "verify",
+  "stage": "docs",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -32,8 +32,14 @@
       "at": "2026-10-18T21:29:14.300Z",
       "note": "auto (gate_mode=flow): pytest 1018 passed"
     },
-    "verify": null,
-    "review": null,
+    "verify": {
+      "at": "2026-10-18T21:31:49.493Z",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    "review": {
+      "at": "2026-10-18T21:40:26.947Z",
+      "note": "Sí, apruebo la review"
+    },
     "docs": null,
     "close": null
   },
@@ -41,7 +47,8 @@
     "spec": "15cbbe1",
     "plan": "9867726",
     "tasks": "e741624",
-    "tests": "a7f7801"
+    "tests": "a7f7801",
+    "implement": "ec0f765"
   },
   "iterations": {
     "tests": 1,
@@ -54,12 +61,12 @@
     "at": "2026-10-18T21:25:36.531Z"
   },
   "verify": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-18T21:31:38.411Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-10-18T21:35:57.144Z"
   },
   "tests_snapshot": {
     "at": "2026-10-18T21:25:46.971Z",
@@ -261,6 +268,60 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): pytest 1018 passed"
+    },
+    {
+      "at": "2026-10-18T21:29:14.643Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: ec0f765"
+    },
+    {
+      "at": "2026-10-18T21:29:14.859Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verify full"
+    },
+    {
+      "at": "2026-10-18T21:31:38.411Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify full: pytest 1018 passed (fitnerd_test local); lint_ratchet backend sin violaciones nuevas; typecheck/build no aplican; 21/21 AC con test SDD: 019 en verde; 18/18 tareas [x]; sin skip/xfail/.only nuevos; migracion e5b7d9f1a3c6 unica cabeza y down_revision a7d3f9c1e5b2 (comprobado offline)"
+    },
+    {
+      "at": "2026-10-18T21:31:49.392Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "PASS: 1018 passed, ratchet limpio, 21 AC trazados"
+    },
+    {
+      "at": "2026-10-18T21:31:49.493Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-18T21:31:49.701Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review independiente"
+    },
+    {
+      "at": "2026-10-18T21:35:57.144Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-18T21:35:57.250Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED: 0 bloqueantes, 0 mayores, 2 menores, 6 NIT"
+    },
+    {
+      "at": "2026-10-18T21:40:26.947Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Sí, apruebo la review"
     }
   ]
 }
