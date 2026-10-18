@@ -9,7 +9,7 @@
   "branch": "feat/017-frontend-polish",
   "base_branch": "main",
   "created_at": "2026-10-18T04:39:28.778Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -20,7 +20,10 @@
       "at": "2026-10-18T05:00:05.686Z",
       "note": "auto (gate_mode=flow): plan frontend-only, sin migracion, ADR-0026"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-18T05:00:57.624Z",
+      "note": "auto (gate_mode=flow): 32 tareas (4 scaffold, 18 test, 8 impl, 2 config)"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -29,7 +32,8 @@
     "close": null
   },
   "commits": {
-    "spec": "e9c78fe"
+    "spec": "e9c78fe",
+    "plan": "bd8af4f"
   },
   "iterations": {
     "tests": 0,
@@ -111,6 +115,30 @@
       "stage": "plan",
       "event": "approved",
       "note": "auto (gate_mode=flow): plan frontend-only, sin migracion, ADR-0026"
+    },
+    {
+      "at": "2026-10-18T05:00:05.948Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: bd8af4f"
+    },
+    {
+      "at": "2026-10-18T05:00:06.116Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegar en task-breaker"
+    },
+    {
+      "at": "2026-10-18T05:00:57.540Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "32 tareas, 26 AC cubiertos"
+    },
+    {
+      "at": "2026-10-18T05:00:57.624Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 32 tareas (4 scaffold, 18 test, 8 impl, 2 config)"
     }
   ]
 }
