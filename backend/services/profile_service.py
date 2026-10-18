@@ -1,16 +1,22 @@
-import re
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from decimal import ROUND_HALF_UP, Decimal
 
 from exceptions.custom_exceptions import ResourceNotFoundError, ValidationError
 from models.user_profile import UserProfile
+from services.date_of_birth_rules import (  # noqa: F401  (se reexportan: otros módulos las importan desde aquí)
+    AGE_RANGE_MESSAGE,
+    DOB_PATTERN,
+    FUTURE_DOB_MESSAGE,
+    INVALID_DOB_MESSAGE,
+    MAX_AGE,
+    MIN_AGE,
+    age_on,
+    parse_date_of_birth,
+)
 from services.number_validation import is_int, is_number
 
 INVALID_BODY_MESSAGE = "Los datos del perfil no son válidos"
-INVALID_DOB_MESSAGE = "La fecha de nacimiento no es válida"
-FUTURE_DOB_MESSAGE = "La fecha de nacimiento no puede ser futura"
-AGE_RANGE_MESSAGE = "Debes tener entre 14 y 100 años"
 INVALID_GENDER_MESSAGE = "El género debe ser masculino o femenino"
 INVALID_HEIGHT_UNIT_MESSAGE = "La unidad de altura debe ser cm o ft"
 HEIGHT_CM_MESSAGE = "La altura debe estar entre 100 y 250 cm"
@@ -28,40 +34,15 @@ WEIGHT_UNITS = ("kg", "lb")
 ACTIVITY_LEVELS = ("low", "moderate", "high", "very_high", "athlete")
 GOALS = ("lose", "lose_slow", "maintain", "gain_slow", "gain")
 
-MIN_AGE = 14
-MAX_AGE = 100
 WEIGHT_RANGES = {"kg": (30, 300, WEIGHT_KG_MESSAGE), "lb": (66, 660, WEIGHT_LB_MESSAGE)}
-
-DOB_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
 def utc_now():
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
-def age_on(date_of_birth, today):
-    """Años cumplidos; quien cumple hoy ya tiene la edad nueva."""
-    before_birthday = (today.month, today.day) < (date_of_birth.month, date_of_birth.day)
-    return today.year - date_of_birth.year - before_birthday
-
-
 def _round1(value):
     return float(Decimal(str(value)).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
-
-
-def _parse_dob(value, today):
-    # El regex es obligatorio: fromisoformat también acepta "20010101" o "2001-W01-1".
-    if not isinstance(value, str) or not DOB_PATTERN.match(value):
-        raise ValidationError(INVALID_DOB_MESSAGE)
-    try:
-        dob = date.fromisoformat(value)
-    except ValueError:
-        raise ValidationError(INVALID_DOB_MESSAGE)
-    if dob > today:
-        raise ValidationError(FUTURE_DOB_MESSAGE)
-    if not MIN_AGE <= age_on(dob, today) <= MAX_AGE:
-        raise ValidationError(AGE_RANGE_MESSAGE)
-    return dob
 
 
 def _validate(data, today):
@@ -69,7 +50,7 @@ def _validate(data, today):
     if not isinstance(data, dict):
         raise ValidationError(INVALID_BODY_MESSAGE)
 
-    dob = _parse_dob(data.get("date_of_birth"), today)
+    dob = parse_date_of_birth(data.get("date_of_birth"), today)
 
     gender = data.get("gender")
     if gender not in GENDERS:

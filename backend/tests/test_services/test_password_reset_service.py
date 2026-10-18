@@ -7,7 +7,7 @@ correo, 10 minutos por IP, 5 minutos de caducidad) moviendo un FakeClock.
 
 import re
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from types import SimpleNamespace
 
 import bcrypt
@@ -18,8 +18,9 @@ from exceptions.custom_exceptions import (
     ServiceUnavailableError,
     ValidationError,
 )
-from services.password_reset_service import PasswordResetService
-from tests.fakes import FakeClock, FakeEmailSender, FakeUnitOfWork
+from models.password_reset_request import PasswordResetRequest
+from services.password_reset_service import PasswordResetService, hash_token
+from tests.fakes import FakeClock, FakeEmailSender, FakeSequenceClock, FakeUnitOfWork
 
 BASE_URL = "http://localhost:5173"
 IP = "203.0.113.10"
@@ -380,6 +381,59 @@ def test_reset_link_cannot_be_used_twice():
 
     assert exc_info.value.message == INVALID_LINK
     assert user.password_hash == hash_after_first
+
+
+# ---------------------------------------------------------------- 018 REQ-009
+
+def make_service_with_sequence_clock(user, token, *instants):
+    """Servicio con un enlace creado en T0 insertado directamente (así
+    `request_reset` no consume instantes del reloj) y un reloj por secuencia."""
+    clock = FakeSequenceClock(*instants)
+    repo = FakePasswordResetRepository()
+    repo.rows.append(PasswordResetRequest(
+        email=user.email, client_ip=IP, user_id=user.id,
+        token_hash=hash_token(token), created_at=T0,
+    ))
+    uow = FakeUnitOfWork()
+    service = PasswordResetService(
+        FakeUserRepository([user]), repo, uow, FakeEmailSender(), BASE_URL, clock=clock
+    )
+    return SimpleNamespace(service=service, repo=repo, uow=uow, clock=clock)
+
+
+# SDD: 018 REQ-009 AC-009.1
+def test_reset_password_uses_a_single_instant_for_expiry_and_used_at():
+    """Reloj T+4 min y luego T+6 min: tiene éxito, usa T+4 min y lo lee una sola vez."""
+    user = make_user("ana@example.com")
+    original_hash = user.password_hash
+    ctx = make_service_with_sequence_clock(
+        user, "token-fijo", T0 + timedelta(minutes=4), T0 + timedelta(minutes=6)
+    )
+
+    ctx.service.reset_password("token-fijo", "NuevaClave123")
+
+    assert user.password_hash != original_hash
+    assert bcrypt.checkpw(b"NuevaClave123", user.password_hash.encode("utf-8"))
+    assert ctx.uow.committed is True
+    assert ctx.repo.rows[0].used_at == T0 + timedelta(minutes=4)
+    assert ctx.clock.calls == 1
+
+
+# SDD: 018 REQ-009 AC-009.2
+def test_reset_password_rejects_when_the_first_instant_is_already_expired():
+    """Reloj T+5 min y luego T+4 min: enlace no válido y la contraseña no cambia."""
+    user = make_user("ana@example.com")
+    original_hash = user.password_hash
+    ctx = make_service_with_sequence_clock(
+        user, "token-fijo", T0 + timedelta(minutes=5), T0 + timedelta(minutes=4)
+    )
+
+    with pytest.raises(ValidationError) as exc_info:
+        ctx.service.reset_password("token-fijo", "NuevaClave123")
+
+    assert exc_info.value.message == INVALID_LINK
+    assert user.password_hash == original_hash
+    assert ctx.repo.rows[0].used_at is None
 
 
 # ---------------------------------------------------------------- REQ-008

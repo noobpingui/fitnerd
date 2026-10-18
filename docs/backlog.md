@@ -4,12 +4,12 @@
 
 Feature: [specs/014-auth-hardening/](../specs/014-auth-hardening/)
 
-- [ ] Traducir al español los mensajes "Wrong Credentials" y "Email already registered".
-- [ ] Validar en el servidor el nombre, el apellido y la fecha de nacimiento del registro, y responder bien a un cuerpo que no sea JSON.
+- [x] Traducir al español los mensajes "Wrong Credentials" y "Email already registered" (spec 018).
+- [x] Validar en el servidor el nombre, el apellido y la fecha de nacimiento del registro, y responder bien a un cuerpo que no sea JSON (spec 018).
 - [ ] En la tabla de solicitudes de restablecimiento puede haber filas antiguas con correos en mayúsculas; no se tocan porque solo cuentan para el límite de 2 minutos.
 - [ ] Recortar los espacios de los correos ya guardados (la migración solo los pasa a minúsculas).
 - [ ] Índice único funcional o CHECK `email = lower(email)` como garantía en la base una vez migrados los datos.
-- [ ] Un cuerpo que no sea JSON en `/register` y `/login` (`request.get_json()` devuelve None) y un `date_of_birth` ausente siguen dando 500 (fuera de alcance según la spec).
+- [x] (spec 018) Un cuerpo que no sea JSON en `/register` y `/login` (`request.get_json()` devuelve None) y un `date_of_birth` ausente siguen dando 500 (fuera de alcance según la spec).
 - [ ] Las contraseñas antiguas de más de 72 bytes, truncadas por el bcrypt antiguo, ya no pueden entrar con login (401) y tendrán que restablecerse.
 - [ ] Opcional: unitarios directos de `escape_log_text` más allá del que ya hay.
 - [ ] `lower()` de Postgres y `str.lower()` de Python difieren en letras no ASCII (anotado en ADR-0025).
@@ -17,7 +17,7 @@ Feature: [specs/014-auth-hardening/](../specs/014-auth-hardening/)
 - [ ] Textos sin tilde anteriores a la 014 en los tests de autenticación y reset, y en los tests de `LoginForm` y `ForgotPasswordForm` ("exito", "peticion", "contrasena"...).
 - [ ] Si el implementer cambia `type="email"` o añade `noValidate`, revisar `fireEvent.submit` en `RegisterForm.test.tsx`.
 - [x] Prueba manual en navegador real de AC-011.3 y AC-011.4 (aviso de /login y botón atrás).
-- [ ] NIT (implementer): `_ensure_link_is_usable` lee `self.clock()` en cada llamada en lugar de usar un solo `now`, como pide el plan §3.3 (password_reset_service.py:125,154).
+- [x] (spec 018) NIT (implementer): `_ensure_link_is_usable` lee `self.clock()` en cada llamada en lugar de usar un solo `now`, como pide el plan §3.3 (password_reset_service.py:125,154).
 - [ ] NIT (implementer): la comprobación de `user is None` llega después de tomar el FOR UPDATE; es inofensivo (password_reset_service.py:150-152).
 - [x] ADR-0025 sigue por pasar a "Aceptada" (el usuario la aprobó en la review; las ADRs no son del doc-keeper).
 - [x] La fila "pendiente" del historial del runbook hay que completarla (PR, fecha y volcado) tras el despliegue.
@@ -61,3 +61,19 @@ Feature: [specs/017-frontend-polish/](../specs/017-frontend-polish/)
 - [ ] Los «Cargando…» encadenados (guard, layout y pantalla) siguen en la primera visita a una ruta protegida; es consecuencia del ADR-0026 (F6 resuelto solo con `className`, sin precargar el layout).
 - [ ] Añadir un test del envío correcto de FeedbackForm (elegir categoría y mensaje, 201 y onSuccess) y otro del mensaje de error del servidor, con una utilidad para manejar el Select de Radix.
 - [ ] F11 (test-author): `FeedbackForm.test.tsx:42-44` comprueba el error de categoría contando los textos «Elige una categoría» (placeholder y mensaje de error), lo que es frágil. Sería mejor localizar el `FormMessage` del campo.
+
+## 018-auth-robustness · Endurecer /register y /login: 400 ante entradas inválidas, validación del registro y mensajes en español (2026-10-18)
+
+Feature: [specs/018-auth-robustness/](../specs/018-auth-robustness/)
+
+- [ ] Validar también en el formulario del frontend la edad de 14 a 100 años y los nombres en blanco o de más de 100 caracteres.
+- [ ] /api/auth/google: responder a cuerpos no JSON y traducir al español «Invalid Google token» y «Google email not verified».
+- [ ] Otros mensajes de autenticación que siguen en inglés (/me, token ausente o caducado).
+- [ ] Restablecimiento de contraseña: comprobar que el usuario del enlace existe antes de bloquearlo; es un NIT de la review de la spec 014, sin efecto observable.
+- [ ] MENOR: `frontend/src/features/auth/components/LoginForm.test.tsx` sigue simulando «Wrong Credentials», un texto que el servidor ya no devuelve; pasarlo al mensaje nuevo.
+- [ ] MENOR: el mensaje por defecto de `ConflictError` en `backend/exceptions/custom_exceptions.py:8` sigue en inglés («Email already registered»), y el de `AuthenticationError` también; traducirlos o quitar el valor por defecto.
+- [ ] NIT: `utc_now` está duplicado en `profile_service.py` y `password_reset_service.py` (y `auth_service.py:22` lo importa del primero); dejar una sola en un módulo de reloj.
+- [ ] NIT: en `backend/tests/test_services/test_auth_service.py` hay dos marcadores `SDD:` que apuntan a AC poco relacionados (:573 y :528), y `timedelta` se importa dentro de la función en :134.
+- [ ] `tests/fakes.py` y los archivos de test existentes tienen finales de línea CRLF (en `fakes.py`, mezclados con LF). Conviene normalizarlos.
+- [ ] AC-005.4 y AC-005.5 en integración dependen del día UTC real y podrían fallar justo al cruzar la medianoche UTC; las fronteras exactas ya están cubiertas en unitarios con reloj fijo.
+- [ ] El `state.json` y `tasks.md` dicen 45 AC, pero `spec.md` tiene 44 IDs únicos; revisar el recuento (sin impacto).

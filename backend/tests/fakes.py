@@ -284,3 +284,17 @@ class FakeUserRepository:
             email=fields.get("email"),
             date_of_birth=fields.get("date_of_birth"),
         )
+
+
+class FakeSequenceClock:
+    """Reloj que devuelve los instantes indicados en orden y, agotados,
+    repite el último. `calls` cuenta cuántas veces se consultó."""
+
+    def __init__(self, *instants):
+        self.instants = list(instants)
+        self.calls = 0
+
+    def __call__(self):
+        index = min(self.calls, len(self.instants) - 1)
+        self.calls += 1
+        return self.instants[index]
