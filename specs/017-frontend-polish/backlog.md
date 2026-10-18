@@ -36,3 +36,20 @@
 - [ ] Plan.md sección 5 no lista AC-001.5 y AC-N002.4 como verdes justificados (aceptados por el usuario en red); conviene añadirlos al registro.
 - [ ] Chunk de Métricas (BodyMetricsPage) de 364 kB: por debajo de 500 kB, no bloquea (Q6).
 - [ ] Prueba manual pendiente: recarga real con «Recargar» tras un fallo de descarga de chunk (AC-003.2).
+
+## verify · verifier (full, iteración 2)
+- [ ] ResetPasswordForm.test.tsx (fuera del alcance de la 017, que solo cubre LoginForm y ForgotPasswordForm) tiene «boton», «peticion» y «esta en curso» en comentarios o nombres de test (Art. P2 General).
+- [ ] El marcador de AC-N004.3 está en un test de escaneo que comprueba el contenido de OnboardingPage.test.tsx; el AC queda cubierto en la práctica por la ejecución completa de npm test, no por un test que ejecute ese archivo.
+
+## review · reviewer
+- [ ] F1 (test-author): en `LoginForm.test.tsx:6` y `:133` quedan «todavia» y «COMO se llamó» sin tilde (NFR-003).
+- [ ] F2 (test-author): el escaneo de AC-N002.3 en `sourceCleanup017.test.ts:122-134` no incluye el test del formulario de feedback.
+- [ ] F5 (implementer/usuario): falta la prueba manual de la transición login ↔ registro en `npm run dev` y la de «Recargar» tras un fallo real de descarga de un chunk (AC-003.2).
+- [ ] F3 (implementer): unificar la indentación de los `element={…}` en `router.tsx:104-165`.
+- [ ] F4 (test-author): el marcador de AC-N004.3 está en un test que solo comprueba el texto del archivo; lo cubre de verdad la suite.
+- [ ] F6 (implementer): «Cargando…» y el aviso de error usan `min-h-dvh` dentro de `AppLayout`, y la primera visita a una ruta protegida encadena hasta tres «Cargando…» (guard, layout y pantalla); valorar pasar `className` o precargar el layout.
+- [ ] F7 (planner): pasar el ADR-0026 de «Propuesta» a «Aceptada», en el ADR y en `docs/sdd/decisions/README.md`, cuando se apruebe el gate.
+- [ ] La sección 5 de `plan.md` no lista AC-001.5 ni AC-N002.4 entre los tests que pasan ya en verde, aunque el usuario los aceptó como guardas en el red check.
+
+## tests · test-author (correcciones de review)
+- [ ] Si se quiere cubrir de verdad AC-N002.3 para feedback, hay que escribir un test de comportamiento de `FeedbackForm` (hoy no existe).

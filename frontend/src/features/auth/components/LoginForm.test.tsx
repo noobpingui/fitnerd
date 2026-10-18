@@ -3,7 +3,7 @@
 // submit a mano") - eso es lo que React Testing Library empuja a hacer:
 // probar el comportamiento visible, no los detalles internos de
 // implementación. A diferencia del test de dateUtils.ts, aquí sí hay React
-// de por medio, pero todavia no hace falta mockear la API: cuando la
+// de por medio, pero todavía no hace falta mockear la API: cuando la
 // validación de Zod falla, react-hook-form ni siquiera llega a llamar a la
 // mutation (useLogin) - por eso este test no necesita tocar la red para nada.
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
@@ -130,7 +130,7 @@ describe("LoginForm - login exitoso (API mockeada)", () => {
     expect(await screen.findByText("Pantalla de home")).toBeInTheDocument()
     expect(localStorage.getItem("fitnerd_token")).toBe("un-jwt-de-mentira")
 
-    // También vale la pena afirmar COMO se llamó a fetch - que apiClient
+    // También vale la pena afirmar CÓMO se llamó a fetch - que apiClient
     // realmente arma la request de login como se espera (método, endpoint).
     expect(fakeFetch).toHaveBeenCalledWith(
       expect.stringContaining("/api/auth/login"),

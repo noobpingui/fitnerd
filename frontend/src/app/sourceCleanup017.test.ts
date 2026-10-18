@@ -133,6 +133,16 @@ describe("componentes de UI sin warnings de only-export-components (spec 017)", 
     }
   })
 
+  // El formulario de feedback no tiene archivo de test propio: la guarda
+  // comprueba que el formulario sigue existiendo y usando los componentes de UI.
+  // SDD: 017 NFR-002 AC-N002.3
+  it("el formulario de feedback sigue existiendo y usa los componentes de UI", () => {
+    const content = source("/src/features/feedback/components/FeedbackForm.tsx")
+
+    expect(content).toMatch(/components\/ui\/form/)
+    expect(content).toMatch(/components\/ui\/button/)
+  })
+
   // SDD: 017 NFR-002 AC-N002.1 AC-N002.4
   it.each([BUTTON, FORM])(
     "%s tiene una sola supresión de la regla, precedida de un comentario con el motivo",
@@ -283,6 +293,8 @@ describe("tests de fecha prerrellenada del onboarding sin duplicados (spec 017)"
     expect(content).toContain('it("una fecha prerrellenada de más de 100 años')
   })
 
+  // Guarda de existencia: que los tests pasen lo comprueba la ejecución de
+  // OnboardingPage.test.tsx dentro de la suite; aquí solo se fija que siguen ahí.
   // SDD: 017 NFR-004 AC-N004.3
   it("OnboardingPage.test.tsx conserva sus tests de la 017 y de la fecha (su ejecución completa la cubre la suite)", () => {
     const content = source(ONBOARDING_PAGE_TEST)

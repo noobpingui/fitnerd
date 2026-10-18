@@ -1,21 +1,20 @@
 # Verify report 017 — Pulido de frontend: mensaje de pulgadas, inRange compartido, warnings de lint y tests
 
 - **Modo:** full (etapa verify)
-- **Fecha:** 2026-10-18T05:45:39.024Z · **Rama:** `feat/017-frontend-polish` @ `1ba5cdd` · **Base:** `main`
-- **Resultado:** FAIL
+- **Fecha:** 2026-10-18T05:48:38.485Z · **Rama:** `feat/017-frontend-polish` @ `507950a` · **Base:** `main`
+- **Resultado:** PASS
 
 ## 1. Comandos ejecutados
 | Ámbito | Comando (cwd) | Resultado | Resumen de la salida |
 |---|---|---|---|
-| frontend | `npm test` (`frontend`) | ✅ | 52 archivos de test y 739 tests, todos pasan (Test Files 52 passed, Tests 739 passed). |
-| frontend | `npm run lint` (`frontend`) | ✅ | oxlint sin errores ni warnings (salida vacía, código de salida 0). Desaparecen los `only-export-components` de `button.tsx` y `form.tsx`. |
+| frontend | `npm test` (`frontend`) | ✅ | 52 archivos de test y 740 tests, todos pasan (Test Files 52 passed, Tests 740 passed). |
+| frontend | `npm run lint` (`frontend`) | ✅ | oxlint sin errores ni warnings (salida vacía, código de salida 0). |
 | frontend | `npx tsc -b` (`frontend`) | ✅ | Sin errores de tipos (código de salida 0). |
-| frontend | `npm run build` (`frontend`) | ✅ | Build correcto en 553 ms. Chunk de entrada `dist/assets/index-Bj3eTrgl.js` de 384.07 kB (gzip 122.75 kB), por debajo de 500 kB. Aviso de tamaño de Vite: no aparece. |
-| backend | — | — | No aplica: el ámbito `backend` no está tocado (`scopes_touched` = `frontend`). |
+| frontend | `npm run build` (`frontend`) | ✅ | Build correcto (553 ms). Chunk de entrada `dist/assets/index-Bj3eTrgl.js` de 384.07 kB (gzip 122.75 kB), por debajo de 500 kB. Ningún aviso de tamaño de chunk. El chunk más grande de pantalla es `BodyMetricsPage` con 364.06 kB. |
 
 Notas:
-- `lint_ratchet` no aplica al ámbito `frontend` (su `lint_ratchet` es `null`); se ejecuta `npm run lint`.
-- Las guardas de la iteración de red siguen en verde dentro de `npm test`.
+- El ámbito `backend` no está tocado (`scopes_touched` = `frontend`); no se ejecuta nada de backend.
+- `lint_ratchet` es `null` en `frontend`, así que se ejecuta `npm run lint`.
 
 ## 2. Trazabilidad
 | REQ / NFR | AC | Tareas | Tests con `SDD:` | Estado del test |
@@ -44,27 +43,22 @@ Notas:
 | NFR-003 | AC-N003.2 | T-023, T-024, T-025 | `app/sourceCleanup017.test.ts` | ✅ |
 | NFR-004 | AC-N004.1 | T-026 | `app/sourceCleanup017.test.ts` | ✅ |
 | NFR-004 | AC-N004.2 | T-026 | `app/sourceCleanup017.test.ts` | ✅ |
-| NFR-004 | AC-N004.3 | T-026 | Ninguno: ningún marcador `SDD:` menciona `AC-N004.3` | ❌ sin marcador (ver sección 4) |
+| NFR-004 | AC-N004.3 | T-026 | `app/sourceCleanup017.test.ts` (`// SDD: 017 NFR-004 AC-N004.3`, corregido en la iteración 3) y el propio `OnboardingPage.test.tsx` en verde | ✅ |
 | NFR-005 | AC-N005.1 | T-022, T-039 | `app/sourceCleanup017.test.ts` y `npm run build` (384.07 kB) | ✅ |
 | NFR-005 | AC-N005.2 | T-022, T-039 | `app/sourceCleanup017.test.ts` | ✅ |
 
-- AC sin test: AC-N004.3 (sin marcador `SDD:`; el archivo `OnboardingPage.test.tsx` sí pasa completo).
+- AC sin test: —
 - REQ sin tarea: —
 - Tareas sin marcar `[x]`: — (las 32 tareas, T-001 a T-039, están marcadas).
 - `skip`, `xfail`, `.only`, `.skip` o equivalentes nuevos en el diff: — (ninguno; se escanea `git diff main...HEAD -- frontend`).
-- Textos de `LoginForm.test.tsx` y `ForgotPasswordForm.test.tsx` (AC-N003.1): sin palabras prohibidas. Recuentos: 14 y 8 tests (AC-N003.2).
-- Tests duplicados de fecha en `OnboardingPage.test.tsx` (AC-N004.1): los marcadores quedan en las líneas 196 (AC-009.1 · 015 AC-007.5) y 258 (AC-009.4 · 015 AC-007.5); no hay duplicados.
+- AC-N003.1 y AC-N003.2: `LoginForm.test.tsx` tiene 14 tests y `ForgotPasswordForm.test.tsx` tiene 8; no hay palabras prohibidas en ninguno de los dos.
+- AC-N004.1: 1995-05-20 se comprueba una vez (línea 196, marcador `AC-009.1 · 015 REQ-007 AC-007.5`) y 1900-01-01 una vez (línea 258, marcador `AC-009.4 · 015 REQ-007 AC-007.5`).
+- AC-N002.4: `button.tsx` y `form.tsx` tienen una supresión `oxlint-disable-next-line react/only-export-components` cada uno, con comentario; `.oxlintrc.json` mantiene la regla.
+- AC-N005.1: `vite.config.ts` no contiene `chunkSizeWarningLimit` ni `manualChunks`; `router.tsx` no importa de forma estática ninguna página de `features/*/pages/`.
 
 ## 3. Criterios de aceptación manuales
 - AC-003.2 (recarga real): los tests sustituyen `window.location.reload` por un doble. Para confirmar que «Recargar» recarga la página en el navegador, hace falta una prueba manual: forzar un fallo de descarga de chunk (p. ej. tras un despliegue con la pestaña abierta) y pulsar «Recargar».
 - AC-002.1 (aviso «Cargando…» visible): cubierto por tests; una revisión visual en el navegador es opcional.
 
 ## 4. Fallos (si los hay)
-| # | Qué falló | Salida relevante (recortada) | Responsable probable (test-author · implementer · entorno) |
-|---|---|---|---|
-| 1 | AC-N004.3 no aparece en ningún marcador `SDD:` de los tests. Art. B4.3 exige que cada AC esté cubierto por un test con marcador; la justificación de plan.md (sección 5 y la fila de la matriz) no sirve para un DEBE. | `grep "AC-N004.3"` sobre `frontend/src` sin coincidencias; todos los demás AC de la spec aparecen. El test del archivo sí pasa (739 de 739). | test-author (añadir `AC-N004.3` a un marcador `SDD:` de `OnboardingPage.test.tsx` o de `sourceCleanup017.test.ts`) |
-
-Sin fallos de comandos: `npm test`, `npm run lint`, `npx tsc -b` y `npm run build` pasan.
-
-## Veredicto de la etapa verify
-FAIL por una sola trazabilidad incompleta (AC-N004.3 sin marcador). Todas las comprobaciones ejecutables están en verde.
+Ninguno. Todas las comprobaciones ejecutables están en verde.
