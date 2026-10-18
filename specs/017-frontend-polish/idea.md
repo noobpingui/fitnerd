@@ -1,0 +1,4 @@
+# Idea original · 017-frontend-polish
+2026-10-18T04:39:28.823Z
+
+Pulido de frontend, solo frontend, sin migraciones ni cambios de API. Alcance recortado: (1) mensaje específico para pulgadas fuera de rango en el perfil ("Entre 0 y 11 in"); (2) mover inRange a una utilidad compartida en src/lib y actualizar los imports de onboarding y body-metrics; (3) arreglar los warnings only-export-components en components/ui/form.tsx y components/ui/button.tsx si es posible sin romper shadcn; (4) corregir tildes y textos sin tilde en los tests de LoginForm y ForgotPasswordForm; (5) simplificar los tests duplicados de fecha en OnboardingPage.test.tsx; (6) opcional, si cabe: dividir el chunk de 1,087 kB con React.lazy por ruta. Fuera de alcance: mediciones con fecha pasada desde el perfil, ADR de fieldMessages, test de escaneo y todo lo de backend.
