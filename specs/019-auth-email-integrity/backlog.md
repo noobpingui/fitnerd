@@ -43,3 +43,6 @@
 ## docs · doc-keeper
 - [ ] Pasar ADR-0027 y su índice a «Aceptada» (F2), tarea del planner.
 - [ ] Completar la fila del historial del runbook con fecha, PR, merge y nombre del backup tras el despliegue.
+
+## close · planner (bloqueado por el hook)
+- [ ] ADR-0027 y su fila 0027 de `docs/sdd/decisions/README.md` siguen en «Propuesta»: el hook role-guard impide que el planner las pase a «Aceptada» fuera de la etapa plan. Hacerlo en una rama `chore/…` tras el merge. Conviene definir qué rol cambia el estado de las ADR en close.
