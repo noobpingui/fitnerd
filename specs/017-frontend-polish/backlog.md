@@ -44,7 +44,7 @@
 ## review · reviewer
 - [ ] F1 (test-author): en `LoginForm.test.tsx:6` y `:133` quedan «todavia» y «COMO se llamó» sin tilde (NFR-003).
 - [ ] F2 (test-author): el escaneo de AC-N002.3 en `sourceCleanup017.test.ts:122-134` no incluye el test del formulario de feedback.
-- [ ] F5 (implementer/usuario): falta la prueba manual de la transición login ↔ registro en `npm run dev` y la de «Recargar» tras un fallo real de descarga de un chunk (AC-003.2).
+- [x] F5 (implementer/usuario): falta la prueba manual de la transición login ↔ registro en `npm run dev` y la de «Recargar» tras un fallo real de descarga de un chunk (AC-003.2).
 - [ ] F3 (implementer): unificar la indentación de los `element={…}` en `router.tsx:104-165`.
 - [ ] F4 (test-author): el marcador de AC-N004.3 está en un test que solo comprueba el texto del archivo; lo cubre de verdad la suite.
 - [ ] F6 (implementer): «Cargando…» y el aviso de error usan `min-h-dvh` dentro de `AppLayout`, y la primera visita a una ruta protegida encadena hasta tres «Cargando…» (guard, layout y pantalla); valorar pasar `className` o precargar el layout.
@@ -59,9 +59,12 @@
 - [ ] Los «Cargando…» encadenados (guard, layout y pantalla) siguen en la primera visita a una ruta protegida; es consecuencia del ADR-0026 (F6 resuelto solo con `className`, sin precargar el layout).
 
 ## review · reviewer (segunda pasada)
-- [ ] F5 (implementer/usuario): falta la prueba manual en npm run dev de la transición login ↔ registro y de «Recargar» tras un fallo real de descarga de un chunk (AC-003.2).
+- [x] F5 (implementer/usuario): falta la prueba manual en npm run dev de la transición login ↔ registro y de «Recargar» tras un fallo real de descarga de un chunk (AC-003.2).
 - [ ] F9 (test-author): la guarda de feedback de sourceCleanup017.test.ts:136-144 solo revisa los imports; un test de comportamiento de FeedbackForm lo cubriría de verdad.
 - [ ] F10 (implementer): className="min-h-[50vh]" se repite seis veces en router.tsx; convendría extraerlo a una constante.
 
 ## tests · test-author (F9)
 - [ ] Añadir un test del envío correcto de FeedbackForm (elegir categoría y mensaje, 201 y onSuccess) y otro del mensaje de error del servidor, con una utilidad para manejar el Select de Radix.
+
+## review · reviewer (tercera pasada)
+- [ ] F11 (test-author): `FeedbackForm.test.tsx:42-44` comprueba el error de categoría contando los textos «Elige una categoría» (placeholder y mensaje de error), lo que es frágil. Sería mejor localizar el `FormMessage` del campo.

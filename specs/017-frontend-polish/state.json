@@ -9,7 +9,7 @@
   "branch": "feat/017-frontend-polish",
   "base_branch": "main",
   "created_at": "2026-10-18T04:39:28.778Z",
-  "stage": "verify",
+  "stage": "docs",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -32,8 +32,14 @@
       "at": "2026-10-18T06:38:40.953Z",
       "note": "auto (gate_mode=flow): F10, 743 tests verdes"
     },
-    "verify": null,
-    "review": null,
+    "verify": {
+      "at": "2026-10-18T06:40:53.423Z",
+      "note": "auto (gate_mode=flow): verify PASS tras F9 y F10"
+    },
+    "review": {
+      "at": "2026-10-18T08:00:23.775Z",
+      "note": "F5 esta listo. Aprobado"
+    },
     "docs": null,
     "close": null
   },
@@ -42,7 +48,7 @@
     "plan": "bd8af4f",
     "tasks": "a046390",
     "tests": "2454e44",
-    "implement": "35abc83"
+    "implement": "2836d0d"
   },
   "iterations": {
     "tests": 3,
@@ -55,12 +61,12 @@
     "at": "2026-10-18T05:42:58.454Z"
   },
   "verify": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-18T06:40:46.299Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-10-18T06:41:58.804Z"
   },
   "tests_snapshot": {
     "at": "2026-10-18T06:37:10.743Z",
@@ -538,6 +544,60 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): F10, 743 tests verdes"
+    },
+    {
+      "at": "2026-10-18T06:38:41.203Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 2836d0d"
+    },
+    {
+      "at": "2026-10-18T06:38:41.310Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegar en verifier (full) tras F9 y F10"
+    },
+    {
+      "at": "2026-10-18T06:40:46.299Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: npm test 743/743 OK; lint sin errores ni warnings; tsc OK; build OK (entrada 384.25 kB); trazabilidad completa (27 AC de spec 017 con marcador SDD 017, 32/32 tareas [x], sin skip/only nuevos); AC manuales 002.1, 003.1, 003.2"
+    },
+    {
+      "at": "2026-10-18T06:40:53.318Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "PASS: 743 tests, lint, tsc, build; chunk 384 kB"
+    },
+    {
+      "at": "2026-10-18T06:40:53.423Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS tras F9 y F10"
+    },
+    {
+      "at": "2026-10-18T06:40:53.627Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegar en reviewer (tercera pasada)"
+    },
+    {
+      "at": "2026-10-18T06:41:58.804Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-18T06:41:58.927Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED 3/3: 0 bloqueantes, 0 mayores, 1 menor (F5 manual), 1 nit (F11)"
+    },
+    {
+      "at": "2026-10-18T08:00:23.775Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "F5 esta listo. Aprobado"
     }
   ]
 }

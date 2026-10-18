@@ -1,72 +1,58 @@
 # Review 017 — Pulido de frontend: mensaje de pulgadas, inRange compartido, warnings de lint y tests
 
-- **Iteración:** 2 de 3
-- **Diff revisado:** `git diff main...feat/017-frontend-polish` @ `35abc83` (+ cambios sin commitear en `docs/sdd/decisions/ADR-0026-carga-de-pantallas-bajo-demanda.md`, `docs/sdd/decisions/README.md`, `specs/017-frontend-polish/state.json` y `verify-report.md`)
+- **Iteración:** 3 de 3
+- **Diff revisado:** `git diff main...feat/017-frontend-polish` @ `2836d0d` (+ cambios sin commitear en `specs/017-frontend-polish/state.json` y `verify-report.md`), con foco en `git diff 35abc83 2836d0d`
 - **Veredicto:** APPROVED
 
 ## 1. Resumen
-Esta segunda pasada revisa las correcciones de F1 a F7 que pidió el usuario en el gate de review: `cc5aeb6` (tests: F1, F2 y F4), `35abc83` (implementación: F3 y F6) y el cambio sin commitear del ADR-0026 (F7). F1, F3 y F4 están resueltos. F2, F6 y F7 están resueltos en lo esencial, con un resto menor anotado. F5 es una prueba manual que solo puede hacer el usuario. No hay regresiones: `snapshot --check` da idéntico, el commit de implement no toca tests y `src/app` (73 tests), `npm run lint` y `npx tsc -b` pasan al relanzarlos.
+Esta tercera pasada revisa las correcciones de F9 y F10 que pidió el usuario al aprobar la segunda pasada: `2454e44` (tests: F9, nuevo `FeedbackForm.test.tsx`) y `2836d0d` (implementación: F10, constante `IN_LAYOUT` en `router.tsx`). Ambos están resueltos. El ADR-0026 ya está commiteado con la línea «Decidido por» corregida, así que F8 también queda resuelto. No hay regresiones: `snapshot --check` da idéntico (13 archivos), el commit de implement solo toca `router.tsx`, y los tests de `src/app` y `src/features/feedback` (75), `npm run lint` y `npx tsc -b` pasan al relanzarlos. Sigue abierto F5, una prueba manual que solo puede hacer el usuario.
 
 ## 2. Cumplimiento de la spec
-Las correcciones no cambian el comportamiento de ningún AC. La tabla de la iteración 1 sigue siendo válida; solo cambian las filas afectadas.
+Las correcciones no cambian el comportamiento de ningún AC. Solo cambian estas filas respecto a la iteración 2:
 
 | REQ / AC | ¿Implementado como se especificó? | Evidencia (archivo:línea o test) |
 |---|---|---|
-| AC-001.1 a AC-001.6 | Sí (sin cambios) | `onboarding/schemas.ts`, `PhysicalDataForm.tsx`; tests 017 de `ProfilePage.test.tsx`, `schemas.test.ts` y `OnboardingPage.test.tsx` |
-| AC-002.1 | Sí | `frontend/src/app/RouteSuspense.tsx:53-68`: el `Suspense` sigue mostrando `ProfileLoading` («Cargando…»); ahora recibe `className` (F6). Sin `className` mantiene `min-h-dvh` (`ProfileLoadState.tsx:3`) |
-| AC-002.2 a AC-002.4 | Sí | `frontend/src/app/router.tsx:104-200`: solo se reformatea y se pasa `className="min-h-[50vh]"` a las seis pantallas de `AppLayout`; la estructura de rutas no cambia. `lazyRoutes.test.tsx` en verde |
-| AC-003.1 / AC-003.2 | Sí (falta la prueba manual de la recarga real, F5) | `RouteSuspense.tsx:9-23` (`PageLoadError` con `className` por defecto `min-h-dvh`) y `:39-49` (el boundary le pasa su `className`); `RouteSuspense.test.tsx` y `lazyNamed.test.ts` en verde |
-| AC-N001.1 a AC-N001.4 | Sí (sin cambios) | `frontend/src/lib/inRange.ts`; `inRange.test.ts`; `sourceCleanup017.test.ts` |
-| AC-N002.1 / AC-N002.2 / AC-N002.4 | Sí (sin cambios) | `npm run lint` relanzado: sin warnings |
-| AC-N002.3 | Sí | `sourceCleanup017.test.ts:122-134` (tests de los cuatro formularios de autenticación) y `:136-144` (nuevo: el formulario de feedback sigue existiendo y usa `components/ui/form` y `components/ui/button`). El feedback no tiene tests existentes, así que el AC se cumple sin nada que ejecutar (ver F9) |
-| AC-N003.1 / AC-N003.2 | Sí | `LoginForm.test.tsx:6` («todavía») y `:133` («CÓMO») corregidos (F1) |
-| AC-N004.1 a AC-N004.3 | Sí | `sourceCleanup017.test.ts:296-298`: el comentario aclara que es una guarda de existencia y que la ejecución la cubre la suite (F4) |
-| AC-N005.1 / AC-N005.2 | Sí | Build de 384.30 kB (verify-report @ `35abc83`); `router.tsx` sigue con solo `import()` dinámicos de las pantallas |
+| AC-002.2 a AC-002.4 | Sí | `frontend/src/app/router.tsx:40-42` define `IN_LAYOUT = "min-h-[50vh]"` y `:156-196` lo usan las seis pantallas de `AppLayout`. La clase está escrita literal, así que Tailwind la sigue generando. `lazyRoutes.test.tsx` en verde |
+| AC-N002.3 | Sí | Además de la guarda de `sourceCleanup017.test.ts:136-144`, ahora `frontend/src/features/feedback/components/FeedbackForm.test.tsx:21-30` (render de campos y botón) y `:32-50` (validación con el formulario vacío: errores de `feedback/schemas.ts:10` y `:14`, sin `fetch` ni `onSuccess`) ejecutan el formulario |
+| Resto de AC | Sí (sin cambios) | Ver la tabla de la iteración 2; el resto del diff no ha cambiado |
 
 ## 3. Cumplimiento del plan
-- Sin desviaciones nuevas. La prop `className` de `RouteSuspense`, `PageErrorBoundary` y `PageLoadError` es un añadido opcional, compatible con las firmas de la sección 3.2 del plan, y sigue el patrón que ya usan `ProfileLoading` y `ProfileLoadError` en `ProfileLoadState.tsx`.
-- F6 se resolvió solo con `className`, sin precargar el layout. Los «Cargando…» encadenados en la primera visita a una ruta protegida siguen ahí: es una consecuencia (−) aceptada del ADR-0026, y está anotada en el backlog de la feature.
-- Sigue pendiente la revisión manual de login ↔ registro que el plan pedía antes de la review (F5).
-- La sección 5 de `plan.md` sigue sin listar AC-001.5 ni AC-N002.4 entre los verdes justificados. Ya está en el backlog, y es un desfase del registro, no del comportamiento.
+- Sin desviaciones nuevas. La constante `IN_LAYOUT` es una refactorización local y el test nuevo sigue la convención de tests junto al componente.
+- Siguen pendientes, ya en el backlog: la prueba manual de login ↔ registro y de «Recargar» (F5) y la sección 5 de `plan.md`, que no lista AC-001.5 ni AC-N002.4 entre los verdes justificados.
 
 ## 4. Checklist de la constitución
 ### Parte I (base)
-- [x] B2: `snapshot --check` da idéntico respecto al snapshot de `05:58:19` (12 archivos). La corrección de tests `cc5aeb6` está autorizada en `history` (`rework` de tests por petición del usuario, `done` y `snapshot` posterior). `git diff cc5aeb6 HEAD` no toca ningún archivo de test: el implementer (`35abc83`) solo modificó `RouteSuspense.tsx` y `router.tsx`.
-- [x] B4: los marcadores nuevos (`// SDD: 017 NFR-002 AC-N002.3` en `sourceCleanup017.test.ts:138`) llevan el número de spec y corresponden a su AC.
-- [x] B5: no se borra, salta ni debilita ningún test. Se añade un caso y se corrigen dos comentarios.
-- [x] B5.7: `npm run lint` sin errores ni warnings y `npx tsc -b` correcto, relanzados en esta revisión.
+- [x] B2: `snapshot --check` da idéntico respecto al snapshot de `06:37:10` (13 archivos). El archivo nuevo `FeedbackForm.test.tsx` entró por una corrección autorizada en `history` (`rework` de tests por petición del usuario en el gate, `done` y `snapshot` posterior). `git diff 2454e44 HEAD` no toca ningún archivo de test: el implementer (`2836d0d`) solo modificó `router.tsx`.
+- [x] B4: los dos casos nuevos llevan `// SDD: 017 NFR-002 AC-N002.3` y prueban ese AC.
+- [x] B5: no se borra, salta ni debilita ningún test; se añaden dos.
+- [x] B5.7: `npm run lint` y `npx tsc -b` correctos, relanzados en esta revisión.
 - [x] B6.5: sin secretos ni variables nuevas.
 
 ### Parte II (proyecto)
-- [x] P1 frontend: el caso nuevo va en el test de escaneo existente, con nombre en español y `globals: false`.
-- [x] P2.1 / P2.4 frontend: sin cambios de organización; se reutiliza el patrón `className` de `ProfileLoadState.tsx`.
+- [x] P1 frontend: test con Vitest y RTL junto al componente, nombres en español, `globals: false` (imports explícitos de `vitest`), `fetch` simulado con `vi.stubGlobal` y restaurado en `afterEach`.
+- [x] P2.1 / P2.4 frontend: sin cambios de organización.
 - [x] P2.5: lint limpio.
-- [x] P2 General: el comentario nuevo de `RouteSuspense.tsx:60` está en español correcto. Los comentarios previos de `router.tsx` siguen sin tildes y con voseo («aca», «matchee»), fuera de alcance y ya anotados en el backlog.
-- [x] P3: sin input externo ni endpoints nuevos.
-- [x] P4: sin cambios de modelo ni pasos manuales en producción.
+- [x] P2 General: el comentario nuevo de `router.tsx:40-41` está en español correcto.
+- [x] P3 / P4: sin input externo, endpoints, modelos ni pasos de producción nuevos.
 
 ## 5. Hallazgos
-### Estado de los hallazgos de la iteración 1
+### Estado de los hallazgos anteriores
 | # | Estado | Evidencia |
 |---|---|---|
-| F1 | Resuelto | `frontend/src/features/auth/components/LoginForm.test.tsx:6`, `:133` |
-| F2 | Resuelto (guarda de escaneo; ver F9) | `frontend/src/app/sourceCleanup017.test.ts:136-144` |
-| F3 | Resuelto | `frontend/src/app/router.tsx:104-200`: todas las rutas siguen el formato de `/login` (`<Route` en su línea, `path` y `element` indentados, `/>` alineado) |
-| F4 | Resuelto (aclarado con un comentario) | `frontend/src/app/sourceCleanup017.test.ts:296-298` |
-| F5 | Abierto: prueba manual del usuario | Sin constancia en `verify-report.md` ni en el backlog de que se haya hecho |
-| F6 | Resuelto en parte | `frontend/src/app/RouteSuspense.tsx:9-23`, `:53-68`; `router.tsx` pasa `min-h-[50vh]` a las seis pantallas de `AppLayout`. Los «Cargando…» encadenados quedan en el backlog |
-| F7 | Resuelto en parte (sin commitear) | `docs/sdd/decisions/ADR-0026-carga-de-pantallas-bajo-demanda.md:3` y `docs/sdd/decisions/README.md:32` dicen «Aceptada»; queda F8 |
+| F1 a F4, F6, F7 | Resueltos (iteración 2) | Ver la review de la iteración 2 |
+| F5 | Abierto: prueba manual del usuario | Sigue sin constar en `verify-report.md`; está en `specs/017-frontend-polish/backlog.md` |
+| F8 | Resuelto | `docs/sdd/decisions/ADR-0026-carga-de-pantallas-bajo-demanda.md:3-4` (commiteado en `2836d0d`): «Aceptada · 2026-10-18» y «aceptada por el usuario en el gate de `review`» |
+| F9 | Resuelto | `frontend/src/features/feedback/components/FeedbackForm.test.tsx:1-51`: dos tests de comportamiento; el envío correcto y el error del servidor quedan en el backlog del test-author |
+| F10 | Resuelto | `frontend/src/app/router.tsx:40-42`, `:156-196` |
 
 ### Hallazgos de esta iteración
 | # | Severidad | Archivo:línea | Hallazgo | Responsable |
 |---|---|---|---|---|
-| F5 | MENOR | `specs/017-frontend-polish/plan.md` (riesgo 4, sección 6) | Sigue sin constar la prueba manual en `npm run dev` de la transición login ↔ registro (`AnimatePresence mode="wait"` + `Suspense`) ni la de «Recargar» tras un fallo real de descarga de un chunk (AC-003.2). Ningún agente puede hacerla: le toca al usuario antes del cierre. | implementer |
-| F8 | NIT | `docs/sdd/decisions/ADR-0026-carga-de-pantallas-bajo-demanda.md:4` | El estado pasa a «Aceptada», pero la línea «Decidido por» sigue diciendo «el `planner`, pendiente de revisión en el gate de `review`». Debería decir quién lo aceptó y cuándo (p. ej. «propuesto por el `planner`; aceptado por el usuario en el gate de `review`, 2026-10-18»). Además, el cambio sigue sin commitear. | planner |
-| F9 | NIT | `frontend/src/app/sourceCleanup017.test.ts:136-144` | La guarda de feedback solo comprueba que `FeedbackForm.tsx` importa `components/ui/form` y `components/ui/button`: no ejecuta el formulario. Es correcto según la letra de AC-N002.3, porque el feedback no tiene tests existentes. Si se quiere cubrirlo de verdad, hace falta un test de comportamiento de `FeedbackForm` (ya está en el backlog del test-author). | test-author |
-| F10 | NIT | `frontend/src/app/router.tsx:149-195` | `className="min-h-[50vh]"` se repite seis veces. Una constante (p. ej. `const IN_LAYOUT = "min-h-[50vh]"`) evitaría que una ruta nueva se olvide de ella. Tailwind detecta igual la clase si está escrita literal en la constante. | implementer |
+| F5 | MENOR | `specs/017-frontend-polish/plan.md` (riesgo 4, sección 6) | Sigue sin constar la prueba manual en `npm run dev` de la transición login ↔ registro (`AnimatePresence mode="wait"` + `Suspense`) y de «Recargar» tras un fallo real de descarga de un chunk (AC-003.2). Le toca al usuario antes del cierre. | implementer |
+| F11 | NIT | `frontend/src/features/feedback/components/FeedbackForm.test.tsx:42-44` | El error de categoría se comprueba con `findAllByText("Elige una categoría").length > 1`, porque el placeholder del `Select` (`FeedbackForm.tsx:63`) y el mensaje de zod (`schemas.ts:10`) tienen el mismo texto. Funciona, pero es frágil: si Radix dejara de pintar el placeholder o lo duplicara, el test cambiaría de sentido. Sería más preciso localizar el `FormMessage` del campo (p. ej. por su `id` `…-form-item-message` o con `within` del `FormItem`). | test-author |
 
 ## 6. Decisión
-APPROVED: no hay hallazgos BLOQUEANTES ni MAYORES. Las correcciones de F1 a F7 están aplicadas sin regresiones: el snapshot de tests es idéntico, el implementer no tocó tests, y tests, lint y tipos pasan. Queda F5, una prueba manual que debe hacer el usuario antes del cierre, y tres NIT (F8 a F10) que se pueden diferir al backlog.
+APPROVED: no hay hallazgos BLOQUEANTES ni MAYORES. F8, F9 y F10 están resueltos sin regresiones: el snapshot de tests es idéntico, el implementer no tocó tests, y tests, lint y tipos pasan. Queda F5, una prueba manual que debe hacer el usuario antes del cierre, y un NIT (F11) que se puede diferir al backlog.
 
 ## Comentarios del usuario
 
