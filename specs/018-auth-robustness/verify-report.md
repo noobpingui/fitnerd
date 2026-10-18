@@ -1,14 +1,14 @@
 # Verify report 018 — Endurecer /register y /login: 400 ante entradas inválidas, validación del registro y mensajes en español
 
-- **Modo:** full (etapa verify)
-- **Fecha:** 2026-10-18T20:09:19.010Z · **Rama:** `fix/018-auth-robustness` @ `220f752` · **Base:** `main`
-- **Resultado:** FAIL
+- **Modo:** full (etapa verify, repetición tras fix de lint)
+- **Fecha:** 2026-10-18T20:11:59.909Z · **Rama:** `fix/018-auth-robustness` @ `94b1e8f` · **Base:** `main`
+- **Resultado:** PASS
 
 ## 1. Comandos ejecutados
 | Ámbito | Comando (cwd) | Resultado | Resumen de la salida |
 |---|---|---|---|
-| backend | `".venv/Scripts/python.exe" -m pytest -q` (`backend`) | ✅ | 997 passed in 67.44s (suite completa, nuevos y existentes) |
-| backend | ratchet de ruff (`node scripts/lint-ratchet.mjs backend`, raíz del repo) | ❌ | 5 violaciones E501 nuevas respecto a main; el resto de archivos del ámbito sin violaciones nuevas (EXIT 1) |
+| backend | `".venv/Scripts/python.exe" -m pytest -q` (`backend`) | ✅ | 997 passed in 68.64s (suite completa, nuevos y existentes) |
+| backend | ratchet de ruff (`node scripts/lint-ratchet.mjs backend`, raíz del repo) | ✅ | sin violaciones nuevas respecto a main (`lint-ratchet [backend]: sin violaciones nuevas respecto a main. OK`, EXIT 0) |
 
 Typecheck y build no aplican al ámbito `backend` (`null` en la config).
 
@@ -26,7 +26,7 @@ Typecheck y build no aplican al ámbito `backend` (`null` en la config).
 | REQ-009 | AC-009.1, AC-009.2 | T-010, T-019, T-034 | `test_password_reset_service.py` | ✅ |
 | NFR-001 | AC-N001.1 | T-023, T-033 | `test_auth_routes.py` | ✅ |
 
-- AC sin test: — (los 44 IDs `AC-…` de `spec.md` aparecen en al menos un marcador `SDD: 018`)
+- AC sin test: — (todos los IDs `AC-…` de `spec.md` aparecen en al menos un marcador `SDD: 018`; 80 marcadores en `backend/tests`)
 - REQ sin tarea: — (los 9 REQ y el NFR-001 aparecen en `tasks.md`)
 - Tareas sin marcar `[x]`: — (21 de 21 marcadas)
 - `skip`, `xfail`, `.only` o equivalentes nuevos en el diff: — (ninguno en `git diff main -- backend`)
@@ -36,6 +36,4 @@ Typecheck y build no aplican al ámbito `backend` (`null` en la config).
 - Ninguno. Todos los AC son de backend y se comprueban con tests automáticos.
 
 ## 4. Fallos (si los hay)
-| # | Qué falló | Salida relevante (recortada) | Responsable probable (test-author · implementer · entorno) |
-|---|---|---|---|
-| 1 | Ratchet de ruff: 5 violaciones E501 nuevas (líneas de más de 100 caracteres) en archivos de test | `NUEVO backend/tests/test_routes/test_auth_routes.py E501 +3: L769 (107 > 100), L785 (116 > 100), L955 (105 > 100)`; `NUEVO backend/tests/test_services/test_auth_service.py E501 +2: L464 (107 > 100), L473 (116 > 100)`; `lint-ratchet [backend]: 5 violación(es) nueva(s) respecto a main. FAIL` | test-author |
+Ninguno. El fallo anterior (5 E501 nuevos en tests, responsable test-author) queda resuelto: el ratchet de ruff no reporta violaciones nuevas y la suite sigue en verde.

@@ -37,3 +37,10 @@
 
 ## verify · verifier
 - [ ] El state.json y tasks.md dicen 45 AC, pero spec.md tiene 44 IDs únicos; revisar el recuento (sin impacto en el resultado).
+
+## review · reviewer
+- [ ] MENOR (planner): `frontend/src/features/auth/components/LoginForm.test.tsx` sigue simulando «Wrong Credentials», un texto que el servidor ya no devuelve; pasarlo al mensaje nuevo.
+- [ ] MENOR (planner): el mensaje por defecto de `ConflictError` en `backend/exceptions/custom_exceptions.py:8` sigue en inglés («Email already registered»), y el de `AuthenticationError` también; traducirlos o quitar el valor por defecto.
+- [ ] NIT (test-author): en `backend/tests/test_services/test_auth_service.py` hay dos marcadores `SDD:` que apuntan a AC poco relacionados: :573 (AC-002.1) y :528 (AC-001.3).
+- [ ] NIT (test-author): en `backend/tests/test_services/test_auth_service.py:134`, `timedelta` se importa dentro de la función; moverlo a la cabecera.
+- [ ] NIT (planner): `auth_service.py:22` importa `utc_now` de `profile_service`, y hay otra copia igual en `password_reset_service.py`; dejar una sola en un módulo de reloj.

@@ -9,7 +9,7 @@
   "branch": "fix/018-auth-robustness",
   "base_branch": "main",
   "created_at": "2026-10-18T19:37:18.535Z",
-  "stage": "implement",
+  "stage": "docs",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -28,9 +28,18 @@
       "at": "2026-10-18T20:11:49.507Z",
       "note": "auto (gate_mode=flow): corrección de lint en tests, sin red check"
     },
-    "implement": null,
-    "verify": null,
-    "review": null,
+    "implement": {
+      "at": "2026-10-18T20:11:53.785Z",
+      "note": "auto (gate_mode=flow): sin cambios de producción"
+    },
+    "verify": {
+      "at": "2026-10-18T20:13:45.015Z",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    "review": {
+      "at": "2026-10-18T20:43:25.257Z",
+      "note": "Aprobado"
+    },
     "docs": null,
     "close": null
   },
@@ -38,7 +47,7 @@
     "spec": "ac87060",
     "plan": "653caa9",
     "tasks": "e441c7d",
-    "tests": "13bd21a",
+    "tests": "94b1e8f",
     "implement": "220f752"
   },
   "iterations": {
@@ -52,12 +61,12 @@
     "at": "2026-10-18T20:06:44.419Z"
   },
   "verify": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-18T20:13:36.659Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-10-18T20:16:14.407Z"
   },
   "tests_snapshot": {
     "at": "2026-10-18T20:11:49.354Z",
@@ -293,6 +302,72 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): corrección de lint en tests, sin red check"
+    },
+    {
+      "at": "2026-10-18T20:11:49.826Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 94b1e8f"
+    },
+    {
+      "at": "2026-10-18T20:11:53.678Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "Sin cambios de producción: el fallo era de lint en tests"
+    },
+    {
+      "at": "2026-10-18T20:11:53.785Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): sin cambios de producción"
+    },
+    {
+      "at": "2026-10-18T20:11:53.982Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verify full (repetición tras fix de lint)"
+    },
+    {
+      "at": "2026-10-18T20:13:36.659Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify full (repetición tras fix de lint): suite backend 997 passed; ratchet ruff sin violaciones nuevas; trazabilidad OK, sin skip nuevos, tareas 21/21"
+    },
+    {
+      "at": "2026-10-18T20:13:44.910Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "PASS: 997 passed, ratchet limpio, 44 AC trazados"
+    },
+    {
+      "at": "2026-10-18T20:13:45.015Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-18T20:13:45.222Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review independiente"
+    },
+    {
+      "at": "2026-10-18T20:16:14.407Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-18T20:16:14.507Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED: 0 bloqueantes, 0 mayores, 2 menores, 3 NIT"
+    },
+    {
+      "at": "2026-10-18T20:43:25.257Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Aprobado"
     }
   ]
 }
