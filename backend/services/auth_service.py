@@ -13,6 +13,12 @@ from services.credential_rules import (
     validate_email,
     validate_new_password,
 )
+from services.auth_input_rules import (
+    require_json_object,
+    validate_first_name,
+    validate_last_name,
+)
+from services.date_of_birth_rules import parse_date_of_birth
 from services.profile_service import utc_now
 
 WRONG_CREDENTIALS_MESSAGE = "Correo o contraseña incorrectos"
@@ -36,25 +42,36 @@ class AuthService():
         self.unit_of_work = unit_of_work
         self.google_client_id = google_client_id
 
-    def register_from_body(self, _body: object) -> str:
+    def register_from_body(self, body: object) -> str:
         """Comprueba que `body` es un objeto JSON y delega en `register` con sus campos."""
-        raise NotImplementedError("not implemented")
+        data = require_json_object(body)
+        return self.register(
+            data.get("email"),
+            data.get("password"),
+            data.get("first_name"),
+            data.get("last_name"),
+            data.get("date_of_birth"),
+        )
 
-    def login_from_body(self, _body: object) -> str:
+    def login_from_body(self, body: object) -> str:
         """Comprueba que `body` es un objeto JSON y delega en `login` con `email` y `password`."""
-        raise NotImplementedError("not implemented")
+        data = require_json_object(body)
+        return self.login(data.get("email"), data.get("password"))
 
     #To create/register a new user
     def register(self, email, password, first_name, last_name, date_of_birth):
-        # Primero el correo y después la contraseña; ambos antes de consultar duplicados.
+        # Orden de validación: correo, contraseña, nombre, apellido, fecha y, al final, duplicado.
         email = validate_email(email)
         validate_new_password(password)
+        first_name = validate_first_name(first_name)
+        last_name = validate_last_name(last_name)
+        date_of_birth = parse_date_of_birth(date_of_birth, self.clock().date())
 
         try:
             #Validation to avoid duplicated users
             existing_user = self.user_repository.get_by_email(email)
             if existing_user:
-                raise ConflictError("Email already registered")
+                raise ConflictError(EMAIL_TAKEN_MESSAGE)
 
             #Hashing the password before passing it to the repository to save it to the DB.
             hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
@@ -97,21 +114,21 @@ class AuthService():
             or not isinstance(password, str)
             or exceeds_bcrypt_limit(password)
         ):
-            raise AuthenticationError("Wrong Credentials")
+            raise AuthenticationError(WRONG_CREDENTIALS_MESSAGE)
 
         user = self.user_repository.get_by_email(normalize_email(email))
         if not user:
-            raise AuthenticationError("Wrong Credentials")
+            raise AuthenticationError(WRONG_CREDENTIALS_MESSAGE)
 
         #Una cuenta creada via Google no tiene password_hash (ver models/user.py) -
         #si alguien intenta entrar con password contra esa cuenta, la tratamos
         #igual que credenciales incorrectas (mismo mensaje/status que cualquier
         #otro login fallido, no revelamos que "esta cuenta es solo-Google").
         if not user.password_hash:
-            raise AuthenticationError("Wrong Credentials")
+            raise AuthenticationError(WRONG_CREDENTIALS_MESSAGE)
 
         if not bcrypt.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8')):
-            raise AuthenticationError("Wrong Credentials")
+            raise AuthenticationError(WRONG_CREDENTIALS_MESSAGE)
 
         #The payload for the token with JWT
         payload = {

@@ -31,3 +31,6 @@
 ## tests (red check) · verifier
 - [ ] Revisar el resto de tests de la batería de AC-N001.1 cuando se corrijan los casos anteriores (el `raw-malformed` en inglés del framework también tiene que pasar a «La petición no es válida»).
 - [ ] Escribir el verify-report de la etapa verify con la trazabilidad completa (AC-N001.1 y los marcadores de AC-006.x).
+
+## implement · implementer
+- [ ] Acortar las 5 líneas E501 de los tests (`test_auth_routes.py` L769, L785, L955; `test_auth_service.py` L464, L473) para que el ratchet quede en verde; requiere al test-author.

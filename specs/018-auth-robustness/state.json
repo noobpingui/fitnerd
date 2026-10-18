@@ -9,7 +9,7 @@
   "branch": "fix/018-auth-robustness",
   "base_branch": "main",
   "created_at": "2026-10-18T19:37:18.535Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -28,7 +28,10 @@
       "at": "2026-10-18T20:06:54.454Z",
       "note": "auto (gate_mode=flow): red check PASS, 170 rojos legítimos"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-18T20:09:14.105Z",
+      "note": "auto (gate_mode=flow): pytest 997 passed"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -37,7 +40,8 @@
   "commits": {
     "spec": "ac87060",
     "plan": "653caa9",
-    "tasks": "e441c7d"
+    "tasks": "e441c7d",
+    "tests": "13bd21a"
   },
   "iterations": {
     "tests": 1,
@@ -219,6 +223,36 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS, 170 rojos legítimos"
+    },
+    {
+      "at": "2026-10-18T20:06:54.830Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 13bd21a"
+    },
+    {
+      "at": "2026-10-18T20:06:54.939Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Red check en 2 iteraciones: la 1ª con 18 casos laxos (AC-006.x y batería AC-N001.1), corregidos"
+    },
+    {
+      "at": "2026-10-18T20:06:55.129Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar tareas impl de tasks.md"
+    },
+    {
+      "at": "2026-10-18T20:09:13.990Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-030..T-034 hechas; pytest 997 passed; 5 E501 en tests"
+    },
+    {
+      "at": "2026-10-18T20:09:14.105Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): pytest 997 passed"
     }
   ]
 }

@@ -1,5 +1,3 @@
-from datetime import date
-
 from flask import Blueprint, request, jsonify, g, current_app
 
 from extensions import db, jwt_manager, email_sender
@@ -38,31 +36,14 @@ def _build_password_reset_service():
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
-    data = request.get_json()
-
-    auth_service = _build_auth_service()
-
-    token = auth_service.register(
-        email=data.get("email"),
-        password=data.get("password"),
-        first_name=data.get("first_name"),
-        last_name=data.get("last_name"),
-        date_of_birth=date.fromisoformat(data.get("date_of_birth")), #Format: "YYYY-MM-DD"
-    )
+    token = _build_auth_service().register_from_body(request.get_json(silent=True))
 
     return jsonify({"token": token}), 201
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
 
-    data = request.get_json()
-
-    auth_service = _build_auth_service()
-
-    token = auth_service.login(
-        email=data.get("email"),
-        password=data.get("password")
-    )
+    token = _build_auth_service().login_from_body(request.get_json(silent=True))
 
     return jsonify({"token": token}), 200
 
