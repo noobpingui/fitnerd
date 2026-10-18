@@ -1,6 +1,6 @@
 # ADR-0027: Garantía del correo canónico en la base con restricciones CHECK declaradas en el modelo
 
-- **Estado:** Propuesta · 2026-10-18 (feature `019-auth-email-integrity`)
+- **Estado:** Aceptada · 2026-10-18 (feature `019-auth-email-integrity`)
 - **Decidido por:** el planner lo propone; lo acepta o rechaza el usuario en el gate de `review` (modo `flow`).
 
 ## Contexto
