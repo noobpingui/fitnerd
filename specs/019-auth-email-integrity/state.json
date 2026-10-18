@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "feature": "019-auth-email-integrity",
+  "title": "Garantizar la integridad de los correos guardados: recorte de espacios y restricción en la base",
+  "type": "fix",
+  "scope": [
+    "backend"
+  ],
+  "branch": "fix/019-auth-email-integrity",
+  "base_branch": "main",
+  "created_at": "2026-10-18T21:00:43.404Z",
+  "stage": "plan",
+  "status": "in_progress",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-18T21:07:02.963Z",
+      "note": "Sí, apruebo la spec y el commit"
+    },
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
+    "verify": null,
+    "review": null,
+    "docs": null,
+    "close": null
+  },
+  "commits": {},
+  "iterations": {
+    "tests": 0,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": null,
+    "at": null
+  },
+  "verify": {
+    "result": null,
+    "at": null
+  },
+  "review": {
+    "verdict": null,
+    "at": null
+  },
+  "tests_snapshot": null,
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-18T21:00:43.404Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama fix/019-auth-email-integrity desde main"
+    },
+    {
+      "at": "2026-10-18T21:01:11.766Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Redactar spec.md de 019-auth-email-integrity"
+    },
+    {
+      "at": "2026-10-18T21:03:27.517Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "Q1-Q3 de spec.md pendientes de respuesta del usuario"
+    },
+    {
+      "at": "2026-10-18T21:04:53.659Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "Spec 019: 6 REQ, 23 AC; Q1-Q3 resueltas"
+    },
+    {
+      "at": "2026-10-18T21:07:02.963Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Sí, apruebo la spec y el commit"
+    }
+  ]
+}
