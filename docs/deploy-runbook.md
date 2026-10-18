@@ -215,6 +215,6 @@ Merge del PR y paso 6.
 | 2026-10-14 | 012, retirada del catálogo | #6, `ebb3003` | `f2c4e6a8b0d1`, aplicada después del CD (5 tablas borradas) | `prod-2026-10-14.dump` |
 | 2026-10-15 | 013, pulido de 006–010 | #7, `0596d9e` | — | — |
 | 2026-10-15 | 014, endurecimiento de la autenticación | #13, `8f21df4` | `a7d3f9c1e5b2`, aplicada antes del merge (sin cambios de datos: 0 correos con mayúsculas) | `prod-2026-10-15.dump` |
-| pendiente | 019, correo canónico con restricción CHECK | pendiente | `e5b7d9f1a3c6`, antes del merge (pendiente) | pendiente |
+| 2026-10-18 | 019, correo canónico con restricción CHECK | #22, `650fac9` | `e5b7d9f1a3c6`, aplicada antes del merge (sin cambios de datos: 0 correos no canónicos, 0 conflictos; solo creó las dos CHECK) | `prod-2026-10-18.dump` |
 
 Añade una fila en cada despliegue.

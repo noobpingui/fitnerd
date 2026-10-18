@@ -142,7 +142,7 @@ Feature: [specs/018-auth-robustness/](../specs/018-auth-robustness/)
 
 Feature: [specs/019-auth-email-integrity/](../specs/019-auth-email-integrity/)
 
-- [ ] ADR-0027 y su fila en `docs/sdd/decisions/README.md` siguen en «Propuesta»: el hook impidió pasarlas a «Aceptada» en close. Hacerlo en una rama `chore/…` tras el merge.
+- [x] (chore/019-post-deploy-docs) ADR-0027 y su fila en `docs/sdd/decisions/README.md` siguen en «Propuesta»: el hook impidió pasarlas a «Aceptada» en close. Hacerlo en una rama `chore/…` tras el merge.
 - [ ] Riesgo aceptado (Q2): un correo con letras no ASCII o con espacios Unicode que `str.strip()` quita y `[[:space:]]` puede no cubrir podría ser rechazado por la CHECK y dar 500 en el registro; valorar rechazarlos en `validate_email`.
 - [ ] Simplificar `UserRepository.get_by_email` a una igualdad exacta (con la CHECK activa equivale y usa el índice de `email`).
 - [ ] Revisar si los tests de la 014 de «cuentas antiguas con mayúsculas» siguen teniendo sentido una vez aplicada la 019 en todos los entornos, junto con el `lower()` de `get_by_email`.
@@ -151,5 +151,5 @@ Feature: [specs/019-auth-email-integrity/](../specs/019-auth-email-integrity/)
 - [ ] NIT: no hay test de que se recorten tabuladores ni saltos de línea con `[[:space:]]`.
 - [ ] NIT: «INTEGRACION» sin tilde en `test_canonical_email_routes.py:1`; el plan y `state.json` dicen «23 AC» y la spec tiene 21.
 - [ ] Definir qué rol pasa las ADR a «Aceptada» en la etapa close (el hook role-guard bloquea al planner fuera de plan).
-- [ ] Completar la fila «pendiente» del historial del runbook (PR, fecha, backup) tras el despliegue.
+- [x] (chore/019-post-deploy-docs) Completar la fila «pendiente» del historial del runbook (PR, fecha, backup) tras el despliegue.
 - [ ] `tests/fakes.py` y otros tests con CRLF mezclado: ya anotado en la 018.
