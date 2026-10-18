@@ -86,6 +86,13 @@ describe("esquema del perfil - reglas compartidas heredadas", () => {
     expect(result.height).toBe("Entre 3 y 8 ft")
   })
 
+  // SDD: 017 REQ-001 AC-001.5
+  it("la altura de 5 ft con 12 in da 'Entre 0 y 11 in'", () => {
+    const result = messages({ heightUnit: "ft", heightFt: "5", heightIn: "12" })
+    expect(result.height).toBe("Entre 0 y 11 in")
+    expect(isValid({ heightUnit: "ft", heightFt: "5", heightIn: "12" })).toBe(false)
+  })
+
   // SDD: 015 REQ-004 AC-004.2
   it("el peso fuera de rango da 'Entre 30 y 300 kg'", () => {
     expect(messages({ weight: "500" }).weight).toBe("Entre 30 y 300 kg")

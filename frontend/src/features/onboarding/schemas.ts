@@ -53,6 +53,22 @@ export function weightRangeMessage(unit: WeightUnit): string {
   return `Entre ${min} y ${max} ${unit}`
 }
 
+export const INCHES_RANGE_MESSAGE = `Entre ${LIMITS.heightIn.min} y ${LIMITS.heightIn.max} in`
+
+// Pies enteros entre LIMITS.heightFt.min y max.
+export function isHeightFeetValid(
+  _a: Pick<OnboardingAnswers, "heightFt">
+): boolean {
+  throw new Error("not implemented")
+}
+
+// null si la altura es válida; si no, el mensaje que corresponde.
+export function heightMessage(
+  _a: Pick<OnboardingAnswers, "heightUnit" | "heightCm" | "heightFt" | "heightIn">
+): string | null {
+  throw new Error("not implemented")
+}
+
 // Un texto vacío no es válido: todas las preguntas son obligatorias.
 export function inRange(
   value: string,

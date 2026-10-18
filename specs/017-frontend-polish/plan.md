@@ -355,3 +355,7 @@ CI. No debilita ninguna aserción.
 
 - [ADR-0026](../../docs/sdd/decisions/ADR-0026-carga-de-pantallas-bajo-demanda.md): carga de pantallas bajo demanda por
   ruta con `React.lazy`, `RouteSuspense` propio y sin `manualChunks` ni cambio del umbral de Vite (Propuesta).
+
+## Comentarios del usuario
+
+- Red check, iteración 3 (2026-10-18): el verifier señala dos tests nuevos que pasan sin implementación: AC-001.5 («con pies no válidos manda "Entre 3 y 8 ft"», `onboarding/schemas.test.ts`) y AC-N002.4 («la configuración de lint no desactiva la regla», `sourceCleanup017.test.ts`). Ante las opciones (a) aceptarlos como guardas de regresión, (b) otro intento del test-author o (c) parar, el usuario respondió: «a».

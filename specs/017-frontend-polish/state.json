@@ -9,7 +9,7 @@
   "branch": "feat/017-frontend-polish",
   "base_branch": "main",
   "created_at": "2026-10-18T04:39:28.778Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -24,7 +24,10 @@
       "at": "2026-10-18T05:00:57.624Z",
       "note": "auto (gate_mode=flow): 32 tareas (4 scaffold, 18 test, 8 impl, 2 config)"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-18T05:43:09.956Z",
+      "note": "auto (gate_mode=flow): red PASS, 27 rojos legitimos, 213 tests"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -33,17 +36,18 @@
   },
   "commits": {
     "spec": "e9c78fe",
-    "plan": "bd8af4f"
+    "plan": "bd8af4f",
+    "tasks": "a046390"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 2,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-18T05:42:58.454Z"
   },
   "verify": {
     "result": null,
@@ -53,7 +57,24 @@
     "verdict": null,
     "at": null
   },
-  "tests_snapshot": null,
+  "tests_snapshot": {
+    "at": "2026-10-18T05:43:09.806Z",
+    "reason": "tests aprobados tras red check PASS",
+    "sha256": {
+      "frontend/src/app/RouteSuspense.test.tsx": "948b0408ac5a6c875023e39ba14f69e0df863fcaf5e76f8448f956301f3e925b",
+      "frontend/src/app/lazyNamed.test.ts": "7bd804f2bf29c0a953763d03d2df488348b6946b72582e280e4e31864ecfa50b",
+      "frontend/src/app/lazyRoutes.test.tsx": "7380aa9fd7771a28d104bdaefe1b33aaf2946c5683762013ec9356fe795d6a3b",
+      "frontend/src/app/sourceCleanup017.test.ts": "9378a437caf3dd52df4f6452115bf4695fed8a9fb507a0141457f992cc3ae48c",
+      "frontend/src/features/auth/components/ForgotPasswordForm.test.tsx": "cb3ea387b95179a54e907a7ae2ce4feb90eb046fe45473d27d4994e6e2ac88eb",
+      "frontend/src/features/auth/components/LoginForm.test.tsx": "f9bbae56dfc0dd76dabaaee32cd5f685481225f6a799cff7bb0e496ef0492f71",
+      "frontend/src/features/onboarding/pages/OnboardingPage.test.tsx": "5224b650a0e7b0c3e625568dd6b392bbb989ab4c87dd8e519a8eb7f7a8740b67",
+      "frontend/src/features/onboarding/schemas.test.ts": "c609a3f39540d3930822b65d099d191b728dc991f161fccbf00bd21aa3925ff7",
+      "frontend/src/features/profile/pages/ProfilePage.test.tsx": "fd80826ad1e2c69cbd29f0704b6c4b1d0fed67d2b841e2495ab5698f3228797a",
+      "frontend/src/features/profile/schemas.test.ts": "65b00031567b564608e455238b781602089a9d7d40b55f78306cc9f6593d999f",
+      "frontend/src/lib/inRange.test.ts": "67b99c3e154d8d9aa59bd8cb5c28aa7e4850b1bb474be0b5f4e8494b92444614",
+      "frontend/src/test/setup.ts": "f721fbe5485078d35c84d7f5e848490b9704fbc0c92b1c63834799f59e3b150c"
+    }
+  },
   "bypass": false,
   "history": [
     {
@@ -139,6 +160,108 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): 32 tareas (4 scaffold, 18 test, 8 impl, 2 config)"
+    },
+    {
+      "at": "2026-10-18T05:00:57.855Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: a046390"
+    },
+    {
+      "at": "2026-10-18T05:00:58.027Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (implementer)"
+    },
+    {
+      "at": "2026-10-18T05:01:44.493Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-18T05:06:51.655Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red"
+    },
+    {
+      "at": "2026-10-18T05:10:01.253Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: 22 de 212 tests fallan por comportamiento ausente (legítimo). 19 tests nuevos pasan sin implementación: lazyRoutes (13), OnboardingPage AC-001.6, ProfilePage AC-001.4 (4) y vite AC-N005.1. Bloquea PASS hasta que test-author los haga rojos o se justifique en plan.md."
+    },
+    {
+      "at": "2026-10-18T05:10:14.384Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red check FAIL: 19 tests nuevos pasan sin implementacion (lazyRoutes, AC-001.4, AC-001.6, AC-N005.1) · tests 1/3"
+    },
+    {
+      "at": "2026-10-18T05:11:04.634Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red (iteracion 2)"
+    },
+    {
+      "at": "2026-10-18T05:15:26.488Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Iteracion 2: 23 de 213 fallan por comportamiento ausente (legitimo) y los scaffolds cumplen B5.6. Bloquea PASS: AC-001.4 (4 casos de ProfilePage) pasa sin implementacion y no esta justificado en plan.md seccion 5. Los demas tests en verde estan justificados."
+    },
+    {
+      "at": "2026-10-18T05:15:41.977Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red check FAIL it.2: 4 casos de AC-001.4 pasan sin implementacion y no estan justificados en plan.md · tests 2/3"
+    },
+    {
+      "at": "2026-10-18T05:16:08.646Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red (iteracion 3)"
+    },
+    {
+      "at": "2026-10-18T05:20:04.297Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Iteracion 3: 27 de 213 fallan por comportamiento ausente (legitimo). Quedan 2 tests nuevos verdes sin justificar en plan.md seccion 5: AC-001.5 (pies no validos manda Entre 3 y 8 ft) y AC-N002.4 (configuracion de lint no desactiva la regla)."
+    },
+    {
+      "at": "2026-10-18T05:20:12.812Z",
+      "stage": "tests",
+      "event": "needs_input",
+      "note": "red check FAIL it.3: 2 guardas verdes sin justificar (AC-001.5 schemas onboarding, AC-N002.4 config lint); limite de iteraciones"
+    },
+    {
+      "at": "2026-10-18T05:39:56.765Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red (usuario acepta AC-001.5 y AC-N002.4 como guardas)"
+    },
+    {
+      "at": "2026-10-18T05:42:58.454Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red PASS iteracion 3: 27 de 213 fallan por comportamiento ausente (legitimo). 27 verdes nuevos: 25 justificados en plan.md seccion 5 y 2 aceptados por el usuario (AC-001.5 pies no validos, AC-N002.4 config lint). Sin errores de sintaxis, config, fixture ni imports fuera del plan. Scaffolds OK."
+    },
+    {
+      "at": "2026-10-18T05:43:09.708Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red PASS: 27 rojos legitimos, 2 guardas aceptadas por el usuario"
+    },
+    {
+      "at": "2026-10-18T05:43:09.806Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "12 archivo(s) de test: tests aprobados tras red check PASS"
+    },
+    {
+      "at": "2026-10-18T05:43:09.956Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red PASS, 27 rojos legitimos, 213 tests"
     }
   ]
 }

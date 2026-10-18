@@ -141,11 +141,10 @@ describe("esquema compartido - altura", () => {
   })
 
   // SDD: 015 REQ-003 AC-003.4
-  it("rechaza 2 ft, 9 ft y 5 ft con 12 in con 'Entre 3 y 8 ft'", () => {
+  it("rechaza 2 ft y 9 ft con 'Entre 3 y 8 ft'", () => {
     for (const [heightFt, heightIn] of [
       ["2", ""],
       ["9", ""],
-      ["5", "12"],
     ]) {
       const ft = { heightUnit: "ft", heightFt, heightIn }
       expect(messages(ft).height).toBe("Entre 3 y 8 ft")
@@ -154,10 +153,31 @@ describe("esquema compartido - altura", () => {
   })
 
   // SDD: 015 REQ-003 AC-003.5
-  it("rechaza decimales en pies o en pulgadas con 'Entre 3 y 8 ft'", () => {
+  it("rechaza decimales en pies con 'Entre 3 y 8 ft'", () => {
+    const ft = { heightUnit: "ft", heightFt: "5.5", heightIn: "" }
+    expect(messages(ft).height).toBe("Entre 3 y 8 ft")
+    expect(isValid(ft)).toBe(false)
+  })
+
+  // SDD: 017 REQ-001 AC-001.5 · 015 REQ-003 AC-003.4
+  it("5 ft con 12 in da 'Entre 0 y 11 in' (pies válidos, pulgadas no)", () => {
+    const ft = { heightUnit: "ft", heightFt: "5", heightIn: "12" }
+    expect(messages(ft).height).toBe("Entre 0 y 11 in")
+    expect(isValid(ft)).toBe(false)
+  })
+
+  // SDD: 017 REQ-001 AC-001.5 · 015 REQ-003 AC-003.5
+  it("5 ft con 2.5 in da 'Entre 0 y 11 in' (pies válidos, pulgadas no)", () => {
+    const ft = { heightUnit: "ft", heightFt: "5", heightIn: "2.5" }
+    expect(messages(ft).height).toBe("Entre 0 y 11 in")
+    expect(isValid(ft)).toBe(false)
+  })
+
+  // SDD: 017 REQ-001 AC-001.5
+  it("con pies no válidos manda 'Entre 3 y 8 ft' aunque las pulgadas también fallen", () => {
     for (const [heightFt, heightIn] of [
+      ["9", "12"],
       ["5.5", ""],
-      ["5", "2.5"],
     ]) {
       const ft = { heightUnit: "ft", heightFt, heightIn }
       expect(messages(ft).height).toBe("Entre 3 y 8 ft")

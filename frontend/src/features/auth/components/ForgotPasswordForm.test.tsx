@@ -35,7 +35,7 @@ describe("ForgotPasswordForm", () => {
   })
 
   // SDD: REQ-005 AC-005.3
-  it("muestra Email inválido y no envia ninguna peticion con un correo mal formado", async () => {
+  it("muestra Email inválido y no envía ninguna petición con un correo mal formado", async () => {
     const fakeFetch = stubFetchWith(200, { message: "ok" })
     renderForm()
 
@@ -46,7 +46,7 @@ describe("ForgotPasswordForm", () => {
   })
 
   // SDD: REQ-010 AC-010.1
-  it("muestra el mensaje de exito cuando el backend responde 200", async () => {
+  it("muestra el mensaje de éxito cuando el backend responde 200", async () => {
     stubFetchWith(200, { message: "mensaje corto del backend" })
     renderForm()
 
@@ -60,7 +60,7 @@ describe("ForgotPasswordForm", () => {
   })
 
   // SDD: REQ-010 AC-010.2
-  it("muestra el error del backend cuando el limite por correo da 429", async () => {
+  it("muestra el error del backend cuando el límite por correo da 429", async () => {
     stubFetchWith(429, {
       error:
         "Ya se envió un enlace hace menos de 2 minutos. Inténtalo de nuevo más tarde.",
@@ -77,7 +77,7 @@ describe("ForgotPasswordForm", () => {
   })
 
   // SDD: REQ-010 AC-010.2
-  it("muestra el error del backend cuando el limite por IP da 429", async () => {
+  it("muestra el error del backend cuando el límite por IP da 429", async () => {
     stubFetchWith(429, {
       error: "Has hecho demasiadas solicitudes. Inténtalo de nuevo más tarde.",
     })
@@ -93,7 +93,7 @@ describe("ForgotPasswordForm", () => {
   })
 
   // SDD: REQ-010 AC-010.2
-  it("muestra el error del backend cuando el envio del correo falla con 503", async () => {
+  it("muestra el error del backend cuando el envío del correo falla con 503", async () => {
     stubFetchWith(503, {
       error: "No se pudo enviar el correo. Inténtalo de nuevo más tarde.",
     })
@@ -109,7 +109,7 @@ describe("ForgotPasswordForm", () => {
   })
 
   // SDD: REQ-010 AC-010.3
-  it("muestra Enviando... y deshabilita el boton mientras la peticion esta en curso", async () => {
+  it("muestra Enviando... y deshabilita el botón mientras la petición está en curso", async () => {
     vi.stubGlobal("fetch", vi.fn().mockReturnValue(new Promise(() => {})))
     renderForm()
 

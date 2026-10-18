@@ -193,7 +193,7 @@ describe("OnboardingPage - pregunta de la fecha de nacimiento", () => {
     localStorage.clear()
   })
 
-  // SDD: REQ-009 AC-009.1
+  // SDD: REQ-009 AC-009.1 · 015 REQ-007 AC-007.5
   it("con fecha en la cuenta muestra la pregunta prerrellenada y 'Siguiente' habilitado", async () => {
     const user = userEvent.setup()
     getProfileMock.mockResolvedValue(makePendingResponse("1995-05-20"))
@@ -255,7 +255,7 @@ describe("OnboardingPage - pregunta de la fecha de nacimiento", () => {
     expect(screen.getByRole("button", { name: "Siguiente" })).toBeDisabled()
   })
 
-  // SDD: REQ-009 AC-009.4
+  // SDD: REQ-009 AC-009.4 · 015 REQ-007 AC-007.5
   it("una fecha prerrellenada de más de 100 años también muestra el aviso de rango", async () => {
     const user = userEvent.setup()
     getProfileMock.mockResolvedValue(makePendingResponse("1900-01-01"))
@@ -480,6 +480,20 @@ describe("OnboardingPage - reglas de validación (spec 015)", () => {
     }
   )
 
+  // SDD: 017 REQ-001 AC-001.6
+  it("5 ft con 12 in deja 'Siguiente' deshabilitado y no muestra ningún mensaje que empiece por 'Entre'", async () => {
+    const user = userEvent.setup()
+    renderOnboarding()
+    await toHeightStep(user)
+
+    await user.click(screen.getByRole("button", { name: "ft / in" }))
+    await user.type(screen.getByPlaceholderText("5"), "5")
+    await user.type(screen.getByPlaceholderText("9"), "12")
+
+    expect(nextButton()).toBeDisabled()
+    expect(screen.queryByText(/^Entre/)).not.toBeInTheDocument()
+  })
+
   // SDD: 015 REQ-003 AC-003.5
   it.each([
     ["5.5", ""],
@@ -651,28 +665,6 @@ describe("OnboardingPage - flujo del asistente (spec 015)", () => {
 
     expect(screen.getByRole("heading", { name: "¿Cuál es tu meta?" })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Comenzar" })).toBeEnabled()
-  })
-
-  // SDD: 015 REQ-007 AC-007.5
-  it("la fecha prerrellenada 1995-05-20 deja 'Siguiente' habilitado", async () => {
-    const user = userEvent.setup()
-    getProfileMock.mockResolvedValue(makePendingResponse("1995-05-20"))
-    renderOnboarding()
-    await toDateStep(user)
-
-    expect(dobField()).toHaveValue("1995-05-20")
-    expect(nextButton()).toBeEnabled()
-  })
-
-  // SDD: 015 REQ-007 AC-007.5
-  it("la fecha prerrellenada 1900-01-01 muestra el aviso de rango sin tocar el campo", async () => {
-    const user = userEvent.setup()
-    getProfileMock.mockResolvedValue(makePendingResponse("1900-01-01"))
-    renderOnboarding()
-    await toDateStep(user)
-
-    expect(screen.getByText(RANGE_MESSAGE)).toBeInTheDocument()
-    expect(nextButton()).toBeDisabled()
   })
 })
 

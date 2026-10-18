@@ -11,3 +11,19 @@
 ## tasks · task-breaker
 - [ ] Si el chunk de entrada sigue por encima de 500 kB tras T-039, el implementer no debe tocar `vite.config.ts`. Debe informar del desglose y el orquestador lo escala (riesgo recogido en el plan).
 - [ ] Anotar en el backlog, si hace falta, la separación del mensaje del error boundary entre fallo de descarga y error de render.
+
+## tests · test-author
+- [ ] Cuando se implemente el lazy loading, conviene repasar si `router.test.tsx` y `accountSwitch.test.tsx` necesitan algún ajuste. El `asyncUtilTimeout` de 3 s ya está en `setup.ts`.
+
+## tests · verifier (red)
+- [ ] Si se mantienen como guardas de regresión, los tests de lazyRoutes y de AC-N005.1 no prueban la carga diferida; conviene añadir una comprobación de que el chunk no se carga antes de navegar.
+- [ ] Los tests de NFR-003 y NFR-004 dependen de cambios de texto en los propios archivos de test; no son verificables como rojo y conviene anotarlo en el backlog de la feature.
+
+## tests · test-author (iteración 2)
+- [ ] Añadir AC-001.4 a la lista de guardas de regresión de plan.md sección 5 ("Rojo esperado").
+- [ ] Si la implementación cambia el orden de los tests de lazyRoutes.test.tsx, el test de "Cargando…" debe seguir siendo el primero (cache de React.lazy).
+
+## tests · verifier (red, iteración 3)
+- [ ] Añadir AC-001.5 (caso «pies no válidos manda Entre 3 y 8 ft») y AC-N002.4 (configuración de lint) a plan.md, sección 5, «Pasan ya en verde», para que el registro coincida con la aceptación del usuario.
+- [ ] Los tests de AC-002.2 a AC-002.4 (lazyRoutes) siguen verdes antes de la carga diferida y no prueban que el chunk no se descargue hasta navegar: añadir esa comprobación en verify o en tests.
+- [ ] En verify (full): medir el chunk de entrada con `npm run build` (AC-N005.1), comprobar lint sin only-export-components (AC-N002.1) y revisar a mano AC-002.1 y AC-003.1 si el usuario lo pide.
