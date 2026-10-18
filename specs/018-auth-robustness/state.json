@@ -9,7 +9,7 @@
   "branch": "fix/018-auth-robustness",
   "base_branch": "main",
   "created_at": "2026-10-18T19:37:18.535Z",
-  "stage": "verify",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,13 +25,10 @@
       "note": "auto (gate_mode=flow): 21 tareas, cobertura completa"
     },
     "tests": {
-      "at": "2026-10-18T20:06:54.454Z",
-      "note": "auto (gate_mode=flow): red check PASS, 170 rojos legítimos"
+      "at": "2026-10-18T20:11:49.507Z",
+      "note": "auto (gate_mode=flow): corrección de lint en tests, sin red check"
     },
-    "implement": {
-      "at": "2026-10-18T20:09:14.105Z",
-      "note": "auto (gate_mode=flow): pytest 997 passed"
-    },
+    "implement": null,
     "verify": null,
     "review": null,
     "docs": null,
@@ -41,10 +38,11 @@
     "spec": "ac87060",
     "plan": "653caa9",
     "tasks": "e441c7d",
-    "tests": "13bd21a"
+    "tests": "13bd21a",
+    "implement": "220f752"
   },
   "iterations": {
-    "tests": 1,
+    "tests": 2,
     "implement": 0,
     "review": 0
   },
@@ -62,13 +60,13 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-18T20:06:54.311Z",
-    "reason": "tests 018 tras red check PASS",
+    "at": "2026-10-18T20:11:49.354Z",
+    "reason": "Fix E501 en tests (iteración 2)",
     "sha256": {
       "backend/tests/fakes.py": "990bd9a6593cd4dd8e9605c15add0570dd73bcfac69c0132efbe11dc87f3e5d5",
-      "backend/tests/test_routes/test_auth_routes.py": "ea4a348288af9a3bf724ac38a2c6459be974731d4a77b44419656e3297626e52",
+      "backend/tests/test_routes/test_auth_routes.py": "7271cec19bd7aff584424ff5461adcbb0ea935b8a23aebe0adf95df58c6bcb97",
       "backend/tests/test_services/test_auth_input_rules.py": "90d6c1bfad2c82c9a98ca010517213b0484710ecd182be17f6ae44ec09aa39d7",
-      "backend/tests/test_services/test_auth_service.py": "5fd301f7495fd13e8818b09315bf517cc233b7e3ebb6026c9bedb0e3c419b11d",
+      "backend/tests/test_services/test_auth_service.py": "c11767fcac73bc54f34a7f9d5529582cd69b9fb76ec06d5ef987ef0f5451ef98",
       "backend/tests/test_services/test_password_reset_service.py": "59a0b0b7af8c35aa35c434ca9f720987b4829fda0f0d781418ead760ed2f6fb4"
     }
   },
@@ -253,6 +251,48 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): pytest 997 passed"
+    },
+    {
+      "at": "2026-10-18T20:09:14.401Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 220f752"
+    },
+    {
+      "at": "2026-10-18T20:09:14.627Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verify full"
+    },
+    {
+      "at": "2026-10-18T20:11:12.254Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify FAIL: Suite backend 997 passed; ratchet ruff FAIL: 5 E501 nuevos en tests (test_auth_routes.py L769, L785, L955; test_auth_service.py L464, L473) -> test-author. Trazabilidad OK."
+    },
+    {
+      "at": "2026-10-18T20:11:22.204Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Verify FAIL: 5 E501 nuevos en tests (ratchet ruff) · tests 2/3"
+    },
+    {
+      "at": "2026-10-18T20:11:49.250Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "5 E501 corregidos en tests (docstrings partidos)"
+    },
+    {
+      "at": "2026-10-18T20:11:49.354Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "5 archivo(s) de test: Fix E501 en tests (iteración 2)"
+    },
+    {
+      "at": "2026-10-18T20:11:49.507Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección de lint en tests, sin red check"
     }
   ]
 }

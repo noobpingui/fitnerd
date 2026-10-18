@@ -34,3 +34,6 @@
 
 ## implement · implementer
 - [ ] Acortar las 5 líneas E501 de los tests (`test_auth_routes.py` L769, L785, L955; `test_auth_service.py` L464, L473) para que el ratchet quede en verde; requiere al test-author.
+
+## verify · verifier
+- [ ] El state.json y tasks.md dicen 45 AC, pero spec.md tiene 44 IDs únicos; revisar el recuento (sin impacto en el resultado).

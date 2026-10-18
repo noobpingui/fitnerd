@@ -461,7 +461,10 @@ def test_register_rejects_an_invalid_last_name(value, message):
 
 # SDD: 018 REQ-006 AC-006.1
 def test_register_validates_the_email_before_the_first_name():
-    """Correo inválido y sin nombre: gana 'Email inválido' (y el nombre ausente se rechaza por sí solo)."""
+    """Correo inválido y sin nombre: gana 'Email inválido'.
+
+    El nombre ausente se rechaza por sí solo.
+    """
     service, repo, _, _ = make_service()
     assert_rejected(service, repo, FIRST_NAME_REQUIRED, first_name=None)
 
@@ -470,7 +473,10 @@ def test_register_validates_the_email_before_the_first_name():
 
 # SDD: 018 REQ-006 AC-006.2
 def test_register_validates_the_password_before_the_first_name():
-    """Contraseña corta y sin nombre: gana el mensaje de contraseña (y el nombre ausente se rechaza por sí solo)."""
+    """Contraseña corta y sin nombre: gana el mensaje de contraseña.
+
+    El nombre ausente se rechaza por sí solo.
+    """
     service, repo, _, _ = make_service()
     assert_rejected(service, repo, FIRST_NAME_REQUIRED, first_name=None)
 

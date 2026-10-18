@@ -766,7 +766,10 @@ def test_register_accepts_100_years_and_the_profile_returns_the_date(client):
 
 # SDD: 018 REQ-006 AC-006.1
 def test_register_validates_the_email_before_the_first_name(client):
-    """Correo inválido y sin nombre: gana 'Email inválido' (y el nombre ausente se rechaza por sí solo)."""
+    """Correo inválido y sin nombre: gana 'Email inválido'.
+
+    El nombre ausente se rechaza por sí solo.
+    """
     only_missing_name = register_payload()
     del only_missing_name["first_name"]
     assert client.post(REGISTER_URL, json=only_missing_name).get_json() == FIRST_NAME_REQUIRED
@@ -782,7 +785,10 @@ def test_register_validates_the_email_before_the_first_name(client):
 
 # SDD: 018 REQ-006 AC-006.2
 def test_register_validates_the_password_before_the_first_name(client):
-    """Contraseña corta y sin nombre: gana el mensaje de contraseña (y el nombre ausente se rechaza por sí solo)."""
+    """Contraseña corta y sin nombre: gana el mensaje de contraseña.
+
+    El nombre ausente se rechaza por sí solo.
+    """
     only_missing_name = register_payload()
     del only_missing_name["first_name"]
     assert client.post(REGISTER_URL, json=only_missing_name).get_json() == FIRST_NAME_REQUIRED
@@ -952,7 +958,10 @@ FORBIDDEN_TEXTS = ("Wrong Credentials", "Email already registered", "Content-Typ
     ),
 )
 def test_anomalous_bodies_never_cause_a_server_error(client, url, kwargs, status, error):
-    """Cada petición anómala da el 400/401 esperado, con su mensaje en español y sin textos en inglés."""
+    """Cada petición anómala da el 400/401 esperado.
+
+    El mensaje va en español y sin textos en inglés.
+    """
     post_register(client, email="otra@example.com")
 
     response = client.post(url, **kwargs)
