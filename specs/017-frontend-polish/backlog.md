@@ -53,3 +53,7 @@
 
 ## tests · test-author (correcciones de review)
 - [ ] Si se quiere cubrir de verdad AC-N002.3 para feedback, hay que escribir un test de comportamiento de `FeedbackForm` (hoy no existe).
+
+## implement · implementer (correcciones de review)
+- [ ] Los comentarios de `router.tsx` siguen sin tildes, como ya constaba en el backlog.
+- [ ] Los «Cargando…» encadenados (guard, layout y pantalla) siguen en la primera visita a una ruta protegida; es consecuencia del ADR-0026 (F6 resuelto solo con `className`, sin precargar el layout).

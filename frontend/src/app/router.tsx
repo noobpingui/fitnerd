@@ -101,16 +101,22 @@ function AnimatedRoutes() {
         />
         {/* Sin PageTransition: esa animacion es especifica del "swap" entre
             login/registro, no hace falta aca. */}
-        <Route path="/privacy" element={
-                <RouteSuspense>
-                  <PrivacyPolicyPage />
-                </RouteSuspense>
-              } />
-        <Route path="/terms" element={
-                <RouteSuspense>
-                  <TermsOfServicePage />
-                </RouteSuspense>
-              } />
+        <Route
+          path="/privacy"
+          element={
+            <RouteSuspense>
+              <PrivacyPolicyPage />
+            </RouteSuspense>
+          }
+        />
+        <Route
+          path="/terms"
+          element={
+            <RouteSuspense>
+              <TermsOfServicePage />
+            </RouteSuspense>
+          }
+        />
 
         {/* Rutas protegidas: ProtectedRoute exige token, AppLayout pone el
             navbar alrededor de cualquier pagina que matchee mas adentro */}
@@ -118,51 +124,76 @@ function AnimatedRoutes() {
           {/* El onboarding va fuera de AppLayout (sin navbar ni barra
               inferior, para que no haya a dónde "escaparse") y fuera de
               OnboardingGuard (si no, redirigiría a sí mismo en bucle). */}
-          <Route path="/onboarding" element={
-                <RouteSuspense>
-                  <OnboardingRoute />
-                </RouteSuspense>
-              } />
-          <Route element={
-                <RouteSuspense>
-                  <OnboardingGuard />
-                </RouteSuspense>
-              }>
-            <Route element={
+          <Route
+            path="/onboarding"
+            element={
+              <RouteSuspense>
+                <OnboardingRoute />
+              </RouteSuspense>
+            }
+          />
+          <Route
+            element={
+              <RouteSuspense>
+                <OnboardingGuard />
+              </RouteSuspense>
+            }
+          >
+            <Route
+              element={
                 <RouteSuspense>
                   <AppLayout />
                 </RouteSuspense>
-              }>
-              <Route path="/home" element={
-                <RouteSuspense>
-                  <HomePage />
-                </RouteSuspense>
-              } />
-              <Route path="/macros" element={
-                <RouteSuspense>
-                  <MacrosPage />
-                </RouteSuspense>
-              } />
-              <Route path="/body-metrics" element={
-                <RouteSuspense>
-                  <BodyMetricsPage />
-                </RouteSuspense>
-              } />
-              <Route path="/coach" element={
-                <RouteSuspense>
-                  <CoachPage />
-                </RouteSuspense>
-              } />
-              <Route path="/store" element={
-                <RouteSuspense>
-                  <StorePage />
-                </RouteSuspense>
-              } />
-              <Route path="/profile" element={
-                <RouteSuspense>
-                  <ProfilePage />
-                </RouteSuspense>
-              } />
+              }
+            >
+              <Route
+                path="/home"
+                element={
+                  <RouteSuspense className="min-h-[50vh]">
+                    <HomePage />
+                  </RouteSuspense>
+                }
+              />
+              <Route
+                path="/macros"
+                element={
+                  <RouteSuspense className="min-h-[50vh]">
+                    <MacrosPage />
+                  </RouteSuspense>
+                }
+              />
+              <Route
+                path="/body-metrics"
+                element={
+                  <RouteSuspense className="min-h-[50vh]">
+                    <BodyMetricsPage />
+                  </RouteSuspense>
+                }
+              />
+              <Route
+                path="/coach"
+                element={
+                  <RouteSuspense className="min-h-[50vh]">
+                    <CoachPage />
+                  </RouteSuspense>
+                }
+              />
+              <Route
+                path="/store"
+                element={
+                  <RouteSuspense className="min-h-[50vh]">
+                    <StorePage />
+                  </RouteSuspense>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <RouteSuspense className="min-h-[50vh]">
+                    <ProfilePage />
+                  </RouteSuspense>
+                }
+              />
             </Route>
           </Route>
         </Route>
