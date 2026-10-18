@@ -9,7 +9,7 @@
   "branch": "fix/019-auth-email-integrity",
   "base_branch": "main",
   "created_at": "2026-10-18T21:00:43.404Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -20,7 +20,10 @@
       "at": "2026-10-18T21:16:37.194Z",
       "note": "Aprobado el plan con la migracion la ADR-0027"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-18T21:17:16.828Z",
+      "note": "auto (gate_mode=flow): 18 tareas, cobertura completa"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -29,7 +32,8 @@
     "close": null
   },
   "commits": {
-    "spec": "15cbbe1"
+    "spec": "15cbbe1",
+    "plan": "9867726"
   },
   "iterations": {
     "tests": 0,
@@ -111,6 +115,36 @@
       "stage": "plan",
       "event": "approved",
       "note": "Aprobado el plan con la migracion la ADR-0027"
+    },
+    {
+      "at": "2026-10-18T21:16:37.537Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 9867726"
+    },
+    {
+      "at": "2026-10-18T21:16:37.651Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Usuario aprobó migración e5b7d9f1a3c6 (CHECK, irreversible salvo volcado) y ADR-0027"
+    },
+    {
+      "at": "2026-10-18T21:16:37.865Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Descomponer plan en tasks.md"
+    },
+    {
+      "at": "2026-10-18T21:17:16.721Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "18 tareas: 2 scaffold, 11 test, 3 migration, 2 impl; 21 AC cubiertos"
+    },
+    {
+      "at": "2026-10-18T21:17:16.828Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 18 tareas, cobertura completa"
     }
   ]
 }

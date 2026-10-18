@@ -11,3 +11,8 @@
 - [ ] Simplificar `UserRepository.get_by_email` a una igualdad exacta (con la CHECK activa equivale y usa el índice de `email`).
 - [ ] Riesgo Q2: correos con letras no ASCII y blancos Unicode que `str.strip()` quita y `[[:space:]]` puede no cubrir; valorar rechazarlos en `validate_email`.
 - [ ] Revisar si los tests de la 014 de "cuentas antiguas con mayúsculas" siguen teniendo sentido una vez aplicada la 019 en todos los entornos, junto con el `lower()` de `get_by_email`.
+
+## tasks · task-breaker
+- [ ] Las notas de la spec y del plan hablan de 23 AC, pero la spec solo define 21 (AC-001.1 a AC-006.2); corregir el recuento.
+- [ ] Los correos con letras no ASCII pueden ser rechazados por la restricción CHECK (Q2 de la spec).
+- [ ] Simplificar `UserRepository.get_by_email` para comparar por igualdad exacta y usar el índice de `email`.
