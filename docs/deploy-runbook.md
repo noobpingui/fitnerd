@@ -36,7 +36,7 @@ git diff --name-only origin/main...HEAD -- backend/migrations/versions/
 |---|---|---|
 | **A. Sin migraciones** | 011, 013 | Solo PR, merge y comprobaciones (pasos 2, 5 y 6). |
 | **B. Migración aditiva** (tabla o columna nueva, restricción que el código nuevo necesita) | 006 (`c6a1f0d2e9b4`), 008 (`d8e4b2a7c1f5`) | Backup y migración **antes** del merge (*expand*): el código viejo sigue funcionando con el esquema nuevo. |
-| **B'. Migración de datos no reversible** (reescribe valores existentes, p. ej. pasar columnas a minúsculas) | 014 (`a7d3f9c1e5b2`) | Como el caso B: backup completo y migración **antes** del merge, porque el código nuevo busca el correo en minúsculas. Su `downgrade()` no restaura nada: los valores originales solo vuelven del backup. |
+| **B'. Migración de datos no reversible** (reescribe valores existentes, p. ej. pasar columnas a minúsculas) | 014 (`a7d3f9c1e5b2`), 019 (`e5b7d9f1a3c6`) | Como el caso B: backup completo y migración **antes** del merge. La 014 pasa los correos a minúsculas porque el código nuevo los busca así; la 019 los deja en forma canónica y crea las restricciones `CHECK`. Su `downgrade()` no restaura datos: los valores originales solo vuelven del backup. |
 | **C. Migración destructiva** (borrar tablas o columnas, renombrar, `NOT NULL` sobre datos existentes) | 012 (`f2c4e6a8b0d1`) | Backup completo, merge y **después** del CD la migración (*contract*): el código que ya no usa esas tablas tiene que estar desplegado antes de borrarlas. |
 
 Si una migración mezcla las dos cosas, sepárala en dos despliegues: primero la parte aditiva, después la destructiva.
@@ -93,14 +93,16 @@ import os
 import sys
 
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 
 load_dotenv(sys.argv[1])
 engine = create_engine(os.environ["PROD_DATABASE_URL"])
 
 with engine.connect() as conn:
-    conn.execute(text("SET TRANSACTION READ ONLY"))
-    q = lambda sql: conn.execute(text(sql)).scalar()
+    # exec_driver_sql y no text(): text() toma ":space" de "[[:space:]]" como
+    # parámetro enlazado y la consulta falla (019).
+    conn.exec_driver_sql("SET TRANSACTION READ ONLY")
+    q = lambda sql: conn.exec_driver_sql(sql).scalar()
     print("alembic_version:", q("SELECT version_num FROM alembic_version"))
     print("users:", q("SELECT count(*) FROM users"))
     print("body_metrics:", q("SELECT count(*) FROM body_metrics"))
@@ -113,6 +115,8 @@ with engine.connect() as conn:
 ```
 
 La revisión que devuelve tiene que ser la `down_revision` de la primera migración nueva. Si no coincide, **para**: alguien migró producción por otro camino.
+
+**Consultas con `[[:space:]]`:** ejecútalas con `conn.exec_driver_sql(...)`, como en la plantilla. Con `text()` fallan con «A value is required for bind parameter 'spac'». Si necesitas `text()`, escapa los dos puntos (`[[\:space:]]`). Las consultas no llevan `%`, así que `exec_driver_sql` no necesita más escapes.
 
 ---
 
@@ -138,6 +142,25 @@ Igual que el caso B, con estas diferencias:
 2. Antes de migrar, puedes buscar los conflictos a mano (solo lectura): `SELECT lower(email), array_agg(email) FROM public.users GROUP BY lower(email) HAVING count(*) > 1;`
 3. Aplica `flask db upgrade`. Si hay cuentas cuyos correos solo se diferencian en mayúsculas, la migración **falla sin modificar nada** y el error lista los correos en conflicto. Resuélvelos a mano (no se fusionan ni se borran solos) y vuelve a aplicarla.
 4. Comprobación de solo lectura: revisión nueva y ningún correo con mayúsculas (`SELECT count(*) FROM public.users WHERE email <> lower(email);` devuelve 0); el número de usuarios, igual que antes.
+
+### Caso B' (datos no reversible): 019, correo canónico con restricción CHECK
+
+Migración `e5b7d9f1a3c6` (ADR-0027). Convierte los correos de `users` y `password_reset_requests` a la forma canónica (sin espacios en los extremos y en minúsculas) y crea `ck_users_email_canonical` y `ck_password_reset_requests_email_canonical`. Se aplica **antes del merge**: el código de `main` ya escribe siempre el correo canónico (014), así que la restricción no rechaza nada de lo que hoy se guarda.
+
+1. Backup completo (paso 3) **verificado** en `C:/Users/alber/fitnerd-backups`: `pg_restore --list` tiene que listar todas las tablas. Es la única vía para recuperar los correos originales.
+2. Comprobación de solo lectura (paso 4, con `exec_driver_sql`):
+   - `alembic_version` = `a7d3f9c1e5b2`; si no, **para**.
+   - Recuento de `users` y de `password_reset_requests`.
+   - Correos no canónicos, en las dos tablas: `SELECT count(*) FROM public.users WHERE email <> lower(regexp_replace(email, '^[[:space:]]+|[[:space:]]+$', '', 'g'));`
+   - Conflictos (solo en `users`): `SELECT lower(regexp_replace(email, '^[[:space:]]+|[[:space:]]+$', '', 'g')), array_agg(email) FROM public.users GROUP BY 1 HAVING count(*) > 1;` Si devuelve filas, resuélvelas a mano antes de migrar (no se fusionan ni se borran solas).
+3. Aplica `flask db upgrade` (`cd backend && FLASK_ENV=production .venv/Scripts/python.exe -m flask db upgrade`, o por `exec` en la instancia). Si hay conflictos, **falla sin modificar nada** y lista los correos: resuélvelos y repite. En `password_reset_requests` no hay conflictos posibles: se convierten sin más.
+4. Comprobación de solo lectura posterior:
+   - `alembic_version` = `e5b7d9f1a3c6`.
+   - 0 correos no canónicos en las dos tablas (las mismas consultas del punto 2).
+   - Las dos restricciones existen: `SELECT conname FROM pg_constraint WHERE conname IN ('ck_users_email_canonical', 'ck_password_reset_requests_email_canonical');` devuelve 2 filas.
+   - Los recuentos de filas, iguales que antes.
+5. Merge del PR y paso 6; prueba manual de login y de «¿Olvidaste tu contraseña?» con una cuenta real.
+6. Marcha atrás: revertir el merge basta para el código (no depende de la restricción). `flask db downgrade` a `a7d3f9c1e5b2` solo quita las restricciones; los correos convertidos solo vuelven del volcado.
 
 ### Caso C (destructiva): migración después del CD
 
@@ -192,5 +215,6 @@ Merge del PR y paso 6.
 | 2026-10-14 | 012, retirada del catálogo | #6, `ebb3003` | `f2c4e6a8b0d1`, aplicada después del CD (5 tablas borradas) | `prod-2026-10-14.dump` |
 | 2026-10-15 | 013, pulido de 006–010 | #7, `0596d9e` | — | — |
 | 2026-10-15 | 014, endurecimiento de la autenticación | #13, `8f21df4` | `a7d3f9c1e5b2`, aplicada antes del merge (sin cambios de datos: 0 correos con mayúsculas) | `prod-2026-10-15.dump` |
+| pendiente | 019, correo canónico con restricción CHECK | pendiente | `e5b7d9f1a3c6`, antes del merge (pendiente) | pendiente |
 
 Añade una fila en cada despliegue.

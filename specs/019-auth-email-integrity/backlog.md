@@ -39,3 +39,7 @@
 - [ ] F6 (NIT): «INTEGRACION» sin tilde en test_canonical_email_routes.py:1.
 - [ ] F7 (NIT): plan.md dice «23 AC» en lugar de 21.
 - [ ] F8 (NIT): no hay test de que se recorten tabuladores ni saltos de línea con [[:space:]].
+
+## docs · doc-keeper
+- [ ] Pasar ADR-0027 y su índice a «Aceptada» (F2), tarea del planner.
+- [ ] Completar la fila del historial del runbook con fecha, PR, merge y nombre del backup tras el despliegue.

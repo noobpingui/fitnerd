@@ -9,7 +9,7 @@
   "branch": "fix/019-auth-email-integrity",
   "base_branch": "main",
   "created_at": "2026-10-18T21:00:43.404Z",
-  "stage": "docs",
+  "stage": "close",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -40,7 +40,10 @@
       "at": "2026-10-18T21:40:26.947Z",
       "note": "Sí, apruebo la review"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-18T21:41:16.174Z",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
     "close": null
   },
   "commits": {
@@ -48,7 +51,8 @@
     "plan": "9867726",
     "tasks": "e741624",
     "tests": "a7f7801",
-    "implement": "ec0f765"
+    "implement": "ec0f765",
+    "review": "2ad65e8"
   },
   "iterations": {
     "tests": 1,
@@ -322,6 +326,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Sí, apruebo la review"
+    },
+    {
+      "at": "2026-10-18T21:40:27.231Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: 2ad65e8"
+    },
+    {
+      "at": "2026-10-18T21:40:27.421Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Actualizar documentación afectada"
+    },
+    {
+      "at": "2026-10-18T21:41:16.044Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "Runbook (caso B' de la 019, F1 corregido) y CLAUDE.md actualizados"
+    },
+    {
+      "at": "2026-10-18T21:41:16.174Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): docs actualizados"
     }
   ]
 }
