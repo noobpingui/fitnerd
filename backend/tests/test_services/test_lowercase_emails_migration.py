@@ -19,6 +19,7 @@ from sqlalchemy import text
 from models.body_metric import BodyMetric
 from models.user import User
 from models.user_profile import UserProfile
+from tests.migration_helpers import drop_canonical_email_checks
 
 MIGRATION_PATH = (
     Path(__file__).parents[2]
@@ -53,6 +54,7 @@ def test_upgrade_lowercases_the_email_and_keeps_the_rest_of_the_data(db_session)
     """Una cuenta con 'Ana@Example.com' pasa a 'ana@example.com' y conserva
     contraseña, vínculo con Google, perfil y mediciones."""
     try:
+        drop_canonical_email_checks(db_session.connection())
         user = User(
             email="Ana@Example.com",
             password_hash="hash-bcrypt-de-mentira",
@@ -100,6 +102,7 @@ def test_upgrade_lowercases_the_email_and_keeps_the_rest_of_the_data(db_session)
 def test_upgrade_leaves_already_lowercase_emails_untouched(db_session):
     """Un correo que ya está en minúsculas no cambia."""
     try:
+        drop_canonical_email_checks(db_session.connection())
         db_session.add(User(email="luis@example.com"))
         db_session.flush()
 
@@ -115,6 +118,7 @@ def test_upgrade_fails_without_changes_when_emails_differ_only_in_case(db_sessio
     """Con 'Ana@Example.com' y 'ana@example.com' el upgrade lanza un error que
     nombra los dos correos y no modifica, fusiona ni borra ninguna cuenta."""
     try:
+        drop_canonical_email_checks(db_session.connection())
         db_session.add(User(email="Ana@Example.com"))
         db_session.add(User(email="ana@example.com"))
         db_session.add(User(email="Otro@Example.com"))

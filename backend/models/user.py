@@ -6,6 +6,11 @@ import uuid
 from datetime import date, datetime
 
 
+CANONICAL_EMAIL_CONDITION: str = (
+    "email = lower(regexp_replace(email, '^[[:space:]]+|[[:space:]]+$', '', 'g'))"
+)
+
+
 class UserRoles(str, PyEnum):
     admin = "admin"
     user = "user"

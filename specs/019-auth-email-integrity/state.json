@@ -9,7 +9,7 @@
   "branch": "fix/019-auth-email-integrity",
   "base_branch": "main",
   "created_at": "2026-10-18T21:00:43.404Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -24,7 +24,10 @@
       "at": "2026-10-18T21:17:16.828Z",
       "note": "auto (gate_mode=flow): 18 tareas, cobertura completa"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-18T21:25:47.121Z",
+      "note": "auto (gate_mode=flow): red check PASS, 21 rojos legítimos"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -33,17 +36,18 @@
   },
   "commits": {
     "spec": "15cbbe1",
-    "plan": "9867726"
+    "plan": "9867726",
+    "tasks": "e741624"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 1,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-18T21:25:36.531Z"
   },
   "verify": {
     "result": null,
@@ -53,7 +57,19 @@
     "verdict": null,
     "at": null
   },
-  "tests_snapshot": null,
+  "tests_snapshot": {
+    "at": "2026-10-18T21:25:46.971Z",
+    "reason": "tests 019 tras red check PASS",
+    "sha256": {
+      "backend/tests/conftest.py": "b71db3514f21e00a0b1814e5e1213c9a84bd9282a07e2b74e4229d1c8f0c84e2",
+      "backend/tests/migration_helpers.py": "1434abbe9423d1d643f39cd71aa1ad751081579cfda8b1d16afeb353e793ad11",
+      "backend/tests/test_routes/test_auth_routes.py": "cf374191207106e6118ee3ee127bc2c8ad298a639c45c37c64a48cc327ecc85f",
+      "backend/tests/test_routes/test_canonical_email_routes.py": "363d88b54882f6c0dd0706381925e0e0a4199e8e1a6708a34a381d166e1ec7f7",
+      "backend/tests/test_services/test_canonical_email_google.py": "c0faf7ebbdf950aafd8d169a6b98f2e1fec6b8997f45db11b5d8b76e0cf2bf71",
+      "backend/tests/test_services/test_canonical_emails_migration.py": "eea76523f366cd428dad183600b1034870c285b14514e55ff3d0a70c96c0f31b",
+      "backend/tests/test_services/test_lowercase_emails_migration.py": "75cdb6651c330d675f0dc14e7fe4e268549bab9c210a8815d2bcd167746ad4c8"
+    }
+  },
   "bypass": false,
   "history": [
     {
@@ -145,6 +161,72 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): 18 tareas, cobertura completa"
+    },
+    {
+      "at": "2026-10-18T21:17:17.091Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: e741624"
+    },
+    {
+      "at": "2026-10-18T21:17:17.315Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests: paso 1/3 scaffold"
+    },
+    {
+      "at": "2026-10-18T21:17:17.432Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (2 tareas scaffold en tasks.md)"
+    },
+    {
+      "at": "2026-10-18T21:17:37.153Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-18T21:20:26.287Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (verifier)"
+    },
+    {
+      "at": "2026-10-18T21:23:13.549Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Red: 19 tests nuevos fallan por comportamiento ausente (legitimo); AC-002.3 (test_failed_upgrade_creates_no_guarantee_and_leaves_requests_untouched) pasa sin implementar: pytest.raises(RuntimeError) acepta el NotImplementedError del andamiaje; falta match. Responsable: test-author. 5 tests 014 adaptados en verde; suite completa 998 passed, 20 failed (solo nuevos)."
+    },
+    {
+      "at": "2026-10-18T21:23:20.831Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL: AC-002.3 pasa sin implementar (pytest.raises(RuntimeError) sin match) · tests 1/3"
+    },
+    {
+      "at": "2026-10-18T21:25:36.531Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red repetido tras AC-002.3: 21 tests nuevos, 21 fallan por comportamiento ausente (legitimo), 0 pasan sin implementar; AC-002.3 ahora falla (assert sobre prefijo de conflicto); 5 tests 014 adaptados en verde; scaffolds sin logica."
+    },
+    {
+      "at": "2026-10-18T21:25:46.868Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS: 21 rojos legítimos, 5 tests de la 014 en verde"
+    },
+    {
+      "at": "2026-10-18T21:25:46.971Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "7 archivo(s) de test: tests 019 tras red check PASS"
+    },
+    {
+      "at": "2026-10-18T21:25:47.121Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 21 rojos legítimos"
     }
   ]
 }

@@ -16,3 +16,9 @@
 - [ ] Las notas de la spec y del plan hablan de 23 AC, pero la spec solo define 21 (AC-001.1 a AC-006.2); corregir el recuento.
 - [ ] Los correos con letras no ASCII pueden ser rechazados por la restricción CHECK (Q2 de la spec).
 - [ ] Simplificar `UserRepository.get_by_email` para comparar por igualdad exacta y usar el índice de `email`.
+
+## tests (scaffold) · implementer
+- [ ] Ninguno nuevo.
+
+## tests · test-author
+- [ ] Aviso para el implementer: `CANONICAL_EMAIL_CONDITION` contiene `[[:space:]]`. SQLAlchemy `text()` y `CheckConstraint(str)` pueden interpretar `:space` como parámetro enlazado. Si el modelo o `op.create_check_constraint` fallan al compilar, hay que escapar los dos puntos (`\:`) o usar `sqlalchemy.text` con `literal_column`. Los tests de `AddConstraint` (`restore_canonical_email_checks`) dependen de que el modelo compile bien.
