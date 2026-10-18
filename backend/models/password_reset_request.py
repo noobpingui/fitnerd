@@ -1,10 +1,11 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, Index, String
+from sqlalchemy import CheckConstraint, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from models.base import Base
+from models.user import CANONICAL_EMAIL_CONDITION
 
 
 # Una fila por cada solicitud de restablecimiento aceptada. Sirve de registro para los
@@ -31,6 +32,9 @@ class PasswordResetRequest(Base):
     invalidated_at: Mapped[datetime | None] = mapped_column(nullable=True)
 
     __table_args__ = (
+        CheckConstraint(
+            CANONICAL_EMAIL_CONDITION, name="ck_password_reset_requests_email_canonical"
+        ),
         Index("ix_public_password_reset_requests_client_ip_created_at", "client_ip", "created_at"),
         {"schema": "public"},
     )

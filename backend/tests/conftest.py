@@ -108,6 +108,29 @@ def _clean_database(app):
 
 
 @pytest.fixture
+def legacy_email_schema(app):
+    """Spec 019: quita las restricciones CHECK del correo canónico para que un
+    test pueda guardar cuentas antiguas (con mayúsculas) y las restaura al
+    terminar, aunque el test falle, borrando antes todas las filas para que la
+    restricción se pueda volver a crear."""
+    from tests.migration_helpers import (
+        drop_canonical_email_checks,
+        restore_canonical_email_checks,
+    )
+
+    with app.app_context():
+        names = drop_canonical_email_checks(_db.session.connection())
+        _db.session.commit()
+    yield
+    with app.app_context():
+        _db.session.rollback()
+        for table in reversed(_db.metadata.sorted_tables):
+            _db.session.execute(table.delete())
+        restore_canonical_email_checks(_db.session.connection(), names)
+        _db.session.commit()
+
+
+@pytest.fixture
 def registered_user(client):
     """Fixture de conveniencia: registra un usuario real a traves del
     endpoint publico (el mismo camino que usaria el frontend, no un atajo

@@ -169,7 +169,9 @@ def test_register_rejects_a_duplicate_email_that_differs_only_in_case(client, ap
 
 
 # SDD: 014 REQ-005 AC-005.2
-def test_register_rejects_an_email_matching_a_legacy_account_with_uppercase(client, app):
+def test_register_rejects_an_email_matching_a_legacy_account_with_uppercase(
+    client, app, legacy_email_schema
+):
     """Con una cuenta guardada como 'Ana@Example.com', registrar 'ana@example.com' da 409."""
     insert_legacy_user(app, "Ana@Example.com", "Clave123")
 
@@ -352,7 +354,7 @@ def test_login_with_uppercase_email_and_wrong_password_returns_401(client):
 
 
 # SDD: 014 REQ-005 AC-005.1
-def test_login_finds_a_legacy_account_stored_with_uppercase(client, app):
+def test_login_finds_a_legacy_account_stored_with_uppercase(client, app, legacy_email_schema):
     """Cuenta guardada como 'Ana@Example.com': el login con 'ana@example.com' da 200."""
     insert_legacy_user(app, "Ana@Example.com", "Clave123")
 

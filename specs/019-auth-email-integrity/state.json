@@ -1,0 +1,383 @@
+{
+  "schema_version": 1,
+  "feature": "019-auth-email-integrity",
+  "title": "Garantizar la integridad de los correos guardados: recorte de espacios y restricción en la base",
+  "type": "fix",
+  "scope": [
+    "backend"
+  ],
+  "branch": "fix/019-auth-email-integrity",
+  "base_branch": "main",
+  "created_at": "2026-10-18T21:00:43.404Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-18T21:07:02.963Z",
+      "note": "Sí, apruebo la spec y el commit"
+    },
+    "plan": {
+      "at": "2026-10-18T21:16:37.194Z",
+      "note": "Aprobado el plan con la migracion la ADR-0027"
+    },
+    "tasks": {
+      "at": "2026-10-18T21:17:16.828Z",
+      "note": "auto (gate_mode=flow): 18 tareas, cobertura completa"
+    },
+    "tests": {
+      "at": "2026-10-18T21:25:47.121Z",
+      "note": "auto (gate_mode=flow): red check PASS, 21 rojos legítimos"
+    },
+    "implement": {
+      "at": "2026-10-18T21:29:14.300Z",
+      "note": "auto (gate_mode=flow): pytest 1018 passed"
+    },
+    "verify": {
+      "at": "2026-10-18T21:31:49.493Z",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    "review": {
+      "at": "2026-10-18T21:40:26.947Z",
+      "note": "Sí, apruebo la review"
+    },
+    "docs": {
+      "at": "2026-10-18T21:41:16.174Z",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
+    "close": {
+      "at": "2026-10-18T21:57:08.678Z",
+      "note": "Sí, apruebo el cierre, haz los 5 pasos"
+    }
+  },
+  "commits": {
+    "spec": "15cbbe1",
+    "plan": "9867726",
+    "tasks": "e741624",
+    "tests": "a7f7801",
+    "implement": "ec0f765",
+    "review": "2ad65e8",
+    "docs": "0c88836"
+  },
+  "iterations": {
+    "tests": 1,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-10-18T21:25:36.531Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-10-18T21:31:38.411Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-10-18T21:35:57.144Z"
+  },
+  "tests_snapshot": {
+    "at": "2026-10-18T21:25:46.971Z",
+    "reason": "tests 019 tras red check PASS",
+    "sha256": {
+      "backend/tests/conftest.py": "b71db3514f21e00a0b1814e5e1213c9a84bd9282a07e2b74e4229d1c8f0c84e2",
+      "backend/tests/migration_helpers.py": "1434abbe9423d1d643f39cd71aa1ad751081579cfda8b1d16afeb353e793ad11",
+      "backend/tests/test_routes/test_auth_routes.py": "cf374191207106e6118ee3ee127bc2c8ad298a639c45c37c64a48cc327ecc85f",
+      "backend/tests/test_routes/test_canonical_email_routes.py": "363d88b54882f6c0dd0706381925e0e0a4199e8e1a6708a34a381d166e1ec7f7",
+      "backend/tests/test_services/test_canonical_email_google.py": "c0faf7ebbdf950aafd8d169a6b98f2e1fec6b8997f45db11b5d8b76e0cf2bf71",
+      "backend/tests/test_services/test_canonical_emails_migration.py": "eea76523f366cd428dad183600b1034870c285b14514e55ff3d0a70c96c0f31b",
+      "backend/tests/test_services/test_lowercase_emails_migration.py": "75cdb6651c330d675f0dc14e7fe4e268549bab9c210a8815d2bcd167746ad4c8"
+    }
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-18T21:00:43.404Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama fix/019-auth-email-integrity desde main"
+    },
+    {
+      "at": "2026-10-18T21:01:11.766Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Redactar spec.md de 019-auth-email-integrity"
+    },
+    {
+      "at": "2026-10-18T21:03:27.517Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "Q1-Q3 de spec.md pendientes de respuesta del usuario"
+    },
+    {
+      "at": "2026-10-18T21:04:53.659Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "Spec 019: 6 REQ, 23 AC; Q1-Q3 resueltas"
+    },
+    {
+      "at": "2026-10-18T21:07:02.963Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Sí, apruebo la spec y el commit"
+    },
+    {
+      "at": "2026-10-18T21:07:03.265Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 15cbbe1"
+    },
+    {
+      "at": "2026-10-18T21:07:03.493Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Diseñar plan.md de 019-auth-email-integrity"
+    },
+    {
+      "at": "2026-10-18T21:13:02.313Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "Plan 019 listo; migración de datos irreversible y ADR-0027 pendientes de tu decisión"
+    },
+    {
+      "at": "2026-10-18T21:13:02.414Z",
+      "stage": "plan",
+      "event": "needs_input",
+      "note": "Decisión mayor: migración e5b7d9f1a3c6 modifica datos de producción (irreversible salvo volcado) y ADR-0027 propone CHECK"
+    },
+    {
+      "at": "2026-10-18T21:16:37.194Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "Aprobado el plan con la migracion la ADR-0027"
+    },
+    {
+      "at": "2026-10-18T21:16:37.537Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 9867726"
+    },
+    {
+      "at": "2026-10-18T21:16:37.651Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Usuario aprobó migración e5b7d9f1a3c6 (CHECK, irreversible salvo volcado) y ADR-0027"
+    },
+    {
+      "at": "2026-10-18T21:16:37.865Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Descomponer plan en tasks.md"
+    },
+    {
+      "at": "2026-10-18T21:17:16.721Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "18 tareas: 2 scaffold, 11 test, 3 migration, 2 impl; 21 AC cubiertos"
+    },
+    {
+      "at": "2026-10-18T21:17:16.828Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 18 tareas, cobertura completa"
+    },
+    {
+      "at": "2026-10-18T21:17:17.091Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: e741624"
+    },
+    {
+      "at": "2026-10-18T21:17:17.315Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests: paso 1/3 scaffold"
+    },
+    {
+      "at": "2026-10-18T21:17:17.432Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (2 tareas scaffold en tasks.md)"
+    },
+    {
+      "at": "2026-10-18T21:17:37.153Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-18T21:20:26.287Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (verifier)"
+    },
+    {
+      "at": "2026-10-18T21:23:13.549Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Red: 19 tests nuevos fallan por comportamiento ausente (legitimo); AC-002.3 (test_failed_upgrade_creates_no_guarantee_and_leaves_requests_untouched) pasa sin implementar: pytest.raises(RuntimeError) acepta el NotImplementedError del andamiaje; falta match. Responsable: test-author. 5 tests 014 adaptados en verde; suite completa 998 passed, 20 failed (solo nuevos)."
+    },
+    {
+      "at": "2026-10-18T21:23:20.831Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL: AC-002.3 pasa sin implementar (pytest.raises(RuntimeError) sin match) · tests 1/3"
+    },
+    {
+      "at": "2026-10-18T21:25:36.531Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red repetido tras AC-002.3: 21 tests nuevos, 21 fallan por comportamiento ausente (legitimo), 0 pasan sin implementar; AC-002.3 ahora falla (assert sobre prefijo de conflicto); 5 tests 014 adaptados en verde; scaffolds sin logica."
+    },
+    {
+      "at": "2026-10-18T21:25:46.868Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS: 21 rojos legítimos, 5 tests de la 014 en verde"
+    },
+    {
+      "at": "2026-10-18T21:25:46.971Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "7 archivo(s) de test: tests 019 tras red check PASS"
+    },
+    {
+      "at": "2026-10-18T21:25:47.121Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 21 rojos legítimos"
+    },
+    {
+      "at": "2026-10-18T21:25:47.467Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: a7f7801"
+    },
+    {
+      "at": "2026-10-18T21:25:47.569Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Red check en 2 iteraciones: AC-002.3 pasaba sin implementar (pytest.raises genérico), acotado con el prefijo del mensaje"
+    },
+    {
+      "at": "2026-10-18T21:25:47.769Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar tareas migration/impl de tasks.md"
+    },
+    {
+      "at": "2026-10-18T21:29:14.200Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-030..T-034 hechas; pytest 1018 passed; ratchet limpio"
+    },
+    {
+      "at": "2026-10-18T21:29:14.300Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): pytest 1018 passed"
+    },
+    {
+      "at": "2026-10-18T21:29:14.643Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: ec0f765"
+    },
+    {
+      "at": "2026-10-18T21:29:14.859Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verify full"
+    },
+    {
+      "at": "2026-10-18T21:31:38.411Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify full: pytest 1018 passed (fitnerd_test local); lint_ratchet backend sin violaciones nuevas; typecheck/build no aplican; 21/21 AC con test SDD: 019 en verde; 18/18 tareas [x]; sin skip/xfail/.only nuevos; migracion e5b7d9f1a3c6 unica cabeza y down_revision a7d3f9c1e5b2 (comprobado offline)"
+    },
+    {
+      "at": "2026-10-18T21:31:49.392Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "PASS: 1018 passed, ratchet limpio, 21 AC trazados"
+    },
+    {
+      "at": "2026-10-18T21:31:49.493Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-18T21:31:49.701Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review independiente"
+    },
+    {
+      "at": "2026-10-18T21:35:57.144Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-18T21:35:57.250Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED: 0 bloqueantes, 0 mayores, 2 menores, 6 NIT"
+    },
+    {
+      "at": "2026-10-18T21:40:26.947Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Sí, apruebo la review"
+    },
+    {
+      "at": "2026-10-18T21:40:27.231Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: 2ad65e8"
+    },
+    {
+      "at": "2026-10-18T21:40:27.421Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Actualizar documentación afectada"
+    },
+    {
+      "at": "2026-10-18T21:41:16.044Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "Runbook (caso B' de la 019, F1 corregido) y CLAUDE.md actualizados"
+    },
+    {
+      "at": "2026-10-18T21:41:16.174Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
+    {
+      "at": "2026-10-18T21:41:16.775Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: 0c88836"
+    },
+    {
+      "at": "2026-10-18T21:41:55.184Z",
+      "stage": "close",
+      "event": "done",
+      "note": "Checklist de hecho completo; backlog global actualizado; migración pendiente de aplicar antes del merge"
+    },
+    {
+      "at": "2026-10-18T21:57:08.678Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Sí, apruebo el cierre, haz los 5 pasos"
+    },
+    {
+      "at": "2026-10-18T21:57:08.678Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
+    }
+  ]
+}

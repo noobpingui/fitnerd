@@ -137,3 +137,19 @@ Feature: [specs/018-auth-robustness/](../specs/018-auth-robustness/)
 - [ ] `tests/fakes.py` y los archivos de test existentes tienen finales de línea CRLF (en `fakes.py`, mezclados con LF). Conviene normalizarlos.
 - [ ] AC-005.4 y AC-005.5 en integración dependen del día UTC real y podrían fallar justo al cruzar la medianoche UTC; las fronteras exactas ya están cubiertas en unitarios con reloj fijo.
 - [ ] El `state.json` y `tasks.md` dicen 45 AC, pero `spec.md` tiene 44 IDs únicos; revisar el recuento (sin impacto).
+
+## 019-auth-email-integrity · Garantizar la integridad de los correos guardados: recorte de espacios y restricción en la base (2026-10-18)
+
+Feature: [specs/019-auth-email-integrity/](../specs/019-auth-email-integrity/)
+
+- [ ] ADR-0027 y su fila en `docs/sdd/decisions/README.md` siguen en «Propuesta»: el hook impidió pasarlas a «Aceptada» en close. Hacerlo en una rama `chore/…` tras el merge.
+- [ ] Riesgo aceptado (Q2): un correo con letras no ASCII o con espacios Unicode que `str.strip()` quita y `[[:space:]]` puede no cubrir podría ser rechazado por la CHECK y dar 500 en el registro; valorar rechazarlos en `validate_email`.
+- [ ] Simplificar `UserRepository.get_by_email` a una igualdad exacta (con la CHECK activa equivale y usa el índice de `email`).
+- [ ] Revisar si los tests de la 014 de «cuentas antiguas con mayúsculas» siguen teniendo sentido una vez aplicada la 019 en todos los entornos, junto con el `lower()` de `get_by_email`.
+- [ ] NIT: la migración repite la expresión en `CANONICAL_EMAIL_SQL` y `CANONICAL_EMAIL_EXPR`; derivar una de la otra.
+- [ ] NIT: `op.get_bind()` impide el modo offline (`--sql`), igual que en la 014.
+- [ ] NIT: no hay test de que se recorten tabuladores ni saltos de línea con `[[:space:]]`.
+- [ ] NIT: «INTEGRACION» sin tilde en `test_canonical_email_routes.py:1`; el plan y `state.json` dicen «23 AC» y la spec tiene 21.
+- [ ] Definir qué rol pasa las ADR a «Aceptada» en la etapa close (el hook role-guard bloquea al planner fuera de plan).
+- [ ] Completar la fila «pendiente» del historial del runbook (PR, fecha, backup) tras el despliegue.
+- [ ] `tests/fakes.py` y otros tests con CRLF mezclado: ya anotado en la 018.
