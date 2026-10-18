@@ -11,7 +11,7 @@ App de fitness full-stack con un **coach de IA basado en contenido real**: respo
 |---|---|---|
 | Autenticación (email/contraseña, Google Sign-In, JWT RS256, recuperación de contraseña por correo con Resend; correo normalizado en minúsculas y sin espacios, ADR-0025; contraseña de 8 caracteres a 72 bytes UTF-8 en registro y restablecimiento; enlace de restablecimiento de un solo uso también ante peticiones simultáneas, spec 014) | `auth_routes` | `auth` |
 | Métricas corporales, gráficas y análisis con IA; una medición por usuario y día, peso del perfil sincronizado con la última medición, indicadores de progreso en el frontend y análisis con sugerencia de calorías (detalle bajo la tabla) | `body_metric_routes` | `body-metrics` |
-| Perfil y onboarding (datos físicos, fecha de nacimiento de la cuenta, nivel de actividad y meta guardados por usuario; `GET`/`PUT /api/profile`; la edad se calcula desde `users.date_of_birth`, ADR-0019; las calorías y macros se calculan en el frontend con Mifflin-St Jeor, suelo calórico de 1200 kcal en mujeres y 1500 en hombres, proteína con tope en el peso de IMC 27 y mínimo de 100 g de carbohidratos, spec 007; onboarding y datos físicos usan react-hook-form con un único esquema zod en `onboarding/schemas.ts`, y pies y pulgadas solo admiten enteros, spec 015) | `profile_routes` | `onboarding`, `profile`, `macros` |
+| Perfil y onboarding (datos físicos, fecha de nacimiento de la cuenta, nivel de actividad y meta guardados por usuario; `GET`/`PUT /api/profile`; la edad se calcula desde `users.date_of_birth`, ADR-0019; las calorías y macros se calculan en el frontend con Mifflin-St Jeor, suelo calórico de 1200 kcal en mujeres y 1500 en hombres, proteína con tope en el peso de IMC 27 y mínimo de 100 g de carbohidratos, spec 007; onboarding y datos físicos usan react-hook-form con un único esquema zod en `onboarding/schemas.ts`, y pies y pulgadas solo admiten enteros, spec 015; en el perfil, con pies válidos y pulgadas no válidas, el aviso es «Entre 0 y 11 in», spec 017) | `profile_routes` | `onboarding`, `profile`, `macros` |
 | Coach de IA con RAG (pgvector, Voyage y Claude, con rate limit en Redis y trazas en Langfuse Cloud, ADR-0017; valoración 👍/👎 de cada respuesta como score `user_feedback`, con `feedback_id` firmado con HMAC, ADR-0018) | `coach_routes` | `coach` |
 | Feedback, home, páginas legales y tienda (solo estructura) | `feedback_routes` | `feedback`, `home`, `legal`, `store` |
 | Salud del servicio (`GET /api/health`) | `health_routes` | — |
@@ -31,6 +31,7 @@ App de fitness full-stack con un **coach de IA basado en contenido real**: respo
   - Los singletons están en `extensions.py`.
 - **Frontend** (React 19, Vite, TypeScript, Tailwind, shadcn, TanStack Query, react-hook-form con zod):
   - Organizado por feature.
+  - Cada pantalla se carga bajo demanda por ruta (`src/app/router.tsx`, `lazyNamed` y `RouteSuspense`, con «Cargando…» y un error con «Recargar»; chunk de entrada ≤ 500 kB, ADR-0026). La regla de rango `inRange` es compartida en `src/lib/inRange.ts`.
   - Toda llamada HTTP pasa por `src/lib/apiClient.ts` (`apiFetch`).
 - **Pipeline RAG** (`backend/scripts/`, se ejecuta fuera de la app):
   1. Descarga el audio con yt-dlp y lo transcribe con faster-whisper.

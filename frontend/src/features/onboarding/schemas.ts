@@ -7,6 +7,7 @@ import type {
 } from "@/features/onboarding/types"
 import { ageFromIsoDate } from "@/lib/age"
 import { parseLocalDate } from "@/lib/dates"
+import { inRange } from "@/lib/inRange"
 
 // Enums compartidos (los reutiliza profile/schemas.ts).
 export const genderSchema = z.enum(["male", "female"])
@@ -53,16 +54,22 @@ export function weightRangeMessage(unit: WeightUnit): string {
   return `Entre ${min} y ${max} ${unit}`
 }
 
-// Un texto vacío no es válido: todas las preguntas son obligatorias.
-export function inRange(
-  value: string,
-  { min, max }: { min: number; max: number },
-  integer = false
+export const INCHES_RANGE_MESSAGE = `Entre ${LIMITS.heightIn.min} y ${LIMITS.heightIn.max} in`
+
+// Pies enteros entre LIMITS.heightFt.min y max.
+export function isHeightFeetValid(
+  a: Pick<OnboardingAnswers, "heightFt">
 ): boolean {
-  if (value.trim() === "") return false
-  const n = Number(value)
-  if (!Number.isFinite(n) || n < min || n > max) return false
-  return !integer || Number.isInteger(n)
+  return inRange(a.heightFt, LIMITS.heightFt, true)
+}
+
+// null si la altura es válida; si no, el mensaje que corresponde.
+export function heightMessage(
+  a: Pick<OnboardingAnswers, "heightUnit" | "heightCm" | "heightFt" | "heightIn">
+): string | null {
+  if (isHeightValid(a)) return null
+  if (a.heightUnit === "ft" && isHeightFeetValid(a)) return INCHES_RANGE_MESSAGE
+  return heightRangeMessage(a.heightUnit)
 }
 
 export function isHeightValid(
@@ -72,10 +79,7 @@ export function isHeightValid(
   // Las pulgadas pueden quedar vacías (5 ft = 5 ft 0 in); pies y pulgadas
   // son enteros.
   const inches = a.heightIn.trim() === "" ? "0" : a.heightIn
-  return (
-    inRange(a.heightFt, LIMITS.heightFt, true) &&
-    inRange(inches, LIMITS.heightIn, true)
-  )
+  return isHeightFeetValid(a) && inRange(inches, LIMITS.heightIn, true)
 }
 
 export function isWeightValid(
@@ -137,12 +141,9 @@ export function addPhysicalDataIssues(
   if (dobMessage !== null) {
     ctx.addIssue({ code: "custom", path: ["dateOfBirth"], message: dobMessage })
   }
-  if (!isHeightValid(values)) {
-    ctx.addIssue({
-      code: "custom",
-      path: ["height"],
-      message: heightRangeMessage(values.heightUnit),
-    })
+  const heightProblem = heightMessage(values)
+  if (heightProblem !== null) {
+    ctx.addIssue({ code: "custom", path: ["height"], message: heightProblem })
   }
   if (!isWeightValid(values)) {
     ctx.addIssue({

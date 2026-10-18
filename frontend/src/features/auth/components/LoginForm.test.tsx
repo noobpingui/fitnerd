@@ -1,10 +1,10 @@
 // Test de COMPONENTE: renderiza el formulario real en un DOM real (jsdom)
-// y lo usa como lo usaria una persona (click, no "llamar a la funcion de
+// y lo usa como lo usaría una persona (click, no "llamar a la función de
 // submit a mano") - eso es lo que React Testing Library empuja a hacer:
 // probar el comportamiento visible, no los detalles internos de
-// implementacion. A diferencia del test de dateUtils.ts, aca SI hay React
-// de por medio, pero todavia no hace falta mockear la API: cuando la
-// validacion de Zod falla, react-hook-form ni siquiera llega a llamar a la
+// implementación. A diferencia del test de dateUtils.ts, aquí sí hay React
+// de por medio, pero todavía no hace falta mockear la API: cuando la
+// validación de Zod falla, react-hook-form ni siquiera llega a llamar a la
 // mutation (useLogin) - por eso este test no necesita tocar la red para nada.
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { act, render, screen, waitFor } from "@testing-library/react"
@@ -21,7 +21,7 @@ import { LoginForm } from "./LoginForm"
 
 function renderLoginForm() {
   // Un QueryClient nuevo por test - si se compartiera uno solo entre tests,
-  // el cache de una corrida podria filtrarse a la siguiente (mismo motivo
+  // el caché de una corrida podría filtrarse a la siguiente (mismo motivo
   // por el que el backend limpia la base entre cada test).
   const queryClient = new QueryClient()
 
@@ -34,10 +34,10 @@ function renderLoginForm() {
   )
 }
 
-// Para el test de login EXITOSO hace falta simular la navegacion real a
+// Para el test de login EXITOSO hace falta simular la navegación real a
 // "/" (useLogin llama a navigate("/") en su onSuccess) - initialEntries
-// arranca la "navegacion en memoria" en /login, y la Route de "/" renderiza
-// un marcador simple que el test puede buscar para confirmar que redirigio.
+// arranca la "navegación en memoria" en /login, y la Route de "/" renderiza
+// un marcador simple que el test puede buscar para confirmar que redirigió.
 function renderLoginFormWithRouting() {
   const queryClient = new QueryClient()
 
@@ -57,12 +57,12 @@ describe("LoginForm", () => {
   beforeEach(() => {
     // GoogleSignInButton intenta cargar un script externo real si detecta
     // un client_id configurado (ver GoogleSignInButton.tsx) - lo
-    // "apagamos" para este test aunque el .env local tenga uno real, asi
+    // "apagamos" para este test aunque el .env local tenga uno real, así
     // el test nunca depende de una carga de red externa.
     vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "")
   })
 
-  it("muestra los errores de validacion al enviar el formulario vacio", async () => {
+  it("muestra los errores de validación al enviar el formulario vacío", async () => {
     const user = userEvent.setup()
     renderLoginForm()
 
@@ -74,7 +74,7 @@ describe("LoginForm", () => {
     ).toBeInTheDocument()
   })
 
-  it("no muestra errores de validacion una vez que se completan los campos correctamente", async () => {
+  it("no muestra errores de validación una vez que se completan los campos correctamente", async () => {
     const user = userEvent.setup()
     renderLoginForm()
 
@@ -83,9 +83,9 @@ describe("LoginForm", () => {
     await user.click(screen.getByRole("button", { name: "Entrar" }))
 
     // No podemos (ni queremos, en este test) esperar un login exitoso real
-    // - eso pasa por la red, y es tema del proximo nivel (tests con la API
-    // mockeada). Lo que SI podemos afirmar aca, sin tocar la red: que la
-    // validacion en si no bloquea el envio cuando los datos son validos.
+    // - eso pasa por la red, y es tema del próximo nivel (tests con la API
+    // mockeada). Lo que sí podemos afirmar aquí, sin tocar la red: que la
+    // validación en sí no bloquea el envío cuando los datos son válidos.
     expect(screen.queryByText("Email inválido")).not.toBeInTheDocument()
     expect(
       screen.queryByText("La contraseña es obligatoria")
@@ -94,10 +94,10 @@ describe("LoginForm", () => {
 })
 
 // Tercer nivel, mockeando la RED de verdad (fetch) - equivalente en el
-// frontend a mockear LLMClient en el backend: reemplazamos el limite real
-// de I/O (la llamada HTTP), no nuestro propio codigo, asi que apiClient.ts,
+// frontend a mockear LLMClient en el backend: reemplazamos el límite real
+// de I/O (la llamada HTTP), no nuestro propio código, así que apiClient.ts,
 // useLogin, y el form completo siguen corriendo tal cual corren en
-// produccion - lo unico "falso" es la respuesta del servidor.
+// producción - lo único "falso" es la respuesta del servidor.
 describe("LoginForm - login exitoso (API mockeada)", () => {
   beforeEach(() => {
     vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "")
@@ -123,14 +123,14 @@ describe("LoginForm - login exitoso (API mockeada)", () => {
     await user.type(screen.getByLabelText("Password"), "unaContraseña123")
     await user.click(screen.getByRole("button", { name: "Entrar" }))
 
-    // La redireccion a "/" (via navigate() dentro de useLogin.onSuccess)
-    // solo pasa DESPUES de que la promesa del fetch mockeado se resuelve -
+    // La redirección a "/" (vía navigate() dentro de useLogin.onSuccess)
+    // solo pasa DESPUÉS de que la promesa del fetch mockeado se resuelve -
     // findBy* espera (reintentando) hasta que aparezca, en vez de asumir
-    // que ya esta ahi en el mismo tick.
+    // que ya está ahí en el mismo tick.
     expect(await screen.findByText("Pantalla de home")).toBeInTheDocument()
     expect(localStorage.getItem("fitnerd_token")).toBe("un-jwt-de-mentira")
 
-    // Tambien vale la pena afirmar COMO se llamo a fetch - que apiClient
+    // También vale la pena afirmar CÓMO se llamó a fetch - que apiClient
     // realmente arma la request de login como se espera (método, endpoint).
     expect(fakeFetch).toHaveBeenCalledWith(
       expect.stringContaining("/api/auth/login"),
@@ -161,9 +161,9 @@ describe("LoginForm - login exitoso (API mockeada)", () => {
   })
 })
 
-// Recuperacion de contraseña (spec 002): enlace en el login y aviso tras un
+// Recuperación de contraseña (spec 002): enlace en el login y aviso tras un
 // restablecimiento exitoso (llega por location.state.passwordReset).
-describe("LoginForm - recuperacion de contraseña", () => {
+describe("LoginForm - recuperación de contraseña", () => {
   beforeEach(() => {
     vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "")
   })
@@ -188,7 +188,7 @@ describe("LoginForm - recuperacion de contraseña", () => {
   })
 
   // SDD: REQ-011 AC-011.4
-  it("muestra el aviso de exito cuando llega state.passwordReset", () => {
+  it("muestra el aviso de éxito cuando llega state.passwordReset", () => {
     renderWithState({ passwordReset: true })
 
     expect(
@@ -197,7 +197,7 @@ describe("LoginForm - recuperacion de contraseña", () => {
   })
 
   // SDD: REQ-011 AC-011.4
-  it("no muestra el aviso de exito sin state.passwordReset", () => {
+  it("no muestra el aviso de éxito sin state.passwordReset", () => {
     renderWithState()
 
     expect(

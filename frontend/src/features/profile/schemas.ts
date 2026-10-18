@@ -7,11 +7,11 @@ import {
   genderSchema,
   goalSchema,
   heightUnitSchema,
-  inRange,
   physicalDataShape,
   weightUnitSchema,
   type PhysicalDataErrorKey,
 } from "@/features/onboarding/schemas"
+import { inRange } from "@/lib/inRange"
 import type { PhysicalDataFormValues } from "@/features/profile/types"
 
 export type ProfileFormErrorKey = PhysicalDataErrorKey | "fat" | "muscle"

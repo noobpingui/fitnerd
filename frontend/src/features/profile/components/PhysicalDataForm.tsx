@@ -38,7 +38,7 @@ import {
   convertWeight,
   KG_PER_LB,
 } from "@/features/onboarding/units"
-import { fieldMessages } from "@/features/onboarding/schemas"
+import { fieldMessages, isHeightFeetValid } from "@/features/onboarding/schemas"
 import { makeProfileFormSchema } from "@/features/profile/schemas"
 import type {
   BodyComposition,
@@ -76,6 +76,9 @@ export function PhysicalDataForm({
   const errors = fieldMessages<ProfileFormErrorKey>(schema, draft)
   const dobOk = !errors.dateOfBirth
   const heightOk = !errors.height
+  // Con el mensaje de pulgadas solo se marca el campo de pulgadas.
+  const feetOk =
+    heightOk || (draft.heightUnit === "ft" && isHeightFeetValid(draft))
   const weightOk = !errors.weight
   const fatOk = !errors.fat
   const muscleOk = !errors.muscle
@@ -235,7 +238,7 @@ export function PhysicalDataForm({
                 onChange={(heightFt) => update({ heightFt })}
                 suffix="ft"
                 inputMode="numeric"
-                invalid={!heightOk}
+                invalid={!feetOk}
               />
               <NumberField
                 value={draft.heightIn}

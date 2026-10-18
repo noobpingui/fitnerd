@@ -1,22 +1,45 @@
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router"
 import { AnimatePresence } from "motion/react"
 import { ProtectedRoute } from "@/app/ProtectedRoute"
-import { AppLayout } from "@/app/AppLayout"
 import { PageTransition } from "@/app/PageTransition"
-import { OnboardingGuard } from "@/app/OnboardingGuard"
-import { OnboardingRoute } from "@/app/OnboardingRoute"
-import { LoginPage } from "@/features/auth/pages/LoginPage"
-import { RegisterPage } from "@/features/auth/pages/RegisterPage"
-import { ForgotPasswordPage } from "@/features/auth/pages/ForgotPasswordPage"
-import { ResetPasswordPage } from "@/features/auth/pages/ResetPasswordPage"
-import { MacrosPage } from "@/features/macros/pages/MacrosPage"
-import { BodyMetricsPage } from "@/features/body-metrics/pages/BodyMetricsPage"
-import { HomePage } from "@/features/home/pages/HomePage"
-import { CoachPage } from "@/features/coach/pages/CoachPage"
-import { StorePage } from "@/features/store/pages/StorePage"
-import { ProfilePage } from "@/features/profile/pages/ProfilePage"
-import { PrivacyPolicyPage } from "@/features/legal/pages/PrivacyPolicyPage"
-import { TermsOfServicePage } from "@/features/legal/pages/TermsOfServicePage"
+import { lazyNamed } from "@/app/lazyNamed"
+import { RouteSuspense } from "@/app/RouteSuspense"
+
+// Cada pantalla se descarga al visitar su ruta (ADR-0026).
+const AppLayout = lazyNamed(() => import("@/app/AppLayout"), "AppLayout")
+const OnboardingGuard = lazyNamed(() => import("@/app/OnboardingGuard"), "OnboardingGuard")
+const OnboardingRoute = lazyNamed(() => import("@/app/OnboardingRoute"), "OnboardingRoute")
+const LoginPage = lazyNamed(() => import("@/features/auth/pages/LoginPage"), "LoginPage")
+const RegisterPage = lazyNamed(() => import("@/features/auth/pages/RegisterPage"), "RegisterPage")
+const ForgotPasswordPage = lazyNamed(
+  () => import("@/features/auth/pages/ForgotPasswordPage"),
+  "ForgotPasswordPage"
+)
+const ResetPasswordPage = lazyNamed(
+  () => import("@/features/auth/pages/ResetPasswordPage"),
+  "ResetPasswordPage"
+)
+const MacrosPage = lazyNamed(() => import("@/features/macros/pages/MacrosPage"), "MacrosPage")
+const BodyMetricsPage = lazyNamed(
+  () => import("@/features/body-metrics/pages/BodyMetricsPage"),
+  "BodyMetricsPage"
+)
+const HomePage = lazyNamed(() => import("@/features/home/pages/HomePage"), "HomePage")
+const CoachPage = lazyNamed(() => import("@/features/coach/pages/CoachPage"), "CoachPage")
+const StorePage = lazyNamed(() => import("@/features/store/pages/StorePage"), "StorePage")
+const ProfilePage = lazyNamed(() => import("@/features/profile/pages/ProfilePage"), "ProfilePage")
+const PrivacyPolicyPage = lazyNamed(
+  () => import("@/features/legal/pages/PrivacyPolicyPage"),
+  "PrivacyPolicyPage"
+)
+const TermsOfServicePage = lazyNamed(
+  () => import("@/features/legal/pages/TermsOfServicePage"),
+  "TermsOfServicePage"
+)
+
+// Las pantallas dentro de AppLayout reservan altura mientras cargan, para que
+// el navbar no salte. Una ruta nueva dentro de AppLayout debe usarla.
+const IN_LAYOUT = "min-h-[50vh]"
 
 export function AppRouter() {
   return (
@@ -44,7 +67,9 @@ function AnimatedRoutes() {
           path="/login"
           element={
             <PageTransition>
-              <LoginPage />
+              <RouteSuspense>
+                <LoginPage />
+              </RouteSuspense>
             </PageTransition>
           }
         />
@@ -52,7 +77,9 @@ function AnimatedRoutes() {
           path="/register"
           element={
             <PageTransition>
-              <RegisterPage />
+              <RouteSuspense>
+                <RegisterPage />
+              </RouteSuspense>
             </PageTransition>
           }
         />
@@ -60,7 +87,9 @@ function AnimatedRoutes() {
           path="/forgot-password"
           element={
             <PageTransition>
-              <ForgotPasswordPage />
+              <RouteSuspense>
+                <ForgotPasswordPage />
+              </RouteSuspense>
             </PageTransition>
           }
         />
@@ -68,14 +97,30 @@ function AnimatedRoutes() {
           path="/reset-password"
           element={
             <PageTransition>
-              <ResetPasswordPage />
+              <RouteSuspense>
+                <ResetPasswordPage />
+              </RouteSuspense>
             </PageTransition>
           }
         />
         {/* Sin PageTransition: esa animacion es especifica del "swap" entre
             login/registro, no hace falta aca. */}
-        <Route path="/privacy" element={<PrivacyPolicyPage />} />
-        <Route path="/terms" element={<TermsOfServicePage />} />
+        <Route
+          path="/privacy"
+          element={
+            <RouteSuspense>
+              <PrivacyPolicyPage />
+            </RouteSuspense>
+          }
+        />
+        <Route
+          path="/terms"
+          element={
+            <RouteSuspense>
+              <TermsOfServicePage />
+            </RouteSuspense>
+          }
+        />
 
         {/* Rutas protegidas: ProtectedRoute exige token, AppLayout pone el
             navbar alrededor de cualquier pagina que matchee mas adentro */}
@@ -83,15 +128,76 @@ function AnimatedRoutes() {
           {/* El onboarding va fuera de AppLayout (sin navbar ni barra
               inferior, para que no haya a dónde "escaparse") y fuera de
               OnboardingGuard (si no, redirigiría a sí mismo en bucle). */}
-          <Route path="/onboarding" element={<OnboardingRoute />} />
-          <Route element={<OnboardingGuard />}>
-            <Route element={<AppLayout />}>
-              <Route path="/home" element={<HomePage />} />
-              <Route path="/macros" element={<MacrosPage />} />
-              <Route path="/body-metrics" element={<BodyMetricsPage />} />
-              <Route path="/coach" element={<CoachPage />} />
-              <Route path="/store" element={<StorePage />} />
-              <Route path="/profile" element={<ProfilePage />} />
+          <Route
+            path="/onboarding"
+            element={
+              <RouteSuspense>
+                <OnboardingRoute />
+              </RouteSuspense>
+            }
+          />
+          <Route
+            element={
+              <RouteSuspense>
+                <OnboardingGuard />
+              </RouteSuspense>
+            }
+          >
+            <Route
+              element={
+                <RouteSuspense>
+                  <AppLayout />
+                </RouteSuspense>
+              }
+            >
+              <Route
+                path="/home"
+                element={
+                  <RouteSuspense className={IN_LAYOUT}>
+                    <HomePage />
+                  </RouteSuspense>
+                }
+              />
+              <Route
+                path="/macros"
+                element={
+                  <RouteSuspense className={IN_LAYOUT}>
+                    <MacrosPage />
+                  </RouteSuspense>
+                }
+              />
+              <Route
+                path="/body-metrics"
+                element={
+                  <RouteSuspense className={IN_LAYOUT}>
+                    <BodyMetricsPage />
+                  </RouteSuspense>
+                }
+              />
+              <Route
+                path="/coach"
+                element={
+                  <RouteSuspense className={IN_LAYOUT}>
+                    <CoachPage />
+                  </RouteSuspense>
+                }
+              />
+              <Route
+                path="/store"
+                element={
+                  <RouteSuspense className={IN_LAYOUT}>
+                    <StorePage />
+                  </RouteSuspense>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <RouteSuspense className={IN_LAYOUT}>
+                    <ProfilePage />
+                  </RouteSuspense>
+                }
+              />
             </Route>
           </Route>
         </Route>

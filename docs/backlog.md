@@ -46,3 +46,18 @@ Feature: [specs/016-past-date-measurements/](../specs/016-past-date-measurements
 - [ ] Test de extremo a extremo de la sincronización del peso del perfil: los tests de la página comprueban el valor que devuelve `getProfile` mockeado.
 - [ ] Revisar los tests de orden de AC-003.4 si las filas de mediciones superan el tamaño de página del Historial (hoy usan 3 filas).
 - [ ] Chunk de frontend de 1,087 kB (>500 kB) en el build; no bloquea.
+
+## 017-frontend-polish · Pulido de frontend: mensaje de pulgadas, inRange compartido, warnings de lint y tests (2026-10-18)
+
+Feature: [specs/017-frontend-polish/](../specs/017-frontend-polish/)
+
+- [ ] Distinguir en el boundary un error de render de un fallo de descarga, si hiciera falta.
+- [ ] Comentarios sin tilde y con voseo en router.tsx, router.test.tsx, AppLayout.tsx, ProtectedRoute.tsx y setup.ts (fuera de alcance; solo se corrigen los que se toquen).
+- [ ] Valorar LazyMotion de motion si el chunk de entrada vuelve a crecer.
+- [ ] Si la implementación cambia el orden de los tests de lazyRoutes.test.tsx, el test de "Cargando…" debe seguir siendo el primero (cache de React.lazy).
+- [ ] Añadir AC-001.5 (caso «pies no válidos manda Entre 3 y 8 ft») y AC-N002.4 (configuración de lint) a plan.md, sección 5, «Pasan ya en verde», para que el registro coincida con la aceptación del usuario.
+- [ ] Los tests de AC-002.2 a AC-002.4 (lazyRoutes) siguen verdes antes de la carga diferida y no prueban que el chunk no se descargue hasta navegar: añadir esa comprobación en verify o en tests.
+- [ ] ResetPasswordForm.test.tsx (fuera del alcance de la 017, que solo cubre LoginForm y ForgotPasswordForm) tiene «boton», «peticion» y «esta en curso» en comentarios o nombres de test (Art. P2 General).
+- [ ] Los «Cargando…» encadenados (guard, layout y pantalla) siguen en la primera visita a una ruta protegida; es consecuencia del ADR-0026 (F6 resuelto solo con `className`, sin precargar el layout).
+- [ ] Añadir un test del envío correcto de FeedbackForm (elegir categoría y mensaje, 201 y onSuccess) y otro del mensaje de error del servidor, con una utilidad para manejar el Select de Radix.
+- [ ] F11 (test-author): `FeedbackForm.test.tsx:42-44` comprueba el error de categoría contando los textos «Elige una categoría» (placeholder y mensaje de error), lo que es frágil. Sería mejor localizar el `FormMessage` del campo.

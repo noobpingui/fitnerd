@@ -61,4 +61,7 @@ function Button({
   )
 }
 
+// buttonVariants no es un componente, pero shadcn lo exporta desde aquí y otros componentes de UI lo importan de
+// este módulo: se suprime el aviso de Fast Refresh solo en esta línea.
+// oxlint-disable-next-line react/only-export-components
 export { Button, buttonVariants }

@@ -1,0 +1,665 @@
+{
+  "schema_version": 1,
+  "feature": "017-frontend-polish",
+  "title": "Pulido de frontend: mensaje de pulgadas, inRange compartido, warnings de lint y tests",
+  "type": "feature",
+  "scope": [
+    "frontend"
+  ],
+  "branch": "feat/017-frontend-polish",
+  "base_branch": "main",
+  "created_at": "2026-10-18T04:39:28.778Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-18T04:52:13.532Z",
+      "note": "Si"
+    },
+    "plan": {
+      "at": "2026-10-18T05:00:05.686Z",
+      "note": "auto (gate_mode=flow): plan frontend-only, sin migracion, ADR-0026"
+    },
+    "tasks": {
+      "at": "2026-10-18T05:00:57.624Z",
+      "note": "auto (gate_mode=flow): 32 tareas (4 scaffold, 18 test, 8 impl, 2 config)"
+    },
+    "tests": {
+      "at": "2026-10-18T06:37:10.891Z",
+      "note": "auto (gate_mode=flow): F9, 2 tests de FeedbackForm"
+    },
+    "implement": {
+      "at": "2026-10-18T06:38:40.953Z",
+      "note": "auto (gate_mode=flow): F10, 743 tests verdes"
+    },
+    "verify": {
+      "at": "2026-10-18T06:40:53.423Z",
+      "note": "auto (gate_mode=flow): verify PASS tras F9 y F10"
+    },
+    "review": {
+      "at": "2026-10-18T08:00:23.775Z",
+      "note": "F5 esta listo. Aprobado"
+    },
+    "docs": {
+      "at": "2026-10-18T08:01:03.225Z",
+      "note": "auto (gate_mode=flow): docs, CLAUDE.md seccion Proyecto"
+    },
+    "close": {
+      "at": "2026-10-18T08:05:11.755Z",
+      "note": "Aprobado. Si"
+    }
+  },
+  "commits": {
+    "spec": "e9c78fe",
+    "plan": "bd8af4f",
+    "tasks": "a046390",
+    "tests": "2454e44",
+    "implement": "2836d0d",
+    "review": "eb1e0cb",
+    "docs": "4e4802f"
+  },
+  "iterations": {
+    "tests": 3,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-10-18T05:42:58.454Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-10-18T06:40:46.299Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-10-18T06:41:58.804Z"
+  },
+  "tests_snapshot": {
+    "at": "2026-10-18T06:37:10.743Z",
+    "reason": "correccion de tests por review: F9",
+    "sha256": {
+      "frontend/src/app/RouteSuspense.test.tsx": "948b0408ac5a6c875023e39ba14f69e0df863fcaf5e76f8448f956301f3e925b",
+      "frontend/src/app/lazyNamed.test.ts": "7bd804f2bf29c0a953763d03d2df488348b6946b72582e280e4e31864ecfa50b",
+      "frontend/src/app/lazyRoutes.test.tsx": "7380aa9fd7771a28d104bdaefe1b33aaf2946c5683762013ec9356fe795d6a3b",
+      "frontend/src/app/sourceCleanup017.test.ts": "a886a1c0ac46628b6736c52ec343b097e203eeaed07dec756905bac9759e0752",
+      "frontend/src/features/auth/components/ForgotPasswordForm.test.tsx": "cb3ea387b95179a54e907a7ae2ce4feb90eb046fe45473d27d4994e6e2ac88eb",
+      "frontend/src/features/auth/components/LoginForm.test.tsx": "ddb48e8ca86d0b465809717b3265997b800810312532c222f9666766aae73485",
+      "frontend/src/features/feedback/components/FeedbackForm.test.tsx": "440eebc003ab641746652a4b25c1b25f50ed5400f2bb7b0ec427690b5049cbae",
+      "frontend/src/features/onboarding/pages/OnboardingPage.test.tsx": "5224b650a0e7b0c3e625568dd6b392bbb989ab4c87dd8e519a8eb7f7a8740b67",
+      "frontend/src/features/onboarding/schemas.test.ts": "c609a3f39540d3930822b65d099d191b728dc991f161fccbf00bd21aa3925ff7",
+      "frontend/src/features/profile/pages/ProfilePage.test.tsx": "fd80826ad1e2c69cbd29f0704b6c4b1d0fed67d2b841e2495ab5698f3228797a",
+      "frontend/src/features/profile/schemas.test.ts": "65b00031567b564608e455238b781602089a9d7d40b55f78306cc9f6593d999f",
+      "frontend/src/lib/inRange.test.ts": "67b99c3e154d8d9aa59bd8cb5c28aa7e4850b1bb474be0b5f4e8494b92444614",
+      "frontend/src/test/setup.ts": "f721fbe5485078d35c84d7f5e848490b9704fbc0c92b1c63834799f59e3b150c"
+    }
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-18T04:39:28.778Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama feat/017-frontend-polish desde main"
+    },
+    {
+      "at": "2026-10-18T04:41:55.554Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegar en spec-writer"
+    },
+    {
+      "at": "2026-10-18T04:45:49.569Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "6 preguntas abiertas de la spec (Q1-Q6)"
+    },
+    {
+      "at": "2026-10-18T04:49:15.708Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "Spec 017: 3 REQ (12 AC) y 5 NFR (14 AC), sin preguntas abiertas"
+    },
+    {
+      "at": "2026-10-18T04:52:13.532Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Si"
+    },
+    {
+      "at": "2026-10-18T04:52:17.101Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: e9c78fe"
+    },
+    {
+      "at": "2026-10-18T04:52:17.265Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegar en planner"
+    },
+    {
+      "at": "2026-10-18T05:00:05.460Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Cargar bajo demanda tambien OnboardingGuard y AppLayout; sin manualChunks ni tocar vite.config.ts; ADR-0026 propuesta; asyncUtilTimeout 3000 ms en setup.ts"
+    },
+    {
+      "at": "2026-10-18T05:00:05.544Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md y ADR-0026"
+    },
+    {
+      "at": "2026-10-18T05:00:05.686Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan frontend-only, sin migracion, ADR-0026"
+    },
+    {
+      "at": "2026-10-18T05:00:05.948Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: bd8af4f"
+    },
+    {
+      "at": "2026-10-18T05:00:06.116Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegar en task-breaker"
+    },
+    {
+      "at": "2026-10-18T05:00:57.540Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "32 tareas, 26 AC cubiertos"
+    },
+    {
+      "at": "2026-10-18T05:00:57.624Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 32 tareas (4 scaffold, 18 test, 8 impl, 2 config)"
+    },
+    {
+      "at": "2026-10-18T05:00:57.855Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: a046390"
+    },
+    {
+      "at": "2026-10-18T05:00:58.027Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (implementer)"
+    },
+    {
+      "at": "2026-10-18T05:01:44.493Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-18T05:06:51.655Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red"
+    },
+    {
+      "at": "2026-10-18T05:10:01.253Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: 22 de 212 tests fallan por comportamiento ausente (legítimo). 19 tests nuevos pasan sin implementación: lazyRoutes (13), OnboardingPage AC-001.6, ProfilePage AC-001.4 (4) y vite AC-N005.1. Bloquea PASS hasta que test-author los haga rojos o se justifique en plan.md."
+    },
+    {
+      "at": "2026-10-18T05:10:14.384Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red check FAIL: 19 tests nuevos pasan sin implementacion (lazyRoutes, AC-001.4, AC-001.6, AC-N005.1) · tests 1/3"
+    },
+    {
+      "at": "2026-10-18T05:11:04.634Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red (iteracion 2)"
+    },
+    {
+      "at": "2026-10-18T05:15:26.488Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Iteracion 2: 23 de 213 fallan por comportamiento ausente (legitimo) y los scaffolds cumplen B5.6. Bloquea PASS: AC-001.4 (4 casos de ProfilePage) pasa sin implementacion y no esta justificado en plan.md seccion 5. Los demas tests en verde estan justificados."
+    },
+    {
+      "at": "2026-10-18T05:15:41.977Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red check FAIL it.2: 4 casos de AC-001.4 pasan sin implementacion y no estan justificados en plan.md · tests 2/3"
+    },
+    {
+      "at": "2026-10-18T05:16:08.646Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red (iteracion 3)"
+    },
+    {
+      "at": "2026-10-18T05:20:04.297Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Iteracion 3: 27 de 213 fallan por comportamiento ausente (legitimo). Quedan 2 tests nuevos verdes sin justificar en plan.md seccion 5: AC-001.5 (pies no validos manda Entre 3 y 8 ft) y AC-N002.4 (configuracion de lint no desactiva la regla)."
+    },
+    {
+      "at": "2026-10-18T05:20:12.812Z",
+      "stage": "tests",
+      "event": "needs_input",
+      "note": "red check FAIL it.3: 2 guardas verdes sin justificar (AC-001.5 schemas onboarding, AC-N002.4 config lint); limite de iteraciones"
+    },
+    {
+      "at": "2026-10-18T05:39:56.765Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red (usuario acepta AC-001.5 y AC-N002.4 como guardas)"
+    },
+    {
+      "at": "2026-10-18T05:42:58.454Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red PASS iteracion 3: 27 de 213 fallan por comportamiento ausente (legitimo). 27 verdes nuevos: 25 justificados en plan.md seccion 5 y 2 aceptados por el usuario (AC-001.5 pies no validos, AC-N002.4 config lint). Sin errores de sintaxis, config, fixture ni imports fuera del plan. Scaffolds OK."
+    },
+    {
+      "at": "2026-10-18T05:43:09.708Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red PASS: 27 rojos legitimos, 2 guardas aceptadas por el usuario"
+    },
+    {
+      "at": "2026-10-18T05:43:09.806Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "12 archivo(s) de test: tests aprobados tras red check PASS"
+    },
+    {
+      "at": "2026-10-18T05:43:09.956Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red PASS, 27 rojos legitimos, 213 tests"
+    },
+    {
+      "at": "2026-10-18T05:43:10.339Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: e4b26d3"
+    },
+    {
+      "at": "2026-10-18T05:43:10.555Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegar en implementer"
+    },
+    {
+      "at": "2026-10-18T05:45:31.223Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-030..T-039; 739 tests verdes, lint y tsc limpios, chunk 384 kB"
+    },
+    {
+      "at": "2026-10-18T05:45:31.323Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 739 tests verdes, chunk de entrada 384 kB"
+    },
+    {
+      "at": "2026-10-18T05:45:31.603Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 1ba5cdd"
+    },
+    {
+      "at": "2026-10-18T05:45:31.793Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegar en verifier (full)"
+    },
+    {
+      "at": "2026-10-18T05:47:47.409Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify FAIL: npm test 739/739 OK; lint, tsc y build OK (entrada 384 kB). Falla trazabilidad: AC-N004.3 sin marcador SDD: (test-author)"
+    },
+    {
+      "at": "2026-10-18T05:47:58.289Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "verify FAIL: AC-N004.3 sin marcador SDD (art. B4.3) · tests 3/3"
+    },
+    {
+      "at": "2026-10-18T05:48:28.528Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "correccion: marcador AC-N004.3"
+    },
+    {
+      "at": "2026-10-18T05:48:28.634Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "12 archivo(s) de test: correccion de tests: marcador SDD de AC-N004.3"
+    },
+    {
+      "at": "2026-10-18T05:48:28.784Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): correccion de tests, marcador AC-N004.3"
+    },
+    {
+      "at": "2026-10-18T05:48:32.643Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 507950a"
+    },
+    {
+      "at": "2026-10-18T05:48:32.749Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "sin cambios de codigo: solo correccion de test"
+    },
+    {
+      "at": "2026-10-18T05:48:32.851Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): sin cambios de produccion, solo correccion de test"
+    },
+    {
+      "at": "2026-10-18T05:48:32.957Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegar en verifier (full), iteracion tras correccion"
+    },
+    {
+      "at": "2026-10-18T05:50:45.345Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: npm test 740/740 OK; lint sin warnings; tsc OK; build OK (entrada 384.07 kB); trazabilidad completa incl. AC-N004.3"
+    },
+    {
+      "at": "2026-10-18T05:51:01.435Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "PASS: 740 tests, lint, tsc, build; chunk 384 kB; 32 AC con marcador"
+    },
+    {
+      "at": "2026-10-18T05:51:01.541Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS, 740 tests, chunk de entrada 384 kB"
+    },
+    {
+      "at": "2026-10-18T05:51:01.731Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegar en reviewer"
+    },
+    {
+      "at": "2026-10-18T05:54:38.388Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-18T05:54:38.505Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED: 0 bloqueantes, 0 mayores, 3 menores, 4 nits"
+    },
+    {
+      "at": "2026-10-18T05:57:38.565Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "usuario pide corregir F1-F7 en el gate de review; tests: F1, F2, F4"
+    },
+    {
+      "at": "2026-10-18T05:58:19.683Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "correccion F1, F2, F4"
+    },
+    {
+      "at": "2026-10-18T05:58:19.784Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "12 archivo(s) de test: correccion de tests por review: F1, F2, F4"
+    },
+    {
+      "at": "2026-10-18T05:58:19.932Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): correccion de tests F1, F2, F4"
+    },
+    {
+      "at": "2026-10-18T05:58:20.203Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: cc5aeb6"
+    },
+    {
+      "at": "2026-10-18T05:58:20.314Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "usuario pide corregir F3 y F6 en el gate de review"
+    },
+    {
+      "at": "2026-10-18T05:59:52.797Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F3 y F6; 741 tests, lint y tsc limpios"
+    },
+    {
+      "at": "2026-10-18T05:59:52.902Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F3 y F6, 741 tests verdes"
+    },
+    {
+      "at": "2026-10-18T05:59:53.186Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 35abc83"
+    },
+    {
+      "at": "2026-10-18T06:01:55.187Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: npm test 741/741 OK; lint sin errores ni warnings; tsc OK; build OK (entrada 384.30 kB); trazabilidad completa (32 AC con marcador SDD 017, 32/32 tareas [x], sin skip/only nuevos)"
+    },
+    {
+      "at": "2026-10-18T06:01:59.613Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: npm test 741/741 OK; lint sin errores ni warnings; tsc OK; build OK (entrada 384.30 kB); trazabilidad completa (27 AC de spec 017 con marcador SDD 017, 32/32 tareas [x], sin skip/only nuevos)"
+    },
+    {
+      "at": "2026-10-18T06:02:06.587Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "PASS: 741 tests, lint, tsc, build; chunk 384 kB"
+    },
+    {
+      "at": "2026-10-18T06:02:06.684Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS tras correcciones de review"
+    },
+    {
+      "at": "2026-10-18T06:02:06.884Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegar en reviewer (segunda pasada)"
+    },
+    {
+      "at": "2026-10-18T06:03:52.944Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-18T06:03:53.066Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED 2/3: 0 bloqueantes, 0 mayores, 1 menor (F5 manual), 3 nits"
+    },
+    {
+      "at": "2026-10-18T06:36:24.120Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "usuario aprueba la review y pide corregir F9 y F10; tests: F9"
+    },
+    {
+      "at": "2026-10-18T06:37:10.633Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "F9: tests de comportamiento de FeedbackForm"
+    },
+    {
+      "at": "2026-10-18T06:37:10.743Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "13 archivo(s) de test: correccion de tests por review: F9"
+    },
+    {
+      "at": "2026-10-18T06:37:10.891Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F9, 2 tests de FeedbackForm"
+    },
+    {
+      "at": "2026-10-18T06:37:11.156Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 2454e44"
+    },
+    {
+      "at": "2026-10-18T06:37:11.263Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "usuario pide corregir F10 en el gate de review"
+    },
+    {
+      "at": "2026-10-18T06:38:40.849Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F10: constante IN_LAYOUT; 743 tests, lint y tsc limpios"
+    },
+    {
+      "at": "2026-10-18T06:38:40.953Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F10, 743 tests verdes"
+    },
+    {
+      "at": "2026-10-18T06:38:41.203Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 2836d0d"
+    },
+    {
+      "at": "2026-10-18T06:38:41.310Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegar en verifier (full) tras F9 y F10"
+    },
+    {
+      "at": "2026-10-18T06:40:46.299Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: npm test 743/743 OK; lint sin errores ni warnings; tsc OK; build OK (entrada 384.25 kB); trazabilidad completa (27 AC de spec 017 con marcador SDD 017, 32/32 tareas [x], sin skip/only nuevos); AC manuales 002.1, 003.1, 003.2"
+    },
+    {
+      "at": "2026-10-18T06:40:53.318Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "PASS: 743 tests, lint, tsc, build; chunk 384 kB"
+    },
+    {
+      "at": "2026-10-18T06:40:53.423Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS tras F9 y F10"
+    },
+    {
+      "at": "2026-10-18T06:40:53.627Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegar en reviewer (tercera pasada)"
+    },
+    {
+      "at": "2026-10-18T06:41:58.804Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-18T06:41:58.927Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED 3/3: 0 bloqueantes, 0 mayores, 1 menor (F5 manual), 1 nit (F11)"
+    },
+    {
+      "at": "2026-10-18T08:00:23.775Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "F5 esta listo. Aprobado"
+    },
+    {
+      "at": "2026-10-18T08:00:24.055Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: eb1e0cb"
+    },
+    {
+      "at": "2026-10-18T08:00:24.247Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegar en doc-keeper"
+    },
+    {
+      "at": "2026-10-18T08:01:03.123Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "CLAUDE.md seccion Proyecto"
+    },
+    {
+      "at": "2026-10-18T08:01:03.225Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): docs, CLAUDE.md seccion Proyecto"
+    },
+    {
+      "at": "2026-10-18T08:01:03.507Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: 4e4802f"
+    },
+    {
+      "at": "2026-10-18T08:01:03.708Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Checklist de hecho y gate de cierre"
+    },
+    {
+      "at": "2026-10-18T08:01:20.771Z",
+      "stage": "close",
+      "event": "done",
+      "note": "checklist de hecho completo; backlog global actualizado"
+    },
+    {
+      "at": "2026-10-18T08:05:11.755Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Aprobado. Si"
+    },
+    {
+      "at": "2026-10-18T08:05:11.755Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
+    }
+  ]
+}

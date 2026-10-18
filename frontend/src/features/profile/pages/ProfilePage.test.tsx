@@ -608,7 +608,6 @@ describe("ProfilePage - reglas de validación (spec 015)", () => {
   it.each([
     ["2", "9"],
     ["9", "9"],
-    ["5", "12"],
   ])(
     "%s ft con %s in muestra 'Entre 3 y 8 ft' y deshabilita guardar",
     async (ft, inches) => {
@@ -627,10 +626,7 @@ describe("ProfilePage - reglas de validación (spec 015)", () => {
   )
 
   // SDD: 015 REQ-003 AC-003.5
-  it.each([
-    ["5.5", "9"],
-    ["5", "2.5"],
-  ])(
+  it.each([["5.5", "9"]])(
     "%s ft con %s in (decimales) muestra 'Entre 3 y 8 ft' y deshabilita guardar",
     async (ft, inches) => {
       getProfileMock.mockResolvedValue(FT_LB_RESPONSE)
@@ -641,6 +637,89 @@ describe("ProfilePage - reglas de validación (spec 015)", () => {
       setValue(spinbuttons()[1], inches)
 
       expect(screen.getByText("Entre 3 y 8 ft")).toBeInTheDocument()
+      expect(saveButton()).toBeDisabled()
+    }
+  )
+
+  // SDD: 017 REQ-001 AC-001.1 · 015 REQ-003 AC-003.4
+  it("5 ft con 12 in muestra 'Entre 0 y 11 in', marca solo las pulgadas y deshabilita guardar", async () => {
+    getProfileMock.mockResolvedValue(FT_LB_RESPONSE)
+    renderPage()
+    await dobInput()
+
+    setValue(spinbuttons()[0], "5")
+    setValue(spinbuttons()[1], "12")
+
+    expect(screen.getByText("Entre 0 y 11 in")).toBeInTheDocument()
+    expect(screen.queryByText("Entre 3 y 8 ft")).not.toBeInTheDocument()
+    expect(spinbuttons()[1]).toHaveAttribute("aria-invalid", "true")
+    expect(spinbuttons()[0]).not.toHaveAttribute("aria-invalid", "true")
+    expect(saveButton()).toBeDisabled()
+  })
+
+  // SDD: 017 REQ-001 AC-001.2 · 015 REQ-003 AC-003.5
+  it.each(["2.5", "-1"])(
+    "5 ft con %s in muestra 'Entre 0 y 11 in' y deshabilita guardar",
+    async (inches) => {
+      getProfileMock.mockResolvedValue(FT_LB_RESPONSE)
+      renderPage()
+      await dobInput()
+
+      setValue(spinbuttons()[0], "5")
+      setValue(spinbuttons()[1], inches)
+
+      expect(screen.getByText("Entre 0 y 11 in")).toBeInTheDocument()
+      expect(screen.queryByText("Entre 3 y 8 ft")).not.toBeInTheDocument()
+      expect(saveButton()).toBeDisabled()
+    }
+  )
+
+  // SDD: 017 REQ-001 AC-001.3
+  it.each(["11", ""])(
+    "al corregir las pulgadas de 12 a '%s' desaparece el mensaje y guardar se habilita",
+    async (inches) => {
+      getProfileMock.mockResolvedValue(FT_LB_RESPONSE)
+      renderPage()
+      await dobInput()
+      setValue(spinbuttons()[0], "5")
+      setValue(spinbuttons()[1], "12")
+      expect(screen.getByText("Entre 0 y 11 in")).toBeInTheDocument()
+
+      setValue(spinbuttons()[1], inches)
+
+      expect(screen.queryByText("Entre 0 y 11 in")).not.toBeInTheDocument()
+      expect(spinbuttons()[0]).not.toHaveAttribute("aria-invalid", "true")
+      expect(spinbuttons()[1]).not.toHaveAttribute("aria-invalid", "true")
+      expect(saveButton()).toBeEnabled()
+    }
+  )
+
+  // SDD: 017 REQ-001 AC-001.4
+  it.each([
+    ["2", "9"],
+    ["9", "12"],
+    ["5.5", "9"],
+    ["5.5", "12"],
+  ])(
+    "%s ft con %s in muestra 'Entre 3 y 8 ft', sin 'Entre 0 y 11 in', y marca los dos campos",
+    async (ft, inches) => {
+      getProfileMock.mockResolvedValue(FT_LB_RESPONSE)
+      renderPage()
+      await dobInput()
+
+      // Se parte de un fallo solo de pulgadas (5 ft con 12 in) para comprobar
+      // que, al fallar los pies, el mensaje pasa a ser el de los pies.
+      setValue(spinbuttons()[0], "5")
+      setValue(spinbuttons()[1], "12")
+      expect(screen.getByText("Entre 0 y 11 in")).toBeInTheDocument()
+
+      setValue(spinbuttons()[0], ft)
+      setValue(spinbuttons()[1], inches)
+
+      expect(screen.getByText("Entre 3 y 8 ft")).toBeInTheDocument()
+      expect(screen.queryByText("Entre 0 y 11 in")).not.toBeInTheDocument()
+      expect(spinbuttons()[0]).toHaveAttribute("aria-invalid", "true")
+      expect(spinbuttons()[1]).toHaveAttribute("aria-invalid", "true")
       expect(saveButton()).toBeDisabled()
     }
   )
