@@ -13,6 +13,10 @@ from services.credential_rules import (
     validate_email,
     validate_new_password,
 )
+from services.profile_service import utc_now
+
+WRONG_CREDENTIALS_MESSAGE = "Correo o contraseña incorrectos"
+EMAIL_TAKEN_MESSAGE = "Ya existe una cuenta con este correo"
 
 
 
@@ -24,12 +28,21 @@ def verify_google_id_token(id_token_str: str, client_id: str | None) -> dict:
 
 class AuthService():
     def __init__(self, user_repository: UserRepository, unit_of_work, jwt_manager: JWTManager, google_client_id: str = None,
-                 google_token_verifier=verify_google_id_token):
+                 google_token_verifier=verify_google_id_token, clock=utc_now):
+        self.clock = clock
         self.google_token_verifier = google_token_verifier
         self.user_repository = user_repository
         self.jwt_manager = jwt_manager
         self.unit_of_work = unit_of_work
         self.google_client_id = google_client_id
+
+    def register_from_body(self, _body: object) -> str:
+        """Comprueba que `body` es un objeto JSON y delega en `register` con sus campos."""
+        raise NotImplementedError("not implemented")
+
+    def login_from_body(self, _body: object) -> str:
+        """Comprueba que `body` es un objeto JSON y delega en `login` con `email` y `password`."""
+        raise NotImplementedError("not implemented")
 
     #To create/register a new user
     def register(self, email, password, first_name, last_name, date_of_birth):

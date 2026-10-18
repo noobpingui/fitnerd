@@ -16,3 +16,18 @@
 - [ ] Los tests de `LoginForm.test.tsx` simulan respuestas con «Wrong Credentials»; convendría pasarlas al texto nuevo para que reflejen el contrato real.
 - [ ] Los mensajes por defecto en inglés de `ConflictError` («Email already registered») y `AuthenticationError` («Wrong credentials») en `exceptions/custom_exceptions.py` siguen igual. No se usan en estos flujos, pero confunden.
 - [ ] Hay dos `utc_now` iguales, en `profile_service.py` y en `password_reset_service.py`; se podrían unificar en un solo módulo.
+
+## tasks · task-breaker
+- [ ] Según el plan, AC-005.6, AC-005.8 y AC-009.2 pueden pasar en verde antes de implementar. El verifier debe aceptarlos como no regresión.
+
+## tests (scaffold) · implementer
+- [ ] Los parámetros de los esqueletos en `auth_input_rules.py` llevan prefijo `_` (`_body`, `_value`); quitárselo al implementar. El `# noqa: F401` del import de `ValidationError` también sobra al implementar.
+
+## tests · test-author
+- [ ] `tests/fakes.py` y los archivos de test existentes tienen finales de línea CRLF (en `fakes.py`, mezclados con LF por lo que se añadió). Conviene normalizarlos más adelante.
+- [ ] AC-005.4 y AC-005.5 en integración dependen del día UTC real y podrían fallar justo al cruzar la medianoche UTC. Las fronteras exactas ya están cubiertas en unitarios con reloj fijo.
+- [ ] Incidente de proceso: el test-author escribió `fakes.py` y `test_auth_input_rules.py` con la shell (heredoc) en vez de con Write o Edit.
+
+## tests (red check) · verifier
+- [ ] Revisar el resto de tests de la batería de AC-N001.1 cuando se corrijan los casos anteriores (el `raw-malformed` en inglés del framework también tiene que pasar a «La petición no es válida»).
+- [ ] Escribir el verify-report de la etapa verify con la trazabilidad completa (AC-N001.1 y los marcadores de AC-006.x).
