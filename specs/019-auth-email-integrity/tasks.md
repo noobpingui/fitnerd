@@ -20,11 +20,11 @@
 - [x] T-020 [REQ-004] (test) Adaptar con el fixture `legacy_email_schema` los dos tests de la 014 de cuentas antiguas con mayúsculas, sin tocar aserciones ni marcadores — `backend/tests/test_routes/test_auth_routes.py`
 
 ## Fase B — Implementación (implementer)
-- [ ] T-030 [REQ-001, REQ-002, REQ-003, AC-001.1, AC-001.2, AC-001.3, AC-002.1, AC-002.2, AC-002.3, AC-003.1, AC-003.2] (migration) `upgrade()`: detectar conflictos y lanzar `RuntimeError` con el mensaje de la spec antes de escribir, y convertir con `UPDATE ... WHERE email <> <canónica>` las cuentas y las solicitudes — `backend/migrations/versions/e5b7d9f1a3c6_canonical_email_check_constraints.py`
-- [ ] T-031 [REQ-004, AC-004.1, AC-004.2, AC-004.3, AC-004.4, AC-004.5] (migration) `upgrade()`: crear `ck_users_email_canonical` y `ck_password_reset_requests_email_canonical` tras la conversión — `backend/migrations/versions/e5b7d9f1a3c6_canonical_email_check_constraints.py`
-- [ ] T-032 [REQ-006, AC-006.1, AC-006.2] (migration) `downgrade()`: retirar las dos restricciones sin tocar correos — `backend/migrations/versions/e5b7d9f1a3c6_canonical_email_check_constraints.py`
-- [ ] T-033 [REQ-004, REQ-005, AC-005.1, AC-005.2, AC-005.3, AC-005.4, AC-005.5] (impl) Declarar `CheckConstraint(CANONICAL_EMAIL_CONDITION, name="ck_users_email_canonical")` en `__table_args__` de `User`, manteniendo el esquema `public` — `backend/models/user.py`
-- [ ] T-034 [REQ-004, AC-004.4, AC-005.5] (impl) Declarar `CheckConstraint` `ck_password_reset_requests_email_canonical` (importando la constante de `models/user.py`) al principio de `__table_args__` de `PasswordResetRequest` — `backend/models/password_reset_request.py`
+- [x] T-030 [REQ-001, REQ-002, REQ-003, AC-001.1, AC-001.2, AC-001.3, AC-002.1, AC-002.2, AC-002.3, AC-003.1, AC-003.2] (migration) `upgrade()`: detectar conflictos y lanzar `RuntimeError` con el mensaje de la spec antes de escribir, y convertir con `UPDATE ... WHERE email <> <canónica>` las cuentas y las solicitudes — `backend/migrations/versions/e5b7d9f1a3c6_canonical_email_check_constraints.py`
+- [x] T-031 [REQ-004, AC-004.1, AC-004.2, AC-004.3, AC-004.4, AC-004.5] (migration) `upgrade()`: crear `ck_users_email_canonical` y `ck_password_reset_requests_email_canonical` tras la conversión — `backend/migrations/versions/e5b7d9f1a3c6_canonical_email_check_constraints.py`
+- [x] T-032 [REQ-006, AC-006.1, AC-006.2] (migration) `downgrade()`: retirar las dos restricciones sin tocar correos — `backend/migrations/versions/e5b7d9f1a3c6_canonical_email_check_constraints.py`
+- [x] T-033 [REQ-004, REQ-005, AC-005.1, AC-005.2, AC-005.3, AC-005.4, AC-005.5] (impl) Declarar `CheckConstraint(CANONICAL_EMAIL_CONDITION, name="ck_users_email_canonical")` en `__table_args__` de `User`, manteniendo el esquema `public` — `backend/models/user.py`
+- [x] T-034 [REQ-004, AC-004.4, AC-005.5] (impl) Declarar `CheckConstraint` `ck_password_reset_requests_email_canonical` (importando la constante de `models/user.py`) al principio de `__table_args__` de `PasswordResetRequest` — `backend/models/password_reset_request.py`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

@@ -1,6 +1,6 @@
 from models.base import Base
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String, Enum as sqlAlchemyEnum, Date, func
+from sqlalchemy import CheckConstraint, String, Enum as sqlAlchemyEnum, Date, func
 from enum import Enum as PyEnum
 import uuid
 from datetime import date, datetime
@@ -55,5 +55,10 @@ class User(Base):
 
     created_at: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    __table_args__ = (
+        CheckConstraint(CANONICAL_EMAIL_CONDITION, name="ck_users_email_canonical"),
+        {"schema": "public"},
+    )
 
 

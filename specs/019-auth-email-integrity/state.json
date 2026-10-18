@@ -9,7 +9,7 @@
   "branch": "fix/019-auth-email-integrity",
   "base_branch": "main",
   "created_at": "2026-10-18T21:00:43.404Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -28,7 +28,10 @@
       "at": "2026-10-18T21:25:47.121Z",
       "note": "auto (gate_mode=flow): red check PASS, 21 rojos legítimos"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-18T21:29:14.300Z",
+      "note": "auto (gate_mode=flow): pytest 1018 passed"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -37,7 +40,8 @@
   "commits": {
     "spec": "15cbbe1",
     "plan": "9867726",
-    "tasks": "e741624"
+    "tasks": "e741624",
+    "tests": "a7f7801"
   },
   "iterations": {
     "tests": 1,
@@ -227,6 +231,36 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS, 21 rojos legítimos"
+    },
+    {
+      "at": "2026-10-18T21:25:47.467Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: a7f7801"
+    },
+    {
+      "at": "2026-10-18T21:25:47.569Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Red check en 2 iteraciones: AC-002.3 pasaba sin implementar (pytest.raises genérico), acotado con el prefijo del mensaje"
+    },
+    {
+      "at": "2026-10-18T21:25:47.769Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar tareas migration/impl de tasks.md"
+    },
+    {
+      "at": "2026-10-18T21:29:14.200Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-030..T-034 hechas; pytest 1018 passed; ratchet limpio"
+    },
+    {
+      "at": "2026-10-18T21:29:14.300Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): pytest 1018 passed"
     }
   ]
 }

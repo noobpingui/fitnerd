@@ -22,3 +22,6 @@
 
 ## tests · test-author
 - [ ] Aviso para el implementer: `CANONICAL_EMAIL_CONDITION` contiene `[[:space:]]`. SQLAlchemy `text()` y `CheckConstraint(str)` pueden interpretar `:space` como parámetro enlazado. Si el modelo o `op.create_check_constraint` fallan al compilar, hay que escapar los dos puntos (`\:`) o usar `sqlalchemy.text` con `literal_column`. Los tests de `AddConstraint` (`restore_canonical_email_checks`) dependen de que el modelo compile bien.
+
+## implement · implementer
+- [ ] Incidente de proceso: el implementer escribió la migración con un script de Python lanzado desde la shell en vez de con Write o Edit; el resultado se revisó.
