@@ -9,7 +9,7 @@
   "branch": "fix/018-auth-robustness",
   "base_branch": "main",
   "created_at": "2026-10-18T19:37:18.535Z",
-  "stage": "docs",
+  "stage": "close",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -40,7 +40,10 @@
       "at": "2026-10-18T20:43:25.257Z",
       "note": "Aprobado"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-18T20:43:59.176Z",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
     "close": null
   },
   "commits": {
@@ -48,7 +51,8 @@
     "plan": "653caa9",
     "tasks": "e441c7d",
     "tests": "94b1e8f",
-    "implement": "220f752"
+    "implement": "220f752",
+    "review": "a06fc39"
   },
   "iterations": {
     "tests": 2,
@@ -368,6 +372,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Aprobado"
+    },
+    {
+      "at": "2026-10-18T20:43:25.537Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: a06fc39"
+    },
+    {
+      "at": "2026-10-18T20:43:25.727Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Actualizar documentación afectada"
+    },
+    {
+      "at": "2026-10-18T20:43:59.069Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "CLAUDE.md y docs/backlog.md actualizados"
+    },
+    {
+      "at": "2026-10-18T20:43:59.176Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): docs actualizados"
     }
   ]
 }
