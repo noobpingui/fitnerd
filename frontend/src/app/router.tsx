@@ -37,6 +37,10 @@ const TermsOfServicePage = lazyNamed(
   "TermsOfServicePage"
 )
 
+// Las pantallas dentro de AppLayout reservan altura mientras cargan, para que
+// el navbar no salte. Una ruta nueva dentro de AppLayout debe usarla.
+const IN_LAYOUT = "min-h-[50vh]"
+
 export function AppRouter() {
   return (
     <BrowserRouter>
@@ -149,7 +153,7 @@ function AnimatedRoutes() {
               <Route
                 path="/home"
                 element={
-                  <RouteSuspense className="min-h-[50vh]">
+                  <RouteSuspense className={IN_LAYOUT}>
                     <HomePage />
                   </RouteSuspense>
                 }
@@ -157,7 +161,7 @@ function AnimatedRoutes() {
               <Route
                 path="/macros"
                 element={
-                  <RouteSuspense className="min-h-[50vh]">
+                  <RouteSuspense className={IN_LAYOUT}>
                     <MacrosPage />
                   </RouteSuspense>
                 }
@@ -165,7 +169,7 @@ function AnimatedRoutes() {
               <Route
                 path="/body-metrics"
                 element={
-                  <RouteSuspense className="min-h-[50vh]">
+                  <RouteSuspense className={IN_LAYOUT}>
                     <BodyMetricsPage />
                   </RouteSuspense>
                 }
@@ -173,7 +177,7 @@ function AnimatedRoutes() {
               <Route
                 path="/coach"
                 element={
-                  <RouteSuspense className="min-h-[50vh]">
+                  <RouteSuspense className={IN_LAYOUT}>
                     <CoachPage />
                   </RouteSuspense>
                 }
@@ -181,7 +185,7 @@ function AnimatedRoutes() {
               <Route
                 path="/store"
                 element={
-                  <RouteSuspense className="min-h-[50vh]">
+                  <RouteSuspense className={IN_LAYOUT}>
                     <StorePage />
                   </RouteSuspense>
                 }
@@ -189,7 +193,7 @@ function AnimatedRoutes() {
               <Route
                 path="/profile"
                 element={
-                  <RouteSuspense className="min-h-[50vh]">
+                  <RouteSuspense className={IN_LAYOUT}>
                     <ProfilePage />
                   </RouteSuspense>
                 }

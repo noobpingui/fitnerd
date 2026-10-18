@@ -9,7 +9,7 @@
   "branch": "feat/017-frontend-polish",
   "base_branch": "main",
   "created_at": "2026-10-18T04:39:28.778Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -28,7 +28,10 @@
       "at": "2026-10-18T06:37:10.891Z",
       "note": "auto (gate_mode=flow): F9, 2 tests de FeedbackForm"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-18T06:38:40.953Z",
+      "note": "auto (gate_mode=flow): F10, 743 tests verdes"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -38,7 +41,7 @@
     "spec": "e9c78fe",
     "plan": "bd8af4f",
     "tasks": "a046390",
-    "tests": "cc5aeb6",
+    "tests": "2454e44",
     "implement": "35abc83"
   },
   "iterations": {
@@ -511,6 +514,30 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): F9, 2 tests de FeedbackForm"
+    },
+    {
+      "at": "2026-10-18T06:37:11.156Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 2454e44"
+    },
+    {
+      "at": "2026-10-18T06:37:11.263Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "usuario pide corregir F10 en el gate de review"
+    },
+    {
+      "at": "2026-10-18T06:38:40.849Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F10: constante IN_LAYOUT; 743 tests, lint y tsc limpios"
+    },
+    {
+      "at": "2026-10-18T06:38:40.953Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F10, 743 tests verdes"
     }
   ]
 }
