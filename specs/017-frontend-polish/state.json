@@ -9,7 +9,7 @@
   "branch": "feat/017-frontend-polish",
   "base_branch": "main",
   "created_at": "2026-10-18T04:39:28.778Z",
-  "stage": "docs",
+  "stage": "close",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -40,7 +40,10 @@
       "at": "2026-10-18T08:00:23.775Z",
       "note": "F5 esta listo. Aprobado"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-18T08:01:03.225Z",
+      "note": "auto (gate_mode=flow): docs, CLAUDE.md seccion Proyecto"
+    },
     "close": null
   },
   "commits": {
@@ -48,7 +51,8 @@
     "plan": "bd8af4f",
     "tasks": "a046390",
     "tests": "2454e44",
-    "implement": "2836d0d"
+    "implement": "2836d0d",
+    "review": "eb1e0cb"
   },
   "iterations": {
     "tests": 3,
@@ -598,6 +602,30 @@
       "stage": "review",
       "event": "approved",
       "note": "F5 esta listo. Aprobado"
+    },
+    {
+      "at": "2026-10-18T08:00:24.055Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: eb1e0cb"
+    },
+    {
+      "at": "2026-10-18T08:00:24.247Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegar en doc-keeper"
+    },
+    {
+      "at": "2026-10-18T08:01:03.123Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "CLAUDE.md seccion Proyecto"
+    },
+    {
+      "at": "2026-10-18T08:01:03.225Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): docs, CLAUDE.md seccion Proyecto"
     }
   ]
 }
