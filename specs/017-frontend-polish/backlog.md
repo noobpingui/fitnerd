@@ -57,3 +57,11 @@
 ## implement · implementer (correcciones de review)
 - [ ] Los comentarios de `router.tsx` siguen sin tildes, como ya constaba en el backlog.
 - [ ] Los «Cargando…» encadenados (guard, layout y pantalla) siguen en la primera visita a una ruta protegida; es consecuencia del ADR-0026 (F6 resuelto solo con `className`, sin precargar el layout).
+
+## review · reviewer (segunda pasada)
+- [ ] F5 (implementer/usuario): falta la prueba manual en npm run dev de la transición login ↔ registro y de «Recargar» tras un fallo real de descarga de un chunk (AC-003.2).
+- [ ] F9 (test-author): la guarda de feedback de sourceCleanup017.test.ts:136-144 solo revisa los imports; un test de comportamiento de FeedbackForm lo cubriría de verdad.
+- [ ] F10 (implementer): className="min-h-[50vh]" se repite seis veces en router.tsx; convendría extraerlo a una constante.
+
+## tests · test-author (F9)
+- [ ] Añadir un test del envío correcto de FeedbackForm (elegir categoría y mensaje, 201 y onSuccess) y otro del mensaje de error del servidor, con una utilidad para manejar el Select de Radix.

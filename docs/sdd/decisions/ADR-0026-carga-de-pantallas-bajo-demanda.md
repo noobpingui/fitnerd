@@ -1,7 +1,7 @@
 # ADR-0026: Carga de pantallas bajo demanda por ruta
 
-- **Estado:** Propuesta · 2026-10-17 (plan de `017-frontend-polish`)
-- **Decidido por:** el `planner`, pendiente de revisión en el gate de `review`.
+- **Estado:** Aceptada · 2026-10-18 (propuesta en el plan de `017-frontend-polish`, 2026-10-17)
+- **Decidido por:** el `planner`, aceptada por el usuario en el gate de `review` (2026-10-18).
 
 ## Contexto
 El build del frontend genera un único chunk de unos 1 087 kB, por encima del aviso de 500 kB de Vite. `src/app/router.tsx`

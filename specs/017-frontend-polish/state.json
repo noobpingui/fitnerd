@@ -9,7 +9,7 @@
   "branch": "feat/017-frontend-polish",
   "base_branch": "main",
   "created_at": "2026-10-18T04:39:28.778Z",
-  "stage": "verify",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,13 +25,10 @@
       "note": "auto (gate_mode=flow): 32 tareas (4 scaffold, 18 test, 8 impl, 2 config)"
     },
     "tests": {
-      "at": "2026-10-18T05:58:19.932Z",
-      "note": "auto (gate_mode=flow): correccion de tests F1, F2, F4"
+      "at": "2026-10-18T06:37:10.891Z",
+      "note": "auto (gate_mode=flow): F9, 2 tests de FeedbackForm"
     },
-    "implement": {
-      "at": "2026-10-18T05:59:52.902Z",
-      "note": "auto (gate_mode=flow): F3 y F6, 741 tests verdes"
-    },
+    "implement": null,
     "verify": null,
     "review": null,
     "docs": null,
@@ -42,7 +39,7 @@
     "plan": "bd8af4f",
     "tasks": "a046390",
     "tests": "cc5aeb6",
-    "implement": "1ba5cdd"
+    "implement": "35abc83"
   },
   "iterations": {
     "tests": 3,
@@ -63,8 +60,8 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-18T05:58:19.784Z",
-    "reason": "correccion de tests por review: F1, F2, F4",
+    "at": "2026-10-18T06:37:10.743Z",
+    "reason": "correccion de tests por review: F9",
     "sha256": {
       "frontend/src/app/RouteSuspense.test.tsx": "948b0408ac5a6c875023e39ba14f69e0df863fcaf5e76f8448f956301f3e925b",
       "frontend/src/app/lazyNamed.test.ts": "7bd804f2bf29c0a953763d03d2df488348b6946b72582e280e4e31864ecfa50b",
@@ -72,6 +69,7 @@
       "frontend/src/app/sourceCleanup017.test.ts": "a886a1c0ac46628b6736c52ec343b097e203eeaed07dec756905bac9759e0752",
       "frontend/src/features/auth/components/ForgotPasswordForm.test.tsx": "cb3ea387b95179a54e907a7ae2ce4feb90eb046fe45473d27d4994e6e2ac88eb",
       "frontend/src/features/auth/components/LoginForm.test.tsx": "ddb48e8ca86d0b465809717b3265997b800810312532c222f9666766aae73485",
+      "frontend/src/features/feedback/components/FeedbackForm.test.tsx": "440eebc003ab641746652a4b25c1b25f50ed5400f2bb7b0ec427690b5049cbae",
       "frontend/src/features/onboarding/pages/OnboardingPage.test.tsx": "5224b650a0e7b0c3e625568dd6b392bbb989ab4c87dd8e519a8eb7f7a8740b67",
       "frontend/src/features/onboarding/schemas.test.ts": "c609a3f39540d3930822b65d099d191b728dc991f161fccbf00bd21aa3925ff7",
       "frontend/src/features/profile/pages/ProfilePage.test.tsx": "fd80826ad1e2c69cbd29f0704b6c4b1d0fed67d2b841e2495ab5698f3228797a",
@@ -441,6 +439,78 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): F3 y F6, 741 tests verdes"
+    },
+    {
+      "at": "2026-10-18T05:59:53.186Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 35abc83"
+    },
+    {
+      "at": "2026-10-18T06:01:55.187Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: npm test 741/741 OK; lint sin errores ni warnings; tsc OK; build OK (entrada 384.30 kB); trazabilidad completa (32 AC con marcador SDD 017, 32/32 tareas [x], sin skip/only nuevos)"
+    },
+    {
+      "at": "2026-10-18T06:01:59.613Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: npm test 741/741 OK; lint sin errores ni warnings; tsc OK; build OK (entrada 384.30 kB); trazabilidad completa (27 AC de spec 017 con marcador SDD 017, 32/32 tareas [x], sin skip/only nuevos)"
+    },
+    {
+      "at": "2026-10-18T06:02:06.587Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "PASS: 741 tests, lint, tsc, build; chunk 384 kB"
+    },
+    {
+      "at": "2026-10-18T06:02:06.684Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS tras correcciones de review"
+    },
+    {
+      "at": "2026-10-18T06:02:06.884Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegar en reviewer (segunda pasada)"
+    },
+    {
+      "at": "2026-10-18T06:03:52.944Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-18T06:03:53.066Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED 2/3: 0 bloqueantes, 0 mayores, 1 menor (F5 manual), 3 nits"
+    },
+    {
+      "at": "2026-10-18T06:36:24.120Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "usuario aprueba la review y pide corregir F9 y F10; tests: F9"
+    },
+    {
+      "at": "2026-10-18T06:37:10.633Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "F9: tests de comportamiento de FeedbackForm"
+    },
+    {
+      "at": "2026-10-18T06:37:10.743Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "13 archivo(s) de test: correccion de tests por review: F9"
+    },
+    {
+      "at": "2026-10-18T06:37:10.891Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F9, 2 tests de FeedbackForm"
     }
   ]
 }
