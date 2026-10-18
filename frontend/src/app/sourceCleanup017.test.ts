@@ -282,6 +282,13 @@ describe("tests de fecha prerrellenada del onboarding sin duplicados (spec 017)"
     expect(content).toContain('it("con fecha en la cuenta')
     expect(content).toContain('it("una fecha prerrellenada de más de 100 años')
   })
+
+  // SDD: 017 NFR-004 AC-N004.3
+  it("OnboardingPage.test.tsx conserva sus tests de la 017 y de la fecha (su ejecución completa la cubre la suite)", () => {
+    const content = source(ONBOARDING_PAGE_TEST)
+    expect(content).toContain("// SDD: 017 REQ-001 AC-001.6")
+    expect(content).toContain('it("con fecha en la cuenta')
+  })
 })
 
 describe("carga de pantallas bajo demanda (spec 017)", () => {

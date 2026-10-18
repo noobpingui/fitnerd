@@ -31,3 +31,8 @@
 ## implement · implementer
 - [ ] El error boundary muestra «No se pudo cargar la página.» también ante un error de render real de una pantalla (riesgo ya anotado en el plan). Valorar distinguir los mensajes más adelante.
 - [ ] Falta la revisión manual de la transición login a registro en `npm run dev`, que pide el plan antes de la review.
+
+## verify · verifier (full)
+- [ ] Plan.md sección 5 no lista AC-001.5 y AC-N002.4 como verdes justificados (aceptados por el usuario en red); conviene añadirlos al registro.
+- [ ] Chunk de Métricas (BodyMetricsPage) de 364 kB: por debajo de 500 kB, no bloquea (Q6).
+- [ ] Prueba manual pendiente: recarga real con «Recargar» tras un fallo de descarga de chunk (AC-003.2).

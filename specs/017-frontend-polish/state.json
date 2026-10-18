@@ -9,7 +9,7 @@
   "branch": "feat/017-frontend-polish",
   "base_branch": "main",
   "created_at": "2026-10-18T04:39:28.778Z",
-  "stage": "verify",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,13 +25,10 @@
       "note": "auto (gate_mode=flow): 32 tareas (4 scaffold, 18 test, 8 impl, 2 config)"
     },
     "tests": {
-      "at": "2026-10-18T05:43:09.956Z",
-      "note": "auto (gate_mode=flow): red PASS, 27 rojos legitimos, 213 tests"
+      "at": "2026-10-18T05:48:28.784Z",
+      "note": "auto (gate_mode=flow): correccion de tests, marcador AC-N004.3"
     },
-    "implement": {
-      "at": "2026-10-18T05:45:31.323Z",
-      "note": "auto (gate_mode=flow): 739 tests verdes, chunk de entrada 384 kB"
-    },
+    "implement": null,
     "verify": null,
     "review": null,
     "docs": null,
@@ -41,10 +38,11 @@
     "spec": "e9c78fe",
     "plan": "bd8af4f",
     "tasks": "a046390",
-    "tests": "e4b26d3"
+    "tests": "e4b26d3",
+    "implement": "1ba5cdd"
   },
   "iterations": {
-    "tests": 2,
+    "tests": 3,
     "implement": 0,
     "review": 0
   },
@@ -62,13 +60,13 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-18T05:43:09.806Z",
-    "reason": "tests aprobados tras red check PASS",
+    "at": "2026-10-18T05:48:28.634Z",
+    "reason": "correccion de tests: marcador SDD de AC-N004.3",
     "sha256": {
       "frontend/src/app/RouteSuspense.test.tsx": "948b0408ac5a6c875023e39ba14f69e0df863fcaf5e76f8448f956301f3e925b",
       "frontend/src/app/lazyNamed.test.ts": "7bd804f2bf29c0a953763d03d2df488348b6946b72582e280e4e31864ecfa50b",
       "frontend/src/app/lazyRoutes.test.tsx": "7380aa9fd7771a28d104bdaefe1b33aaf2946c5683762013ec9356fe795d6a3b",
-      "frontend/src/app/sourceCleanup017.test.ts": "9378a437caf3dd52df4f6452115bf4695fed8a9fb507a0141457f992cc3ae48c",
+      "frontend/src/app/sourceCleanup017.test.ts": "d6c1e80a4a8bc52b95327709c22582b78c34fc50d8f3694273a037ea7ede9bc6",
       "frontend/src/features/auth/components/ForgotPasswordForm.test.tsx": "cb3ea387b95179a54e907a7ae2ce4feb90eb046fe45473d27d4994e6e2ac88eb",
       "frontend/src/features/auth/components/LoginForm.test.tsx": "f9bbae56dfc0dd76dabaaee32cd5f685481225f6a799cff7bb0e496ef0492f71",
       "frontend/src/features/onboarding/pages/OnboardingPage.test.tsx": "5224b650a0e7b0c3e625568dd6b392bbb989ab4c87dd8e519a8eb7f7a8740b67",
@@ -290,6 +288,48 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): 739 tests verdes, chunk de entrada 384 kB"
+    },
+    {
+      "at": "2026-10-18T05:45:31.603Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 1ba5cdd"
+    },
+    {
+      "at": "2026-10-18T05:45:31.793Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegar en verifier (full)"
+    },
+    {
+      "at": "2026-10-18T05:47:47.409Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify FAIL: npm test 739/739 OK; lint, tsc y build OK (entrada 384 kB). Falla trazabilidad: AC-N004.3 sin marcador SDD: (test-author)"
+    },
+    {
+      "at": "2026-10-18T05:47:58.289Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "verify FAIL: AC-N004.3 sin marcador SDD (art. B4.3) · tests 3/3"
+    },
+    {
+      "at": "2026-10-18T05:48:28.528Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "correccion: marcador AC-N004.3"
+    },
+    {
+      "at": "2026-10-18T05:48:28.634Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "12 archivo(s) de test: correccion de tests: marcador SDD de AC-N004.3"
+    },
+    {
+      "at": "2026-10-18T05:48:28.784Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): correccion de tests, marcador AC-N004.3"
     }
   ]
 }
