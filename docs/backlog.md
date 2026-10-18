@@ -1,5 +1,65 @@
 # Backlog
 
+## 002–013 · Remanentes de las specs anteriores al backlog por feature (2026-10-18)
+
+Estas specs no tienen `backlog.md` propio; los puntos salen de los hallazgos MENOR y NIT diferidos en sus `review.md`. Se dejaron fuera los ya resueltos por specs posteriores (por ejemplo, la carrera del token de reset y el aviso de `/login` por la 014, el User-Agent de Resend por la 003, los logs saneados por la 014, el desbordamiento de enteros enormes y el ritmo fuera de rango por las 011 y 014, la sincronización del peso con fechas pasadas por la 016, y los marcadores `SDD:` ambiguos por el ADR-0022).
+
+**002-forgot-password** · [specs/002-forgot-password/](../specs/002-forgot-password/)
+- [ ] MENOR: `ProductionConfig` hereda `FRONTEND_BASE_URL` con `http://localhost:5173` por defecto (`backend/config.py:61`); si falta en el `.env` de EC2, los correos llevan enlaces a `localhost` sin error. Poner un valor propio de producción o fallar al arrancar.
+- [ ] MENOR: ningún test ejecuta `ResendTransport` ni `EmailSender.init_app`; el camino real de producción solo se ha probado a mano.
+- [ ] NIT: el marcador `# SDD: REQ-009 AC-008.4` de `test_password_reset_service.py` es incoherente (AC-008.4 es de REQ-008).
+
+**003-resend-user-agent** · [specs/003-resend-user-agent/](../specs/003-resend-user-agent/)
+- [ ] NIT: docstrings y comentarios sin tildes en `tests/fakes.py`, `test_email_sender.py` y `test_password_reset_routes.py:522`.
+- [ ] NIT: AC-001.2 se prueba con `FakeOpener`, que no pasa por el `OpenerDirector` real; un test con `urllib.request.build_opener(FakeHandler())` demostraría que no hay un segundo `User-Agent`.
+
+**004-coach-observability** · [specs/004-coach-observability/](../specs/004-coach-observability/)
+- [ ] MENOR: test de ruta para AC-N001.1 (privacidad).
+- [ ] MENOR: import perezoso de `langfuse` en la primera pregunta y aviso repetido si falla la fábrica.
+
+**005-coach-feedback** · [specs/005-coach-feedback/](../specs/005-coach-feedback/)
+- [ ] MENOR: el test de AC-N002.1 (`test_langfuse_backend.py:401`) retrasa solo `flush`, no `create_score`; no demuestra que la 204 llegue en menos de 0,5 s con un destino lento. Añadir un retardo en `create_score` del fake o documentar la limitación.
+- [ ] NIT: en el test de servicio de AC-N001.1 (`test_coach_feedback.py:489`) el JWT es una constante que nunca llega al servicio, así que la comprobación es tautológica (el test de ruta sí cubre el JWT real).
+- [ ] NIT: falta una tilde en un comentario de `coach_service.py:66` («de quién es cada contador»).
+
+**006-user-profile** · [specs/006-user-profile/](../specs/006-user-profile/)
+- [ ] NIT: `body-metrics/dateUtils.ts` reexporta `parseLocalDate` y `todayIsoDate` solo por compatibilidad; importar directamente desde `@/lib/dates` y quitar la reexportación.
+- [ ] NIT: el texto «Indica tu fecha de nacimiento» de `PhysicalDataForm.tsx` no figura en la spec ni lo cubre ningún test.
+
+**007-macros-calculation** · [specs/007-macros-calculation/](../specs/007-macros-calculation/)
+- [ ] NIT: `MIN_TARGET_KCAL` sin anotación de tipo en `macros/calculations.ts:34` (`Record<"male" | "female", number>` por coherencia).
+- [ ] NIT: casts innecesarios `as Record<string, string>` en `calculations.test.ts` (líneas 98, 111 y 240).
+- [ ] NIT: en `spec.md` de la 007, AC-004.5 aparece antes que AC-004.4.
+
+**008-metrics-from-profile** · [specs/008-metrics-from-profile/](../specs/008-metrics-from-profile/)
+- [ ] NIT: el aviso «No se pudo borrar la medición…» de `MetricsHistory.tsx` solo se limpia al abrir otro diálogo de borrado.
+- [ ] NIT: docstrings sin tildes en `test_body_metric_routes.py` («unicas», «restriccion», «medicion», «invalido»).
+
+**009-metrics-indicators** · [specs/009-metrics-indicators/](../specs/009-metrics-indicators/)
+- [ ] MENOR: la conversión ft/in a cm está duplicada en `macros/calculations.ts:78`.
+- [ ] NIT: comentario desplazado en `TrendChart.tsx`.
+- [ ] NIT: `renderLoaded` de `BodyMetricsPage.test.tsx` (líneas 376-380) espera con un número mágico de microtareas; esperar una condición observable del perfil cargado.
+
+**010-progress-analysis-context** · [specs/010-progress-analysis-context/](../specs/010-progress-analysis-context/)
+- [ ] MENOR: los tests de validación del cuerpo llevan marcadores `SDD:` de AC que no prueban (`test_progress_analysis_service.py:789-824`, `test_progress_analysis_routes.py:187`); inflan la trazabilidad.
+- [ ] NIT: `InsightsInput` y `input as Insights` en `insightsView.ts:77-81` abren un agujero de tipos solo para acomodar el cast del test.
+- [ ] NIT: comentarios con regionalismos o sin tildes («503 prolijo», «errores tecnicos», «se envia») en `progress_analysis_service.py:144`, `ProgressAnalysis.tsx:40` y `api.ts:41`.
+- [ ] NIT: `analysisRequest.ts:39-40` repite `hasRate && rate.kind === "ok"`; usar una variable estrechada.
+- [ ] NIT: tras un despliegue, una pestaña con el bundle anterior recibe 400 en el análisis hasta recargar (transitorio; basta una nota en docs).
+- [ ] NIT: el encabezado de `spec.md` de la 010 dice «47 AC» y el cuerpo tiene 49.
+
+**011-analysis-extreme-pace** · [specs/011-analysis-extreme-pace/](../specs/011-analysis-extreme-pace/)
+- [ ] La corrección +10,8 → +10,9 no debe aplicarse a la spec (recordatorio de la review; no requiere acción salvo que alguien la proponga).
+
+**012-remove-catalog** · [specs/012-remove-catalog/](../specs/012-remove-catalog/)
+- [ ] NIT: la fecha legal (`updatedAt`) de `PrivacyPolicyPage.tsx` y `TermsOfServicePage.tsx` sigue en «14 de octubre de 2026»; ajustarla al día en que se publique un cambio legal real.
+
+**013-polish-006-010** · [specs/013-polish-006-010/](../specs/013-polish-006-010/)
+- [ ] NIT: `test_source_cleanup_013.py:103,125-127` tiene aserciones que nunca pueden fallar y una condición enrevesada; no comprueba que cada test cite su AC (sustituir el bucle por un diccionario nombre-a-marcador).
+- [ ] NIT: sangría incorrecta en el objeto de opciones de `findByRole` de `MetricsHistory.test.tsx:685-688`.
+- [ ] NIT: el test de F3 de `MetricsHistory.test.tsx:739` lleva `// SDD: 013 NFR-001`, sin AC; trazarlo como `REQ-005 AC-005.2`.
+- [ ] NIT: caso límite en `MetricsHistory.tsx:163`: si la fila a borrar desaparece por otra vía y la petición falla, se muestra el aviso igualmente.
+
 ## 014-auth-hardening · Endurecer la autenticación: token de reset atómico, emails en minúsculas, reglas de contraseña unificadas y logs saneados (2026-10-16)
 
 Feature: [specs/014-auth-hardening/](../specs/014-auth-hardening/)
@@ -18,7 +78,7 @@ Feature: [specs/014-auth-hardening/](../specs/014-auth-hardening/)
 - [ ] Si el implementer cambia `type="email"` o añade `noValidate`, revisar `fireEvent.submit` en `RegisterForm.test.tsx`.
 - [x] Prueba manual en navegador real de AC-011.3 y AC-011.4 (aviso de /login y botón atrás).
 - [x] (spec 018) NIT (implementer): `_ensure_link_is_usable` lee `self.clock()` en cada llamada en lugar de usar un solo `now`, como pide el plan §3.3 (password_reset_service.py:125,154).
-- [ ] NIT (implementer): la comprobación de `user is None` llega después de tomar el FOR UPDATE; es inofensivo (password_reset_service.py:150-152).
+- [ ] NIT (implementer): la comprobación de `user is None` llega después de tomar el FOR UPDATE; es inofensivo (password_reset_service.py:150-152). Repetido en la sección 018; se resuelve una sola vez.
 - [x] ADR-0025 sigue por pasar a "Aceptada" (el usuario la aprobó en la review; las ADRs no son del doc-keeper).
 - [x] La fila "pendiente" del historial del runbook hay que completarla (PR, fecha y volcado) tras el despliegue.
 
@@ -45,7 +105,7 @@ Feature: [specs/016-past-date-measurements/](../specs/016-past-date-measurements
 - [ ] Desplegar el Historial ("Mostrar más") hasta la medición recién registrada (fuera de alcance de la spec).
 - [ ] Test de extremo a extremo de la sincronización del peso del perfil: los tests de la página comprueban el valor que devuelve `getProfile` mockeado.
 - [ ] Revisar los tests de orden de AC-003.4 si las filas de mediciones superan el tamaño de página del Historial (hoy usan 3 filas).
-- [ ] Chunk de frontend de 1,087 kB (>500 kB) en el build; no bloquea.
+- [x] (spec 017, ADR-0026) Chunk de frontend de 1,087 kB (>500 kB) en el build; no bloquea.
 
 ## 017-frontend-polish · Pulido de frontend: mensaje de pulgadas, inRange compartido, warnings de lint y tests (2026-10-18)
 
