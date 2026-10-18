@@ -156,6 +156,9 @@ function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
 }
 
 export {
+  // useFormField es un hook de shadcn que usan los componentes Form* y se importa desde este módulo:
+  // se suprime el aviso de Fast Refresh solo en esta línea.
+  // oxlint-disable-next-line react/only-export-components
   useFormField,
   Form,
   FormItem,

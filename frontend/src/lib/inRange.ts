@@ -1,8 +1,11 @@
-// Texto numérico dentro de [min, max]; vacío o solo espacios no está en rango.
+// Un texto vacío no está en rango; los campos opcionales lo comprueban antes.
 export function inRange(
-  _value: string,
-  _limits: { min: number; max: number },
-  _integer = false
+  value: string,
+  { min, max }: { min: number; max: number },
+  integer = false
 ): boolean {
-  throw new Error("not implemented")
+  if (value.trim() === "") return false
+  const n = Number(value)
+  if (!Number.isFinite(n) || n < min || n > max) return false
+  return !integer || Number.isInteger(n)
 }

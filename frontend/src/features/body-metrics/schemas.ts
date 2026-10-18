@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { LIMITS } from "@/features/onboarding/constants"
-import { inRange } from "@/features/onboarding/schemas"
+import { inRange } from "@/lib/inRange"
 import type { WeightUnit } from "@/features/onboarding/types"
 import { KG_PER_LB } from "@/features/onboarding/units"
 import { shiftIsoDate } from "@/lib/dates"

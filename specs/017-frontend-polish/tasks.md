@@ -42,16 +42,16 @@ Reglas:
 - [x] T-027 [REQ-002, AC-002.1] (test) Configurar `asyncUtilTimeout: 3000` de `@testing-library/react` para esperar las importaciones dinámicas — `frontend/src/test/setup.ts`
 
 ## Fase B — Implementación (implementer)
-- [ ] T-030 [NFR-001, AC-N001.1, AC-N001.2] (impl) Implementar `inRange` moviendo el cuerpo actual sin cambios y con el comentario neutro — `frontend/src/lib/inRange.ts`
-- [ ] T-031 [NFR-001, AC-N001.3] (impl) Importar `inRange` de `@/lib/inRange` en los esquemas del perfil y de métricas corporales — `frontend/src/features/profile/schemas.ts`, `frontend/src/features/body-metrics/schemas.ts`
-- [ ] T-032 [NFR-001, AC-N001.3, AC-N001.4] (impl) Quitar la definición de `inRange` del esquema del onboarding e importarla de `@/lib/inRange` — `frontend/src/features/onboarding/schemas.ts`
-- [ ] T-033 [REQ-001, AC-001.5, AC-001.6] (impl) Implementar `isHeightFeetValid` y `heightMessage` y usar `heightMessage` en `addPhysicalDataIssues` — `frontend/src/features/onboarding/schemas.ts`
-- [ ] T-034 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (impl) Marcar el campo de pies solo cuando fallan los pies (`feetOk`) — `frontend/src/features/profile/components/PhysicalDataForm.tsx`
-- [ ] T-035 [NFR-002, AC-N002.1, AC-N002.4] (config) Suprimir `only-export-components` en la línea del export de `buttonVariants` con comentario del motivo — `frontend/src/components/ui/button.tsx`
-- [ ] T-036 [NFR-002, AC-N002.1, AC-N002.4] (config) Suprimir `only-export-components` en la línea del export de `useFormField` con comentario del motivo — `frontend/src/components/ui/form.tsx`
-- [ ] T-037 [REQ-002, REQ-003, AC-002.1, AC-003.2] (impl) Implementar `lazyNamed` y `reloadPage` — `frontend/src/app/lazyNamed.ts`
-- [ ] T-038 [REQ-002, REQ-003, AC-002.1, AC-003.1, AC-003.2] (impl) Implementar `PageLoadError`, `PageErrorBoundary` y `RouteSuspense` con `ProfileLoading` como fallback — `frontend/src/app/RouteSuspense.tsx`
-- [ ] T-039 [REQ-002, REQ-003, NFR-005, AC-002.2, AC-002.3, AC-002.4, AC-N005.1, AC-N005.2] (impl) Cargar bajo demanda las 12 pantallas, `OnboardingRoute`, `OnboardingGuard` y `AppLayout` con `lazyNamed`, envolviendo cada elemento en `RouteSuspense` — `frontend/src/app/router.tsx`
+- [x] T-030 [NFR-001, AC-N001.1, AC-N001.2] (impl) Implementar `inRange` moviendo el cuerpo actual sin cambios y con el comentario neutro — `frontend/src/lib/inRange.ts`
+- [x] T-031 [NFR-001, AC-N001.3] (impl) Importar `inRange` de `@/lib/inRange` en los esquemas del perfil y de métricas corporales — `frontend/src/features/profile/schemas.ts`, `frontend/src/features/body-metrics/schemas.ts`
+- [x] T-032 [NFR-001, AC-N001.3, AC-N001.4] (impl) Quitar la definición de `inRange` del esquema del onboarding e importarla de `@/lib/inRange` — `frontend/src/features/onboarding/schemas.ts`
+- [x] T-033 [REQ-001, AC-001.5, AC-001.6] (impl) Implementar `isHeightFeetValid` y `heightMessage` y usar `heightMessage` en `addPhysicalDataIssues` — `frontend/src/features/onboarding/schemas.ts`
+- [x] T-034 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (impl) Marcar el campo de pies solo cuando fallan los pies (`feetOk`) — `frontend/src/features/profile/components/PhysicalDataForm.tsx`
+- [x] T-035 [NFR-002, AC-N002.1, AC-N002.4] (config) Suprimir `only-export-components` en la línea del export de `buttonVariants` con comentario del motivo — `frontend/src/components/ui/button.tsx`
+- [x] T-036 [NFR-002, AC-N002.1, AC-N002.4] (config) Suprimir `only-export-components` en la línea del export de `useFormField` con comentario del motivo — `frontend/src/components/ui/form.tsx`
+- [x] T-037 [REQ-002, REQ-003, AC-002.1, AC-003.2] (impl) Implementar `lazyNamed` y `reloadPage` — `frontend/src/app/lazyNamed.ts`
+- [x] T-038 [REQ-002, REQ-003, AC-002.1, AC-003.1, AC-003.2] (impl) Implementar `PageLoadError`, `PageErrorBoundary` y `RouteSuspense` con `ProfileLoading` como fallback — `frontend/src/app/RouteSuspense.tsx`
+- [x] T-039 [REQ-002, REQ-003, NFR-005, AC-002.2, AC-002.3, AC-002.4, AC-N005.1, AC-N005.2] (impl) Cargar bajo demanda las 12 pantallas, `OnboardingRoute`, `OnboardingGuard` y `AppLayout` con `lazyNamed`, envolviendo cada elemento en `RouteSuspense` — `frontend/src/app/router.tsx`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

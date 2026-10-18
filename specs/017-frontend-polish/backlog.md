@@ -27,3 +27,7 @@
 - [ ] Añadir AC-001.5 (caso «pies no válidos manda Entre 3 y 8 ft») y AC-N002.4 (configuración de lint) a plan.md, sección 5, «Pasan ya en verde», para que el registro coincida con la aceptación del usuario.
 - [ ] Los tests de AC-002.2 a AC-002.4 (lazyRoutes) siguen verdes antes de la carga diferida y no prueban que el chunk no se descargue hasta navegar: añadir esa comprobación en verify o en tests.
 - [ ] En verify (full): medir el chunk de entrada con `npm run build` (AC-N005.1), comprobar lint sin only-export-components (AC-N002.1) y revisar a mano AC-002.1 y AC-003.1 si el usuario lo pide.
+
+## implement · implementer
+- [ ] El error boundary muestra «No se pudo cargar la página.» también ante un error de render real de una pantalla (riesgo ya anotado en el plan). Valorar distinguir los mensajes más adelante.
+- [ ] Falta la revisión manual de la transición login a registro en `npm run dev`, que pide el plan antes de la review.

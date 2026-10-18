@@ -9,7 +9,7 @@
   "branch": "feat/017-frontend-polish",
   "base_branch": "main",
   "created_at": "2026-10-18T04:39:28.778Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -28,7 +28,10 @@
       "at": "2026-10-18T05:43:09.956Z",
       "note": "auto (gate_mode=flow): red PASS, 27 rojos legitimos, 213 tests"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-18T05:45:31.323Z",
+      "note": "auto (gate_mode=flow): 739 tests verdes, chunk de entrada 384 kB"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -37,7 +40,8 @@
   "commits": {
     "spec": "e9c78fe",
     "plan": "bd8af4f",
-    "tasks": "a046390"
+    "tasks": "a046390",
+    "tests": "e4b26d3"
   },
   "iterations": {
     "tests": 2,
@@ -262,6 +266,30 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red PASS, 27 rojos legitimos, 213 tests"
+    },
+    {
+      "at": "2026-10-18T05:43:10.339Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: e4b26d3"
+    },
+    {
+      "at": "2026-10-18T05:43:10.555Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegar en implementer"
+    },
+    {
+      "at": "2026-10-18T05:45:31.223Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-030..T-039; 739 tests verdes, lint y tsc limpios, chunk 384 kB"
+    },
+    {
+      "at": "2026-10-18T05:45:31.323Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 739 tests verdes, chunk de entrada 384 kB"
     }
   ]
 }
