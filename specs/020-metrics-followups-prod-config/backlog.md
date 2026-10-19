@@ -51,3 +51,11 @@
 - [ ] F7 (NIT, planner): si el usuario la acepta en el gate, pasar la ADR-0028 a «Aceptada» en la ADR y en el índice de `docs/sdd/decisions/README.md`.
 - [ ] F8 (NIT, implementer): `auth_service`, `body_metric_service` y `progress_analysis_service` deberían importar `utc_now` de `utils.clock`, no del reexporte de `profile_service`.
 - [ ] Etapa docs (Art. P4): documentar en `docs/deploy-runbook.md` y `CLAUDE.md` el paso manual: antes del merge, comprobar que el `backend/.env` de EC2 tiene `FRONTEND_BASE_URL=https://fitnerd.betofallas.dev`; si falta, la app no arranca.
+
+## tests (correcciones de review) · test-author
+- [ ] Los tests nuevos de F1 y F2 (`PhysicalDataForm.refresh-edge.test.tsx`) llevan los marcadores `AC-002.5` y `AC-002.6` por afinidad temática, porque F1 y F2 no tienen AC propio en la spec; la trazabilidad es aproximada.
+- [ ] F1 y F2 aplican el plan §3.4, la spec no fija el comportamiento exacto: F1 exige que sigan el aviso y «Reintentar» tras guardar solo la meta; F2 exige que se conserve el borrador del usuario tras «Reintentar».
+
+## tests (red check de correcciones) · verifier
+- [ ] Alinear los marcadores SDD de los tests F1 y F2 con un AC propio o dejarlos como casos fuera de spec.
+- [ ] Normalizar a LF tres archivos de test que están en CRLF en la copia de trabajo (`test_auth_routes.py`, `test_body_metric_routes.py`, `MetricsHistory.test.tsx`), para evitar falsos diffs en otras herramientas.

@@ -10,8 +10,8 @@
   "branch": "feat/020-metrics-followups-prod-config",
   "base_branch": "main",
   "created_at": "2026-10-18T22:13:38.177Z",
-  "stage": "review",
-  "status": "awaiting_approval",
+  "stage": "implement",
+  "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-10-19T01:23:03.716Z",
@@ -26,17 +26,11 @@
       "note": "auto (gate_mode=flow): 44 tareas (8 scaffold, 21 test, 14 impl, 1 config)"
     },
     "tests": {
-      "at": "2026-10-19T02:02:31.597Z",
-      "note": "auto (gate_mode=flow): correccion de test, sin red check"
+      "at": "2026-10-19T02:23:51.083Z",
+      "note": "auto (gate_mode=flow): red check PASS para F1 y F2"
     },
-    "implement": {
-      "at": "2026-10-19T02:02:34.961Z",
-      "note": "auto (gate_mode=flow): sin cambios de produccion en esta iteracion"
-    },
-    "verify": {
-      "at": "2026-10-19T02:06:07.274Z",
-      "note": "auto (gate_mode=flow): verify PASS"
-    },
+    "implement": null,
+    "verify": null,
     "review": null,
     "docs": null,
     "close": null
@@ -46,29 +40,30 @@
     "plan": "20d1fc8",
     "tasks": "9c0e2fa",
     "tests": "edd5c9c",
-    "implement": "6829cf3"
+    "implement": "6829cf3",
+    "review": "1a1b22b"
   },
   "iterations": {
     "tests": 2,
     "implement": 0,
-    "review": 0
+    "review": 1
   },
   "max_iterations": 3,
   "red_check": {
     "result": "PASS",
-    "at": "2026-10-19T01:51:32.577Z"
+    "at": "2026-10-19T02:23:37.665Z"
   },
   "verify": {
-    "result": "PASS",
-    "at": "2026-10-19T02:05:56.498Z"
+    "result": null,
+    "at": null
   },
   "review": {
-    "verdict": "APPROVED",
-    "at": "2026-10-19T02:10:20.439Z"
+    "verdict": null,
+    "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-19T02:02:31.431Z",
-    "reason": "Fix E501 en test_fixed_clock_routes.py (iteracion 2)",
+    "at": "2026-10-19T02:23:50.932Z",
+    "reason": "Tests de F1/F2 y conftest.py LF (correcciones de review)",
     "sha256": {
       "backend/tests/conftest.py": "7dbe036187ce55dbd3f946e3adbcef3a96b4ffe94e40618c6fcc97041fdab1d0",
       "backend/tests/test_routes/test_auth_routes.py": "b355bc87f5f7fbb1774415a286b8104ee6aeb766bab4ef0c80de9941a9effb1f",
@@ -82,6 +77,7 @@
       "frontend/src/features/body-metrics/historyReveal.test.ts": "61580bf9750a33a9717a3fcfaa81c90a35b919c83c8bb72b603846495fbb70c4",
       "frontend/src/features/body-metrics/pages/BodyMetricsPage.refresh.test.tsx": "dc282a9649c03f5a35f38c3cd19a6d1a79e0e7da828bfdf059706a59089925e9",
       "frontend/src/features/body-metrics/pages/BodyMetricsPage.sync.test.tsx": "acf72955f931e18acd724df1d5ee5e1e65f234bf2c9ce6b3cea90d23e91dfb32",
+      "frontend/src/features/profile/components/PhysicalDataForm.refresh-edge.test.tsx": "2ad2230716fddea70a9ff52bcab8ca44e54b0b1e43f3e11a665c0a32a35908e0",
       "frontend/src/features/profile/components/PhysicalDataForm.refresh.test.tsx": "cd9e381aa6291606952c1193de19791118e1257c403a8fbe658c40a9148a24ff",
       "frontend/src/test/fakeMetricsServer.ts": "8ccba553310654769bb5a0fcf7e58f39b0a6eed174978e2d0dabc5f19ea4194c"
     }
@@ -423,6 +419,48 @@
       "stage": "review",
       "event": "done",
       "note": "APPROVED: 0 bloqueantes, 0 mayores, 3 menores, 5 nit"
+    },
+    {
+      "at": "2026-10-19T02:10:20.876Z",
+      "stage": "review",
+      "event": "commit",
+      "note": "review: 1a1b22b"
+    },
+    {
+      "at": "2026-10-19T02:19:51.137Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Review: el usuario pide corregir F1, F2 y F3; F4-F8 al backlog · review 1/3"
+    },
+    {
+      "at": "2026-10-19T02:21:03.324Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Red check de los tests nuevos de F1 y F2 (correcciones de review)"
+    },
+    {
+      "at": "2026-10-19T02:23:37.665Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red F1/F2: 2 tests nuevos (PhysicalDataForm.refresh-edge) fallan por aserción de comportamiento ausente (F1: aviso se quita sin releer; F2: Reintentar descarta edición). PhysicalDataForm.tsx sin cambios. Backend pytest 1075 passed; conftest.py normalizado (contenido idéntico). Excepción B5.2 (31 caracterización) intacta."
+    },
+    {
+      "at": "2026-10-19T02:23:50.821Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS: 2 tests nuevos de F1 y F2 en rojo legitimo; conftest.py normalizado"
+    },
+    {
+      "at": "2026-10-19T02:23:50.932Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "15 archivo(s) de test: Tests de F1/F2 y conftest.py LF (correcciones de review)"
+    },
+    {
+      "at": "2026-10-19T02:23:51.083Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS para F1 y F2"
     }
   ]
 }

@@ -92,3 +92,8 @@ La feature separa en el frontend el alta de una medición de su relectura (`useC
 ## 6. Decisión
 
 **APPROVED.** No hay hallazgos BLOQUEANTES ni MAYORES. Todos los AC están implementados como dice la spec, con tests que prueban el comportamiento real. La integridad de los tests es correcta: el snapshot es idéntico y el único cambio posterior está autorizado. La excepción del Art. B5.2 está aprobada por el usuario y es legítima. El heredoc de `conftest.py` (F3) es un incumplimiento de proceso sin efecto en el contenido. F1 y F2 son casos límite de «Datos físicos» fuera de los AC y pueden pasar al backlog con la aprobación del usuario. Pendiente para la etapa `docs`: el paso manual de `FRONTEND_BASE_URL` en EC2 (P4) y aceptar la ADR-0028.
+
+
+## Comentarios del usuario
+
+- Gate de review: "Corrijamos, F1,F2 y F3. Lo demas al backlog"
