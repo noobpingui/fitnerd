@@ -153,3 +153,29 @@ Feature: [specs/019-auth-email-integrity/](../specs/019-auth-email-integrity/)
 - [ ] Definir qué rol pasa las ADR a «Aceptada» en la etapa close (el hook role-guard bloquea al planner fuera de plan).
 - [x] (chore/019-post-deploy-docs) Completar la fila «pendiente» del historial del runbook (PR, fecha, backup) tras el despliegue.
 - [ ] `tests/fakes.py` y otros tests con CRLF mezclado: ya anotado en la 018.
+
+## 020-metrics-followups-prod-config · Seguimiento de métricas corporales y configuración de producción (2026-10-19)
+
+Feature: [specs/020-metrics-followups-prod-config/](../specs/020-metrics-followups-prod-config/)
+
+- [ ] Aviso de relectura fallida con «Reintentar» al corregir o borrar una medición (Q1).
+- [ ] Desplazar la pantalla hasta la fila nueva del Historial o resaltarla (Q3).
+- [ ] Pruebas en navegador real con el backend levantado, por ejemplo con Playwright (Q4).
+- [ ] Que producción no arranque si `MAIL_BACKEND=resend` y falta `RESEND_API_KEY` (Q7).
+- [ ] Validar `FRONTEND_BASE_URL` como URL completa (hoy basta con el prefijo `https://`).
+- [ ] Al registrar en lb, el peso del perfil puede variar en 0,1 lb respecto a lo escrito (160 lb pasa a 160,1) por el redondeo a 0,1 kg del envío.
+- [ ] Con `isLoadingError`, un fallo de relectura en segundo plano que no viene de un registro ya no muestra ningún aviso en Métricas ni en el perfil; valorar un aviso general.
+- [ ] Con el aviso de relectura visible y una medición posterior a hoy, el aviso de fecha futura (spec 016) solo se calcula al reintentar correctamente.
+- [ ] F4 (NIT, test-author): el marcador de `BodyMetricsPage.sync.test.tsx:209` dice `NFR-002 AC-004.1` y debería decir `REQ-004 AC-004.1`.
+- [ ] F5 (NIT, test-author): `round1` de `fakeMetricsServer.ts` redondea en binario, mientras el servidor usa `Decimal` half-up; pueden divergir en valores frontera.
+- [ ] F6 (NIT, test-author): `app_clock` no es autouse, y `make_app` solo repone `email_sender`, no los demás singletons.
+- [ ] F7 (NIT, planner): pasar la ADR-0028 a «Aceptada» en la ADR y en el índice de `docs/sdd/decisions/README.md` (pendiente: rama `chore/…` tras el merge).
+- [ ] F8 (NIT, implementer): `auth_service`, `body_metric_service` y `progress_analysis_service` deberían importar `utc_now` de `utils.clock`, no del reexporte de `profile_service`.
+- [ ] F9 (MENOR, test-author): ningún test comprueba que, tras guardar solo la meta con el aviso visible, un «Reintentar» correcto conserva la meta nueva (`PhysicalDataForm.refresh-edge.test.tsx:128-146`).
+- [ ] F10 (NIT, implementer): con `keepDraft` se ve «Cambios guardados» mientras el formulario tiene ediciones sin guardar (`PhysicalDataForm.tsx:221,230`).
+- [ ] F11 (NIT, implementer): `retryRefresh` usa un `dirty` obsoleto del render en que se pulsó; si el usuario edita mientras la relectura está en curso, esa edición se descarta (`PhysicalDataForm.tsx:226-230`).
+- [ ] Alinear los marcadores SDD de los tests de F1 y F2 (`AC-002.5` y `AC-002.6`, aproximados) con un AC propio o dejarlos como casos fuera de spec.
+- [ ] Normalizar a LF tres archivos de test que están en CRLF en la copia de trabajo (`test_auth_routes.py`, `test_body_metric_routes.py`, `MetricsHistory.test.tsx`).
+- [ ] `test_fixed_clock_routes.py` usa `X-Forwarded-For` fijo (203.0.113.50) en `forgot`; con más tests de restablecimiento ahí, usar una IP por test para evitar el límite de 3 por IP.
+- [ ] Los 31 tests de caracterización de la excepción al Art. B5.2 (REQ-004 y REQ-007, entre otros) pasaron sin implementación por decisión del usuario; no hay nada que hacer salvo tenerlo en cuenta.
+- [ ] Definir si las ADR pasan a «Aceptada» en una rama `chore/…` o en una etapa del flujo (ya anotado en la 019).
