@@ -10,7 +10,7 @@
   "branch": "feat/020-metrics-followups-prod-config",
   "base_branch": "main",
   "created_at": "2026-10-18T22:13:38.177Z",
-  "stage": "verify",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -26,13 +26,10 @@
       "note": "auto (gate_mode=flow): 44 tareas (8 scaffold, 21 test, 14 impl, 1 config)"
     },
     "tests": {
-      "at": "2026-10-19T01:51:40.860Z",
-      "note": "auto (gate_mode=flow): red check PASS con 31 tests de caracterizacion aprobados por el usuario"
+      "at": "2026-10-19T02:02:31.597Z",
+      "note": "auto (gate_mode=flow): correccion de test, sin red check"
     },
-    "implement": {
-      "at": "2026-10-19T01:58:15.803Z",
-      "note": "auto (gate_mode=flow): tests en verde segun el implementer"
-    },
+    "implement": null,
     "verify": null,
     "review": null,
     "docs": null,
@@ -42,10 +39,11 @@
     "spec": "3fe6e25",
     "plan": "20d1fc8",
     "tasks": "9c0e2fa",
-    "tests": "e78e6cb"
+    "tests": "e78e6cb",
+    "implement": "6829cf3"
   },
   "iterations": {
-    "tests": 1,
+    "tests": 2,
     "implement": 0,
     "review": 0
   },
@@ -63,13 +61,13 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-19T01:51:40.716Z",
-    "reason": "Tests 020 tras red check PASS",
+    "at": "2026-10-19T02:02:31.431Z",
+    "reason": "Fix E501 en test_fixed_clock_routes.py (iteracion 2)",
     "sha256": {
       "backend/tests/conftest.py": "7dbe036187ce55dbd3f946e3adbcef3a96b4ffe94e40618c6fcc97041fdab1d0",
       "backend/tests/test_routes/test_auth_routes.py": "b355bc87f5f7fbb1774415a286b8104ee6aeb766bab4ef0c80de9941a9effb1f",
       "backend/tests/test_routes/test_body_metric_routes.py": "233f1bb79f2b7ff9e4d6f64159e706fb93875f1e6faf4b5c35c49514c1b798c2",
-      "backend/tests/test_routes/test_fixed_clock_routes.py": "af470f90245b644a1ee65bed77cdec29519a1d5f060417fc1725c387b8d5d12e",
+      "backend/tests/test_routes/test_fixed_clock_routes.py": "bcf9933e1957e75bab52807f6e2aa6c7a11120496f795637aa0c28261d24b726",
       "backend/tests/test_routes/test_resend_email_routes.py": "e0c29573fa46b6ba39cd800cb80afdef7e8d65d1074eab2f22b1e5b8b3c823d0",
       "backend/tests/test_services/test_clock.py": "884d1abfe31c5c0b017e34fb183129aff47dff8add22d84c7b501bc43265285d",
       "backend/tests/test_services/test_production_config.py": "4ec4aba441e3a6679aed1562fe819d43f5de4188616b37f7457a363e72c2cbfe",
@@ -311,6 +309,54 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): tests en verde segun el implementer"
+    },
+    {
+      "at": "2026-10-19T01:58:16.182Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 6829cf3"
+    },
+    {
+      "at": "2026-10-19T01:58:16.295Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "Decisiones: reloj por app solo fijable con TESTING; FRONTEND_BASE_URL sin default y https obligatorio en produccion; reintento solo relee; E501 nuevo en test_fixed_clock_routes.py:73 (ratchet)"
+    },
+    {
+      "at": "2026-10-19T01:58:16.527Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificar en modo full"
+    },
+    {
+      "at": "2026-10-19T02:01:47.854Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify FAIL: Ratchet backend: 1 E501 nuevo en test_fixed_clock_routes.py:73; resto en verde (pytest 1075, vitest 792, lint, tsc, build)"
+    },
+    {
+      "at": "2026-10-19T02:02:06.992Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Verify FAIL: E501 nuevo en test_fixed_clock_routes.py:73 (ratchet ruff) · tests 2/3"
+    },
+    {
+      "at": "2026-10-19T02:02:31.317Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Correccion de E501; sin red check (el test debe pasar)"
+    },
+    {
+      "at": "2026-10-19T02:02:31.431Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "14 archivo(s) de test: Fix E501 en test_fixed_clock_routes.py (iteracion 2)"
+    },
+    {
+      "at": "2026-10-19T02:02:31.597Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): correccion de test, sin red check"
     }
   ]
 }

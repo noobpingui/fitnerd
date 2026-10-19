@@ -70,7 +70,8 @@ def forgot(client, email="ana@example.com"):
 
 
 def reset(client, token):
-    return client.post("/api/auth/reset-password", json={"token": token, "password": "NuevaClave456"})
+    payload = {"token": token, "password": "NuevaClave456"}
+    return client.post("/api/auth/reset-password", json=payload)
 
 
 # --------------------------------------------------------------------------
