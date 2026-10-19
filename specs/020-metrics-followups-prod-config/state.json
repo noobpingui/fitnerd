@@ -14,7 +14,7 @@
   "status": "in_progress",
   "approvals": {
     "spec": {
-      "at": "2026-10-18T22:59:58.822Z",
+      "at": "2026-10-19T01:23:03.716Z",
       "note": "Aprobado, sigue"
     },
     "plan": null,
@@ -26,7 +26,9 @@
     "docs": null,
     "close": null
   },
-  "commits": {},
+  "commits": {
+    "spec": "dd46601"
+  },
   "iterations": {
     "tests": 0,
     "implement": 0,
@@ -80,6 +82,42 @@
     },
     {
       "at": "2026-10-18T22:59:58.822Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Aprobado, sigue"
+    },
+    {
+      "at": "2026-10-18T22:59:59.112Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: dd46601"
+    },
+    {
+      "at": "2026-10-18T22:59:59.287Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Diseñar plan.md a partir de la spec aprobada"
+    },
+    {
+      "at": "2026-10-18T23:08:16.581Z",
+      "stage": "plan",
+      "event": "needs_input",
+      "note": "Q-P1: AC-004.3 contradice la regla de sincronización real (160 lb -> 160,1); requiere decidir si se cambia la spec aprobada"
+    },
+    {
+      "at": "2026-10-19T01:21:12.670Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Usuario elige opción B de Q-P1: AC-004.3 con 162 lb"
+    },
+    {
+      "at": "2026-10-19T01:21:30.071Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "AC-004.3 ajustado a 162 lb (Q-P1, opción B)"
+    },
+    {
+      "at": "2026-10-19T01:23:03.716Z",
       "stage": "spec",
       "event": "approved",
       "note": "Aprobado, sigue"

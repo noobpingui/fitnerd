@@ -100,7 +100,7 @@ WHEN el usuario registra una medición con peso desde la app THE SYSTEM SHALL mo
 
 - **AC-004.1:** Given un perfil en kg con peso 78 y una única medición del 2026-10-01 con peso 78, guardados en un servidor de prueba con estado que aplica la regla de sincronización, When el usuario registra desde Métricas una medición del 2026-10-05 con peso 77 y va a `/profile`, Then el campo «Peso» de «Datos físicos» muestra 77, y en `/home` «Peso actual» muestra «77 kg».
 - **AC-004.2:** Given el mismo servidor de prueba con un perfil en kg con peso 78 y una medición del 2026-10-11 con peso 78, When el usuario registra desde Métricas una medición del 2026-10-05 con peso 80 y va a `/profile`, Then el campo «Peso» sigue mostrando 78.
-- **AC-004.3:** Given el mismo servidor de prueba con un perfil en lb y una única medición del 2026-10-01 con peso 78 kg, When el usuario registra desde Métricas una medición del 2026-10-05 de 160 lb y va a `/profile`, Then el campo «Peso» muestra 160 y la unidad es lb.
+- **AC-004.3:** Given el mismo servidor de prueba con un perfil en lb y una única medición del 2026-10-01 con peso 78 kg, When el usuario registra desde Métricas una medición del 2026-10-05 de 162 lb (equivale exactamente a 73,5 kg, y 73,5 kg vuelve a ser 162,0 lb) y va a `/profile`, Then el campo «Peso» muestra 162 y la unidad es lb.
 - **AC-004.4:** Given un usuario real en el servidor de pruebas del backend con perfil en kg (peso 78) y una medición del 2026-10-01 con peso 78, When en la misma prueba registra por la API una medición del 2026-10-05 con peso 77, después una del 2026-10-03 con peso 76 y lee su perfil tras cada registro, Then el perfil devuelve `weight: 77` en ambas lecturas.
 
 ### REQ-005 — Fecha y hora fijables en la configuración de pruebas
@@ -207,9 +207,16 @@ THE SYSTEM SHALL ejecutar las pruebas de REQ-004 y REQ-007 sin llamadas reales a
 - Q7: sección 3, fuera de alcance, y sección 6; queda para el backlog.
 - Q8: REQ-006 (AC-006.5).
 
+**Q-P1 (del plan) resuelta:** el usuario eligió la opción B. AC-004.3 registra 162 lb, que va y vuelve sin pérdida (73,5 kg y 162,0 lb), y espera «Peso» 162 en lb. La variación de 0,1 lb con otros valores sigue en el backlog de la feature.
+
 ## 8. Glosario
 
 - **Relectura:** la nueva lectura de mediciones y perfil que la app hace tras un registro para mostrar el peso sincronizado.
 - **Aviso de relectura:** el aviso con botón «Reintentar» de REQ-001 y REQ-002.
 - **Servidor de prueba con estado:** simulación de la API, usada solo en tests, que guarda lo que se registra durante la prueba y responde en consecuencia, en lugar de devolver respuestas fijadas de antemano.
 - **Instante fijado:** fecha y hora que una prueba impone como «ahora» del servidor en la configuración de pruebas.
+
+
+## Comentarios del usuario
+
+- Q-P1 (plan, AC-004.3): "Opción B, 162 lb"
