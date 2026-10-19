@@ -47,6 +47,7 @@ Si una migración mezcla las dos cosas, sepárala en dos despliegues: primero la
 
 1. **PR abierto contra `main` con el CI en verde:** `gh pr checks N --watch`. Deben pasar los dos `test` (backend y frontend) y el preview de Vercel. El job `deploy` sale como *skipping* en un PR, y es lo normal.
 2. **Variables nuevas:** si la feature añade alguna, ya tiene que estar en el `backend/.env` de EC2 (o en Vercel, si es del frontend) **antes** del merge.
+   - **`FRONTEND_BASE_URL` (desde la 020, ADR-0028):** en producción es obligatoria y debe empezar por `https://`. Comprueba que el `backend/.env` de EC2 tiene `FRONTEND_BASE_URL=https://fitnerd.betofallas.dev` **antes del merge**. Si falta o no empieza por `https://`, `ProductionConfig` lanza un error al arrancar: el contenedor no levanta tras el CD y la comprobación de `/api/health` falla. Antes de la 020 la ausencia pasaba sin avisar y los correos llevaban enlaces a `localhost`.
 3. **Avisos del despliegue:** lee la sección de despliegue del `CLAUDE.md` y el PR por si hay pasos específicos de la feature.
 
 ---
@@ -202,7 +203,7 @@ Merge del PR y paso 6.
 | El código desplegado (backend o frontend) | `git revert -m 1 <merge-commit>` en una rama, PR y merge. El CD redespliega la versión anterior. El commit de merge de cada despliegue está en la tabla de la sección 8. |
 | Migración aditiva | Normalmente nada: el código anterior funciona con el esquema nuevo, así que basta con revertir el código. `flask db downgrade` solo si la migración estorba de verdad, y después de revisar qué hace su `downgrade()`. |
 | Migración destructiva | El `downgrade()` de la 012 recrea las tablas **vacías**. Los datos solo vuelven desde el backup: `pg_restore --data-only --table=<tabla>` desde el `.dump`, en un orden que respete las claves foráneas. Pruébalo antes contra la base local. |
-| `/api/health` no da 200 tras el CD | Mira los logs del job `deploy` y, en la instancia, `docker compose -f docker-compose.prod.yml logs backend --tail 100`. |
+| `/api/health` no da 200 tras el CD | Mira los logs del job `deploy` y, en la instancia, `docker compose -f docker-compose.prod.yml logs backend --tail 100`. Si el error dice «FRONTEND_BASE_URL es obligatoria en producción», añade `FRONTEND_BASE_URL=https://fitnerd.betofallas.dev` al `backend/.env` de la instancia y reinicia el backend (`docker compose -f docker-compose.prod.yml up -d`). |
 
 ---
 
