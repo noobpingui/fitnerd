@@ -59,3 +59,7 @@
 ## tests (red check de correcciones) · verifier
 - [ ] Alinear los marcadores SDD de los tests F1 y F2 con un AC propio o dejarlos como casos fuera de spec.
 - [ ] Normalizar a LF tres archivos de test que están en CRLF en la copia de trabajo (`test_auth_routes.py`, `test_body_metric_routes.py`, `MetricsHistory.test.tsx`), para evitar falsos diffs en otras herramientas.
+
+## implement (correcciones de review) · implementer
+- [ ] Con el aviso de relectura visible y una medición posterior a hoy, el aviso de fecha futura (spec 016) solo se calcula al reintentar correctamente.
+- [ ] F2: tras «Reintentar» con ediciones sin guardar se conserva el borrador y `saved` pasa a los valores del guardado anterior, así que el formulario queda con cambios pendientes.

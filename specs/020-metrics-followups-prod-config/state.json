@@ -10,7 +10,7 @@
   "branch": "feat/020-metrics-followups-prod-config",
   "base_branch": "main",
   "created_at": "2026-10-18T22:13:38.177Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,7 +29,10 @@
       "at": "2026-10-19T02:23:51.083Z",
       "note": "auto (gate_mode=flow): red check PASS para F1 y F2"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-19T02:26:54.203Z",
+      "note": "auto (gate_mode=flow): F1 y F2 corregidos"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -39,7 +42,7 @@
     "spec": "3fe6e25",
     "plan": "20d1fc8",
     "tasks": "9c0e2fa",
-    "tests": "edd5c9c",
+    "tests": "92c5ffb",
     "implement": "6829cf3",
     "review": "1a1b22b"
   },
@@ -461,6 +464,30 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS para F1 y F2"
+    },
+    {
+      "at": "2026-10-19T02:23:51.395Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 92c5ffb"
+    },
+    {
+      "at": "2026-10-19T02:23:51.601Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Corregir F1 y F2 en PhysicalDataForm.tsx"
+    },
+    {
+      "at": "2026-10-19T02:26:54.080Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F1 y F2 corregidos; frontend 794 y backend 1075 segun implementer"
+    },
+    {
+      "at": "2026-10-19T02:26:54.203Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F1 y F2 corregidos"
     }
   ]
 }

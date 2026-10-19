@@ -173,8 +173,14 @@ export function PhysicalDataForm({
         return
       }
     }
-    setRefreshFailed(false)
-    setPendingFinish(null)
+    if (measurementChanged) {
+      setRefreshFailed(false)
+      setPendingFinish(null)
+    } else if (pendingFinish) {
+      // Sin medición no hay relectura: el aviso sigue hasta que «Reintentar»
+      // relea bien, y se actualizan los valores que se darán por guardados.
+      setPendingFinish({ ...pendingFinish, values })
+    }
     finishSave(values, hadProfile, measurementChanged)
   }
 
@@ -184,7 +190,8 @@ export function PhysicalDataForm({
   function finishSave(
     values: PhysicalDataFormValues,
     hadProfile: boolean,
-    measured: boolean
+    measured: boolean,
+    keepDraft = false
   ) {
     let next = values
     let later: ReturnType<typeof laterWeightMetric> = null
@@ -204,7 +211,8 @@ export function PhysicalDataForm({
       }
     }
     setSaved(next)
-    form.reset(next)
+    // Con ediciones sin guardar no se descarta el borrador del usuario.
+    if (!keepDraft) form.reset(next)
     if (later) {
       setLaterDate(later.recorded_at)
       setJustSaved(false)
@@ -219,7 +227,7 @@ export function PhysicalDataForm({
     const ok = await refresh.mutateAsync()
     if (!ok || !pendingFinish) return
     setRefreshFailed(false)
-    finishSave(pendingFinish.values, pendingFinish.hadProfile, true)
+    finishSave(pendingFinish.values, pendingFinish.hadProfile, true, dirty)
     setPendingFinish(null)
   }
 
