@@ -36,21 +36,21 @@
 - [x] T-030 [REQ-004, NFR-002, AC-004.1, AC-004.2, AC-004.3] (test) Registrar desde Métricas y comprobar el peso del perfil y del home (kg, fecha anterior, lb) con el servidor con estado — `frontend/src/features/body-metrics/pages/BodyMetricsPage.sync.test.tsx`
 
 ## Fase B — Implementación (implementer)
-- [ ] T-040 [REQ-005, NFR-001, AC-005.6, AC-005.9, AC-N001.1] (impl) Implementar `utc_now`, `AdjustableClock` e `install_clock` (decide solo por `TESTING`) — `backend/utils/clock.py`
-- [ ] T-041 [REQ-006, AC-006.1, AC-006.2, AC-006.3, AC-006.4, AC-006.5, AC-006.6] (impl) Implementar `resolve_frontend_base_url`, `FRONTEND_BASE_URL` sin valor por defecto y `FRONTEND_BASE_URL_REQUIRED` — `backend/config.py`
-- [ ] T-042 [REQ-005, REQ-006, REQ-007, AC-006.1, AC-006.4, AC-007.1, AC-007.8] (impl) En `create_app`: validar `FRONTEND_BASE_URL` tras `config_overrides` e instalar el reloj antes de las extensiones — `backend/app.py`
-- [ ] T-043 [REQ-005, AC-005.7, AC-005.8] (impl) Importar `utc_now` desde `utils/clock.py` conservando el nombre en ambos módulos — `backend/services/profile_service.py`, `backend/services/password_reset_service.py`
-- [ ] T-044 [REQ-005, REQ-004, AC-005.1, AC-005.2, AC-005.3, AC-005.5, AC-005.9, AC-004.4, AC-N001.2] (impl) Pasar `clock=current_clock()` en `_build_body_metric_service()` y `_build_progress_analysis_service()` — `backend/routes/body_metric_routes.py`
-- [ ] T-045 [REQ-005, AC-005.4, AC-005.7, AC-005.8] (impl) Pasar `clock=current_clock()` en `_build_auth_service()`, `_build_password_reset_service()` y `_build_profile_service()` — `backend/routes/auth_routes.py`, `backend/routes/profile_routes.py`
-- [ ] T-046 [REQ-006] (config) Comentar en `FRONTEND_BASE_URL` que en producción es obligatoria y con `https://` — `backend/.env.example`
-- [ ] T-047 [REQ-001, REQ-002, REQ-004, AC-001.1, AC-001.3, AC-001.4, AC-002.5, AC-004.1] (impl) `refreshMetricsAndProfile`, `useCreateBodyMetric` con `{ metric, refreshed }` y `useRefreshMetricsAndProfile` — `frontend/src/features/body-metrics/hooks.ts`
-- [ ] T-048 [REQ-003, AC-003.1, AC-003.2, AC-003.3, AC-003.4] (impl) Implementar `visibleCountToReveal` — `frontend/src/features/body-metrics/historyReveal.ts`
-- [ ] T-049 [REQ-001, REQ-002, AC-001.6, AC-002.7, AC-001.8, AC-002.10] (impl) Implementar `RefreshFailedNotice` (rol `alert`, sin temporizador) — `frontend/src/features/body-metrics/components/RefreshFailedNotice.tsx`
-- [ ] T-050 [REQ-001, REQ-003, AC-001.1, AC-003.1, AC-003.5] (impl) Llamar a `onSaved({ recordedAt, refreshed })` tras un registro con éxito y antes de `onClose` — `frontend/src/features/body-metrics/components/RegisterMetricDialog.tsx`
-- [ ] T-051 [REQ-003, AC-003.1, AC-003.2, AC-003.3, AC-003.4] (impl) Atender la petición `reveal` desplegando el Historial de 10 en 10 sin plegarlo — `frontend/src/features/body-metrics/components/MetricsHistory.tsx`
-- [ ] T-052 [REQ-001, REQ-003, AC-001.1, AC-001.2, AC-001.3, AC-001.4, AC-001.5, AC-001.7, AC-001.9, AC-003.1] (impl) Aviso bajo «Registrar medición», `isLoadingError` en lugar de `isError` y petición `reveal` — `frontend/src/features/body-metrics/pages/BodyMetricsPage.tsx`
-- [ ] T-053 [REQ-002, AC-002.1, AC-002.2, AC-002.3, AC-002.4, AC-002.5, AC-002.6, AC-002.8, AC-002.9] (impl) `finishSave`, `refreshFailed`, `pendingFinish` y aviso en el lugar de «Cambios guardados» — `frontend/src/features/profile/components/PhysicalDataForm.tsx`
-- [ ] T-054 [REQ-002, AC-002.8] (impl) `ProfileLoadError` solo ante `isLoadingError` del perfil — `frontend/src/features/profile/pages/ProfilePage.tsx`
+- [x] T-040 [REQ-005, NFR-001, AC-005.6, AC-005.9, AC-N001.1] (impl) Implementar `utc_now`, `AdjustableClock` e `install_clock` (decide solo por `TESTING`) — `backend/utils/clock.py`
+- [x] T-041 [REQ-006, AC-006.1, AC-006.2, AC-006.3, AC-006.4, AC-006.5, AC-006.6] (impl) Implementar `resolve_frontend_base_url`, `FRONTEND_BASE_URL` sin valor por defecto y `FRONTEND_BASE_URL_REQUIRED` — `backend/config.py`
+- [x] T-042 [REQ-005, REQ-006, REQ-007, AC-006.1, AC-006.4, AC-007.1, AC-007.8] (impl) En `create_app`: validar `FRONTEND_BASE_URL` tras `config_overrides` e instalar el reloj antes de las extensiones — `backend/app.py`
+- [x] T-043 [REQ-005, AC-005.7, AC-005.8] (impl) Importar `utc_now` desde `utils/clock.py` conservando el nombre en ambos módulos — `backend/services/profile_service.py`, `backend/services/password_reset_service.py`
+- [x] T-044 [REQ-005, REQ-004, AC-005.1, AC-005.2, AC-005.3, AC-005.5, AC-005.9, AC-004.4, AC-N001.2] (impl) Pasar `clock=current_clock()` en `_build_body_metric_service()` y `_build_progress_analysis_service()` — `backend/routes/body_metric_routes.py`
+- [x] T-045 [REQ-005, AC-005.4, AC-005.7, AC-005.8] (impl) Pasar `clock=current_clock()` en `_build_auth_service()`, `_build_password_reset_service()` y `_build_profile_service()` — `backend/routes/auth_routes.py`, `backend/routes/profile_routes.py`
+- [x] T-046 [REQ-006] (config) Comentar en `FRONTEND_BASE_URL` que en producción es obligatoria y con `https://` — `backend/.env.example`
+- [x] T-047 [REQ-001, REQ-002, REQ-004, AC-001.1, AC-001.3, AC-001.4, AC-002.5, AC-004.1] (impl) `refreshMetricsAndProfile`, `useCreateBodyMetric` con `{ metric, refreshed }` y `useRefreshMetricsAndProfile` — `frontend/src/features/body-metrics/hooks.ts`
+- [x] T-048 [REQ-003, AC-003.1, AC-003.2, AC-003.3, AC-003.4] (impl) Implementar `visibleCountToReveal` — `frontend/src/features/body-metrics/historyReveal.ts`
+- [x] T-049 [REQ-001, REQ-002, AC-001.6, AC-002.7, AC-001.8, AC-002.10] (impl) Implementar `RefreshFailedNotice` (rol `alert`, sin temporizador) — `frontend/src/features/body-metrics/components/RefreshFailedNotice.tsx`
+- [x] T-050 [REQ-001, REQ-003, AC-001.1, AC-003.1, AC-003.5] (impl) Llamar a `onSaved({ recordedAt, refreshed })` tras un registro con éxito y antes de `onClose` — `frontend/src/features/body-metrics/components/RegisterMetricDialog.tsx`
+- [x] T-051 [REQ-003, AC-003.1, AC-003.2, AC-003.3, AC-003.4] (impl) Atender la petición `reveal` desplegando el Historial de 10 en 10 sin plegarlo — `frontend/src/features/body-metrics/components/MetricsHistory.tsx`
+- [x] T-052 [REQ-001, REQ-003, AC-001.1, AC-001.2, AC-001.3, AC-001.4, AC-001.5, AC-001.7, AC-001.9, AC-003.1] (impl) Aviso bajo «Registrar medición», `isLoadingError` en lugar de `isError` y petición `reveal` — `frontend/src/features/body-metrics/pages/BodyMetricsPage.tsx`
+- [x] T-053 [REQ-002, AC-002.1, AC-002.2, AC-002.3, AC-002.4, AC-002.5, AC-002.6, AC-002.8, AC-002.9] (impl) `finishSave`, `refreshFailed`, `pendingFinish` y aviso en el lugar de «Cambios guardados» — `frontend/src/features/profile/components/PhysicalDataForm.tsx`
+- [x] T-054 [REQ-002, AC-002.8] (impl) `ProfileLoadError` solo ante `isLoadingError` del perfil — `frontend/src/features/profile/pages/ProfilePage.tsx`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

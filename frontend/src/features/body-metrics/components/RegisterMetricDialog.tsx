@@ -40,6 +40,7 @@ export function RegisterMetricDialog({
   metrics,
   weightUnit,
   onClose,
+  onSaved,
 }: RegisterMetricDialogProps): ReactElement {
   const mutation = useCreateBodyMetric()
   const today = useMemo(() => todayIsoDate(), [])
@@ -74,11 +75,15 @@ export function RegisterMetricDialog({
   async function onSave(values: MetricRegistrationValues) {
     if (mutation.isPending || !allValid) return
     mutation.reset()
+    let refreshed: boolean
     try {
-      await mutation.mutateAsync(registrationPayload(values, weightUnit))
+      ;({ refreshed } = await mutation.mutateAsync(
+        registrationPayload(values, weightUnit)
+      ))
     } catch {
       return
     }
+    onSaved?.({ recordedAt: values.date, refreshed })
     onClose()
   }
 

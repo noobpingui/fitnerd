@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from decimal import ROUND_HALF_UP, Decimal
 
 from exceptions.custom_exceptions import ResourceNotFoundError, ValidationError
@@ -15,6 +14,7 @@ from services.date_of_birth_rules import (  # noqa: F401  (se reexportan: otros 
     parse_date_of_birth,
 )
 from services.number_validation import is_int, is_number
+from utils.clock import utc_now  # noqa: F401  (se reexporta: otros módulos la importan desde aquí)
 
 INVALID_BODY_MESSAGE = "Los datos del perfil no son válidos"
 INVALID_GENDER_MESSAGE = "El género debe ser masculino o femenino"
@@ -35,10 +35,6 @@ ACTIVITY_LEVELS = ("low", "moderate", "high", "very_high", "athlete")
 GOALS = ("lose", "lose_slow", "maintain", "gain_slow", "gain")
 
 WEIGHT_RANGES = {"kg": (30, 300, WEIGHT_KG_MESSAGE), "lb": (66, 660, WEIGHT_LB_MESSAGE)}
-
-
-def utc_now():
-    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def _round1(value):

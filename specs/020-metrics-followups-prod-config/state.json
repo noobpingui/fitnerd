@@ -10,7 +10,7 @@
   "branch": "feat/020-metrics-followups-prod-config",
   "base_branch": "main",
   "created_at": "2026-10-18T22:13:38.177Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,7 +29,10 @@
       "at": "2026-10-19T01:51:40.860Z",
       "note": "auto (gate_mode=flow): red check PASS con 31 tests de caracterizacion aprobados por el usuario"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-19T01:58:15.803Z",
+      "note": "auto (gate_mode=flow): tests en verde segun el implementer"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -38,7 +41,8 @@
   "commits": {
     "spec": "3fe6e25",
     "plan": "20d1fc8",
-    "tasks": "9c0e2fa"
+    "tasks": "9c0e2fa",
+    "tests": "e78e6cb"
   },
   "iterations": {
     "tests": 1,
@@ -277,6 +281,36 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS con 31 tests de caracterizacion aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-19T01:51:49.322Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: e78e6cb"
+    },
+    {
+      "at": "2026-10-19T01:51:49.420Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Decisiones: excepcion B5.2 aprobada por usuario (31 tests de caracterizacion); conftest.py escrito con heredoc por test-author (revisar en review)"
+    },
+    {
+      "at": "2026-10-19T01:51:49.641Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar tareas impl/config hasta que pasen todos los tests"
+    },
+    {
+      "at": "2026-10-19T01:58:15.690Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "Backend 1075 y frontend 792 tests en verde segun implementer"
+    },
+    {
+      "at": "2026-10-19T01:58:15.803Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): tests en verde segun el implementer"
     }
   ]
 }

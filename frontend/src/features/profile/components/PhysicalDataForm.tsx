@@ -17,7 +17,12 @@ import { formatDate } from "@/features/body-metrics/dateUtils"
 import {
   bodyMetricsKeys,
   useCreateBodyMetric,
+  useRefreshMetricsAndProfile,
 } from "@/features/body-metrics/hooks"
+import {
+  PROFILE_REFRESH_FAILED_MESSAGE,
+  RefreshFailedNotice,
+} from "@/features/body-metrics/components/RefreshFailedNotice"
 import { laterWeightMetric } from "@/features/body-metrics/laterWeight"
 import type { BodyMetric } from "@/features/body-metrics/types"
 import { NumberField } from "@/features/onboarding/components/NumberField"
@@ -63,7 +68,13 @@ export function PhysicalDataForm({
   const [saved, setSaved] = useState<PhysicalDataFormValues>(defaultValues)
   const [justSaved, setJustSaved] = useState(false)
   const [laterDate, setLaterDate] = useState<string | null>(null)
+  const [refreshFailed, setRefreshFailed] = useState(false)
+  const [pendingFinish, setPendingFinish] = useState<{
+    values: PhysicalDataFormValues
+    hadProfile: boolean
+  } | null>(null)
   const queryClient = useQueryClient()
+  const refresh = useRefreshMetricsAndProfile()
   const createMetric = useCreateBodyMetric()
   const saveProfile = useSaveProfile()
   const schema = useMemo(() => makeProfileFormSchema(), [])
@@ -138,23 +149,46 @@ export function PhysicalDataForm({
       const fatChanged = values.fat.trim() !== "" && values.fat !== saved.fat
       const muscleChanged =
         values.muscle.trim() !== "" && values.muscle !== saved.muscle
+      let refreshed: boolean
       try {
-        await createMetric.mutateAsync({
+        ;({ refreshed } = await createMetric.mutateAsync({
           weight: Math.round(weightKg(values) * 10) / 10,
           recorded_at: todayIsoDate(),
           ...(fatChanged && { body_fat_percentage: Number(values.fat) }),
           ...(muscleChanged && { muscle_mass_percentage: Number(values.muscle) }),
-        })
+        }))
       } catch {
         return
       }
+      if (!refreshed) {
+        // Lo guardado ya está en el servidor, pero la pantalla no pudo
+        // releerlo: se deja el formulario sin cambios pendientes y se avisa;
+        // el paso 3 espera a que «Reintentar» relea con éxito.
+        setSaved(values)
+        form.reset(values)
+        setJustSaved(false)
+        setLaterDate(null)
+        setRefreshFailed(true)
+        setPendingFinish({ values, hadProfile })
+        return
+      }
     }
-    // 3. Si quedó una medición de peso posterior a hoy, el servidor mantiene
-    // en el perfil el peso de esa medición: se muestra el peso real y se
-    // avisa, en vez de "Cambios guardados".
+    setRefreshFailed(false)
+    setPendingFinish(null)
+    finishSave(values, hadProfile, measurementChanged)
+  }
+
+  // 3. Si quedó una medición de peso posterior a hoy, el servidor mantiene
+  // en el perfil el peso de esa medición: se muestra el peso real y se
+  // avisa, en vez de "Cambios guardados".
+  function finishSave(
+    values: PhysicalDataFormValues,
+    hadProfile: boolean,
+    measured: boolean
+  ) {
     let next = values
     let later: ReturnType<typeof laterWeightMetric> = null
-    if (measurementChanged) {
+    if (measured) {
       const cachedMetrics = queryClient.getQueryData<BodyMetric[]>(
         bodyMetricsKeys.list
       )
@@ -178,6 +212,15 @@ export function PhysicalDataForm({
       setLaterDate(null)
       setJustSaved(true)
     }
+  }
+
+  // Reintenta solo la relectura: no vuelve a guardar perfil ni medición.
+  async function retryRefresh() {
+    const ok = await refresh.mutateAsync()
+    if (!ok || !pendingFinish) return
+    setRefreshFailed(false)
+    finishSave(pendingFinish.values, pendingFinish.hadProfile, true)
+    setPendingFinish(null)
   }
 
   function discard() {
@@ -317,7 +360,14 @@ export function PhysicalDataForm({
       </div>
 
       <div className="flex items-center justify-end gap-3">
-        {justSaved && (
+        {refreshFailed && (
+          <RefreshFailedNotice
+            message={PROFILE_REFRESH_FAILED_MESSAGE}
+            retrying={refresh.isPending}
+            onRetry={() => void retryRefresh()}
+          />
+        )}
+        {justSaved && !refreshFailed && (
           <span
             role="status"
             className="flex items-center gap-1.5 text-sm text-muted-foreground"

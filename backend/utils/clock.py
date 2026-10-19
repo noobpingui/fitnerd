@@ -1,14 +1,14 @@
 from collections.abc import Callable
-from datetime import datetime
+from datetime import datetime, timezone
 
-from flask import Flask
+from flask import Flask, current_app
 
 CLOCK_EXTENSION_KEY = "fitnerd.clock"
 
 
 def utc_now() -> datetime:
     """Instante actual en UTC, sin zona (naive), como los servicios actuales."""
-    raise NotImplementedError("not implemented")
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class AdjustableClock:
@@ -19,22 +19,30 @@ class AdjustableClock:
         self.instant = None
 
     def __call__(self) -> datetime:
-        raise NotImplementedError("not implemented")
+        if self.instant is not None:
+            return self.instant
+        return self.real_clock()
 
-    def set(self, _instant: datetime) -> None:
-        raise NotImplementedError("not implemented")
+    def set(self, instant: datetime) -> None:
+        if instant.tzinfo is not None:
+            instant = instant.astimezone(timezone.utc).replace(tzinfo=None)
+        self.instant = instant
 
     def reset(self) -> None:
-        raise NotImplementedError("not implemented")
+        self.instant = None
 
 
-def install_clock(_app: Flask) -> None:
-    raise NotImplementedError("not implemented")
+def install_clock(app: Flask) -> None:
+    """Solo con `TESTING` el reloj de la app se puede fijar; si no, es el real."""
+    if app.config.get("TESTING"):
+        app.extensions[CLOCK_EXTENSION_KEY] = AdjustableClock()
+    else:
+        app.extensions[CLOCK_EXTENSION_KEY] = utc_now
 
 
-def get_app_clock(_app: Flask) -> Callable[[], datetime]:
-    raise NotImplementedError("not implemented")
+def get_app_clock(app: Flask) -> Callable[[], datetime]:
+    return app.extensions[CLOCK_EXTENSION_KEY]
 
 
 def current_clock() -> Callable[[], datetime]:
-    raise NotImplementedError("not implemented")
+    return get_app_clock(current_app)

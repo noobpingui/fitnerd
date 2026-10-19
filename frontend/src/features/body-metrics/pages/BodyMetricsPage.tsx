@@ -20,7 +20,15 @@ import { RegisterMetricDialog } from "@/features/body-metrics/components/Registe
 import { TrendChart } from "@/features/body-metrics/components/TrendChart"
 import { formatDate } from "@/features/body-metrics/dateUtils"
 import { todayIsoDate } from "@/lib/dates"
-import { useBodyMetrics } from "@/features/body-metrics/hooks"
+import {
+  useBodyMetrics,
+  useRefreshMetricsAndProfile,
+} from "@/features/body-metrics/hooks"
+import type { RevealRequest } from "@/features/body-metrics/historyReveal"
+import {
+  METRICS_REFRESH_FAILED_MESSAGE,
+  RefreshFailedNotice,
+} from "@/features/body-metrics/components/RefreshFailedNotice"
 import { buildAnalysisRequest } from "@/features/body-metrics/analysisRequest"
 import {
   buildInsights,
@@ -43,7 +51,16 @@ export function BodyMetricsPage() {
   // Unidad de peso fijada al abrir el diálogo (null = cerrado): si el perfil
   // llega o cambia con el diálogo abierto, la etiqueta y lo guardado no cambian.
   const [registeringUnit, setRegisteringUnit] = useState<WeightUnit | null>(null)
-  const { data: metrics, isLoading, isError, error } = useBodyMetrics()
+  const [refreshFailed, setRefreshFailed] = useState(false)
+  const [reveal, setReveal] = useState<RevealRequest | null>(null)
+  const refresh = useRefreshMetricsAndProfile()
+  // Solo el error de la carga inicial; un fallo de relectura conserva los datos.
+  const {
+    data: metrics,
+    isLoading,
+    isLoadingError: isError,
+    error,
+  } = useBodyMetrics()
   const {
     data: profileResponse,
     isLoading: profileLoading,
@@ -95,11 +112,29 @@ export function BodyMetricsPage() {
         </Button>
       )}
 
+      {refreshFailed && (
+        <div className="mb-6">
+          <RefreshFailedNotice
+            message={METRICS_REFRESH_FAILED_MESSAGE}
+            retrying={refresh.isPending}
+            onRetry={() => {
+              void refresh.mutateAsync().then((ok) => {
+                if (ok) setRefreshFailed(false)
+              })
+            }}
+          />
+        </div>
+      )}
+
       {registeringUnit && (
         <RegisterMetricDialog
           metrics={metrics ?? []}
           weightUnit={registeringUnit}
           onClose={() => setRegisteringUnit(null)}
+          onSaved={({ recordedAt, refreshed }) => {
+            setRefreshFailed(!refreshed)
+            setReveal((prev) => ({ date: recordedAt, seq: (prev?.seq ?? 0) + 1 }))
+          }}
         />
       )}
 
@@ -219,6 +254,7 @@ export function BodyMetricsPage() {
                 weightUnit={weightUnit}
                 toDisplayWeight={toDisplayWeight}
                 suspiciousDate={insights.suspiciousDate}
+                reveal={reveal}
               />
             </Section>
           </motion.div>

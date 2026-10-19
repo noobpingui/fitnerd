@@ -1,7 +1,7 @@
 import hashlib
 import logging
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 import bcrypt
 
@@ -17,6 +17,7 @@ from services.credential_rules import (  # noqa: F401  (se reexportan: otros mó
     validate_email,
     validate_new_password,
 )
+from utils.clock import utc_now
 
 logger = logging.getLogger(__name__)
 
@@ -35,10 +36,6 @@ EMAIL_COOLDOWN = timedelta(minutes=2)
 IP_WINDOW = timedelta(minutes=10)
 IP_MAX_REQUESTS = 3
 TOKEN_TTL = timedelta(minutes=5)
-
-
-def utc_now():
-    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def hash_token(token):

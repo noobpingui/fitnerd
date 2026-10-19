@@ -3,7 +3,8 @@ import models
 
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
-from config import config_by_name
+from config import config_by_name, resolve_frontend_base_url
+from utils.clock import install_clock
 from extensions import (
     db, migrate, cors, jwt_manager, embedding_client, rate_limiter, email_sender, tracer,
 )
@@ -22,6 +23,15 @@ def create_app(config_name=None, config_overrides=None):
     #To load all the variables from that class to app.config: "DEBUG"=TRUE, "SQLALCHEMY_DATABASE_URI"=..., etc
     app.config.from_object(config_by_name[config_name])
     app.config.update(config_overrides or {})
+
+    #En producción FRONTEND_BASE_URL es obligatoria (https://); si falta, falla al arrancar
+    app.config["FRONTEND_BASE_URL"] = resolve_frontend_base_url(
+        app.config.get("FRONTEND_BASE_URL"),
+        required=app.config.get("FRONTEND_BASE_URL_REQUIRED", False),
+    )
+
+    #Reloj de la app: fijable solo con TESTING (ADR-0028)
+    install_clock(app)
 
     #Detrás de Caddy, remote_addr sería la IP del proxy: se toma la de X-Forwarded-For (ADR-0015)
     if app.config["PROXY_FIX_X_FOR"] > 0:

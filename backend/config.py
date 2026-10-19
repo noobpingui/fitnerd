@@ -24,8 +24,14 @@ FRONTEND_BASE_URL_REQUIRED_MESSAGE = (
 )
 
 
-def resolve_frontend_base_url(_value, *, required):
-    raise NotImplementedError("not implemented")
+def resolve_frontend_base_url(value, *, required):
+    """URL base del frontend: en producción es obligatoria y debe empezar por https://."""
+    if not required:
+        return DEFAULT_FRONTEND_BASE_URL if value is None else value
+    cleaned = (value or "").strip()
+    if not cleaned.startswith("https://"):
+        raise ValueError(FRONTEND_BASE_URL_REQUIRED_MESSAGE)
+    return cleaned
 
 
 def observability_enabled(config):
@@ -68,7 +74,8 @@ class Config:
     MAIL_FROM = os.getenv("MAIL_FROM", "fitnerd <no-reply@fitnerd.betofallas.dev>")
 
     #URL base del frontend, usada para construir el enlace del correo.
-    FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:5173")
+    FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL")
+    FRONTEND_BASE_URL_REQUIRED = False
 
     #Número de proxies de confianza delante de la app (ProxyFix, x_for).
     #0 = no se confía en X-Forwarded-For.
@@ -90,6 +97,7 @@ class ProductionConfig(Config):
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.getenv("PROD_DATABASE_URL")
     MAIL_BACKEND = os.getenv("MAIL_BACKEND", "resend")
+    FRONTEND_BASE_URL_REQUIRED = True
     #Un proxy de confianza: Caddy.
     PROXY_FIX_X_FOR = int(os.getenv("PROXY_FIX_X_FOR", "1"))
     OBSERVABILITY_ENVIRONMENT = "production"

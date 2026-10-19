@@ -8,6 +8,7 @@ from repositories.user_profile_repository import UserProfileRepository
 from repositories.user_repository import UserRepository
 from services.profile_service import ProfileService
 from unit_of_work.unit_of_work import UnitOfWork
+from utils.clock import current_clock
 
 profile_bp = Blueprint(
     "profile",
@@ -21,6 +22,7 @@ def _build_profile_service():
         UserRepository(db.session),
         UserProfileRepository(db.session),
         UnitOfWork(db.session),
+        clock=current_clock(),
     )
 
 

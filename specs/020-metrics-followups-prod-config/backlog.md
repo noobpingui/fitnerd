@@ -35,3 +35,8 @@
 
 ## tests (red check) · verifier
 - [ ] `app_clock` no es autouse: un test que fije el reloj sin pedir el fixture lo dejaría fijado. Hoy todos los que lo fijan lo piden.
+
+## implement · implementer
+- [ ] E501 (102 > 100) en la línea 73 de `backend/tests/test_routes/test_fixed_clock_routes.py`, escrito por el test-author. Corregirlo en una iteración de tests o aceptarlo en la review para que el ratchet quede en 0.
+- [ ] `conftest.py` se escribió con heredoc (anotado en el state). Revisarlo en la review.
+- [ ] Paso manual antes del merge: comprobar que el `.env` de EC2 tiene `FRONTEND_BASE_URL=https://fitnerd.betofallas.dev` (tarea del doc-keeper).
