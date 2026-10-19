@@ -11,6 +11,7 @@ from services.password_reset_service import (
     PASSWORD_UPDATED_MESSAGE,
 )
 from decorators import require_auth
+from utils.clock import current_clock
 
 auth_bp = Blueprint(
     "auth",
@@ -21,7 +22,10 @@ auth_bp = Blueprint(
 def _build_auth_service():
     user_repository = UserRepository(db.session)
     unit_of_work = UnitOfWork(db.session)
-    return AuthService(user_repository, unit_of_work, jwt_manager, current_app.config["GOOGLE_CLIENT_ID"])
+    return AuthService(
+        user_repository, unit_of_work, jwt_manager, current_app.config["GOOGLE_CLIENT_ID"],
+        clock=current_clock(),
+    )
 
 
 def _build_password_reset_service():
@@ -31,6 +35,7 @@ def _build_password_reset_service():
         UnitOfWork(db.session),
         email_sender,
         current_app.config["FRONTEND_BASE_URL"],
+        clock=current_clock(),
     )
 
 

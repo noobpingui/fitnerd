@@ -3,6 +3,7 @@ import {
   useQuery,
   useQueryClient,
   type QueryClient,
+  type UseMutationResult,
 } from "@tanstack/react-query"
 import {
   analyzeBodyMetrics,
@@ -13,12 +14,48 @@ import {
 } from "@/features/body-metrics/api"
 import type {
   AnalysisRequest,
+  BodyMetric,
   UpdateBodyMetricPayload,
 } from "@/features/body-metrics/types"
 import { profileKeys } from "@/features/profile/hooks"
 
 export const bodyMetricsKeys = {
   list: ["body-metrics"] as const,
+}
+
+export type CreateMetricResult = { metric: BodyMetric; refreshed: boolean }
+
+/** Relee mediciones y perfil activos; true si ambas lecturas terminan bien. Nunca rechaza. */
+export async function refreshMetricsAndProfile(
+  queryClient: QueryClient
+): Promise<boolean> {
+  try {
+    await Promise.all([
+      queryClient.invalidateQueries(
+        { queryKey: bodyMetricsKeys.list },
+        { throwOnError: true }
+      ),
+      queryClient.invalidateQueries(
+        { queryKey: profileKeys.detail },
+        { throwOnError: true }
+      ),
+    ])
+    return true
+  } catch {
+    return false
+  }
+}
+
+export function useRefreshMetricsAndProfile(): UseMutationResult<
+  boolean,
+  Error,
+  void
+> {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => refreshMetricsAndProfile(queryClient),
+  })
 }
 
 export function useBodyMetrics() {
@@ -28,15 +65,22 @@ export function useBodyMetrics() {
   })
 }
 
-export function useCreateBodyMetric() {
+export function useCreateBodyMetric(): UseMutationResult<
+  CreateMetricResult,
+  Error,
+  Parameters<typeof createBodyMetric>[0]
+> {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (payload: Parameters<typeof createBodyMetric>[0]) =>
-      createBodyMetric(payload),
     // Un registro nuevo cambia el historial completo (y su orden) y puede
-    // cambiar el peso del perfil: se recarga todo.
-    onSuccess: () => invalidateMetricsAndProfile(queryClient),
+    // cambiar el peso del perfil: se recarga todo. La mutación solo falla si
+    // falla el alta; la relectura se informa en `refreshed`.
+    mutationFn: async (payload: Parameters<typeof createBodyMetric>[0]) => {
+      const metric = await createBodyMetric(payload)
+      const refreshed = await refreshMetricsAndProfile(queryClient)
+      return { metric, refreshed }
+    },
   })
 }
 

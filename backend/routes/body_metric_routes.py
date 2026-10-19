@@ -8,6 +8,7 @@ from repositories.user_repository import UserRepository
 from unit_of_work.unit_of_work import UnitOfWork
 from services.body_metric_service import BodyMetricService
 from services.progress_analysis_service import ProgressAnalysisService
+from utils.clock import current_clock
 from utils.llm_client import LLMClient
 from decorators import require_auth
 
@@ -24,7 +25,8 @@ def _build_body_metric_service():
     user_profile_repository = UserProfileRepository(db.session)
     unit_of_work = UnitOfWork(db.session)
     return BodyMetricService(
-        body_metric_repository, user_repository, user_profile_repository, unit_of_work
+        body_metric_repository, user_repository, user_profile_repository, unit_of_work,
+        clock=current_clock(),
     )
 
 
@@ -43,6 +45,7 @@ def _build_progress_analysis_service():
         user_profile_repository,
         unit_of_work,
         llm_client,
+        clock=current_clock(),
     )
 
 

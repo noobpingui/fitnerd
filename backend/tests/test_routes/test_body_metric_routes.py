@@ -788,28 +788,36 @@ def test_post_with_a_5000_digit_weight_is_400_and_never_500(client, registered_u
 
 DATE_TOO_OLD = "La fecha de la medición no puede tener más de un año de antigüedad"
 
+# Spec 020: instante fijado para los tests con fechas absolutas.
+FIXED_NOW = datetime(2026, 10, 12, 12, 0, 0)
+
 
 # SDD: 016 REQ-005 AC-005.1
-def test_post_accepts_a_date_366_days_ago(client, registered_user):
-    """Hace 366 días se acepta (201)."""
+def test_post_accepts_a_date_366_days_ago(client, registered_user, app_clock):
+    """Hace 366 días se acepta (201). Instante fijado: 2026-10-12 12:00 UTC (spec 020)."""
+    app_clock.set(FIXED_NOW)
     headers = registered_user["headers"]
 
-    response = post(client, headers, {"weight": 80, "recorded_at": day(-366)})
+    response = post(client, headers, {"weight": 80, "recorded_at": "2025-10-11"})
 
     assert response.status_code == 201
-    assert listing(client, headers)[0]["recorded_at"] == day(-366)
+    assert listing(client, headers)[0]["recorded_at"] == "2025-10-11"
 
 
 # SDD: 016 REQ-005 AC-005.2
-def test_post_rejects_a_date_367_days_ago_and_changes_nothing(client, registered_user):
-    """Hace 367 días: 400 con el mensaje y ni el historial ni el perfil cambian."""
+def test_post_rejects_a_date_367_days_ago_and_changes_nothing(
+    client, registered_user, app_clock
+):
+    """Hace 367 días: 400 con el mensaje y ni el historial ni el perfil cambian.
+    Instante fijado: 2026-10-12 12:00 UTC (spec 020)."""
+    app_clock.set(FIXED_NOW)
     headers = registered_user["headers"]
     save_profile(client, headers, PROFILE_KG)
-    assert post(client, headers, {"weight": 80, "recorded_at": day(-1)}).status_code == 201
+    assert post(client, headers, {"weight": 80, "recorded_at": "2026-10-11"}).status_code == 201
     history_before = listing(client, headers)
     profile_before = read_profile(client, headers)
 
-    response = post(client, headers, {"weight": 60, "recorded_at": day(-367)})
+    response = post(client, headers, {"weight": 60, "recorded_at": "2025-10-10"})
 
     assert response.status_code == 400
     assert response.get_json() == {"error": DATE_TOO_OLD}
@@ -818,9 +826,13 @@ def test_post_rejects_a_date_367_days_ago_and_changes_nothing(client, registered
 
 
 # SDD: 016 REQ-005 AC-005.3
-def test_post_two_days_ahead_still_gets_the_future_message(client, registered_user):
-    """Dentro de dos días sigue dando 400 de fecha futura."""
-    response = post(client, registered_user["headers"], {"weight": 80, "recorded_at": day(2)})
+def test_post_two_days_ahead_still_gets_the_future_message(client, registered_user, app_clock):
+    """Dentro de dos días sigue dando 400 de fecha futura.
+    Instante fijado: 2026-10-12 12:00 UTC (spec 020)."""
+    app_clock.set(FIXED_NOW)
+    response = post(
+        client, registered_user["headers"], {"weight": 80, "recorded_at": "2026-10-14"}
+    )
 
     assert response.status_code == 400
     assert response.get_json() == {"error": DATE_FUTURE}
@@ -964,3 +976,29 @@ def test_a_past_post_with_the_user_id_of_another_user_creates_its_own(client, ap
     assert len(listing(client, user_a["headers"])) == 1
     assert listing(client, user_b["headers"]) == b_history
     assert read_profile(client, user_b["headers"]) == b_profile
+
+
+# --------------------------------------------------------------------------
+# Spec 020: sincronización del peso del perfil encadenando registros
+# --------------------------------------------------------------------------
+
+
+# SDD: 020 REQ-004 AC-004.4
+def test_profile_weight_follows_the_metric_with_the_latest_date_across_posts(
+    client, registered_user, app_clock
+):
+    """Perfil en kg con 78 y medición del 2026-10-01 de 78; se registra el
+    2026-10-05 (77) y luego el 2026-10-03 (76): el perfil devuelve 77 tras cada
+    registro, porque manda la fecha más reciente y no la última guardada."""
+    app_clock.set(FIXED_NOW)
+    headers = registered_user["headers"]
+    save_profile(client, headers, {**PROFILE_KG, "weight": 78})
+    assert post(client, headers, {"weight": 78, "recorded_at": "2026-10-01"}).status_code == 201
+
+    assert post(client, headers, {"weight": 77, "recorded_at": "2026-10-05"}).status_code == 201
+    after_first = read_profile(client, headers)
+    assert post(client, headers, {"weight": 76, "recorded_at": "2026-10-03"}).status_code == 201
+    after_second = read_profile(client, headers)
+
+    assert after_first["profile"]["weight"] == 77
+    assert after_second["profile"]["weight"] == 77

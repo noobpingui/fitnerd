@@ -27,16 +27,20 @@ import { fieldMessages } from "@/features/onboarding/schemas"
 import type { WeightUnit } from "@/features/onboarding/types"
 import { shiftIsoDate, todayIsoDate } from "@/lib/dates"
 
+export type MetricRegistrationResult = { recordedAt: string; refreshed: boolean }
+
 type RegisterMetricDialogProps = {
   metrics: BodyMetric[] // para el aviso de fecha con medición
   weightUnit: WeightUnit
   onClose: () => void // al cancelar o al guardar con éxito
+  onSaved?: (result: MetricRegistrationResult) => void
 }
 
 export function RegisterMetricDialog({
   metrics,
   weightUnit,
   onClose,
+  onSaved,
 }: RegisterMetricDialogProps): ReactElement {
   const mutation = useCreateBodyMetric()
   const today = useMemo(() => todayIsoDate(), [])
@@ -71,11 +75,15 @@ export function RegisterMetricDialog({
   async function onSave(values: MetricRegistrationValues) {
     if (mutation.isPending || !allValid) return
     mutation.reset()
+    let refreshed: boolean
     try {
-      await mutation.mutateAsync(registrationPayload(values, weightUnit))
+      ;({ refreshed } = await mutation.mutateAsync(
+        registrationPayload(values, weightUnit)
+      ))
     } catch {
       return
     }
+    onSaved?.({ recordedAt: values.date, refreshed })
     onClose()
   }
 

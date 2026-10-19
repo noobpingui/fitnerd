@@ -4,10 +4,15 @@ import { Button } from "@/components/ui/button"
 import { DeleteMetricDialog } from "@/features/body-metrics/components/DeleteMetricDialog"
 import { MetricEditForm } from "@/features/body-metrics/components/MetricEditForm"
 import { formatDate } from "@/features/body-metrics/dateUtils"
+import {
+  HISTORY_PAGE_SIZE,
+  visibleCountToReveal,
+  type RevealRequest,
+} from "@/features/body-metrics/historyReveal"
 import type { BodyMetric } from "@/features/body-metrics/types"
 import type { WeightUnit } from "@/features/onboarding/types"
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = HISTORY_PAGE_SIZE
 const one = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 1 })
 
 type MetricsHistoryProps = {
@@ -15,6 +20,7 @@ type MetricsHistoryProps = {
   weightUnit: WeightUnit
   toDisplayWeight: (kg: number) => number
   suspiciousDate?: string | null
+  reveal?: RevealRequest | null
 }
 
 export function MetricsHistory({
@@ -22,8 +28,11 @@ export function MetricsHistory({
   weightUnit,
   toDisplayWeight,
   suspiciousDate = null,
+  reveal = null,
 }: MetricsHistoryProps) {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  // Última petición de `reveal` ya atendida (por su `seq`).
+  const [handledSeq, setHandledSeq] = useState(0)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<BodyMetric | null>(null)
   // Lista con la que falló el último borrado: si la lista cambia, el aviso deja de verse.
@@ -40,6 +49,17 @@ export function MetricsHistory({
       [...metrics].sort((a, b) => b.recorded_at.localeCompare(a.recorded_at)),
     [metrics]
   )
+
+  // Atiende la petición de revelar una fecha en cuanto esta aparece en la lista
+  // (ajuste de estado durante el render). Solo despliega, nunca pliega.
+  if (reveal && reveal.seq !== handledSeq) {
+    const dates = sorted.map((m) => m.recorded_at)
+    if (dates.includes(reveal.date)) {
+      setHandledSeq(reveal.seq)
+      setVisibleCount(visibleCountToReveal(dates, reveal.date, visibleCount))
+    }
+  }
+
   const visible = sorted.slice(0, visibleCount)
 
   return (

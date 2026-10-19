@@ -431,6 +431,9 @@ AGE_RANGE = {"error": "Debes tener entre 14 y 100 años"}
 REGISTER_URL = "/api/auth/register"
 LOGIN_URL = "/api/auth/login"
 
+# Spec 020: instante fijado para los tests con fechas absolutas.
+FIXED_NOW = datetime(2026, 10, 12, 12, 0, 0)
+
 
 def years_ago(years, days=0):
     """Fecha ISO de hace `years` años contados desde hoy (UTC), más `days` días.
@@ -716,46 +719,57 @@ def test_register_rejects_a_date_of_birth_that_does_not_exist(client):
 
 
 # SDD: 018 REQ-005 AC-005.4
-def test_register_rejects_a_date_of_birth_tomorrow(client):
-    """Mañana (UTC): 400 'La fecha de nacimiento no puede ser futura'."""
-    tomorrow = (datetime.now(timezone.utc).date() + timedelta(days=1)).isoformat()
+def test_register_rejects_a_date_of_birth_tomorrow(client, app_clock):
+    """Mañana (UTC): 400 'La fecha de nacimiento no puede ser futura'.
+    Instante fijado: 2026-10-12 12:00 UTC (spec 020)."""
+    app_clock.set(FIXED_NOW)
 
-    response = post_register(client, date_of_birth=tomorrow)
+    response = post_register(client, date_of_birth="2026-10-13")
 
     assert response.status_code == 400
     assert response.get_json() == FUTURE_DOB
 
 
 # SDD: 018 REQ-005 AC-005.5
-def test_register_rejects_someone_who_turns_14_tomorrow(client):
-    """13 años cumplidos hoy: 400 'Debes tener entre 14 y 100 años'."""
-    response = post_register(client, date_of_birth=years_ago(14, days=1))
+def test_register_rejects_someone_who_turns_14_tomorrow(client, app_clock):
+    """13 años cumplidos hoy: 400 'Debes tener entre 14 y 100 años'.
+    Instante fijado: 2026-10-12 12:00 UTC (spec 020)."""
+    app_clock.set(FIXED_NOW)
+
+    response = post_register(client, date_of_birth="2012-10-13")
 
     assert response.status_code == 400
     assert response.get_json() == AGE_RANGE
 
 
 # SDD: 018 REQ-005 AC-005.6
-def test_register_accepts_someone_who_turns_14_today(client):
-    """Cumple 14 hoy: 201."""
-    response = post_register(client, date_of_birth=years_ago(14))
+def test_register_accepts_someone_who_turns_14_today(client, app_clock):
+    """Cumple 14 hoy: 201. Instante fijado: 2026-10-12 12:00 UTC (spec 020)."""
+    app_clock.set(FIXED_NOW)
+
+    response = post_register(client, date_of_birth="2012-10-12")
 
     assert response.status_code == 201
 
 
 # SDD: 018 REQ-005 AC-005.7
-def test_register_rejects_someone_of_101_years(client):
-    """101 años cumplidos hoy: 400 'Debes tener entre 14 y 100 años'."""
-    response = post_register(client, date_of_birth=years_ago(101))
+def test_register_rejects_someone_of_101_years(client, app_clock):
+    """101 años cumplidos hoy: 400 'Debes tener entre 14 y 100 años'.
+    Instante fijado: 2026-10-12 12:00 UTC (spec 020)."""
+    app_clock.set(FIXED_NOW)
+
+    response = post_register(client, date_of_birth="1925-10-12")
 
     assert response.status_code == 400
     assert response.get_json() == AGE_RANGE
 
 
 # SDD: 018 REQ-005 AC-005.8
-def test_register_accepts_100_years_and_the_profile_returns_the_date(client):
-    """100 años cumplidos hoy (cumple 101 mañana): 201 y /api/profile devuelve la fecha."""
-    dob = years_ago(101, days=1)
+def test_register_accepts_100_years_and_the_profile_returns_the_date(client, app_clock):
+    """100 años cumplidos hoy (cumple 101 mañana): 201 y /api/profile devuelve la fecha.
+    Instante fijado: 2026-10-12 12:00 UTC (spec 020)."""
+    app_clock.set(FIXED_NOW)
+    dob = "1925-10-13"
 
     response = post_register(client, date_of_birth=dob)
 

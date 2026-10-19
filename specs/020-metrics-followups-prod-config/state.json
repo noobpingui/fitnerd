@@ -1,0 +1,614 @@
+{
+  "schema_version": 1,
+  "feature": "020-metrics-followups-prod-config",
+  "title": "Seguimiento de métricas corporales y configuración de producción",
+  "type": "feature",
+  "scope": [
+    "backend",
+    "frontend"
+  ],
+  "branch": "feat/020-metrics-followups-prod-config",
+  "base_branch": "main",
+  "created_at": "2026-10-18T22:13:38.177Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-19T01:23:03.716Z",
+      "note": "Aprobado, sigue"
+    },
+    "plan": {
+      "at": "2026-10-19T01:23:42.224Z",
+      "note": "auto (gate_mode=flow): plan con ADR-0028, sin migración ni dependencias"
+    },
+    "tasks": {
+      "at": "2026-10-19T01:24:51.936Z",
+      "note": "auto (gate_mode=flow): 44 tareas (8 scaffold, 21 test, 14 impl, 1 config)"
+    },
+    "tests": {
+      "at": "2026-10-19T02:23:51.083Z",
+      "note": "auto (gate_mode=flow): red check PASS para F1 y F2"
+    },
+    "implement": {
+      "at": "2026-10-19T02:26:54.203Z",
+      "note": "auto (gate_mode=flow): F1 y F2 corregidos"
+    },
+    "verify": {
+      "at": "2026-10-19T02:30:54.254Z",
+      "note": "auto (gate_mode=flow): verify PASS tras correcciones"
+    },
+    "review": {
+      "at": "2026-10-19T02:41:21.961Z",
+      "note": "Aprobado, sigue"
+    },
+    "docs": {
+      "at": "2026-10-19T02:42:31.375Z",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
+    "close": {
+      "at": "2026-10-19T02:48:23.541Z",
+      "note": "Si aprovado"
+    }
+  },
+  "commits": {
+    "spec": "3fe6e25",
+    "plan": "20d1fc8",
+    "tasks": "9c0e2fa",
+    "tests": "92c5ffb",
+    "implement": "c8232eb",
+    "review": "0d9cd50",
+    "docs": "3095ec1"
+  },
+  "iterations": {
+    "tests": 2,
+    "implement": 0,
+    "review": 1
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-10-19T02:23:37.665Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-10-19T02:30:42.291Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-10-19T02:32:29.877Z"
+  },
+  "tests_snapshot": {
+    "at": "2026-10-19T02:23:50.932Z",
+    "reason": "Tests de F1/F2 y conftest.py LF (correcciones de review)",
+    "sha256": {
+      "backend/tests/conftest.py": "7dbe036187ce55dbd3f946e3adbcef3a96b4ffe94e40618c6fcc97041fdab1d0",
+      "backend/tests/test_routes/test_auth_routes.py": "b355bc87f5f7fbb1774415a286b8104ee6aeb766bab4ef0c80de9941a9effb1f",
+      "backend/tests/test_routes/test_body_metric_routes.py": "233f1bb79f2b7ff9e4d6f64159e706fb93875f1e6faf4b5c35c49514c1b798c2",
+      "backend/tests/test_routes/test_fixed_clock_routes.py": "bcf9933e1957e75bab52807f6e2aa6c7a11120496f795637aa0c28261d24b726",
+      "backend/tests/test_routes/test_resend_email_routes.py": "e0c29573fa46b6ba39cd800cb80afdef7e8d65d1074eab2f22b1e5b8b3c823d0",
+      "backend/tests/test_services/test_clock.py": "884d1abfe31c5c0b017e34fb183129aff47dff8add22d84c7b501bc43265285d",
+      "backend/tests/test_services/test_production_config.py": "4ec4aba441e3a6679aed1562fe819d43f5de4188616b37f7457a363e72c2cbfe",
+      "frontend/src/features/body-metrics/components/MetricsHistory.test.tsx": "1c5f321a2ce246a703d77c3b8239ec7fceaa358cfb63780e27b92782c340c7bc",
+      "frontend/src/features/body-metrics/components/RefreshFailedNotice.test.tsx": "bb468a5e5d7446d7f76222f8161264e818f471444a565492c3cc4bc71f535b1f",
+      "frontend/src/features/body-metrics/historyReveal.test.ts": "61580bf9750a33a9717a3fcfaa81c90a35b919c83c8bb72b603846495fbb70c4",
+      "frontend/src/features/body-metrics/pages/BodyMetricsPage.refresh.test.tsx": "dc282a9649c03f5a35f38c3cd19a6d1a79e0e7da828bfdf059706a59089925e9",
+      "frontend/src/features/body-metrics/pages/BodyMetricsPage.sync.test.tsx": "acf72955f931e18acd724df1d5ee5e1e65f234bf2c9ce6b3cea90d23e91dfb32",
+      "frontend/src/features/profile/components/PhysicalDataForm.refresh-edge.test.tsx": "2ad2230716fddea70a9ff52bcab8ca44e54b0b1e43f3e11a665c0a32a35908e0",
+      "frontend/src/features/profile/components/PhysicalDataForm.refresh.test.tsx": "cd9e381aa6291606952c1193de19791118e1257c403a8fbe658c40a9148a24ff",
+      "frontend/src/test/fakeMetricsServer.ts": "8ccba553310654769bb5a0fcf7e58f39b0a6eed174978e2d0dabc5f19ea4194c"
+    }
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-18T22:13:38.177Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama feat/020-metrics-followups-prod-config desde main"
+    },
+    {
+      "at": "2026-10-18T22:13:59.314Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Escribir spec.md a partir de idea.md"
+    },
+    {
+      "at": "2026-10-18T22:18:17.810Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "Q1-Q8 pendientes de respuesta del usuario"
+    },
+    {
+      "at": "2026-10-18T22:58:09.467Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Usuario acepta las 8 propuestas (Q1-Q8)"
+    },
+    {
+      "at": "2026-10-18T22:59:31.476Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "Spec con 7 REQ, 2 NFR y 52 AC; Q1-Q8 resueltas"
+    },
+    {
+      "at": "2026-10-18T22:59:58.822Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Aprobado, sigue"
+    },
+    {
+      "at": "2026-10-18T22:59:59.112Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: dd46601"
+    },
+    {
+      "at": "2026-10-18T22:59:59.287Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Diseñar plan.md a partir de la spec aprobada"
+    },
+    {
+      "at": "2026-10-18T23:08:16.581Z",
+      "stage": "plan",
+      "event": "needs_input",
+      "note": "Q-P1: AC-004.3 contradice la regla de sincronización real (160 lb -> 160,1); requiere decidir si se cambia la spec aprobada"
+    },
+    {
+      "at": "2026-10-19T01:21:12.670Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Usuario elige opción B de Q-P1: AC-004.3 con 162 lb"
+    },
+    {
+      "at": "2026-10-19T01:21:30.071Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "AC-004.3 ajustado a 162 lb (Q-P1, opción B)"
+    },
+    {
+      "at": "2026-10-19T01:23:03.716Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Aprobado, sigue"
+    },
+    {
+      "at": "2026-10-19T01:23:04.013Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 3fe6e25"
+    },
+    {
+      "at": "2026-10-19T01:23:42.124Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md ajustado a 162 lb; ADR-0028"
+    },
+    {
+      "at": "2026-10-19T01:23:42.224Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan con ADR-0028, sin migración ni dependencias"
+    },
+    {
+      "at": "2026-10-19T01:23:42.514Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 20d1fc8"
+    },
+    {
+      "at": "2026-10-19T01:23:42.627Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Decisiones: reloj por app (utils/clock.py) solo fijable con TESTING; create_app(config_overrides); FRONTEND_BASE_URL https obligatoria en produccion; ADR-0028; sin migracion"
+    },
+    {
+      "at": "2026-10-19T01:23:42.823Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Descomponer plan.md en tasks.md"
+    },
+    {
+      "at": "2026-10-19T01:24:51.818Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "44 tareas; cobertura de los 55 AC"
+    },
+    {
+      "at": "2026-10-19T01:24:51.936Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 44 tareas (8 scaffold, 21 test, 14 impl, 1 config)"
+    },
+    {
+      "at": "2026-10-19T01:24:52.212Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 9c0e2fa"
+    },
+    {
+      "at": "2026-10-19T01:24:52.412Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: esqueletos (scaffold)"
+    },
+    {
+      "at": "2026-10-19T01:25:53.253Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-19T01:34:53.486Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (verifier). Revisar conftest.py (escrito con heredoc)"
+    },
+    {
+      "at": "2026-10-19T01:41:01.059Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Rojo: 18 tests backend y 13 frontend nuevos pasan sin implementacion (AC-004.x, AC-007.x, AC-N001/N002 y parte de AC-006/AC-003); 20 errores de fixture app_clock por not implemented (legitimos). Scaffolds correctos. Decision del orquestador sobre tests de caracterizacion."
+    },
+    {
+      "at": "2026-10-19T01:41:25.822Z",
+      "stage": "tests",
+      "event": "needs_input",
+      "note": "Red check FAIL: 31 tests nuevos pasan sin implementacion (18 backend, 13 frontend); Art. B5.2 exige rojo legitimo. Decision: aceptar como excepcion (tests de caracterizacion) o reescribir"
+    },
+    {
+      "at": "2026-10-19T01:42:45.419Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Usuario acepta opcion A (tests de caracterizacion); repetir red check"
+    },
+    {
+      "at": "2026-10-19T01:47:07.260Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Red check 2 (iteracion 1): 31 caracterizacion aprobada por el usuario (18 backend, 13 frontend). 20 errores app_clock = esqueleto esperado. FAIL por 1 test nuevo no aprobado: RefreshFailedNotice.test.tsx 'los textos coinciden con los de la spec' pasa sin implementacion (responsable test-author)."
+    },
+    {
+      "at": "2026-10-19T01:47:15.078Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red FAIL: 1 test fuera de la excepcion (RefreshFailedNotice.test.tsx 'los textos coinciden con los de la spec') pasa sin implementacion · tests 1/3"
+    },
+    {
+      "at": "2026-10-19T01:51:32.577Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red check 3 (iteracion 2): 18 backend y 13 frontend nuevos pasan solo como caracterizacion aprobada por el usuario (opcion A). RefreshFailedNotice.test.tsx falla en sus 5 tests (not implemented). 20 errores app_clock = esqueleto esperado. Sin tests nuevos sin aprobar."
+    },
+    {
+      "at": "2026-10-19T01:51:40.619Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS (31 de caracterizacion aprobados por el usuario)"
+    },
+    {
+      "at": "2026-10-19T01:51:40.716Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "14 archivo(s) de test: Tests 020 tras red check PASS"
+    },
+    {
+      "at": "2026-10-19T01:51:40.860Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS con 31 tests de caracterizacion aprobados por el usuario"
+    },
+    {
+      "at": "2026-10-19T01:51:49.322Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: e78e6cb"
+    },
+    {
+      "at": "2026-10-19T01:51:49.420Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Decisiones: excepcion B5.2 aprobada por usuario (31 tests de caracterizacion); conftest.py escrito con heredoc por test-author (revisar en review)"
+    },
+    {
+      "at": "2026-10-19T01:51:49.641Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar tareas impl/config hasta que pasen todos los tests"
+    },
+    {
+      "at": "2026-10-19T01:58:15.690Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "Backend 1075 y frontend 792 tests en verde segun implementer"
+    },
+    {
+      "at": "2026-10-19T01:58:15.803Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): tests en verde segun el implementer"
+    },
+    {
+      "at": "2026-10-19T01:58:16.182Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 6829cf3"
+    },
+    {
+      "at": "2026-10-19T01:58:16.295Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "Decisiones: reloj por app solo fijable con TESTING; FRONTEND_BASE_URL sin default y https obligatorio en produccion; reintento solo relee; E501 nuevo en test_fixed_clock_routes.py:73 (ratchet)"
+    },
+    {
+      "at": "2026-10-19T01:58:16.527Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificar en modo full"
+    },
+    {
+      "at": "2026-10-19T02:01:47.854Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify FAIL: Ratchet backend: 1 E501 nuevo en test_fixed_clock_routes.py:73; resto en verde (pytest 1075, vitest 792, lint, tsc, build)"
+    },
+    {
+      "at": "2026-10-19T02:02:06.992Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Verify FAIL: E501 nuevo en test_fixed_clock_routes.py:73 (ratchet ruff) · tests 2/3"
+    },
+    {
+      "at": "2026-10-19T02:02:31.317Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Correccion de E501; sin red check (el test debe pasar)"
+    },
+    {
+      "at": "2026-10-19T02:02:31.431Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "14 archivo(s) de test: Fix E501 en test_fixed_clock_routes.py (iteracion 2)"
+    },
+    {
+      "at": "2026-10-19T02:02:31.597Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): correccion de test, sin red check"
+    },
+    {
+      "at": "2026-10-19T02:02:31.891Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: edd5c9c"
+    },
+    {
+      "at": "2026-10-19T02:02:34.853Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "Sin cambios de produccion: el fallo era solo de un test"
+    },
+    {
+      "at": "2026-10-19T02:02:34.961Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): sin cambios de produccion en esta iteracion"
+    },
+    {
+      "at": "2026-10-19T02:02:35.183Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificar en modo full (iteracion 2)"
+    },
+    {
+      "at": "2026-10-19T02:05:56.498Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Iteración 2: pytest 1075 passed; ratchet backend sin violaciones nuevas; frontend test 792 passed, lint, tsc y build OK; trazabilidad 54/54 AC, 9/9 REQ-NFR con tarea, 44/44 tareas [x], sin skip/only nuevos"
+    },
+    {
+      "at": "2026-10-19T02:06:07.161Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS: backend 1075, frontend 792, lint, tsc, build"
+    },
+    {
+      "at": "2026-10-19T02:06:07.274Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-19T02:06:07.490Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review independiente de la rama contra spec, plan y constitucion"
+    },
+    {
+      "at": "2026-10-19T02:10:20.439Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-19T02:10:20.560Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED: 0 bloqueantes, 0 mayores, 3 menores, 5 nit"
+    },
+    {
+      "at": "2026-10-19T02:10:20.876Z",
+      "stage": "review",
+      "event": "commit",
+      "note": "review: 1a1b22b"
+    },
+    {
+      "at": "2026-10-19T02:19:51.137Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Review: el usuario pide corregir F1, F2 y F3; F4-F8 al backlog · review 1/3"
+    },
+    {
+      "at": "2026-10-19T02:21:03.324Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Red check de los tests nuevos de F1 y F2 (correcciones de review)"
+    },
+    {
+      "at": "2026-10-19T02:23:37.665Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red F1/F2: 2 tests nuevos (PhysicalDataForm.refresh-edge) fallan por aserción de comportamiento ausente (F1: aviso se quita sin releer; F2: Reintentar descarta edición). PhysicalDataForm.tsx sin cambios. Backend pytest 1075 passed; conftest.py normalizado (contenido idéntico). Excepción B5.2 (31 caracterización) intacta."
+    },
+    {
+      "at": "2026-10-19T02:23:50.821Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS: 2 tests nuevos de F1 y F2 en rojo legitimo; conftest.py normalizado"
+    },
+    {
+      "at": "2026-10-19T02:23:50.932Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "15 archivo(s) de test: Tests de F1/F2 y conftest.py LF (correcciones de review)"
+    },
+    {
+      "at": "2026-10-19T02:23:51.083Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS para F1 y F2"
+    },
+    {
+      "at": "2026-10-19T02:23:51.395Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 92c5ffb"
+    },
+    {
+      "at": "2026-10-19T02:23:51.601Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Corregir F1 y F2 en PhysicalDataForm.tsx"
+    },
+    {
+      "at": "2026-10-19T02:26:54.080Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F1 y F2 corregidos; frontend 794 y backend 1075 segun implementer"
+    },
+    {
+      "at": "2026-10-19T02:26:54.203Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F1 y F2 corregidos"
+    },
+    {
+      "at": "2026-10-19T02:26:54.542Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: c8232eb"
+    },
+    {
+      "at": "2026-10-19T02:26:54.762Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verify full tras correcciones F1/F2/F3"
+    },
+    {
+      "at": "2026-10-19T02:30:42.291Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify full tras F1/F2/F3: pytest backend 1075 passed; ratchet backend sin violaciones nuevas; frontend test 794 passed, lint, tsc -b y build OK; trazabilidad 54/54 AC con marcador SDD y en verde, REQ-001..007 y NFR-001..002 con tarea, 44/44 tareas [x], sin skip/only nuevos"
+    },
+    {
+      "at": "2026-10-19T02:30:54.138Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS: backend 1075, frontend 794, lint, tsc, build"
+    },
+    {
+      "at": "2026-10-19T02:30:54.254Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS tras correcciones"
+    },
+    {
+      "at": "2026-10-19T02:30:54.476Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Segunda review: comprobar correcciones F1, F2 y F3"
+    },
+    {
+      "at": "2026-10-19T02:32:29.877Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-19T02:32:29.983Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED (iteracion 2): F1-F3 corregidos; 0 bloqueantes, 0 mayores, 1 menor, 2 nit nuevos"
+    },
+    {
+      "at": "2026-10-19T02:32:30.286Z",
+      "stage": "review",
+      "event": "commit",
+      "note": "review: 0d9cd50"
+    },
+    {
+      "at": "2026-10-19T02:41:21.961Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Aprobado, sigue"
+    },
+    {
+      "at": "2026-10-19T02:41:22.171Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Actualizar documentacion afectada por la feature"
+    },
+    {
+      "at": "2026-10-19T02:42:31.266Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "CLAUDE.md y deploy-runbook.md actualizados; docs-report.md"
+    },
+    {
+      "at": "2026-10-19T02:42:31.375Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
+    {
+      "at": "2026-10-19T02:42:31.737Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: 3095ec1"
+    },
+    {
+      "at": "2026-10-19T02:42:31.954Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Cierre: checklist, backlog global e integracion"
+    },
+    {
+      "at": "2026-10-19T02:42:49.061Z",
+      "stage": "close",
+      "event": "done",
+      "note": "Checklist de hecho en verde; backlog global actualizado"
+    },
+    {
+      "at": "2026-10-19T02:48:23.541Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Si aprovado"
+    },
+    {
+      "at": "2026-10-19T02:48:23.541Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
+    }
+  ]
+}

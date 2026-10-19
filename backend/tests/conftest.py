@@ -192,3 +192,45 @@ def _reset_tracer_backend():
     _tracer.backend = None
     yield
     _tracer.backend = None
+
+
+@pytest.fixture
+def app_clock(app):
+    """Spec 020: reloj de la app de pruebas (`AdjustableClock`). Los tests lo
+    fijan con `app_clock.set(...)`; el instante fijado se descarta antes y
+    después del test para que no se filtre al siguiente."""
+    from utils.clock import get_app_clock
+
+    clock = get_app_clock(app)
+    clock.reset()
+    yield clock
+    clock.reset()
+
+
+@pytest.fixture
+def make_app(app):
+    """Spec 020: fábrica de apps extra, `make_app(config_name, **overrides)`,
+    para probar la configuración de producción, desarrollo o de correo real.
+    Usa valores seguros por defecto (la base de datos de pruebas, Langfuse
+    desactivado y correo en memoria) porque en CI no existen DEV_DATABASE_URL
+    ni PROD_DATABASE_URL y el .env local puede traer claves reales. Al
+    terminar repone el remitente y el transporte de correo de la app de
+    sesión, porque crear una app reconfigura los singletons."""
+    created = []
+
+    def factory(config_name, **overrides):
+        settings = {
+            "SQLALCHEMY_DATABASE_URI": app.config["SQLALCHEMY_DATABASE_URI"],
+            "LANGFUSE_PUBLIC_KEY": None,
+            "LANGFUSE_SECRET_KEY": None,
+            "MAIL_BACKEND": "memory",
+        }
+        settings.update(overrides)
+        new_app = create_app(config_name, settings)
+        created.append(new_app)
+        return new_app
+
+    yield factory
+
+    if created:
+        _email_sender.init_app(app)

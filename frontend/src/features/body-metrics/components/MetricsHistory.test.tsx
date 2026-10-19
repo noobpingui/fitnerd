@@ -13,6 +13,7 @@ import {
 } from "@/features/body-metrics/api"
 import { formatDate } from "@/features/body-metrics/dateUtils"
 import { useBodyMetrics } from "@/features/body-metrics/hooks"
+import type { RevealRequest } from "@/features/body-metrics/historyReveal"
 import type { BodyMetric } from "@/features/body-metrics/types"
 import type { WeightUnit } from "@/features/onboarding/types"
 import { KG_PER_LB } from "@/features/onboarding/units"
@@ -762,5 +763,116 @@ describe("MetricsHistory - aviso de borrado fallido (spec 013)", () => {
     rejectDelete(new Error("fallo"))
 
     expect(await screen.findByText(DELETE_FAILED)).toBeInTheDocument()
+  })
+})
+
+// --------------------------------------------------------------------------
+// Spec 020, REQ-003: el Historial se despliega hasta la fecha pedida (`reveal`)
+// --------------------------------------------------------------------------
+
+// Como renderStatic, pero el test controla también la petición `reveal`.
+function renderRevealing(metrics: BodyMetric[], reveal: RevealRequest | null) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  })
+  const ui = (list: BodyMetric[], request: RevealRequest | null) => (
+    <QueryClientProvider client={queryClient}>
+      <MetricsHistory
+        metrics={list}
+        weightUnit="kg"
+        toDisplayWeight={(kg) => kg}
+        reveal={request}
+      />
+    </QueryClientProvider>
+  )
+  const view = render(ui(metrics, reveal))
+  return {
+    rerenderWith: (list: BodyMetric[], request: RevealRequest | null) =>
+      view.rerender(ui(list, request)),
+  }
+}
+
+const bodyRows = () => screen.getAllByRole("row").slice(1)
+
+describe("MetricsHistory - reveal (spec 020)", () => {
+  // SDD: 020 REQ-003 AC-003.1
+  it("despliega de 10 en 10 hasta que la fecha pedida es visible", async () => {
+    // manyMetrics(26) llega hasta el 2026-09-17; la fila 26 es la última.
+    const list = manyMetrics(26)
+    const target = list[25].recorded_at
+    renderRevealing(list, { date: target, seq: 1 })
+
+    await waitFor(() => expect(bodyRows()).toHaveLength(26))
+    expect(bodyRows()[25]).toHaveTextContent(formatDate(target))
+    expect(showMore()).not.toBeInTheDocument()
+  })
+
+  // SDD: 020 REQ-003 AC-003.1
+  it("una petición cuya fecha aún no está en la lista queda pendiente y se atiende cuando llega", async () => {
+    const list = manyMetrics(25)
+    const arrived = [...list, metric("2026-08-01", 77)]
+    const { rerenderWith } = renderRevealing(list, { date: "2026-08-01", seq: 1 })
+    await screen.findAllByRole("row")
+
+    // La fecha no está: sigue en 10 filas, con 'Mostrar más'.
+    expect(bodyRows()).toHaveLength(10)
+    expect(showMore()).toBeInTheDocument()
+
+    rerenderWith(arrived, { date: "2026-08-01", seq: 1 })
+
+    await waitFor(() => expect(bodyRows()).toHaveLength(26))
+    expect(showMore()).not.toBeInTheDocument()
+  })
+
+  // SDD: 020 REQ-003 AC-003.3
+  it("sin petición, o con la fecha ya visible, deja 10 filas", async () => {
+    const list = manyMetrics(25)
+    const { rerenderWith } = renderRevealing(list, null)
+    await screen.findAllByRole("row")
+    expect(bodyRows()).toHaveLength(10)
+
+    rerenderWith(list, { date: list[0].recorded_at, seq: 1 })
+
+    await waitFor(() => expect(bodyRows()).toHaveLength(10))
+    expect(showMore()).toBeInTheDocument()
+  })
+
+  // SDD: 020 REQ-003 AC-003.4
+  it("no pliega el Historial que el usuario ya desplegó con 'Mostrar más'", async () => {
+    const user = userEvent.setup()
+    const list = manyMetrics(25)
+    const { rerenderWith } = renderRevealing(list, null)
+    await screen.findAllByRole("row")
+    await user.click(showMore() as HTMLElement)
+    await user.click(showMore() as HTMLElement)
+    expect(bodyRows()).toHaveLength(25)
+
+    rerenderWith(list, { date: list[0].recorded_at, seq: 1 })
+
+    await waitFor(() => expect(bodyRows()).toHaveLength(25))
+  })
+
+  // SDD: 020 REQ-003 AC-003.2
+  it("una petición ya atendida no se repite; otra con la misma fecha y distinto seq sí", async () => {
+    // 35 mediciones: el 2026-09-27 es la fila 16, así que pide 20 filas.
+    const list = manyMetrics(35)
+    const target = list[15].recorded_at
+    const { rerenderWith } = renderRevealing(list, { date: target, seq: 1 })
+    await waitFor(() => expect(bodyRows()).toHaveLength(20))
+
+    // Llegan 10 mediciones más recientes: la fecha baja a la fila 26.
+    const newer = Array.from({ length: 10 }, (_, i) =>
+      metric(`2026-10-${String(13 + i).padStart(2, "0")}`, 79)
+    )
+    const longer = [...newer, ...list]
+
+    // Mismo seq: ya se atendió, no se vuelve a desplegar.
+    rerenderWith(longer, { date: target, seq: 1 })
+    await waitFor(() => expect(bodyRows()).toHaveLength(20))
+
+    // Mismo fecha, otro seq: es una petición nueva y despliega hasta 30.
+    rerenderWith(longer, { date: target, seq: 2 })
+    await waitFor(() => expect(bodyRows()).toHaveLength(30))
+    expect(showMore()).toBeInTheDocument()
   })
 })

@@ -22,7 +22,7 @@ export function ProfilePage() {
   const {
     data: profile,
     isPending: profilePending,
-    isError: profileError,
+    isLoadingError: profileError,
     refetch,
   } = useProfile()
   const answers = useMemo(
