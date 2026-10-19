@@ -10,8 +10,8 @@
   "branch": "feat/020-metrics-followups-prod-config",
   "base_branch": "main",
   "created_at": "2026-10-18T22:13:38.177Z",
-  "stage": "implement",
-  "status": "in_progress",
+  "stage": "review",
+  "status": "awaiting_approval",
   "approvals": {
     "spec": {
       "at": "2026-10-19T01:23:03.716Z",
@@ -29,8 +29,14 @@
       "at": "2026-10-19T02:02:31.597Z",
       "note": "auto (gate_mode=flow): correccion de test, sin red check"
     },
-    "implement": null,
-    "verify": null,
+    "implement": {
+      "at": "2026-10-19T02:02:34.961Z",
+      "note": "auto (gate_mode=flow): sin cambios de produccion en esta iteracion"
+    },
+    "verify": {
+      "at": "2026-10-19T02:06:07.274Z",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
     "review": null,
     "docs": null,
     "close": null
@@ -39,7 +45,7 @@
     "spec": "3fe6e25",
     "plan": "20d1fc8",
     "tasks": "9c0e2fa",
-    "tests": "e78e6cb",
+    "tests": "edd5c9c",
     "implement": "6829cf3"
   },
   "iterations": {
@@ -53,12 +59,12 @@
     "at": "2026-10-19T01:51:32.577Z"
   },
   "verify": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-19T02:05:56.498Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-10-19T02:10:20.439Z"
   },
   "tests_snapshot": {
     "at": "2026-10-19T02:02:31.431Z",
@@ -357,6 +363,66 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): correccion de test, sin red check"
+    },
+    {
+      "at": "2026-10-19T02:02:31.891Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: edd5c9c"
+    },
+    {
+      "at": "2026-10-19T02:02:34.853Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "Sin cambios de produccion: el fallo era solo de un test"
+    },
+    {
+      "at": "2026-10-19T02:02:34.961Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): sin cambios de produccion en esta iteracion"
+    },
+    {
+      "at": "2026-10-19T02:02:35.183Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificar en modo full (iteracion 2)"
+    },
+    {
+      "at": "2026-10-19T02:05:56.498Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Iteración 2: pytest 1075 passed; ratchet backend sin violaciones nuevas; frontend test 792 passed, lint, tsc y build OK; trazabilidad 54/54 AC, 9/9 REQ-NFR con tarea, 44/44 tareas [x], sin skip/only nuevos"
+    },
+    {
+      "at": "2026-10-19T02:06:07.161Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS: backend 1075, frontend 792, lint, tsc, build"
+    },
+    {
+      "at": "2026-10-19T02:06:07.274Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-19T02:06:07.490Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review independiente de la rama contra spec, plan y constitucion"
+    },
+    {
+      "at": "2026-10-19T02:10:20.439Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-19T02:10:20.560Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED: 0 bloqueantes, 0 mayores, 3 menores, 5 nit"
     }
   ]
 }

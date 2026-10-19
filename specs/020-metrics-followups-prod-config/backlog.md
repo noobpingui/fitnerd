@@ -40,3 +40,14 @@
 - [ ] E501 (102 > 100) en la línea 73 de `backend/tests/test_routes/test_fixed_clock_routes.py`, escrito por el test-author. Corregirlo en una iteración de tests o aceptarlo en la review para que el ratchet quede en 0.
 - [ ] `conftest.py` se escribió con heredoc (anotado en el state). Revisarlo en la review.
 - [ ] Paso manual antes del merge: comprobar que el `.env` de EC2 tiene `FRONTEND_BASE_URL=https://fitnerd.betofallas.dev` (tarea del doc-keeper).
+
+## review · reviewer
+- [ ] F1 (MENOR, implementer): en `PhysicalDataForm.tsx:176`, guardar un cambio sin medición quita el aviso de relectura sin releer, en contra de lo que dice el plan en §3.4.
+- [ ] F2 (MENOR, implementer): en `PhysicalDataForm.tsx:218-224`, «Reintentar» hace `form.reset` con los valores guardados antes y descarta lo que el usuario editó después sin guardar.
+- [ ] F3 (MENOR, test-author): en `backend/tests/conftest.py:195-236`, el bloque se escribió con un heredoc de shell (Art. B2.4). La copia de trabajo queda con finales de línea mixtos (CRLF y LF); el índice guarda LF. Para no repetirlo, el test-author debe usar Write o Edit.
+- [ ] F4 (NIT, test-author): el marcador de `BodyMetricsPage.sync.test.tsx:209` dice `NFR-002 AC-004.1` y debería decir `REQ-004 AC-004.1`.
+- [ ] F5 (NIT, test-author): `round1` de `fakeMetricsServer.ts` redondea en binario, mientras el servidor usa `Decimal` half-up; pueden divergir en valores frontera.
+- [ ] F6 (NIT, test-author): `app_clock` no es autouse, y `make_app` solo repone `email_sender`, no los demás singletons.
+- [ ] F7 (NIT, planner): si el usuario la acepta en el gate, pasar la ADR-0028 a «Aceptada» en la ADR y en el índice de `docs/sdd/decisions/README.md`.
+- [ ] F8 (NIT, implementer): `auth_service`, `body_metric_service` y `progress_analysis_service` deberían importar `utc_now` de `utils.clock`, no del reexporte de `profile_service`.
+- [ ] Etapa docs (Art. P4): documentar en `docs/deploy-runbook.md` y `CLAUDE.md` el paso manual: antes del merge, comprobar que el `backend/.env` de EC2 tiene `FRONTEND_BASE_URL=https://fitnerd.betofallas.dev`; si falta, la app no arranca.
