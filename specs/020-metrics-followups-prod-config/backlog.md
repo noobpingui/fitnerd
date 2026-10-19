@@ -63,3 +63,8 @@
 ## implement (correcciones de review) · implementer
 - [ ] Con el aviso de relectura visible y una medición posterior a hoy, el aviso de fecha futura (spec 016) solo se calcula al reintentar correctamente.
 - [ ] F2: tras «Reintentar» con ediciones sin guardar se conserva el borrador y `saved` pasa a los valores del guardado anterior, así que el formulario queda con cambios pendientes.
+
+## review (iteración 2) · reviewer
+- [ ] F9 (MENOR, test-author): ningún test comprueba que, tras guardar solo la meta con el aviso visible, un «Reintentar» correcto conserva la meta nueva. Cubre `setPendingFinish` de `PhysicalDataForm.tsx:182` (`PhysicalDataForm.refresh-edge.test.tsx:128-146`).
+- [ ] F10 (NIT, implementer): con `keepDraft` se ve «Cambios guardados» mientras el formulario tiene ediciones sin guardar (`PhysicalDataForm.tsx:221,230`).
+- [ ] F11 (NIT, implementer): `retryRefresh` usa un `dirty` obsoleto del render en que se pulsó; si el usuario edita mientras la relectura está en curso, esa edición se descarta (`PhysicalDataForm.tsx:226-230`).
