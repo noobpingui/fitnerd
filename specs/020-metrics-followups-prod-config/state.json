@@ -10,14 +10,17 @@
   "branch": "feat/020-metrics-followups-prod-config",
   "base_branch": "main",
   "created_at": "2026-10-18T22:13:38.177Z",
-  "stage": "plan",
+  "stage": "tasks",
   "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-10-19T01:23:03.716Z",
       "note": "Aprobado, sigue"
     },
-    "plan": null,
+    "plan": {
+      "at": "2026-10-19T01:23:42.224Z",
+      "note": "auto (gate_mode=flow): plan con ADR-0028, sin migración ni dependencias"
+    },
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -27,7 +30,7 @@
     "close": null
   },
   "commits": {
-    "spec": "dd46601"
+    "spec": "3fe6e25"
   },
   "iterations": {
     "tests": 0,
@@ -121,6 +124,24 @@
       "stage": "spec",
       "event": "approved",
       "note": "Aprobado, sigue"
+    },
+    {
+      "at": "2026-10-19T01:23:04.013Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 3fe6e25"
+    },
+    {
+      "at": "2026-10-19T01:23:42.124Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md ajustado a 162 lb; ADR-0028"
+    },
+    {
+      "at": "2026-10-19T01:23:42.224Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan con ADR-0028, sin migración ni dependencias"
     }
   ]
 }
