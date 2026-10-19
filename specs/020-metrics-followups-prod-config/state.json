@@ -10,7 +10,7 @@
   "branch": "feat/020-metrics-followups-prod-config",
   "base_branch": "main",
   "created_at": "2026-10-18T22:13:38.177Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -21,7 +21,10 @@
       "at": "2026-10-19T01:23:42.224Z",
       "note": "auto (gate_mode=flow): plan con ADR-0028, sin migración ni dependencias"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-19T01:24:51.936Z",
+      "note": "auto (gate_mode=flow): 44 tareas (8 scaffold, 21 test, 14 impl, 1 config)"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -30,7 +33,8 @@
     "close": null
   },
   "commits": {
-    "spec": "3fe6e25"
+    "spec": "3fe6e25",
+    "plan": "20d1fc8"
   },
   "iterations": {
     "tests": 0,
@@ -142,6 +146,36 @@
       "stage": "plan",
       "event": "approved",
       "note": "auto (gate_mode=flow): plan con ADR-0028, sin migración ni dependencias"
+    },
+    {
+      "at": "2026-10-19T01:23:42.514Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 20d1fc8"
+    },
+    {
+      "at": "2026-10-19T01:23:42.627Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Decisiones: reloj por app (utils/clock.py) solo fijable con TESTING; create_app(config_overrides); FRONTEND_BASE_URL https obligatoria en produccion; ADR-0028; sin migracion"
+    },
+    {
+      "at": "2026-10-19T01:23:42.823Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Descomponer plan.md en tasks.md"
+    },
+    {
+      "at": "2026-10-19T01:24:51.818Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "44 tareas; cobertura de los 55 AC"
+    },
+    {
+      "at": "2026-10-19T01:24:51.936Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 44 tareas (8 scaffold, 21 test, 14 impl, 1 config)"
     }
   ]
 }
