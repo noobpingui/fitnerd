@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { DeleteMetricDialog } from "@/features/body-metrics/components/DeleteMetricDialog"
 import { MetricEditForm } from "@/features/body-metrics/components/MetricEditForm"
 import { formatDate } from "@/features/body-metrics/dateUtils"
+import type { RevealRequest } from "@/features/body-metrics/historyReveal"
 import type { BodyMetric } from "@/features/body-metrics/types"
 import type { WeightUnit } from "@/features/onboarding/types"
 
@@ -15,6 +16,7 @@ type MetricsHistoryProps = {
   weightUnit: WeightUnit
   toDisplayWeight: (kg: number) => number
   suspiciousDate?: string | null
+  reveal?: RevealRequest | null
 }
 
 export function MetricsHistory({

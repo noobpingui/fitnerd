@@ -27,10 +27,13 @@ import { fieldMessages } from "@/features/onboarding/schemas"
 import type { WeightUnit } from "@/features/onboarding/types"
 import { shiftIsoDate, todayIsoDate } from "@/lib/dates"
 
+export type MetricRegistrationResult = { recordedAt: string; refreshed: boolean }
+
 type RegisterMetricDialogProps = {
   metrics: BodyMetric[] // para el aviso de fecha con medición
   weightUnit: WeightUnit
   onClose: () => void // al cancelar o al guardar con éxito
+  onSaved?: (result: MetricRegistrationResult) => void
 }
 
 export function RegisterMetricDialog({

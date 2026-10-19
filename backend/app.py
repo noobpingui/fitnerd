@@ -10,7 +10,7 @@ from extensions import (
 from exceptions import error_handlers
 from routes import register_blueprints
 
-def create_app(config_name=None):
+def create_app(config_name=None, config_overrides=None):
 
     #To initialize the Flask application
     app = Flask(__name__)
@@ -21,6 +21,7 @@ def create_app(config_name=None):
 
     #To load all the variables from that class to app.config: "DEBUG"=TRUE, "SQLALCHEMY_DATABASE_URI"=..., etc
     app.config.from_object(config_by_name[config_name])
+    app.config.update(config_overrides or {})
 
     #Detrás de Caddy, remote_addr sería la IP del proxy: se toma la de X-Forwarded-For (ADR-0015)
     if app.config["PROXY_FIX_X_FOR"] > 0:

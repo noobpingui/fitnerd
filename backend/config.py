@@ -18,6 +18,16 @@ def resolve_langfuse_base_url(value):
     return value.rstrip("/")
 
 
+DEFAULT_FRONTEND_BASE_URL = "http://localhost:5173"
+FRONTEND_BASE_URL_REQUIRED_MESSAGE = (
+    "FRONTEND_BASE_URL es obligatoria en producción y debe empezar por https://"
+)
+
+
+def resolve_frontend_base_url(_value, *, required):
+    raise NotImplementedError("not implemented")
+
+
 def observability_enabled(config):
     """La observabilidad solo se activa con ambas claves y fuera de los tests."""
     return bool(

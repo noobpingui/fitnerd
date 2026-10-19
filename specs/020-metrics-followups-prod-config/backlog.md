@@ -22,3 +22,16 @@
 - [ ] Exigir `RESEND_API_KEY` al arrancar en producción con `MAIL_BACKEND=resend` (Q7).
 - [ ] Validar `FRONTEND_BASE_URL` como URL completa (hoy basta con el prefijo `https://`).
 - [ ] Con `isLoadingError`, un fallo de relectura en segundo plano que no viene de un registro ya no muestra ningún aviso en Métricas ni en el perfil; valorar un aviso general.
+
+## tests (scaffold) · implementer
+- Ninguno.
+
+## tests · test-author
+- [ ] Aviso para el implementer: los helpers de los tests de límites de fecha (`day()`, `today()` y `years_ago()`) siguen en uso por otros tests. No hay que borrarlos.
+- [ ] `test_fixed_clock_routes.py` usa `X-Forwarded-For` fijo (203.0.113.50) en `forgot`. Si se añaden más tests de restablecimiento ahí, conviene una IP por test para evitar el límite de 3 por IP.
+- [ ] Si el implementer añade el hook de relectura con reintentos reales en producción (3 reintentos), el aviso tarda unos segundos. Los tests usan `retry: false`, como dice el plan.
+- [ ] El plan no pide stubs adicionales al implementer. La única dependencia de comportamiento es que `get_app_clock` devuelva `app.extensions[CLOCK_EXTENSION_KEY]` y que `install_clock` se llame en `create_app` antes de las extensiones.
+- [ ] (decisión del test-author) El bloque de fixtures de `backend/tests/conftest.py` (`app_clock`, `make_app`) se escribió con un heredoc de shell, no con Write/Edit; el verifier debe revisar ese archivo. El plan pedía un fixture autouse `_reset_app_clock`; se sustituyó por `app_clock`, que hace `reset()` antes y después.
+
+## tests (red check) · verifier
+- [ ] `app_clock` no es autouse: un test que fije el reloj sin pedir el fixture lo dejaría fijado. Hoy todos los que lo fijan lo piden.

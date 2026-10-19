@@ -3,6 +3,7 @@ import {
   useQuery,
   useQueryClient,
   type QueryClient,
+  type UseMutationResult,
 } from "@tanstack/react-query"
 import {
   analyzeBodyMetrics,
@@ -13,12 +14,30 @@ import {
 } from "@/features/body-metrics/api"
 import type {
   AnalysisRequest,
+  BodyMetric,
   UpdateBodyMetricPayload,
 } from "@/features/body-metrics/types"
 import { profileKeys } from "@/features/profile/hooks"
 
 export const bodyMetricsKeys = {
   list: ["body-metrics"] as const,
+}
+
+export type CreateMetricResult = { metric: BodyMetric; refreshed: boolean }
+
+/** Relee mediciones y perfil activos; true si ambas lecturas terminan bien. Nunca rechaza. */
+export function refreshMetricsAndProfile(
+  _queryClient: QueryClient
+): Promise<boolean> {
+  throw new Error("not implemented")
+}
+
+export function useRefreshMetricsAndProfile(): UseMutationResult<
+  boolean,
+  Error,
+  void
+> {
+  throw new Error("not implemented")
 }
 
 export function useBodyMetrics() {
