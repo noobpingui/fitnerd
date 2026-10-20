@@ -46,7 +46,12 @@ CHICKEN = make_food(
     fat_g=3.57,
 )
 RICE = make_food(
-    168878, "Rice, white, long-grain", "foundation", calories_kcal=130.0, protein_g=2.7, carbs_g=28.2
+    168878,
+    "Rice, white, long-grain",
+    "foundation",
+    calories_kcal=130.0,
+    protein_g=2.7,
+    carbs_g=28.2,
 )
 GALLO_PINTO = {
     "name": "Gallo pinto",
@@ -602,7 +607,9 @@ def test_update_item_grams_rejects_invalid_grams_and_keeps_the_item(grams):
     item = make_item(31)
     env = Env(meals=[make_meal(meal_id=1, items=[item])])
 
-    message = expect_error(ValidationError, env.service.update_item_grams, USER, 1, 31, {"grams": grams})
+    message = expect_error(
+        ValidationError, env.service.update_item_grams, USER, 1, 31, {"grams": grams}
+    )
 
     assert message == GRAMS_RANGE
     assert item.grams == Decimal("150")
@@ -762,7 +769,8 @@ def test_remove_item_of_a_missing_meal_is_not_found():
     """Una comida que no existe da 404."""
     env = Env()
 
-    assert expect_error(ResourceNotFoundError, env.service.remove_item, USER, 99, 1) == MEAL_NOT_FOUND
+    message = expect_error(ResourceNotFoundError, env.service.remove_item, USER, 99, 1)
+    assert message == MEAL_NOT_FOUND
 
 
 # SDD: 022 REQ-007 AC-007.5

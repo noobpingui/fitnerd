@@ -43,3 +43,7 @@
 - [ ] Documentar en `docs/deploy-runbook.md` y `CLAUDE.md` el paso manual de la migración `b3d5f7a9c1e4` (volcado verificado, aplicar antes del merge con `FLASK_ENV` bien puesto).
 - [ ] Opcional: mostrar «Guardando…» global o deshabilitar por fila el botón «Quitar», más allá del indicador `isRemoving` actual.
 - [ ] Opcional: enlace a `/foods` desde el diálogo del diario, o retirar `/foods` más adelante (REQ-015 lo mantiene funcionando pero sin enlace).
+
+## verify · verifier
+- [ ] Corregir el número de AC de spec.md («86» frente a los 96 definidos) en la próxima edición de la spec o en el cierre.
+- [ ] Documentar en docs/deploy-runbook.md (o docs-report.md) el paso manual de producción: aplicar la migración b3d5f7a9c1e4 con FLASK_ENV bien puesto, antes del merge (Art. P4). La migración no se ha aplicado.
