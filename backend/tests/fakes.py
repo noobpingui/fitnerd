@@ -402,3 +402,71 @@ class FakeFoodRepository:
         self.get_calls.append(list(fdc_ids))
         wanted = set(fdc_ids)
         return [food for food in self.foods if food.fdc_id in wanted]
+
+
+# --- Spec 022: diario de comidas -----------------------------------------
+
+
+def make_food(fdc_id, description, data_type="sr_legacy", **per_100g):
+    """Alimento de USDA de mentira con la forma de `Food` (spec 022): los
+    valores por 100 g se pasan por nombre (`calories_kcal`, `protein_g`,
+    `carbs_g`, `fat_g`); los que falten valen None (sin dato)."""
+    from types import SimpleNamespace
+
+    return SimpleNamespace(
+        fdc_id=fdc_id,
+        description=description,
+        data_type=data_type,
+        calories_kcal=per_100g.get("calories_kcal"),
+        protein_g=per_100g.get("protein_g"),
+        carbs_g=per_100g.get("carbs_g"),
+        fat_g=per_100g.get("fat_g"),
+    )
+
+
+class FakeMealRepository:
+    """Doble de MealRepository en memoria (spec 022). Guarda instancias reales
+    de `Meal` (sin sesion); `create` les asigna un `id` entero creciente.
+    `created` y `deleted` quedan para las aserciones y `meals` permite
+    precargar. Los tres metodos de consulta filtran por usuario, como el real."""
+
+    def __init__(self, meals=None):
+        self.meals = list(meals or [])
+        self.created = []
+        self.deleted = []
+        self._next_id = max([m.id for m in self.meals if m.id is not None] + [0]) + 1
+
+    def create(self, meal):
+        if getattr(meal, "id", None) is None:
+            meal.id = self._next_id
+            self._next_id += 1
+        self.meals.append(meal)
+        self.created.append(meal)
+        return meal
+
+    def delete(self, meal):
+        self.meals.remove(meal)
+        self.deleted.append(meal)
+
+    def list_by_user_and_date(self, user_id, meal_date):
+        return [
+            m
+            for m in self.meals
+            if str(m.user_id) == str(user_id) and m.meal_date == meal_date
+        ]
+
+    def get_by_user_date_and_type(self, user_id, meal_date, meal_type):
+        for meal in self.meals:
+            if (
+                str(meal.user_id) == str(user_id)
+                and meal.meal_date == meal_date
+                and meal.meal_type == meal_type
+            ):
+                return meal
+        return None
+
+    def get_by_id_and_user(self, meal_id, user_id):
+        for meal in self.meals:
+            if meal.id == meal_id and str(meal.user_id) == str(user_id):
+                return meal
+        return None

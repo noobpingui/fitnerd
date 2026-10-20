@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import logo from "@/assets/logo.png"
 
 const links = [
+  { to: "/diary", label: "Diario" },
   { to: "/macros", label: "Macros" },
   { to: "/body-metrics", label: "Métricas" },
   { to: "/coach", label: "Coach" },

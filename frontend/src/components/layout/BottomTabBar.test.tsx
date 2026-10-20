@@ -6,7 +6,8 @@ import { BottomTabBar } from "./BottomTabBar"
 
 describe("BottomTabBar", () => {
   // SDD: 012 REQ-005 AC-005.2
-  it("muestra solo Inicio, Macros, Métricas, Coach y Tienda, en ese orden", () => {
+  // SDD: 022 REQ-015 AC-015.2
+  it("muestra Inicio, Diario, Macros, Métricas, Coach y Tienda, en ese orden", () => {
     render(
       <MemoryRouter>
         <BottomTabBar />
@@ -17,8 +18,31 @@ describe("BottomTabBar", () => {
       .getAllByRole("link")
       .map((link) => link.textContent)
 
-    expect(tabs).toEqual(["Inicio", "Macros", "Métricas", "Coach", "Tienda"])
+    expect(tabs).toEqual(["Inicio", "Diario", "Macros", "Métricas", "Coach", "Tienda"])
     expect(screen.queryByText("Catálogo")).not.toBeInTheDocument()
     expect(screen.queryByText("Favoritos")).not.toBeInTheDocument()
+  })
+
+  // SDD: 022 REQ-015 AC-015.2
+  it("«Diario» lleva a /diary", () => {
+    render(
+      <MemoryRouter>
+        <BottomTabBar />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByRole("link", { name: "Diario" })).toHaveAttribute("href", "/diary")
+  })
+
+  // SDD: 022 REQ-015 AC-015.3
+  it("en /diary la pestaña «Diario» aparece como activa y las demás no", () => {
+    render(
+      <MemoryRouter initialEntries={["/diary"]}>
+        <BottomTabBar />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByRole("link", { name: "Diario" })).toHaveAttribute("aria-current", "page")
+    expect(screen.getByRole("link", { name: "Macros" })).not.toHaveAttribute("aria-current")
   })
 })
