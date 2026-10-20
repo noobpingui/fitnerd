@@ -220,3 +220,26 @@ Objetivo: que registrar macros sea simple. El usuario sube una foto, un modelo d
 - [ ] Cobertura de comida local, que USDA no tiene (022, 023).
 - [ ] Disponibilidad y coste del modelo de visión en Bedrock (023).
 - [ ] Límite de 500 MB de Supabase con los datos importados (021).
+
+## 021-usda-food-database · Base de alimentos de USDA en Postgres con búsqueda híbrida (2026-10-20)
+
+Feature: [specs/021-usda-food-database/](../specs/021-usda-food-database/)
+
+- [ ] Decidir FNDDS en la 023 con el tamaño real medido tras esta importación.
+- [ ] Dónde enlazar «Alimentos» en la navegación y añadir la atribución a la página legal (022).
+- [ ] Un parámetro para elegir el número de resultados, si la 022 lo necesita.
+- [ ] Calibrar `DEFAULT_MAX_DISTANCE`, y quizá pasar a lógica OR en el texto, según el resultado de la validación manual de las 20 consultas.
+- [ ] Índice HNSW si se añaden FNDDS o Branded Foods.
+- [ ] Volver a calcular todos los vectores si cambia `VOYAGE_EMBEDDING_MODEL`.
+- [ ] Pausas o reintentos entre lotes de Voyage si los límites de uso hacen lenta la importación.
+- [ ] El repositorio real de búsqueda (texto con `websearch_to_tsquery` y similitud con pgvector) solo se prueba a través de las rutas con Postgres. No hay tests unitarios propios de `FoodRepository` más allá de los de importación y rutas.
+- [ ] Los tests de `FoodsPage` muestran un único error "not implemented" en la salida de vitest (el componente lanza al renderizar); se verificó el conteo (24 fallos).
+- [ ] `foodsRoute.test.tsx` y `noFoodsLink.test.tsx`: parte de las aserciones lee el texto de `router.tsx`; válido como precondición en red, pero en verify las comprobaciones de comportamiento deben probar el AC.
+- [ ] F6 (NIT): `frontend/src/app/foodsRoute.test.tsx:113`, el marcador AC-012.1 no corresponde con lo que prueba el test (onboarding pendiente); bastaría con REQ-012.
+- [ ] «avena cocida» no devuelve avena en los primeros 5 (sí «avena» sola y «oats cooked»); las consultas en español de varias palabras son más débiles.
+- [ ] El umbral 0,6 filtra poco: «xyzzy qwerty» y «zapato de cuero» devuelven 1 resultado absurdo cada una. Probar 0,5 o menos.
+- [ ] Con `--yes` no se pide confirmación si se copia el comando a otro entorno.
+- [ ] F12 (NIT, spec-writer): AC-001.8 no enumera «y» ni «yes», aunque el test marcado con ese AC los prueba; añadirlos al AC.
+- [ ] F7 (NIT): dejar una sola cifra de AC (67) en las notas y en la documentación de la etapa docs.
+- [ ] Pasar ADR-0029 de «Propuesta» a «Aceptada» (rama `chore/…` tras el merge, como en la 019 y la 020).
+- [ ] Aplicar en producción lo que documenta el runbook: migración `c8e2a4f6b9d3`, importación de USDA y medición real de `public.foods`; añadir la fila de la 021 al historial de despliegues.

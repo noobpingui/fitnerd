@@ -10,8 +10,8 @@
   "branch": "feat/021-usda-food-database",
   "base_branch": "main",
   "created_at": "2026-10-20T01:56:03.911Z",
-  "stage": "close",
-  "status": "in_progress",
+  "stage": "done",
+  "status": "done",
   "approvals": {
     "spec": {
       "at": "2026-10-20T09:26:01.907Z",
@@ -45,7 +45,10 @@
       "at": "2026-10-20T09:41:13.384Z",
       "note": "auto (gate_mode=flow): documentación de la 021"
     },
-    "close": null
+    "close": {
+      "at": "2026-10-20T09:50:44.238Z",
+      "note": "si"
+    }
   },
   "commits": {
     "spec": "1c367c8",
@@ -53,7 +56,8 @@
     "tasks": "2b53ca6",
     "tests": "b8cd1af",
     "implement": "d4c1113",
-    "review": "9189a33"
+    "review": "9189a33",
+    "docs": "4f46dd9"
   },
   "iterations": {
     "tests": 2,
@@ -742,6 +746,36 @@
       "stage": "docs",
       "event": "approved",
       "note": "auto (gate_mode=flow): documentación de la 021"
+    },
+    {
+      "at": "2026-10-20T09:41:13.708Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: 4f46dd9"
+    },
+    {
+      "at": "2026-10-20T09:41:22.372Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Cierre de la 021"
+    },
+    {
+      "at": "2026-10-20T09:41:54.345Z",
+      "stage": "close",
+      "event": "done",
+      "note": "checklist de hecho completo; 18 puntos al backlog global"
+    },
+    {
+      "at": "2026-10-20T09:50:44.238Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "si"
+    },
+    {
+      "at": "2026-10-20T09:50:44.238Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
     }
   ]
 }
