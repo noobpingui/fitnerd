@@ -47,3 +47,15 @@
 ## verify · verifier
 - [ ] Corregir el número de AC de spec.md («86» frente a los 96 definidos) en la próxima edición de la spec o en el cierre.
 - [ ] Documentar en docs/deploy-runbook.md (o docs-report.md) el paso manual de producción: aplicar la migración b3d5f7a9c1e4 con FLASK_ENV bien puesto, antes del merge (Art. P4). La migración no se ha aplicado.
+
+## verify (2.ª pasada) · verifier
+- [ ] spec.md dice «86 AC» (sección 7 y estado de la fase spec), pero define 96 AC; corregir el texto en una futura edición de la spec o en docs.
+- [ ] AC manuales para el gate de review: AC-014.2 (barra de calorías llena al superar el objetivo), AC-015.2 (barra inferior con 6 entradas en pantalla estrecha), AC-015.3 (estado activo de «Diario» en /diary).
+
+## review · reviewer
+- [ ] F1 (MENOR, implementer): en el formulario de alimento personalizado, un valor negativo («-5») muestra «Indica las calorías, proteína, carbohidratos y grasa por 100 g.» en vez del mensaje de rango que da la API (`frontend/src/features/diary/schemas.ts:135-138`, `:182-195`).
+- [ ] F2 (NIT, implementer): «Crear alimento personalizado» siempre va al pie del paso de búsqueda, no junto a «No encontramos alimentos…» como decía el plan (`AddFoodDialog.tsx:224-229`).
+- [ ] F3 (NIT, implementer): `meals.updated_at` no cambia al añadir, editar o quitar alimentos (`backend/models/meal.py:35-37`).
+- [ ] F4 (NIT, planner): el ADR-0030 sigue en «Propuesta»; si el usuario lo aprueba, la etapa docs lo pasa a «Aceptada».
+- [ ] Etapa docs: documentar en `docs/deploy-runbook.md` el paso manual de la migración b3d5f7a9c1e4 (volcado verificado y `flask db upgrade` con `FLASK_ENV` bien puesto antes del merge, Art. P4).
+- [ ] Pendiente del usuario: revisar en el navegador los AC manuales AC-014.2, AC-015.2 y AC-015.3.

@@ -30,6 +30,16 @@ export function parseDecimalText(text: string): number | null {
   return Number(normalized)
 }
 
+// Como parseDecimalText pero admite signo, para dar el mensaje de rango en negativos.
+function parseSignedDecimalText(text: string): number | null {
+  const trimmed = text.trim()
+  if (trimmed.startsWith("-")) {
+    const value = parseDecimalText(trimmed.slice(1))
+    return value === null ? null : -value
+  }
+  return parseDecimalText(trimmed)
+}
+
 // Más de un decimal significativo (150,50 cuenta como uno).
 function hasTooManyDecimals(text: string): boolean {
   const fraction = text.trim().replace(",", ".").split(".")[1] ?? ""
@@ -71,18 +81,18 @@ export const customFoodFormSchema = z
     const gramsMessage = gramsError(values.grams)
     if (gramsMessage) issue("grams", gramsMessage)
 
-    const calories = parseDecimalText(values.calories)
+    const calories = parseSignedDecimalText(values.calories)
     if (calories === null) issue("calories", PER_100G_REQUIRED_MESSAGE)
-    else if (calories > 900) issue("calories", CALORIES_RANGE_MESSAGE)
+    else if (calories < 0 || calories > 900) issue("calories", CALORIES_RANGE_MESSAGE)
 
     const macros: number[] = []
     let macrosValid = true
     for (const field of ["protein", "carbs", "fat"] as const) {
-      const value = parseDecimalText(values[field])
+      const value = parseSignedDecimalText(values[field])
       if (value === null) {
         issue(field, PER_100G_REQUIRED_MESSAGE)
         macrosValid = false
-      } else if (value > 100) {
+      } else if (value < 0 || value > 100) {
         issue(field, MACROS_RANGE_MESSAGE)
         macrosValid = false
       } else {

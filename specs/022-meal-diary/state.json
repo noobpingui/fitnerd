@@ -30,8 +30,8 @@
       "note": "auto (gate_mode=flow): corrección E501, tests siguen en verde"
     },
     "implement": {
-      "at": "2026-10-20T20:34:54.155Z",
-      "note": "auto (gate_mode=flow): sin cambios en producción tras la corrección de tests"
+      "at": "2026-10-20T20:52:04.793Z",
+      "note": "auto (gate_mode=flow): corrección de F1, F2 y F3 de la review"
     },
     "verify": null,
     "review": null,
@@ -42,13 +42,13 @@
     "spec": "31e0517",
     "plan": "89dd14a",
     "tasks": "140fcb2",
-    "tests": "3df44fb",
+    "tests": "37dbf5d",
     "implement": "ad914df"
   },
   "iterations": {
     "tests": 3,
     "implement": 0,
-    "review": 0
+    "review": 1
   },
   "max_iterations": 3,
   "red_check": {
@@ -351,6 +351,78 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): sin cambios en producción tras la corrección de tests"
+    },
+    {
+      "at": "2026-10-20T20:34:54.409Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "tests: 37dbf5d"
+    },
+    {
+      "at": "2026-10-20T20:34:54.555Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verify completo tras corregir E501"
+    },
+    {
+      "at": "2026-10-20T20:38:25.306Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify full tras corregir E501: backend 1487 passed, ratchet sin violaciones nuevas, frontend 1004 passed, lint/tsc/build OK; 96/96 AC con test, 18/18 REQ-NFR con tarea, 65/65 tareas [x], sin skip nuevos; manuales: AC-014.2, AC-015.2, AC-015.3"
+    },
+    {
+      "at": "2026-10-20T20:38:37.612Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: backend 1487, frontend 1004, 96/96 AC, ratchet sin violaciones nuevas"
+    },
+    {
+      "at": "2026-10-20T20:38:37.699Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-20T20:38:37.849Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review independiente del diff contra spec, plan y constitución"
+    },
+    {
+      "at": "2026-10-20T20:42:39.052Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-20T20:42:39.135Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED: 0 bloqueantes, 0 mayores, 1 menor, 3 nits"
+    },
+    {
+      "at": "2026-10-20T20:47:55.248Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "El usuario pide corregir F1, F2 y F3 (implementer); F4 (ADR-0030 a Aceptada) va a docs · review 1/3"
+    },
+    {
+      "at": "2026-10-20T20:52:04.710Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F1, F2 y F3 corregidos; pytest 1487, npm test 1004"
+    },
+    {
+      "at": "2026-10-20T20:52:04.793Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección de F1, F2 y F3 de la review"
+    },
+    {
+      "at": "2026-10-20T20:52:04.876Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "F3: Meal.touch() con func.now() al añadir, editar gramos y quitar (comida no vacía); la migración no cambia. F1: parseSignedDecimalText para negativos."
     }
   ]
 }

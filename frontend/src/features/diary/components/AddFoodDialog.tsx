@@ -70,6 +70,17 @@ export function AddFoodDialog({
       Cancelar
     </Button>
   )
+  const customButton = (
+    <Button
+      type="button"
+      variant="outline"
+      size={noResults ? "sm" : "default"}
+      className={noResults ? "mt-2" : undefined}
+      onClick={() => goTo("custom")}
+    >
+      Crear alimento personalizado
+    </Button>
+  )
   const backButton = (
     <Button
       type="button"
@@ -111,7 +122,12 @@ export function AddFoodDialog({
             <div role="status" aria-live="polite" className="my-4 text-sm text-muted-foreground">
               {search.isIdle && "Busca un alimento para ver sus calorías y macros por 100 g."}
               {search.isPending && "Buscando…"}
-              {noResults && `No encontramos alimentos para «${search.variables}».`}
+              {noResults && (
+                <>
+                  <p>{`No encontramos alimentos para «${search.variables}».`}</p>
+                  {customButton}
+                </>
+              )}
               {errorView && (
                 <>
                   <p className="text-destructive">{errorView.message}</p>
@@ -135,9 +151,7 @@ export function AddFoodDialog({
             )}
 
             <div className="mt-4 flex flex-wrap gap-2">
-              <Button type="button" variant="outline" onClick={() => goTo("custom")}>
-                Crear alimento personalizado
-              </Button>
+              {!noResults && customButton}
               {cancelButton}
             </div>
           </div>

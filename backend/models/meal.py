@@ -42,6 +42,11 @@ class Meal(Base):
         order_by="(MealItem.position, MealItem.id)",
     )
 
+    def touch(self) -> None:
+        # onupdate solo salta si cambia la fila de meals; añadir, editar o quitar
+        # alimentos cambia solo meal_items, así que se marca a mano.
+        self.updated_at = func.now()
+
     __table_args__ = (
         CheckConstraint(
             "meal_type IN ('breakfast', 'lunch', 'dinner', 'snack')",

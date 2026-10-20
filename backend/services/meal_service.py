@@ -151,6 +151,8 @@ class MealService:
                 meal.items.append(item)
                 position += 1
 
+            if not created:
+                meal.touch()
             self.unit_of_work.commit()
         except Exception:
             self.unit_of_work.rollback()
@@ -166,6 +168,7 @@ class MealService:
             body = require_json_object(data)
             grams = validate_grams(body.get("grams"))
             item.grams = grams
+            meal.touch()
             for key, value in portion_nutrients(_per_100g(item), grams).items():
                 setattr(item, key, value)
             self.unit_of_work.commit()
@@ -181,6 +184,8 @@ class MealService:
             meal.items.remove(item)
             if not meal.items:
                 self.meal_repository.delete(meal)
+            else:
+                meal.touch()
             self.unit_of_work.commit()
         except Exception:
             self.unit_of_work.rollback()
