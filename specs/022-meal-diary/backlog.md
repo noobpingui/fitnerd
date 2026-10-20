@@ -70,3 +70,9 @@
 
 ## implement (corrección F5) · implementer
 - [ ] F6 (test de `updated_at` y, ahora, de «-0» en el formulario personalizado) sigue pendiente para test-author.
+
+## verify (tras F5) · verifier
+- [ ] F5 sin test de regresión: el caso «-0» en calorías y macros no tiene test (tests congelados desde el snapshot); anotar para una iteración futura de tests.
+
+## review (3.ª pasada) · reviewer
+- [ ] F6 (NIT, test-author): falta un test de que meals.updated_at avanza al añadir, editar o quitar alimentos (backend/models/meal.py:45-48), y otro de «-0» en el formulario personalizado (frontend/src/features/diary/schemas.ts:38).
