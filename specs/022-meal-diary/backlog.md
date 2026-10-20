@@ -37,3 +37,9 @@
 - [ ] `diaryRoute.test.tsx` comprueba el texto de `router.tsx` con expresiones regulares (lazyNamed, path="/diary"). Es frágil; valorar si conviene un test de comportamiento.
 - [ ] Varios tests de la suite de rutas leen el JSON de una respuesta 404 en helpers (KeyError 'id'); al implementar, la causa desaparece, pero conviene que los helpers asserten el status antes de leer el cuerpo.
 - [ ] Tests de fecha de legales: la comprobación «no es la del 2 de septiembre» (TermsOfServicePage, preexistente) es débil; pendiente de revisar en el backlog del proyecto.
+
+## implement · implementer
+- [ ] Arreglar las tres líneas E501 de `backend/tests/test_services/test_meal_service.py` (líneas 49, 605 y 765). El archivo es del test-author.
+- [ ] Documentar en `docs/deploy-runbook.md` y `CLAUDE.md` el paso manual de la migración `b3d5f7a9c1e4` (volcado verificado, aplicar antes del merge con `FLASK_ENV` bien puesto).
+- [ ] Opcional: mostrar «Guardando…» global o deshabilitar por fila el botón «Quitar», más allá del indicador `isRemoving` actual.
+- [ ] Opcional: enlace a `/foods` desde el diálogo del diario, o retirar `/foods` más adelante (REQ-015 lo mantiene funcionando pero sin enlace).

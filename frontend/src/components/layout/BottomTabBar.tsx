@@ -1,5 +1,6 @@
 import { NavLink } from "react-router"
 import {
+  BookOpen,
   Home,
   LineChart,
   PieChart,
@@ -13,6 +14,7 @@ import { cn } from "@/lib/utils"
 // que la iconografia sea consistente en toda la app.
 const tabs = [
   { to: "/home", label: "Inicio", icon: Home },
+  { to: "/diary", label: "Diario", icon: BookOpen },
   { to: "/macros", label: "Macros", icon: PieChart },
   { to: "/body-metrics", label: "Métricas", icon: LineChart },
   { to: "/coach", label: "Coach", icon: Sparkles },

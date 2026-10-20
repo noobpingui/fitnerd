@@ -20,13 +20,15 @@ import {
 export function FoodSearchForm({
   onSearch,
   isSearching,
+  defaultQuery = "",
 }: {
   onSearch: (query: string) => void
   isSearching: boolean
+  defaultQuery?: string
 }): ReactElement {
   const form = useForm<FoodSearchFormValues>({
     resolver: zodResolver(foodSearchFormSchema),
-    defaultValues: { query: "" },
+    defaultValues: { query: defaultQuery },
   })
 
   function onSubmit(values: FoodSearchFormValues) {

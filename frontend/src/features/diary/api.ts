@@ -1,21 +1,31 @@
+import { apiFetch } from "@/lib/apiClient"
+import { diaryResponseSchema, mealResponseSchema } from "./schemas"
 import type { AddMealItemsPayload, Diary, Meal } from "./types"
 
-export async function getDiary(_date: string): Promise<Diary> {
-  throw new Error("not implemented")
+export async function getDiary(date: string): Promise<Diary> {
+  const params = new URLSearchParams({ date })
+  return diaryResponseSchema.parse(await apiFetch<unknown>(`/api/meals?${params}`))
 }
 
-export async function addMealItems(_payload: AddMealItemsPayload): Promise<Meal> {
-  throw new Error("not implemented")
+export async function addMealItems(payload: AddMealItemsPayload): Promise<Meal> {
+  return mealResponseSchema.parse(
+    await apiFetch<unknown>("/api/meals", { method: "POST", body: payload })
+  )
 }
 
 export async function updateMealItemGrams(
-  _mealId: number,
-  _itemId: number,
-  _grams: number
+  mealId: number,
+  itemId: number,
+  grams: number
 ): Promise<Meal> {
-  throw new Error("not implemented")
+  return mealResponseSchema.parse(
+    await apiFetch<unknown>(`/api/meals/${mealId}/items/${itemId}`, {
+      method: "PATCH",
+      body: { grams },
+    })
+  )
 }
 
-export async function removeMealItem(_mealId: number, _itemId: number): Promise<void> {
-  throw new Error("not implemented")
+export async function removeMealItem(mealId: number, itemId: number): Promise<void> {
+  await apiFetch<void>(`/api/meals/${mealId}/items/${itemId}`, { method: "DELETE" })
 }

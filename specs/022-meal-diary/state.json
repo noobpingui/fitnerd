@@ -10,7 +10,7 @@
   "branch": "feat/022-meal-diary",
   "base_branch": "main",
   "created_at": "2026-10-20T17:28:30.526Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,7 +29,10 @@
       "at": "2026-10-20T20:15:45.219Z",
       "note": "auto (gate_mode=flow): red check PASS tras 2 correcciones"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-20T20:29:28.122Z",
+      "note": "auto (gate_mode=flow): implementación completa, tests en verde según el implementer"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -38,7 +41,8 @@
   "commits": {
     "spec": "31e0517",
     "plan": "89dd14a",
-    "tasks": "140fcb2"
+    "tasks": "140fcb2",
+    "tests": "3df44fb"
   },
   "iterations": {
     "tests": 2,
@@ -262,6 +266,36 @@
       "stage": "tests",
       "event": "note",
       "note": "Red check PASS en la 3.ª pasada (2 correcciones de tests: 16 tests de frontend sin rojo; AC-009.5 solo asertaba 404). 13 guardas legales preexistentes (005/012) excluidas del criterio."
+    },
+    {
+      "at": "2026-10-20T20:15:53.159Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 3df44fb"
+    },
+    {
+      "at": "2026-10-20T20:15:53.325Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar las 25 tareas impl/migration hasta poner los tests en verde"
+    },
+    {
+      "at": "2026-10-20T20:29:28.043Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "backend 1487 tests y frontend 1004 en verde; migración b3d5f7a9c1e4"
+    },
+    {
+      "at": "2026-10-20T20:29:28.122Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): implementación completa, tests en verde según el implementer"
+    },
+    {
+      "at": "2026-10-20T20:29:28.202Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "DiaryPage solo pinta tras cargar diario y perfil; fallo del perfil = error de carga; add_items valida todo antes de tocar la BD; item_id fuera de rango = 404; sin dependencias ni variables nuevas; migración revisada a mano, no aplicada"
     }
   ]
 }

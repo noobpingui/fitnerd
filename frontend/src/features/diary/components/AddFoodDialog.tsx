@@ -1,11 +1,176 @@
-import type { ReactElement } from "react"
-import type { MealType } from "../types"
+import { useState, type ReactElement } from "react"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { FoodResultList } from "@/features/foods/components/FoodResultList"
+import { FoodSearchForm } from "@/features/foods/components/FoodSearchForm"
+import { useFoodSearch } from "@/features/foods/hooks"
+import { searchErrorView } from "@/features/foods/searchError"
+import type { Food } from "@/features/foods/types"
+import { saveErrorMessage } from "../errors"
+import { useAddMealItems } from "../hooks"
+import type { CustomItemPayload, MealType, UsdaItemPayload } from "../types"
+import { CustomFoodForm } from "./CustomFoodForm"
+import { PortionForm } from "./PortionForm"
 
-export function AddFoodDialog(_props: {
+type Step = "search" | "portion" | "custom"
+
+export function AddFoodDialog({
+  mealType,
+  label,
+  date,
+  onClose,
+}: {
   mealType: MealType
   label: string
   date: string
   onClose: () => void
 }): ReactElement {
-  throw new Error("not implemented")
+  const [step, setStep] = useState<Step>("search")
+  const [food, setFood] = useState<Food | null>(null)
+  // La búsqueda vive aquí para que «Volver a la búsqueda» conserve los resultados.
+  const search = useFoodSearch()
+  const add = useAddMealItems(date)
+
+  function handleSearch(query: string) {
+    if (search.isPending) return
+    search.mutate(query)
+  }
+
+  function goTo(next: Step) {
+    add.reset()
+    setStep(next)
+  }
+
+  function choose(selected: Food) {
+    setFood(selected)
+    goTo("portion")
+  }
+
+  async function save(item: UsdaItemPayload | CustomItemPayload) {
+    if (add.isPending) return
+    try {
+      await add.mutateAsync({ date, meal_type: mealType, items: [item] })
+    } catch {
+      return
+    }
+    onClose()
+  }
+
+  const errorView = search.isError ? searchErrorView(search.error) : null
+  const noResults = search.isSuccess && search.data.results.length === 0
+
+  const cancelButton = (
+    <Button type="button" variant="ghost" disabled={add.isPending} onClick={onClose}>
+      Cancelar
+    </Button>
+  )
+  const backButton = (
+    <Button
+      type="button"
+      variant="outline"
+      disabled={add.isPending}
+      onClick={() => goTo("search")}
+    >
+      Volver a la búsqueda
+    </Button>
+  )
+
+  return (
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open && !add.isPending) onClose()
+      }}
+    >
+      <DialogContent showCloseButton={false} className="max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{`Añadir a ${label}`}</DialogTitle>
+          <DialogDescription>Busca un alimento de USDA o crea uno propio.</DialogDescription>
+        </DialogHeader>
+
+        {add.isError && (
+          <p role="alert" className="text-sm text-destructive">
+            {saveErrorMessage(add.error)}
+          </p>
+        )}
+
+        {step === "search" && (
+          <div>
+            <FoodSearchForm
+              onSearch={handleSearch}
+              isSearching={search.isPending}
+              defaultQuery={search.variables ?? ""}
+            />
+
+            <div role="status" aria-live="polite" className="my-4 text-sm text-muted-foreground">
+              {search.isIdle && "Busca un alimento para ver sus calorías y macros por 100 g."}
+              {search.isPending && "Buscando…"}
+              {noResults && `No encontramos alimentos para «${search.variables}».`}
+              {errorView && (
+                <>
+                  <p className="text-destructive">{errorView.message}</p>
+                  {errorView.canRetry && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => search.mutate(search.variables as string)}
+                    >
+                      Reintentar
+                    </Button>
+                  )}
+                </>
+              )}
+            </div>
+
+            {search.isSuccess && !noResults && (
+              <FoodResultList foods={search.data.results} onSelect={choose} />
+            )}
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Button type="button" variant="outline" onClick={() => goTo("custom")}>
+                Crear alimento personalizado
+              </Button>
+              {cancelButton}
+            </div>
+          </div>
+        )}
+
+        {step === "portion" && food && (
+          <div className="space-y-3">
+            <p className="font-medium">{food.description}</p>
+            <PortionForm
+              key={food.fdc_id}
+              per100g={food.per_100g}
+              defaultGrams="100"
+              submitLabel="Añadir"
+              isSaving={add.isPending}
+              onSubmit={(grams) => save({ fdc_id: food.fdc_id, grams })}
+            >
+              {backButton}
+              {cancelButton}
+            </PortionForm>
+          </div>
+        )}
+
+        {step === "custom" && (
+          <CustomFoodForm
+            defaultName={noResults ? String(search.variables ?? "") : ""}
+            isSaving={add.isPending}
+            onSubmit={save}
+          >
+            {backButton}
+            {cancelButton}
+          </CustomFoodForm>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
 }

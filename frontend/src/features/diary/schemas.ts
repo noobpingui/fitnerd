@@ -1,9 +1,10 @@
 import { z } from "zod"
-import type { CustomItemPayload, Diary, Meal } from "./types"
+import type { CustomItemPayload } from "./types"
 
 export const GRAMS_RANGE_MESSAGE = "Los gramos deben estar entre 1 y 2000."
 export const GRAMS_DECIMALS_MESSAGE = "Los gramos admiten como mucho un decimal."
 export const NAME_REQUIRED_MESSAGE = "Escribe el nombre del alimento."
+export const NAME_TOO_LONG_MESSAGE = "El nombre no puede superar los 100 caracteres."
 export const PER_100G_REQUIRED_MESSAGE =
   "Indica las calorías, proteína, carbohidratos y grasa por 100 g."
 export const CALORIES_RANGE_MESSAGE = "Las calorías por 100 g deben estar entre 0 y 900."
@@ -22,26 +23,128 @@ export type CustomFoodFormValues = {
   fat: string
 }
 
-export function parseDecimalText(_text: string): number | null {
-  throw new Error("not implemented")
+// Admite coma o punto como separador decimal; null si no es un número sin signo.
+export function parseDecimalText(text: string): number | null {
+  const normalized = text.trim().replace(",", ".")
+  if (!/^\d+(\.\d+)?$/.test(normalized)) return null
+  return Number(normalized)
 }
 
-export const gramsFormSchema = z.custom<GramsFormValues>(() => {
-  throw new Error("not implemented")
-})
-
-export const customFoodFormSchema = z.custom<CustomFoodFormValues>(() => {
-  throw new Error("not implemented")
-})
-
-export function customItemPayload(_values: CustomFoodFormValues): CustomItemPayload {
-  throw new Error("not implemented")
+// Más de un decimal significativo (150,50 cuenta como uno).
+function hasTooManyDecimals(text: string): boolean {
+  const fraction = text.trim().replace(",", ".").split(".")[1] ?? ""
+  return fraction.replace(/0+$/, "").length > 1
 }
 
-export const diaryResponseSchema = z.custom<Diary>(() => {
-  throw new Error("not implemented")
+// Devuelve el mensaje de error de unos gramos o null si son válidos.
+function gramsError(text: string): string | null {
+  const value = parseDecimalText(text)
+  if (value === null || value < 1 || value > 2000) return GRAMS_RANGE_MESSAGE
+  if (hasTooManyDecimals(text)) return GRAMS_DECIMALS_MESSAGE
+  return null
+}
+
+export const gramsFormSchema = z
+  .object({ grams: z.string() })
+  .superRefine((values, ctx) => {
+    const message = gramsError(values.grams)
+    if (message) ctx.addIssue({ code: "custom", path: ["grams"], message })
+  })
+
+export const customFoodFormSchema = z
+  .object({
+    name: z.string(),
+    grams: z.string(),
+    calories: z.string(),
+    protein: z.string(),
+    carbs: z.string(),
+    fat: z.string(),
+  })
+  .superRefine((values, ctx) => {
+    const issue = (path: string, message: string) =>
+      ctx.addIssue({ code: "custom", path: [path], message })
+
+    const name = values.name.trim()
+    if (name === "") issue("name", NAME_REQUIRED_MESSAGE)
+    else if (name.length > CUSTOM_NAME_MAX_LENGTH) issue("name", NAME_TOO_LONG_MESSAGE)
+
+    const gramsMessage = gramsError(values.grams)
+    if (gramsMessage) issue("grams", gramsMessage)
+
+    const calories = parseDecimalText(values.calories)
+    if (calories === null) issue("calories", PER_100G_REQUIRED_MESSAGE)
+    else if (calories > 900) issue("calories", CALORIES_RANGE_MESSAGE)
+
+    const macros: number[] = []
+    let macrosValid = true
+    for (const field of ["protein", "carbs", "fat"] as const) {
+      const value = parseDecimalText(values[field])
+      if (value === null) {
+        issue(field, PER_100G_REQUIRED_MESSAGE)
+        macrosValid = false
+      } else if (value > 100) {
+        issue(field, MACROS_RANGE_MESSAGE)
+        macrosValid = false
+      } else {
+        macros.push(value)
+      }
+    }
+    if (macrosValid) {
+      const sum = Math.round(macros.reduce((a, b) => a + b, 0) * 1e6) / 1e6
+      if (sum > 100) issue("macroSum", MACROS_SUM_MESSAGE)
+    }
+  })
+
+export function customItemPayload(values: CustomFoodFormValues): CustomItemPayload {
+  return {
+    name: values.name.trim(),
+    grams: parseDecimalText(values.grams) as number,
+    per_100g: {
+      calories_kcal: parseDecimalText(values.calories) as number,
+      protein_g: parseDecimalText(values.protein) as number,
+      carbs_g: parseDecimalText(values.carbs) as number,
+      fat_g: parseDecimalText(values.fat) as number,
+    },
+  }
+}
+
+const nutrientKey = z.enum(["calories_kcal", "protein_g", "carbs_g", "fat_g"])
+const nullableNutrients = z.object({
+  calories_kcal: z.number().nullable(),
+  protein_g: z.number().nullable(),
+  carbs_g: z.number().nullable(),
+  fat_g: z.number().nullable(),
+})
+const totals = z.object({
+  calories_kcal: z.number(),
+  protein_g: z.number(),
+  carbs_g: z.number(),
+  fat_g: z.number(),
 })
 
-export const mealResponseSchema = z.custom<Meal>(() => {
-  throw new Error("not implemented")
+export const mealResponseSchema = z.object({
+  id: z.number(),
+  date: z.string(),
+  meal_type: z.enum(["breakfast", "lunch", "dinner", "snack"]),
+  items: z.array(
+    z.object({
+      id: z.number(),
+      source: z.enum(["usda", "custom"]),
+      fdc_id: z.number().nullable(),
+      name: z.string(),
+      data_type: z.enum(["foundation", "sr_legacy"]).nullable(),
+      grams: z.number(),
+      per_100g: nullableNutrients,
+      nutrients: nullableNutrients,
+    })
+  ),
+  totals,
+  incomplete: z.array(nutrientKey),
+})
+
+export const diaryResponseSchema = z.object({
+  date: z.string(),
+  meals: z.array(mealResponseSchema),
+  totals,
+  incomplete: z.array(nutrientKey),
 })

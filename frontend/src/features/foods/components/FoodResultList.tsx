@@ -1,8 +1,15 @@
 import type { ReactElement } from "react"
+import { Button } from "@/components/ui/button"
 import { DATA_TYPE_LABELS, formatCalories, formatGrams } from "../format"
 import type { Food } from "../types"
 
-export function FoodResultList({ foods }: { foods: Food[] }): ReactElement {
+export function FoodResultList({
+  foods,
+  onSelect,
+}: {
+  foods: Food[]
+  onSelect?: (food: Food) => void
+}): ReactElement {
   return (
     <ul aria-label="Resultados" className="space-y-3">
       {foods.map((food) => (
@@ -15,6 +22,18 @@ export function FoodResultList({ foods }: { foods: Food[] }): ReactElement {
             <span>{formatGrams(food.per_100g.carbs_g, "carbohidratos")}</span>
             <span>{formatGrams(food.per_100g.fat_g, "grasa")}</span>
           </div>
+          {onSelect && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-3"
+              aria-label={`Elegir ${food.description}`}
+              onClick={() => onSelect(food)}
+            >
+              Elegir
+            </Button>
+          )}
         </li>
       ))}
     </ul>
