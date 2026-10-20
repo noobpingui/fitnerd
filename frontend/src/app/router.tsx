@@ -26,7 +26,7 @@ const BodyMetricsPage = lazyNamed(
 )
 const HomePage = lazyNamed(() => import("@/features/home/pages/HomePage"), "HomePage")
 const FoodsPage = lazyNamed(() => import("@/features/foods/pages/FoodsPage"), "FoodsPage")
-const CoachPage =lazyNamed(() => import("@/features/coach/pages/CoachPage"), "CoachPage")
+const CoachPage = lazyNamed(() => import("@/features/coach/pages/CoachPage"), "CoachPage")
 const StorePage = lazyNamed(() => import("@/features/store/pages/StorePage"), "StorePage")
 const ProfilePage = lazyNamed(() => import("@/features/profile/pages/ProfilePage"), "ProfilePage")
 const PrivacyPolicyPage = lazyNamed(

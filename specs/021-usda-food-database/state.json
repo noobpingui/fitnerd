@@ -30,8 +30,8 @@
       "note": "auto (gate_mode=flow): reformateo de 13 líneas E501 en tests"
     },
     "implement": {
-      "at": "2026-10-20T07:08:59.104Z",
-      "note": "auto (gate_mode=flow): sin cambios de producción en la iteración 2"
+      "at": "2026-10-20T08:30:28.564Z",
+      "note": "auto (gate_mode=flow): correcciones de review F1, F3 y F5"
     },
     "verify": null,
     "review": null,
@@ -43,12 +43,12 @@
     "plan": "2fa19ca",
     "tasks": "5182f7d",
     "tests": "b1ac9ee",
-    "implement": "d08158d"
+    "implement": "d009a5a"
   },
   "iterations": {
     "tests": 2,
     "implement": 0,
-    "review": 0
+    "review": 1
   },
   "max_iterations": 3,
   "red_check": {
@@ -328,6 +328,66 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): sin cambios de producción en la iteración 2"
+    },
+    {
+      "at": "2026-10-20T07:08:59.373Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: d009a5a"
+    },
+    {
+      "at": "2026-10-20T07:08:59.541Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa, iteración 2"
+    },
+    {
+      "at": "2026-10-20T07:12:14.478Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Iteración 2: backend 1175 passed; ratchet sin violaciones nuevas; frontend 842 passed, lint, tsc y build OK (chunk 384,53 kB); trazabilidad completa. Manual: 20 consultas Voyage, tamaño public.foods, migración no aplicada."
+    },
+    {
+      "at": "2026-10-20T07:12:21.959Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: 1175 backend, 842 frontend, ratchet limpio, build 384,5 kB"
+    },
+    {
+      "at": "2026-10-20T07:12:22.054Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-20T07:12:22.242Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review independiente de la feature"
+    },
+    {
+      "at": "2026-10-20T07:16:00.412Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "CHANGES_REQUESTED"
+    },
+    {
+      "at": "2026-10-20T07:16:00.516Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "review CHANGES_REQUESTED: F1 MAYOR (migración nullable vs NOT NULL del modelo) · review 1/3"
+    },
+    {
+      "at": "2026-10-20T08:30:28.457Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F1 migración NOT NULL, F3 zip strict, F5 espacio en router"
+    },
+    {
+      "at": "2026-10-20T08:30:28.564Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): correcciones de review F1, F3 y F5"
     }
   ]
 }

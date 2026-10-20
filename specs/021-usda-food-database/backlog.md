@@ -52,3 +52,10 @@
 - [ ] Aplicar la migración `c8e2a4f6b9d3` en la base de desarrollo y medir `public.foods` tras la importación (pasos manuales del plan).
 - [ ] Validación manual de calidad de búsqueda (20 consultas, Q8) pendiente.
 - [ ] `state.json`: `verify.result` sigue null porque la CLI registró el resultado en `stage_result`; la entrada history/result refleja FAIL.
+
+## review · reviewer
+- [ ] F2 (MENOR): la validación manual de las 20 consultas y la medición del tamaño de `public.foods` no se hicieron, y la migración no se ha aplicado en la base de desarrollo; el usuario debe hacerlo o diferirlo explícitamente antes de close y del despliegue en Supabase.
+- [ ] F3 (MENOR): `food_import_service.py:125`, usar `zip(pending, vectors, strict=True)` para que la fase 2 no entre en un bucle infinito si Voyage devuelve menos vectores que textos.
+- [ ] F4 (MENOR): `scripts/import_usda_foods.py:31-38`, pedir confirmación (o un `--yes`) antes de escribir cuando la base de destino no es local.
+- [ ] F5 (NIT): `frontend/src/app/router.tsx:29`, quedó «const CoachPage =lazyNamed(» por un cambio sin querer; falta el espacio.
+- [ ] F6 (NIT): `frontend/src/app/foodsRoute.test.tsx:113`, el marcador AC-012.1 no corresponde con lo que prueba el test (onboarding pendiente); bastaría con REQ-012.

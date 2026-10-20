@@ -32,7 +32,7 @@ def upgrade() -> None:
             'search_vector',
             postgresql.TSVECTOR(),
             sa.Computed("to_tsvector('english'::regconfig, description)", persisted=True),
-            nullable=True,
+            nullable=False,
         ),
         sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
         sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),

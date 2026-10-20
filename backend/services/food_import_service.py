@@ -122,7 +122,7 @@ class FoodImportService:
                 vectors = self.embedding_client.embed_documents(
                     [food.description for food in pending]
                 )
-                for food, vector in zip(pending, vectors):
+                for food, vector in zip(pending, vectors, strict=True):
                     food.embedding = vector
                 self.unit_of_work.commit()
             except Exception:
