@@ -59,3 +59,14 @@
 - [ ] F4 (NIT, planner): el ADR-0030 sigue en «Propuesta»; si el usuario lo aprueba, la etapa docs lo pasa a «Aceptada».
 - [ ] Etapa docs: documentar en `docs/deploy-runbook.md` el paso manual de la migración b3d5f7a9c1e4 (volcado verificado y `flask db upgrade` con `FLASK_ENV` bien puesto antes del merge, Art. P4).
 - [ ] Pendiente del usuario: revisar en el navegador los AC manuales AC-014.2, AC-015.2 y AC-015.3.
+
+## verify (tras F1-F3) · verifier
+- [ ] Revisar los fines de línea CRLF de 5 archivos de test (fakes.py, BottomTabBar.test.tsx, Navbar.test.tsx, PrivacyPolicyPage.test.tsx, TermsOfServicePage.test.tsx) antes del cierre; comprobar si el snapshot-check se hace por hash en disco.
+
+## review (2.ª pasada) · reviewer
+- [ ] F5 (MENOR, implementer): con «-0» en calorías o en un macro del formulario personalizado, la validación lo da por bueno (-0 no es < 0), pero customItemPayload envía null y la API responde 400 «Indica las calorías…» (frontend/src/features/diary/schemas.ts:34-41, :84-99, :108-118). Lo introdujo la corrección de F1.
+- [ ] F6 (NIT, test-author): ningún test cubre que meals.updated_at avance al añadir, editar o quitar alimentos (backend/models/meal.py:45-48).
+- [ ] Etapa docs: pasar el ADR-0030 a «Aceptada» (decisión del usuario) y documentar en docs/deploy-runbook.md el paso manual de la migración b3d5f7a9c1e4.
+
+## implement (corrección F5) · implementer
+- [ ] F6 (test de `updated_at` y, ahora, de «-0» en el formulario personalizado) sigue pendiente para test-author.

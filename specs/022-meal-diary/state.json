@@ -30,8 +30,8 @@
       "note": "auto (gate_mode=flow): corrección E501, tests siguen en verde"
     },
     "implement": {
-      "at": "2026-10-20T20:52:04.793Z",
-      "note": "auto (gate_mode=flow): corrección de F1, F2 y F3 de la review"
+      "at": "2026-10-20T21:05:01.148Z",
+      "note": "auto (gate_mode=flow): corrección de F5"
     },
     "verify": null,
     "review": null,
@@ -43,12 +43,12 @@
     "plan": "89dd14a",
     "tasks": "140fcb2",
     "tests": "37dbf5d",
-    "implement": "ad914df"
+    "implement": "972e456"
   },
   "iterations": {
     "tests": 3,
     "implement": 0,
-    "review": 1
+    "review": 2
   },
   "max_iterations": 3,
   "red_check": {
@@ -423,6 +423,78 @@
       "stage": "implement",
       "event": "note",
       "note": "F3: Meal.touch() con func.now() al añadir, editar gramos y quitar (comida no vacía); la migración no cambia. F1: parseSignedDecimalText para negativos."
+    },
+    {
+      "at": "2026-10-20T20:52:05.120Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 972e456"
+    },
+    {
+      "at": "2026-10-20T20:52:05.195Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verify completo tras corregir F1-F3"
+    },
+    {
+      "at": "2026-10-20T20:56:04.886Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify full tras corregir F1-F3 (972e456): backend 1487 passed, ratchet sin violaciones nuevas, frontend 1004 passed, lint/tsc/build OK; 96/96 AC con test, 18/18 REQ-NFR con tarea, 65/65 tareas [x], sin skip nuevos; tests sin cambios desde el snapshot; manuales: AC-014.2, AC-015.2, AC-015.3"
+    },
+    {
+      "at": "2026-10-20T20:56:17.081Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS tras F1-F3"
+    },
+    {
+      "at": "2026-10-20T20:56:17.175Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-20T20:56:17.249Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review de nuevo tras corregir F1-F3"
+    },
+    {
+      "at": "2026-10-20T20:59:49.737Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-20T20:59:49.817Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED (2.ª pasada): F1-F3 resueltos; F5 menor y F6 nit nuevos"
+    },
+    {
+      "at": "2026-10-20T21:01:39.672Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "El usuario pide corregir F5 (-0 en el formulario personalizado) · review 2/3"
+    },
+    {
+      "at": "2026-10-20T21:05:01.065Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F5 corregido; pytest 1487, npm test 1004"
+    },
+    {
+      "at": "2026-10-20T21:05:01.148Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección de F5"
+    },
+    {
+      "at": "2026-10-20T21:05:01.234Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "F5: «-0» se acepta como 0 en schemas.ts (parseSignedDecimalText devuelve 0)"
     }
   ]
 }

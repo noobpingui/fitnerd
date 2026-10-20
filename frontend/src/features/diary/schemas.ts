@@ -35,7 +35,7 @@ function parseSignedDecimalText(text: string): number | null {
   const trimmed = text.trim()
   if (trimmed.startsWith("-")) {
     const value = parseDecimalText(trimmed.slice(1))
-    return value === null ? null : -value
+    return value === null ? null : value === 0 ? 0 : -value
   }
   return parseDecimalText(trimmed)
 }
@@ -110,10 +110,10 @@ export function customItemPayload(values: CustomFoodFormValues): CustomItemPaylo
     name: values.name.trim(),
     grams: parseDecimalText(values.grams) as number,
     per_100g: {
-      calories_kcal: parseDecimalText(values.calories) as number,
-      protein_g: parseDecimalText(values.protein) as number,
-      carbs_g: parseDecimalText(values.carbs) as number,
-      fat_g: parseDecimalText(values.fat) as number,
+      calories_kcal: parseSignedDecimalText(values.calories) as number,
+      protein_g: parseSignedDecimalText(values.protein) as number,
+      carbs_g: parseSignedDecimalText(values.carbs) as number,
+      fat_g: parseSignedDecimalText(values.fat) as number,
     },
   }
 }
