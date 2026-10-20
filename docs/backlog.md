@@ -243,3 +243,31 @@ Feature: [specs/021-usda-food-database/](../specs/021-usda-food-database/)
 - [ ] F7 (NIT): dejar una sola cifra de AC (67) en las notas y en la documentación de la etapa docs.
 - [ ] Pasar ADR-0029 de «Propuesta» a «Aceptada» (rama `chore/…` tras el merge, como en la 019 y la 020).
 - [ ] Aplicar en producción lo que documenta el runbook: migración `c8e2a4f6b9d3`, importación de USDA y medición real de `public.foods`; añadir la fila de la 021 al historial de despliegues.
+
+## 022-meal-diary · Diario de comidas con totales del día frente al objetivo de Macros (2026-10-20)
+
+Feature: [specs/022-meal-diary/](../specs/022-meal-diary/)
+
+- [ ] Biblioteca de alimentos personalizados reutilizables, y alimentos favoritos o recientes.
+- [ ] Navegar entre días y editar días pasados desde la pantalla.
+- [ ] Deshacer al quitar un alimento.
+- [ ] Que el diario cambie solo de día al pasar la medianoche con la pantalla abierta.
+- [ ] Decidir si /foods se retira o redirige a /diary.
+- [ ] Medidas caseras y onzas, y el diario en kJ.
+- [ ] Sacar a un componente compartido el bloque de estado de la búsqueda («Busca un alimento…», «Buscando…», sin resultados, error con «Reintentar»), que ahora se repite en FoodsPage y AddFoodDialog.
+- [ ] Valorar ON DELETE CASCADE de users hacia meals (y body_metrics) cuando exista el borrado de cuentas.
+- [ ] El diálogo de añadir guarda un alimento por petición aunque la API acepta varios; añadir varios de una vez puede llegar con la 024.
+- [ ] Test de la migración b3d5f7a9c1e4 contra una base real (ahora solo hay revisión manual).
+- [ ] Botón para borrar una comida entera desde la pantalla: la API ya tiene DELETE /api/meals/{id} y la pantalla no lo usa.
+- [ ] Posible duplicación entre los helpers de `AddFoodDialog.test.tsx` y `DiaryPage.test.tsx`. Se podrían compartir en `src/test/` si crece.
+- [ ] Decidir si las guardas de regresión (p. ej. /foods, voseo, contenido legal existente) cuentan como tests de feature o se mueven a un test de no regresión.
+- [ ] `diaryRoute.test.tsx` comprueba el texto de `router.tsx` con expresiones regulares (lazyNamed, path="/diary"). Es frágil; valorar si conviene un test de comportamiento.
+- [ ] Varios tests de la suite de rutas leen el JSON de una respuesta 404 en helpers (KeyError 'id'); al implementar, la causa desaparece, pero conviene que los helpers asserten el status antes de leer el cuerpo.
+- [ ] Tests de fecha de legales: la comprobación «no es la del 2 de septiembre» (TermsOfServicePage, preexistente) es débil; pendiente de revisar en el backlog del proyecto.
+- [ ] Opcional: mostrar «Guardando…» global o deshabilitar por fila el botón «Quitar», más allá del indicador `isRemoving` actual.
+- [ ] Opcional: enlace a `/foods` desde el diálogo del diario, o retirar `/foods` más adelante (REQ-015 lo mantiene funcionando pero sin enlace).
+- [ ] Corregir el número de AC de spec.md («86» frente a los 96 definidos) en la próxima edición de la spec o en el cierre.
+- [ ] AC manuales para el gate de review: AC-014.2 (barra de calorías llena al superar el objetivo), AC-015.2 (barra inferior con 6 entradas en pantalla estrecha), AC-015.3 (estado activo de «Diario» en /diary).
+- [ ] Revisar los fines de línea CRLF de 5 archivos de test (fakes.py, BottomTabBar.test.tsx, Navbar.test.tsx, PrivacyPolicyPage.test.tsx, TermsOfServicePage.test.tsx) antes del cierre; comprobar si el snapshot-check se hace por hash en disco.
+- [ ] F6 (NIT, test-author): falta un test de que meals.updated_at avanza al añadir, editar o quitar alimentos (backend/models/meal.py:45-48), y otro de «-0» en el formulario personalizado (frontend/src/features/diary/schemas.ts:38).
+- [ ] Añadir la fila de 022 en la sección 8 del runbook al desplegar, con la medición de las tablas nuevas si interesa.
