@@ -179,3 +179,44 @@ Feature: [specs/020-metrics-followups-prod-config/](../specs/020-metrics-followu
 - [ ] `test_fixed_clock_routes.py` usa `X-Forwarded-For` fijo (203.0.113.50) en `forgot`; con más tests de restablecimiento ahí, usar una IP por test para evitar el límite de 3 por IP.
 - [ ] Los 31 tests de caracterización de la excepción al Art. B5.2 (REQ-004 y REQ-007, entre otros) pasaron sin implementación por decisión del usuario; no hay nada que hacer salvo tenerlo en cuenta.
 - [ ] Definir si las ADR pasan a «Aceptada» en una rama `chore/…` o en una etapa del flujo (ya anotado en la 019).
+
+## Plan: registro de comidas con foto y datos de USDA (specs 021–024, numeración tentativa) (2026-10-19)
+
+Objetivo: que registrar macros sea simple. El usuario sube una foto, un modelo de visión (Amazon Bedrock) identifica los alimentos y estima las porciones, y los macros salen de los datos de USDA FoodData Central (el modelo no inventa números). El usuario confirma, corrige gramos, quita o añade alimentos y guarda la comida.
+
+**Decisiones tomadas**
+- Datos de USDA importados a Postgres con un script en `backend/scripts/` (fuera de la app, como el pipeline RAG). Conjuntos: Foundation Foods y SR Legacy (unos 86 MB en CSV sin comprimir); FNDDS en JSON (64 MB) si cabe. **Sin Branded Foods** (3,1 GB, no cabe en el plan gratuito de Supabase de 500 MB y exige reimportar cada mes) y **sin la API de USDA**: los datos son CC0, no se necesita clave ni caché. Atribución recomendada: «U.S. Department of Agriculture, Agricultural Research Service. FoodData Central» en el pie o en la página legal.
+- Embeddings con **Voyage por su API directa** (como el coach); Bedrock **solo para visión**. Bedrock no ofrece Voyage como modelo de primera mano (solo por AWS Marketplace + SageMaker, con un endpoint de pago fijo). Los vectores de modelos distintos no son comparables y una columna pgvector tiene una sola dimensión.
+- La foto **no se guarda** ni se registra: se procesa y se descarta.
+- Orden **vertical**: cada spec lleva su backend y su frontend mínimo; backend primero dentro de cada una. Las pantallas no se diseñan contra datos inventados.
+
+**021 · Base de alimentos USDA**
+- Script de importación, tablas de alimento y de nutrientes por 100 g (calorías, proteína, carbohidratos, grasa), embeddings de Voyage en pgvector.
+- `GET /api/foods/search?q=` con búsqueda híbrida (texto completo y similitud). Frontend mínimo: caja de búsqueda para validar la calidad.
+- Cerrar en el plan: conjuntos que entran, nutrientes guardados, cómo se ejecuta el import en producción y cuánto ocupa, y si las descripciones de USDA (muy técnicas) necesitan una versión limpia para los embeddings. Lleva migración, que no se aplica sola.
+
+**022 · Diario de comidas**
+- Modelo de comida y de alimentos de la comida (alimento de USDA o personalizado, gramos, macros calculados **y guardados** para que el historial no cambie si se reimporta USDA). CRUD de comidas.
+- Frontend completo: añadir alimento buscando, editar gramos, quitar, totales del día frente al objetivo de Macros. Alimento personalizado con macros a mano para lo que USDA no tiene (por ejemplo, gallo pinto).
+- Reutilizar `backend/utils/clock.py` para el «día». Lleva migración.
+- Deja un producto útil sin IA y construye la edición que reutilizará la 024.
+
+**023 · Análisis de imagen con Bedrock**
+- `POST /api/meals/analyze` recibe una imagen y devuelve alimentos propuestos con el mismo formato que el diario: nombre, consulta canónica en inglés, gramos estimados, confianza, coincidencia de USDA y macros, o `sin_coincidencia` si no hay una buena.
+- Validación de tipo y tamaño, rate limit en Redis (como el coach), trazas en Langfuse.
+- ADR nuevo: modelo de Bedrock con visión y región (verificar en la consola), rol IAM de la instancia EC2, coste por imagen, umbral de coincidencia.
+- Riesgo principal: la estimación de gramos desde una foto es poco precisa. Medirla con fotos reales antes de darla por buena.
+
+**024 · Subir foto y confirmar**
+- Subir o tomar una foto (cámara directa en móvil) con redimensionado en el cliente; estados de carga y error; pantalla de confirmación con gramos editables, confianza visible, quitar, añadir un alimento que falte (reutiliza la búsqueda de la 022) y guardar. Alimentos sin coincidencia marcados.
+- Si el análisis falla o devuelve una lista vacía, volver al registro manual.
+
+**Dependencias:** 021 → 022 → 024, y 021 → 023 → 024. El contrato de salida de la 023 debe coincidir con los alimentos de la 022.
+
+**Fuera de alcance:** Branded Foods y la API de USDA, guardar fotos, edición avanzada de comidas pasadas, estadísticas semanales, varios platos en una foto, etiquetas nutricionales.
+
+**Riesgos abiertos**
+- [ ] Calidad de la búsqueda con las descripciones de USDA (021).
+- [ ] Cobertura de comida local, que USDA no tiene (022, 023).
+- [ ] Disponibilidad y coste del modelo de visión en Bedrock (023).
+- [ ] Límite de 500 MB de Supabase con los datos importados (021).
