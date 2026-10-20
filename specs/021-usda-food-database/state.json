@@ -10,7 +10,7 @@
   "branch": "feat/021-usda-food-database",
   "base_branch": "main",
   "created_at": "2026-10-20T01:56:03.911Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,7 +29,10 @@
       "at": "2026-10-20T06:49:22.477Z",
       "note": "auto (gate_mode=flow): red check PASS, 148 tests rojos legítimos"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-20T07:03:39.371Z",
+      "note": "auto (gate_mode=flow): implementación completa; backend/scripts/** añadido a scopes.backend.prod con aprobación del usuario"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -38,7 +41,8 @@
   "commits": {
     "spec": "ad99f98",
     "plan": "2fa19ca",
-    "tasks": "5182f7d"
+    "tasks": "5182f7d",
+    "tests": "b1ac9ee"
   },
   "iterations": {
     "tests": 1,
@@ -233,6 +237,36 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS, 148 tests rojos legítimos"
+    },
+    {
+      "at": "2026-10-20T06:49:26.779Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: b1ac9ee"
+    },
+    {
+      "at": "2026-10-20T06:49:26.975Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar tareas impl y migration de tasks.md"
+    },
+    {
+      "at": "2026-10-20T06:56:54.575Z",
+      "stage": "implement",
+      "event": "needs_input",
+      "note": "T-054 bloqueada por role-guard: backend/scripts/** no está en scopes.backend.prod de .sdd/config.json"
+    },
+    {
+      "at": "2026-10-20T07:03:39.273Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "Todas las tareas impl y migration hechas; 1175 tests backend y 842 frontend en verde"
+    },
+    {
+      "at": "2026-10-20T07:03:39.371Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): implementación completa; backend/scripts/** añadido a scopes.backend.prod con aprobación del usuario"
     }
   ]
 }

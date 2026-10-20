@@ -5,10 +5,16 @@ export const DATA_TYPE_LABELS: Record<FoodDataType, string> = {
   sr_legacy: "SR Legacy",
 }
 
-export function formatCalories(_value: number | null): string {
-  throw new Error("not implemented")
+const calorieFormat = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 0 })
+const gramFormat = new Intl.NumberFormat("es-ES", {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+})
+
+export function formatCalories(value: number | null): string {
+  return value === null ? "— kcal" : `${calorieFormat.format(value)} kcal`
 }
 
-export function formatGrams(_value: number | null, _label: string): string {
-  throw new Error("not implemented")
+export function formatGrams(value: number | null, label: string): string {
+  return value === null ? `— ${label}` : `${gramFormat.format(value)} g ${label}`
 }

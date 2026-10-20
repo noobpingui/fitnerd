@@ -37,3 +37,12 @@
 
 ## tests · verifier (red, iteración 1)
 - [ ] `foodsRoute.test.tsx` y `noFoodsLink.test.tsx`: parte de las aserciones lee el texto de `router.tsx`; válido como precondición en red, pero en verify las comprobaciones de comportamiento deben probar el AC.
+
+## implement · implementer
+- [ ] Medir el tamaño de `public.foods` y validar las 20 consultas manuales en verify, como pide el plan.
+- [ ] Corregir los E501 de los tests de la feature (`test_food_search_service.py`, `test_usda_csv_reader.py`, `usda_samples.py`) si se quiere dejar el ratchet limpio.
+- [ ] Subir la base de desarrollo a head antes de verify, para aplicar `flask db upgrade` en local.
+
+## implement · implementer (T-054)
+- [ ] Corregir las líneas de más de 100 caracteres (E501) en los tests del 021: `test_food_search_service.py`, `test_usda_csv_reader.py` y `usda_samples.py`, entre otros. Lo debe hacer quien pueda editar tests.
+- [x] `import_usda_foods.py` imprime `FLASK_ENV` con valor por defecto `development`; `create_app()` cae a `default` = `DevelopmentConfig`, así que coinciden.

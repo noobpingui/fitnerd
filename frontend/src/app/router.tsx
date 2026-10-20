@@ -25,7 +25,8 @@ const BodyMetricsPage = lazyNamed(
   "BodyMetricsPage"
 )
 const HomePage = lazyNamed(() => import("@/features/home/pages/HomePage"), "HomePage")
-const CoachPage = lazyNamed(() => import("@/features/coach/pages/CoachPage"), "CoachPage")
+const FoodsPage = lazyNamed(() => import("@/features/foods/pages/FoodsPage"), "FoodsPage")
+const CoachPage =lazyNamed(() => import("@/features/coach/pages/CoachPage"), "CoachPage")
 const StorePage = lazyNamed(() => import("@/features/store/pages/StorePage"), "StorePage")
 const ProfilePage = lazyNamed(() => import("@/features/profile/pages/ProfilePage"), "ProfilePage")
 const PrivacyPolicyPage = lazyNamed(
@@ -155,6 +156,14 @@ function AnimatedRoutes() {
                 element={
                   <RouteSuspense className={IN_LAYOUT}>
                     <HomePage />
+                  </RouteSuspense>
+                }
+              />
+              <Route
+                path="/foods"
+                element={
+                  <RouteSuspense className={IN_LAYOUT}>
+                    <FoodsPage />
                   </RouteSuspense>
                 }
               />
