@@ -47,15 +47,17 @@ Marcadores `# SDD: 021 REQ-… AC-…` (backend) y `// SDD: 021 REQ-… AC-…` 
 - [x] T-042 [REQ-014, NFR-002, AC-014.1, AC-N002.1, AC-N002.2] (test) La atribución se ve con y sin resultados, existe el campo de búsqueda con nombre «Buscar alimento» y «Buscando…», sin resultados y error están en la región `role="status"` — `frontend/src/features/foods/pages/FoodsPage.test.tsx`
 - [x] T-043 [REQ-012, NFR-001, AC-N001.1] (test) `/foods` muestra «Cargando…» y luego el `h1` «Alimentos» dentro de la navegación, `router.tsx` usa `lazyNamed` sin import estático de `FoodsPage` y `/home` no evalúa el módulo de la pantalla — `frontend/src/app/foodsRoute.test.tsx`
 - [x] T-044 [REQ-012, AC-012.8] (test) `Navbar` y `BottomTabBar` no tienen enlace «Alimentos» ni `href="/foods"` — `frontend/src/components/layout/noFoodsLink.test.tsx`
+- [ ] T-045 [REQ-001, AC-001.8, AC-001.9, AC-001.10, AC-001.11, AC-001.12] (test) Reetiquetar los marcadores de los tests de confirmación del script de importación (host no local sin `--yes`, respuesta «n», `--yes`, hosts locales y host desconocido) de `# SDD: 021 REQ-001` a `# SDD: 021 REQ-001 AC-001.8` … `AC-001.12` según corresponda, y quitar el comentario de «sin AC propio», sin cambiar la lógica de los tests — `backend/tests/test_scripts/test_import_usda_foods_script.py`
+- [ ] T-046 [REQ-006, AC-006.10] (test) Reetiquetar el marcador del test de ordenación por longitud de descripción («Bananas, raw» frente a descripciones largas) de `# SDD: 021 REQ-006 AC-006.1` a `# SDD: 021 REQ-006 AC-006.10`, sin cambiar la lógica de los tests — `backend/tests/test_services/test_food_text_ranking.py`
 
 ## Fase B — Implementación (implementer)
 Cada tarea impl se cumple cuando pasan los tests que cubren sus mismos AC.
 
 - [x] T-050 [REQ-001, REQ-003, REQ-006] (migration) Generar con `FLASK_ENV=development flask db migrate` y revisar a mano `c8e2a4f6b9d3_create_foods_table` (`down_revision = "e5b7d9f1a3c6"`): tabla `public.foods`, `Computed` de `search_vector`, `CHECK`, índice GIN y downgrade; no aplicarla en producción — `backend/migrations/versions/c8e2a4f6b9d3_create_foods_table.py`
-- [x] T-051 [REQ-001, REQ-003, REQ-006, REQ-007] (impl) Implementar `FoodRepository`: lectura por FDC ID con `defer(embedding)`, candidatos por texto con `websearch_to_tsquery` y `ts_rank_cd`, candidatos por distancia coseno con umbral, pendientes y recuento por origen — `backend/repositories/food_repository.py`
+- [x] T-051 [REQ-001, REQ-003, REQ-006, REQ-007] (impl) Implementar `FoodRepository`: lectura por FDC ID con `defer(embedding)`, candidatos por texto con `websearch_to_tsquery` y `ts_rank_cd` normalizado por longitud (AC-006.10), candidatos por distancia coseno con umbral, pendientes y recuento por origen — `backend/repositories/food_repository.py`
 - [x] T-052 [REQ-001, REQ-004] (impl) Implementar `read_usda_dataset`: validar archivos y columnas, filtrar por tipo de USDA, leer solo los seis nutrientes y aplicar la preferencia de energía, con los mensajes exactos de `UsdaFileError` — `backend/services/usda_csv_reader.py`
 - [x] T-053 [REQ-002, REQ-003, REQ-004, REQ-005] (impl) Implementar `FoodImportService.run` en dos fases (validación previa, alta y actualización en una transacción, vectores por lotes con parada y reanudación) y `format_summary` — `backend/services/food_import_service.py`
-- [x] T-054 [REQ-005] (impl) Crear el script `main(argv)` con `--foundation` y `--sr-legacy` (al menos uno), que imprima el entorno y la base sin contraseña, ejecute el servicio, imprima el resumen y devuelva 0 o 1 ante `UsdaFileError`, sin lógica propia — `backend/scripts/import_usda_foods.py`
+- [x] T-054 [REQ-005] (impl) Crear el script `main(argv)` con `--foundation` y `--sr-legacy` (al menos uno), que imprima el entorno y la base sin contraseña, ejecute el servicio, imprima el resumen y devuelva 0 o 1 ante `UsdaFileError`, con confirmación previa si el host de la base no es local y sin `--yes` (AC-001.8 a AC-001.12), sin lógica de negocio propia — `backend/scripts/import_usda_foods.py`
 - [x] T-055 [REQ-006, REQ-007, REQ-008, REQ-010, REQ-011] (impl) Implementar `normalize_query`, `fuse_rankings` (RRF) y `FoodSearchService.search` (validación, límite, vector de la consulta, 503, fusión y orden) — `backend/services/food_search_service.py`
 - [x] T-056 [REQ-006, REQ-009] (impl) Crear `food_bp`, `_build_food_search_service()`, `food_to_json` y `GET /api/foods/search` con `@require_auth`, y registrar el blueprint — `backend/routes/food_routes.py`, `backend/routes/__init__.py`
 - [x] T-057 [REQ-013] (impl) Implementar `foodSearchFormSchema` (trim, mínimo 1 y 2, máximo 100) y `foodSearchResponseSchema` — `frontend/src/features/foods/schemas.ts`
@@ -75,6 +77,11 @@ Cada tarea impl se cumple cuando pasan los tests que cubren sus mismos AC.
 | REQ-001 | AC-001.5 | T-022 | T-052 |
 | REQ-001 | AC-001.6 | T-022 | T-052 |
 | REQ-001 | AC-001.7 | T-022 | T-052 |
+| REQ-001 | AC-001.8 | T-045 | T-054 |
+| REQ-001 | AC-001.9 | T-045 | T-054 |
+| REQ-001 | AC-001.10 | T-045 | T-054 |
+| REQ-001 | AC-001.11 | T-045 | T-054 |
+| REQ-001 | AC-001.12 | T-045 | T-054 |
 | REQ-002 | AC-002.1 | T-025 | T-053 |
 | REQ-002 | AC-002.2 | T-025 | T-053 |
 | REQ-002 | AC-002.3 | T-025, T-036 | T-053, T-055 |
@@ -96,6 +103,7 @@ Cada tarea impl se cumple cuando pasan los tests que cubren sus mismos AC.
 | REQ-006 | AC-006.7 | T-033 | T-056 |
 | REQ-006 | AC-006.8 | T-033 | T-055, T-056 |
 | REQ-006 | AC-006.9 | T-033 | T-051, T-056 |
+| REQ-006 | AC-006.10 | T-046 | T-051 |
 | REQ-007 | AC-007.1 | T-033 | T-051, T-055 |
 | REQ-007 | AC-007.2 | T-031, T-033 | T-055, T-056 |
 | REQ-008 | AC-008.1 | T-029, T-034 | T-055, T-056 |
