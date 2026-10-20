@@ -10,7 +10,7 @@
   "branch": "feat/021-usda-food-database",
   "base_branch": "main",
   "created_at": "2026-10-20T01:56:03.911Z",
-  "stage": "implement",
+  "stage": "docs",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,9 +29,18 @@
       "at": "2026-10-20T09:30:47.803Z",
       "note": "auto (gate_mode=flow): red_check PASS autorizado por el usuario como excepción documentada (F9)"
     },
-    "implement": null,
-    "verify": null,
-    "review": null,
+    "implement": {
+      "at": "2026-10-20T09:30:58.007Z",
+      "note": "auto (gate_mode=flow): sin cambios de producción (F9 solo toca spec, plan, tasks y marcadores de tests)"
+    },
+    "verify": {
+      "at": "2026-10-20T09:35:26.519Z",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    "review": {
+      "at": "2026-10-20T09:39:33.892Z",
+      "note": "Sí (confirma las excepciones del red check de F4 y F9)"
+    },
     "docs": null,
     "close": null
   },
@@ -39,7 +48,7 @@
     "spec": "1c367c8",
     "plan": "20a6a29",
     "tasks": "2b53ca6",
-    "tests": "2b53ca6",
+    "tests": "b8cd1af",
     "implement": "d4c1113"
   },
   "iterations": {
@@ -53,12 +62,12 @@
     "at": "2026-10-20T09:30:47.680Z"
   },
   "verify": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-20T09:35:11.748Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-10-20T09:37:13.040Z"
   },
   "tests_snapshot": {
     "at": "2026-10-20T09:29:32.309Z",
@@ -639,6 +648,72 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red_check PASS autorizado por el usuario como excepción documentada (F9)"
+    },
+    {
+      "at": "2026-10-20T09:30:48.146Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: b8cd1af"
+    },
+    {
+      "at": "2026-10-20T09:30:57.882Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "Sin cambios de producción en la pasada F9; el código ya estaba implementado"
+    },
+    {
+      "at": "2026-10-20T09:30:58.007Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): sin cambios de producción (F9 solo toca spec, plan, tasks y marcadores de tests)"
+    },
+    {
+      "at": "2026-10-20T09:30:58.225Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa tras F9"
+    },
+    {
+      "at": "2026-10-20T09:35:11.748Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify full tras F9: backend 1196 passed; ratchet sin violaciones nuevas; frontend 842 passed, lint, tsc y build OK (chunk 384,53 kB); 67/67 AC con marcador SDD: 021 en verde; 50/50 tareas; sin skip nuevos. Manual: calidad de búsqueda (22 consultas, hallazgos en backlog), tamaño en producción y revisión visual."
+    },
+    {
+      "at": "2026-10-20T09:35:26.407Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: 1196 backend, 842 frontend, 67/67 AC trazados"
+    },
+    {
+      "at": "2026-10-20T09:35:26.519Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-20T09:35:26.726Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review final tras F9"
+    },
+    {
+      "at": "2026-10-20T09:37:13.040Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-20T09:37:13.169Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED (cuarta pasada); 0 bloqueantes, 0 mayores, 1 menor (F11) y 4 nits"
+    },
+    {
+      "at": "2026-10-20T09:39:33.892Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Sí (confirma las excepciones del red check de F4 y F9)"
     }
   ]
 }

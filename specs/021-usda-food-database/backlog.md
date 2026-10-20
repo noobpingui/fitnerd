@@ -48,7 +48,7 @@
 - [x] `import_usda_foods.py` imprime `FLASK_ENV` con valor por defecto `development`; `create_app()` cae a `default` = `DevelopmentConfig`, así que coinciden.
 
 ## verify · verifier (full)
-- [ ] Desajuste modelo/migración: `backend/models/food.py` declara `search_vector` como `Mapped[str]` (NOT NULL por defecto) y la migración `c8e2a4f6b9d3` lo crea `nullable=True`. Es columna generada, sin impacto práctico, pero los tests no lo detectan (`create_all`).
+- [x] Desajuste modelo/migración: `backend/models/food.py` declara `search_vector` como `Mapped[str]` (NOT NULL por defecto) y la migración `c8e2a4f6b9d3` lo crea `nullable=True`. Es columna generada, sin impacto práctico, pero los tests no lo detectan (`create_all`).
 - [ ] Aplicar la migración `c8e2a4f6b9d3` en la base de desarrollo y medir `public.foods` tras la importación (pasos manuales del plan).
 - [ ] Validación manual de calidad de búsqueda (20 consultas, Q8) pendiente.
 - [ ] `state.json`: `verify.result` sigue null porque la CLI registró el resultado en `stage_result`; la entrada history/result refleja FAIL.
@@ -89,9 +89,9 @@
 
 ## review · reviewer (tercera pasada)
 - [ ] F6 (NIT, test-author): `frontend/src/app/foodsRoute.test.tsx:113`, el marcador `AC-012.1` debería ser `REQ-012`.
-- [ ] F7 (NIT): las notas de `state.json` dicen «60 AC», pero `spec.md` tiene 61; corregirlo en la documentación.
+- [ ] F7 (NIT): las notas de `state.json` dicen «60 AC» (spec.md tiene ahora 67), pero `spec.md` tiene 61; corregirlo en la documentación.
 - [ ] F8 (NIT, implementer): un túnel SSH a `localhost` se tomaría por base local y no preguntaría; advertirlo en el runbook o decidir también por `FLASK_ENV`.
-- [ ] F9 (MENOR, spec-writer): faltan los AC de la importación segura y del orden por longitud; añadirlos y reetiquetar los tests (hoy llevan `REQ-001` y `AC-006.1`).
+- [x] F9 (MENOR, spec-writer): faltan los AC de la importación segura y del orden por longitud; añadirlos y reetiquetar los tests (hoy llevan `REQ-001` y `AC-006.1`).
 - [x] F10 (NIT): marcar como hecho el punto «banana» (hecho por el orquestador).
 
 ## spec · spec-writer (corrección de F9)
@@ -104,3 +104,9 @@
 
 ## tests · test-author (reetiquetado, F9)
 - [ ] Ampliar el texto de AC-001.8 para incluir «y» y «yes», que el script ya acepta y ahora tiene test.
+
+## review · reviewer (cuarta pasada)
+- [ ] F11 (MENOR, test-author): que el usuario confirme en el gate la excepción del red check de F4 y F9.
+- [ ] F12 (NIT, spec-writer): AC-001.8 no enumera «y» ni «yes», aunque el test marcado con ese AC los prueba; añadirlos al AC.
+- [ ] F7 (NIT): dejar una sola cifra de AC (67) en las notas y en la documentación de la etapa docs.
+- Nota: la entrada de history de las 09:29:32 en `state.json` dice «tests: 2b53ca6» (es el commit de tasks); el commit de tests es `b8cd1af`.
