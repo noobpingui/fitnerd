@@ -14,10 +14,29 @@ from unit_of_work.unit_of_work import UnitOfWork
 # Para ejecutarlo: python -m scripts.import_usda_foods --foundation <carpeta> --sr-legacy <carpeta>
 
 
+_LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1", "postgres"}
+
+
+def _is_local(host: str | None) -> bool:
+    # Ante la duda (sin host, host desconocido) se trata como no local.
+    return host is not None and host.lower() in _LOCAL_HOSTS
+
+
+def _confirm() -> bool:
+    try:
+        answer = input("La base de datos NO es local. ¿Escribir en ella? [s/N]: ")
+    except EOFError:
+        return False
+    return answer.strip().lower() in {"s", "si", "sí", "y", "yes"}
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Importa alimentos de USDA FoodData Central.")
     parser.add_argument("--foundation", type=Path, help="Carpeta del CSV de Foundation")
     parser.add_argument("--sr-legacy", type=Path, help="Carpeta del CSV de SR Legacy")
+    parser.add_argument(
+        "--yes", action="store_true", help="No pedir confirmación si la base no es local"
+    )
     args = parser.parse_args(argv)
 
     sources = []
@@ -34,6 +53,11 @@ def main(argv: list[str] | None = None) -> int:
         database = url.render_as_string(hide_password=True)
         print(f"Entorno: {os.environ.get('FLASK_ENV', 'development')}")
         print(f"Base de datos: {database}")
+
+        if not args.yes and not _is_local(url.host):
+            if not _confirm():
+                print("Importación cancelada: no se ha escrito nada.")
+                return 1
 
         service = FoodImportService(
             FoodRepository(db.session), UnitOfWork(db.session), embedding_client

@@ -19,10 +19,14 @@ class FoodRepository(BaseRepository):
     def find_text_matches(self, query: str, limit: int) -> list[int]:
         # websearch_to_tsquery no falla con entradas arbitrarias
         tsquery = func.websearch_to_tsquery("english", query)
+        # Normalización 2 (divide por la longitud del documento): sin ella, las
+        # descripciones largas que solo mencionan la palabra desplazan a las
+        # cortas y exactas (p. ej. «Bananas, raw» con la consulta «banana»).
+        rank = func.ts_rank_cd(Food.search_vector, tsquery, 2)
         stmt = (
             select(Food.fdc_id)
             .where(Food.search_vector.op("@@")(tsquery))
-            .order_by(func.ts_rank_cd(Food.search_vector, tsquery).desc(), Food.fdc_id.asc())
+            .order_by(rank.desc(), Food.fdc_id.asc())
             .limit(limit)
         )
         return list(self.session.scalars(stmt).all())
