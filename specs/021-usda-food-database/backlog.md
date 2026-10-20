@@ -18,7 +18,7 @@
 - [ ] Volver a calcular todos los vectores si cambia `VOYAGE_EMBEDDING_MODEL`.
 - [ ] Pausas o reintentos entre lotes de Voyage si los límites de uso hacen lenta la importación.
 - [ ] `backend/scripts/**` no está en los globs de producción del ámbito `backend` de `.sdd/config.json`; valorar añadirlo.
-- [ ] El `doc-keeper` debe documentar en `docs/deploy-runbook.md` los pasos de producción: copiar los CSV a EC2, `flask db upgrade`, `docker compose -f docker-compose.prod.yml run --rm -v <carpeta>:/data/usda:ro backend python -m scripts.import_usda_foods …` y medir el tamaño.
+- [x] El `doc-keeper` debe documentar en `docs/deploy-runbook.md` los pasos de producción: copiar los CSV a EC2, `flask db upgrade`, `docker compose -f docker-compose.prod.yml run --rm -v <carpeta>:/data/usda:ro backend python -m scripts.import_usda_foods …` y medir el tamaño.
 
 ## tasks · task-breaker
 - [ ] `backend/scripts/` no está en los globs de producción del ámbito `backend`, así que un hook podría bloquear T-054. Si pasa, el implementer lo informa (ya está anotado en los riesgos del plan).
@@ -62,7 +62,7 @@
 
 ## verify · verifier (full, tras review)
 - [ ] El recuento de AC en `state.json` y en los resúmenes dice «60 AC»; `spec.md` tiene 61 identificadores AC (58 de REQ y 3 de NFR). Todos tienen test; solo hay que corregir el recuento en la documentación.
-- [ ] Documentar en `docs/deploy-runbook.md` el paso manual de la migración `c8e2a4f6b9d3` y de la importación (P4), en la etapa docs.
+- [x] Documentar en `docs/deploy-runbook.md` el paso manual de la migración `c8e2a4f6b9d3` y de la importación (P4), en la etapa docs.
 - [ ] Medir el tamaño de `public.foods` y ejecutar las 20 consultas manuales contra Voyage tras la importación real.
 
 ## review · reviewer (iteración 2)
@@ -80,8 +80,8 @@
 - [x] «banana» (inglés) no devuelve «Bananas, raw» en los 20 primeros (salen Babyfood, Melon, Pepper); «banano» y «plátano» sí. Revisar el orden de los candidatos de texto antes de la 023.
 - [ ] «avena cocida» no devuelve avena en los primeros 5 (sí «avena» sola y «oats cooked»); las consultas en español de varias palabras son más débiles.
 - [ ] El umbral 0,6 filtra poco: «xyzzy qwerty» y «zapato de cuero» devuelven 1 resultado absurdo cada una. Probar 0,5 o menos.
-- [ ] Documentar en el runbook: los ZIP de USDA traen una carpeta anidada (`FoodData_Central_..._csv_AAAA-MM-DD/`) y el script debe apuntar a ella, no a la carpeta del ZIP.
-- [ ] En la consola de Windows los mensajes del script salen con la codificación rota (cp1252); funcionan con `PYTHONIOENCODING=utf-8`.
+- [x] Documentar en el runbook: los ZIP de USDA traen una carpeta anidada (`FoodData_Central_..._csv_AAAA-MM-DD/`) y el script debe apuntar a ella, no a la carpeta del ZIP.
+- [x] En la consola de Windows los mensajes del script salen con la codificación rota (cp1252); funcionan con `PYTHONIOENCODING=utf-8`.
 
 ## tests · test-author (pasada F4 y ordenación de texto)
 - [ ] La spec no tiene AC para la importación segura (confirmación con base no local y `--yes`). Conviene añadir un AC (p. ej. en REQ-001 o un REQ nuevo) y reetiquetar estos tests (hoy llevan `021 REQ-001`).
@@ -90,7 +90,7 @@
 ## review · reviewer (tercera pasada)
 - [ ] F6 (NIT, test-author): `frontend/src/app/foodsRoute.test.tsx:113`, el marcador `AC-012.1` debería ser `REQ-012`.
 - [ ] F7 (NIT): las notas de `state.json` dicen «60 AC» (spec.md tiene ahora 67), pero `spec.md` tiene 61; corregirlo en la documentación.
-- [ ] F8 (NIT, implementer): un túnel SSH a `localhost` se tomaría por base local y no preguntaría; advertirlo en el runbook o decidir también por `FLASK_ENV`.
+- [x] F8 (NIT, implementer): un túnel SSH a `localhost` se tomaría por base local y no preguntaría; advertirlo en el runbook o decidir también por `FLASK_ENV`.
 - [x] F9 (MENOR, spec-writer): faltan los AC de la importación segura y del orden por longitud; añadirlos y reetiquetar los tests (hoy llevan `REQ-001` y `AC-006.1`).
 - [x] F10 (NIT): marcar como hecho el punto «banana» (hecho por el orquestador).
 
@@ -99,7 +99,7 @@
 - [ ] Los tests no cubren las respuestas afirmativas «y» y «yes» del script (la spec las documenta porque el script las acepta).
 
 ## plan · planner (corrección de F9)
-- [ ] Al redactar el runbook, el doc-keeper debe confirmar si en producción se usa `--yes` o la confirmación interactiva (`docker compose run` es interactivo; `--yes` solo para ejecuciones no interactivas).
+- [x] Al redactar el runbook, el doc-keeper debe confirmar si en producción se usa `--yes` o la confirmación interactiva (`docker compose run` es interactivo; `--yes` solo para ejecuciones no interactivas).
 - [ ] Con `--yes` no se pide confirmación si se copia el comando a otro entorno.
 
 ## tests · test-author (reetiquetado, F9)

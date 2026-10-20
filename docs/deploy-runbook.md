@@ -35,7 +35,7 @@ git diff --name-only origin/main...HEAD -- backend/migrations/versions/
 | Caso | Ejemplo | Qué cambia en el procedimiento |
 |---|---|---|
 | **A. Sin migraciones** | 011, 013 | Solo PR, merge y comprobaciones (pasos 2, 5 y 6). |
-| **B. Migración aditiva** (tabla o columna nueva, restricción que el código nuevo necesita) | 006 (`c6a1f0d2e9b4`), 008 (`d8e4b2a7c1f5`) | Backup y migración **antes** del merge (*expand*): el código viejo sigue funcionando con el esquema nuevo. |
+| **B. Migración aditiva** (tabla o columna nueva, restricción que el código nuevo necesita) | 006 (`c6a1f0d2e9b4`), 008 (`d8e4b2a7c1f5`), 021 (`c8e2a4f6b9d3`, con importación de datos; ver su sección en el paso 5) | Backup y migración **antes** del merge (*expand*): el código viejo sigue funcionando con el esquema nuevo. |
 | **B'. Migración de datos no reversible** (reescribe valores existentes, p. ej. pasar columnas a minúsculas) | 014 (`a7d3f9c1e5b2`), 019 (`e5b7d9f1a3c6`) | Como el caso B: backup completo y migración **antes** del merge. La 014 pasa los correos a minúsculas porque el código nuevo los busca así; la 019 los deja en forma canónica y crea las restricciones `CHECK`. Su `downgrade()` no restaura datos: los valores originales solo vuelven del backup. |
 | **C. Migración destructiva** (borrar tablas o columnas, renombrar, `NOT NULL` sobre datos existentes) | 012 (`f2c4e6a8b0d1`) | Backup completo, merge y **después** del CD la migración (*contract*): el código que ya no usa esas tablas tiene que estar desplegado antes de borrarlas. |
 
@@ -162,6 +162,31 @@ Migración `e5b7d9f1a3c6` (ADR-0027). Convierte los correos de `users` y `passwo
    - Los recuentos de filas, iguales que antes.
 5. Merge del PR y paso 6; prueba manual de login y de «¿Olvidaste tu contraseña?» con una cuenta real.
 6. Marcha atrás: revertir el merge basta para el código (no depende de la restricción). `flask db downgrade` a `a7d3f9c1e5b2` solo quita las restricciones; los correos convertidos solo vuelven del volcado.
+
+### Caso B (aditiva) con importación de datos: 021, base de alimentos de USDA
+
+Migración `c8e2a4f6b9d3` (ADR-0029): crea `public.foods` (con su `CHECK`, la columna generada `search_vector` y el índice GIN). No toca datos existentes. La tabla se llena después con un script manual, que usa el código ya desplegado y la API de Voyage. Orden: backup, migración, merge y CD, importación, medición.
+
+1. **Volcado completo** (paso 3) **verificado** en `C:/Users/alber/fitnerd-backups`. Aunque la migración es aditiva, sigue la regla del proyecto.
+2. **Migración antes del merge** (caso B): `cd backend && FLASK_ENV=production .venv/Scripts/python.exe -m flask db upgrade`, con `FLASK_ENV` escrito a propósito (sin él, `flask` usa producción igualmente, pero así se ve que es intencionado; en local se usa `development`). Comprobación de solo lectura posterior: `alembic_version` = `c8e2a4f6b9d3`, existe `public.foods` (`to_regclass`) y está vacía.
+3. **Merge y CD** (paso 6). El script de importación va en la imagen del backend, así que hasta que el CD termine no se puede ejecutar en la instancia.
+4. **Descarga de los CSV** desde la página de FoodData Central de USDA (https://fdc.nal.usda.gov/download-datasets): los conjuntos **Foundation Foods** y **SR Legacy**, en formato CSV. Cada ZIP trae una **carpeta anidada** (`FoodData_Central_..._csv_AAAA-MM-DD/`): el script tiene que apuntar a esa carpeta interior, no a la que sale de descomprimir. Los archivos están fuera del repositorio.
+5. **Copia a EC2** de las dos carpetas (por ejemplo con SSM o `scp`) a una ruta de la instancia, digamos `/home/ec2-user/usda`, con una subcarpeta por conjunto.
+6. **Importación**, en la instancia y de forma **interactiva** (sin `-T`, con terminal):
+   ```bash
+   cd /home/ec2-user/fitnerd
+   docker compose -f docker-compose.prod.yml run --rm -v /home/ec2-user/usda:/data/usda:ro backend \
+     python -m scripts.import_usda_foods \
+     --foundation /data/usda/<carpeta-foundation> --sr-legacy /data/usda/<carpeta-sr-legacy>
+   ```
+   - El script imprime el entorno y la base de datos (sin la contraseña). Como la base de Supabase no es local, **pregunta `[s/N]`** antes de escribir: comprueba que el entorno es `production` y responde `s`. Cualquier otra respuesta, o un fin de entrada sin respuesta, cancela sin escribir nada (código 1).
+   - `--yes` omite la pregunta: úsalo **solo en ejecuciones no interactivas**. Si copias el comando a otro entorno con `--yes`, ya no hay confirmación.
+   - **Aviso (F8):** el script decide «local» por el nombre del host. Un túnel SSH a Supabase que escuche en `localhost` se tomaría por base local y **no preguntaría**. No lo uses para importar; mira siempre la línea «Base de datos» que imprime.
+   - La importación se hace en dos fases (inserta los alimentos y luego calcula los vectores con Voyage por lotes) y se puede repetir: reanuda donde se quedó, no duplica alimentos y no vuelve a llamar a Voyage por los que ya tienen vector. Se espera un total de **8.262 alimentos** (469 de Foundation y 7.793 de SR Legacy en los CSV de octubre de 2026), todos con vector. El resumen final lo dice por conjunto.
+   - **En Windows** (si se ejecuta en local), la consola rompe los acentos de los mensajes: define `PYTHONIOENCODING=utf-8`.
+7. **Medición del tamaño** (solo lectura): `SELECT pg_size_pretty(pg_total_relation_size('public.foods'));`. Referencia medida en local con los mismos CSV: **48 MB** con 8.262 alimentos (tabla 2,8 MB, índices 2,1 MB, el resto son los vectores en TOAST). Cabe de sobra en los 500 MB de Supabase; anota el valor real en la tabla de la sección 8 y compáralo con la referencia. Sirve de dato para decidir en la 023 si se añade FNDDS.
+8. **Comprobación manual:** con una cuenta real, abre `/foods` (no hay enlace en la navegación, se entra por la URL) y busca «pechuga de pollo» y «banana». Debe haber resultados y la atribución a USDA.
+9. **Marcha atrás:** revertir el merge basta para el código. `flask db downgrade` a `e5b7d9f1a3c6` borra `public.foods`; los datos importados se recuperan volviendo a ejecutar el script. Vaciar la tabla no afecta a nada más: aún no hay otra tabla que la referencie.
 
 ### Caso C (destructiva): migración después del CD
 
