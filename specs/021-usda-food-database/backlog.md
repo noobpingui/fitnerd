@@ -101,3 +101,6 @@
 ## plan · planner (corrección de F9)
 - [ ] Al redactar el runbook, el doc-keeper debe confirmar si en producción se usa `--yes` o la confirmación interactiva (`docker compose run` es interactivo; `--yes` solo para ejecuciones no interactivas).
 - [ ] Con `--yes` no se pide confirmación si se copia el comando a otro entorno.
+
+## tests · test-author (reetiquetado, F9)
+- [ ] Ampliar el texto de AC-001.8 para incluir «y» y «yes», que el script ya acepta y ahora tiene test.

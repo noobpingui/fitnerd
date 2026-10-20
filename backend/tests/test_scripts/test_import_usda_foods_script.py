@@ -13,9 +13,6 @@ import pytest
 
 from scripts import import_usda_foods
 
-# La spec no tiene un AC propio para la importación segura; se etiqueta con
-# REQ-001 (importación) y se anota en el backlog de la feature.
-
 LOCAL_URL = "postgresql://user:secret@localhost:5433/fitnerd_dev"
 REMOTE_URL = "postgresql://user:secret@db.ejemplo.invalid:5432/fitnerd"
 
@@ -86,7 +83,7 @@ def total_runs():
     return sum(len(service.run_calls) for service in FakeImportService.instances)
 
 
-# SDD: 021 REQ-001
+# SDD: 021 REQ-001 AC-001.9
 def test_host_no_local_responder_n_cancela_sin_importar(script):
     code, prompts = script(REMOTE_URL, ARGV, answer="n")
 
@@ -96,7 +93,7 @@ def test_host_no_local_responder_n_cancela_sin_importar(script):
     assert FakeImportService.instances == []
 
 
-# SDD: 021 REQ-001
+# SDD: 021 REQ-001 AC-001.9
 def test_host_no_local_respuesta_vacia_cancela(script):
     code, _ = script(REMOTE_URL, ARGV, answer="")
 
@@ -104,7 +101,7 @@ def test_host_no_local_respuesta_vacia_cancela(script):
     assert FakeImportService.instances == []
 
 
-# SDD: 021 REQ-001
+# SDD: 021 REQ-001 AC-001.9
 def test_host_no_local_eof_cancela_sin_importar(script):
     code, prompts = script(REMOTE_URL, ARGV, eof=True)
 
@@ -113,7 +110,7 @@ def test_host_no_local_eof_cancela_sin_importar(script):
     assert FakeImportService.instances == []
 
 
-# SDD: 021 REQ-001
+# SDD: 021 REQ-001 AC-001.8
 @pytest.mark.parametrize("answer", ["s", "S", "sí", "si"])
 def test_host_no_local_responder_s_continua(script, answer):
     code, prompts = script(REMOTE_URL, ARGV, answer=answer)
@@ -123,7 +120,7 @@ def test_host_no_local_responder_s_continua(script, answer):
     assert total_runs() == 1
 
 
-# SDD: 021 REQ-001
+# SDD: 021 REQ-001 AC-001.10
 def test_host_no_local_con_yes_continua_sin_preguntar(script):
     code, prompts = script(REMOTE_URL, ARGV + ["--yes"], answer="n")
 
@@ -132,7 +129,7 @@ def test_host_no_local_con_yes_continua_sin_preguntar(script):
     assert total_runs() == 1
 
 
-# SDD: 021 REQ-001
+# SDD: 021 REQ-001 AC-001.11
 @pytest.mark.parametrize(
     "host", ["localhost", "127.0.0.1", "[::1]", "postgres", "LOCALHOST"]
 )
@@ -146,7 +143,7 @@ def test_host_local_no_pregunta(script, host):
     assert total_runs() == 1
 
 
-# SDD: 021 REQ-001
+# SDD: 021 REQ-001 AC-001.12
 def test_url_sin_host_se_trata_como_no_local(script):
     code, prompts = script("postgresql:///fitnerd", ARGV, answer="n")
 
@@ -155,10 +152,20 @@ def test_url_sin_host_se_trata_como_no_local(script):
     assert FakeImportService.instances == []
 
 
-# SDD: 021 REQ-001
+# SDD: 021 REQ-001 AC-001.12
 def test_host_desconocido_se_trata_como_no_local(script):
     code, prompts = script("postgresql://user:secret@servidor-raro:5432/x", ARGV, answer="n")
 
     assert code == 1
     assert len(prompts) == 1
     assert FakeImportService.instances == []
+
+
+# SDD: 021 REQ-001 AC-001.8
+@pytest.mark.parametrize("answer", ["y", "Y", "yes", "YES"])
+def test_host_no_local_responder_y_o_yes_continua(script, answer):
+    code, prompts = script(REMOTE_URL, ARGV, answer=answer)
+
+    assert code == 0
+    assert len(prompts) == 1
+    assert total_runs() == 1

@@ -14,7 +14,7 @@ def seed(db_session, *foods):
     db_session.commit()
 
 
-# SDD: 021 REQ-006 AC-006.1
+# SDD: 021 REQ-006 AC-006.10
 def test_descripcion_corta_y_exacta_entra_en_los_candidatos_y_va_por_delante_de_las_largas(
     db_session,
 ):
@@ -39,7 +39,7 @@ def test_descripcion_corta_y_exacta_entra_en_los_candidatos_y_va_por_delante_de_
     assert result.index(short_id) < min(result.index(i) for i in long_ids if i in result)
 
 
-# SDD: 021 REQ-006 AC-006.1
+# SDD: 021 REQ-006 AC-006.10
 def test_descripcion_corta_va_primero_entre_pocas_largas(db_session):
     seed(
         db_session,

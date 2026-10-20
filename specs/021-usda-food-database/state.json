@@ -10,7 +10,7 @@
   "branch": "feat/021-usda-food-database",
   "base_branch": "main",
   "created_at": "2026-10-20T01:56:03.911Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,7 +25,10 @@
       "at": "2026-10-20T09:28:46.189Z",
       "note": "auto (gate_mode=flow): 50 tareas, 2 nuevas de reetiquetado"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-20T09:30:47.803Z",
+      "note": "auto (gate_mode=flow): red_check PASS autorizado por el usuario como excepción documentada (F9)"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -35,8 +38,8 @@
   "commits": {
     "spec": "1c367c8",
     "plan": "20a6a29",
-    "tasks": "5182f7d",
-    "tests": "b1ac9ee",
+    "tasks": "2b53ca6",
+    "tests": "2b53ca6",
     "implement": "d4c1113"
   },
   "iterations": {
@@ -46,8 +49,8 @@
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-20T09:30:47.680Z"
   },
   "verify": {
     "result": null,
@@ -58,15 +61,15 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-20T09:13:16.135Z",
-    "reason": "tests 021: F4 y ordenación de texto (pasada pedida por el usuario)",
+    "at": "2026-10-20T09:29:32.309Z",
+    "reason": "reetiquetado de marcadores SDD de los tests (F9) y test de y/yes",
     "sha256": {
       "backend/tests/fakes.py": "a5783da3199d0795ab0d5d5745a8357188db08aedd96a8a53c9910e44205639f",
       "backend/tests/test_routes/test_food_routes.py": "9448007142db256390d8f315b320bd00d959ff4776349303ed17c0ce854debc4",
-      "backend/tests/test_scripts/test_import_usda_foods_script.py": "304d62ea73acfe381a3ca8a82f84a9f32eb21ddf0370ea551d5a38873bd6e216",
+      "backend/tests/test_scripts/test_import_usda_foods_script.py": "ff392ce0647fd7ebf651c83d6006ed192f3a905a89b1db998c34d1cbd0ab10b2",
       "backend/tests/test_services/test_food_import_service.py": "4097c6348c90385b24190297a2e767daeeee11683d3d5ea810a97fa966854bb3",
       "backend/tests/test_services/test_food_search_service.py": "3d61847148fb38aca65d5ffd2919691e937291305965ab7bca0c06f1cadb05df",
-      "backend/tests/test_services/test_food_text_ranking.py": "314ea69baf370a9251056e6a5604de1948f60baa92cdc6491cd804cbc08ec0ae",
+      "backend/tests/test_services/test_food_text_ranking.py": "e3a12be7e9ddcf333e467ea0cb36fe2c47acf49552ae7db6e4f2c41b8b8c0f6b",
       "backend/tests/test_services/test_usda_csv_reader.py": "a47a02dde0e872e76bd355fe290f58865a1efbbaf2f9a3cfc03552861f90bd01",
       "backend/tests/usda_samples.py": "46d9017f8deb6d0bdb078dbe1403b0290fbe0036d25143db04c57b0711eab9c9",
       "frontend/src/app/foodsRoute.test.tsx": "c8f9472f1413a80e1603d88060f897bc493ec9080db83bdd1a06b9c7ecb10241",
@@ -594,6 +597,48 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): 50 tareas, 2 nuevas de reetiquetado"
+    },
+    {
+      "at": "2026-10-20T09:28:46.528Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 2b53ca6"
+    },
+    {
+      "at": "2026-10-20T09:28:46.751Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Reetiquetado de marcadores SDD (T-045, T-046); sin scaffold ni red check"
+    },
+    {
+      "at": "2026-10-20T09:29:32.184Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Marcadores reetiquetados a AC-001.8..12 y AC-006.10; test nuevo de y/yes; 21 casos en verde"
+    },
+    {
+      "at": "2026-10-20T09:29:32.309Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "14 archivo(s) de test: reetiquetado de marcadores SDD de los tests (F9) y test de y/yes"
+    },
+    {
+      "at": "2026-10-20T09:29:32.627Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tests: 2b53ca6"
+    },
+    {
+      "at": "2026-10-20T09:30:47.680Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Excepción autorizada por el usuario (F9): el red check real ya dio PASS con estos tests en la primera pasada (b1ac9ee); esta pasada solo reetiqueta marcadores SDD y añade un test de y/yes, sin comportamiento nuevo"
+    },
+    {
+      "at": "2026-10-20T09:30:47.803Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red_check PASS autorizado por el usuario como excepción documentada (F9)"
     }
   ]
 }
