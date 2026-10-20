@@ -8,7 +8,8 @@
   primaria, los cuatro nutrientes por 100 g, un `tsvector` generado en inglés con índice GIN y un `vector(1024)` de Voyage.
 - **Importación:** lector de CSV de USDA (`services/usda_csv_reader.py`) y `FoodImportService`, en dos fases (guardar
   alimentos en una transacción; calcular vectores pendientes por lotes), invocados por un script fino en
-  `backend/scripts/import_usda_foods.py`, como el pipeline RAG.
+  `backend/scripts/import_usda_foods.py`, como el pipeline RAG; el script pide confirmación [s/N] si la base no es
+  local, salvo con `--yes`.
 - **Búsqueda:** `GET /api/foods/search` (`routes/food_routes.py`, `@require_auth`) → `FoodSearchService` (validación,
   límite de Redis, vector de la consulta, fusión RRF de candidatos por texto y por similitud) → `FoodRepository`.
   Reutiliza `utils/embeddings.py` y `utils/rate_limiter.py` (Art. P2.5). Decisión en ADR-0029.
@@ -24,7 +25,7 @@
 | backend | services | `backend/services/usda_csv_reader.py`, `backend/services/food_import_service.py`, `backend/services/food_search_service.py` | — | Lectura y validación de CSV, importación en dos fases y resumen, búsqueda híbrida |
 | backend | routes | `backend/routes/food_routes.py` | `backend/routes/__init__.py` | Endpoint `GET /api/foods/search` y registro del blueprint |
 | backend | scripts | `backend/scripts/import_usda_foods.py` | — | CLI de la importación (fuera de la app) |
-| backend | tests | `backend/tests/test_services/test_usda_csv_reader.py`, `backend/tests/test_services/test_food_import_service.py`, `backend/tests/test_services/test_food_search_service.py`, `backend/tests/test_routes/test_food_routes.py`, `backend/tests/usda_samples.py` | `backend/tests/fakes.py` | Pruebas y dobles nuevos (sección 5) |
+| backend | tests | `backend/tests/test_services/test_usda_csv_reader.py`, `backend/tests/test_services/test_food_import_service.py`, `backend/tests/test_services/test_food_search_service.py`, `backend/tests/test_services/test_food_text_ranking.py`, `backend/tests/test_routes/test_food_routes.py`, `backend/tests/test_scripts/test_import_usda_foods_script.py`, `backend/tests/usda_samples.py` | `backend/tests/fakes.py` | Pruebas y dobles nuevos (sección 5) |
 | frontend | feature `foods` | `frontend/src/features/foods/{types.ts,schemas.ts,api.ts,hooks.ts,format.ts,searchError.ts}`, `frontend/src/features/foods/components/{FoodSearchForm.tsx,FoodResultList.tsx}`, `frontend/src/features/foods/pages/FoodsPage.tsx` | — | Pantalla «Alimentos» (REQ-012 a REQ-014, NFR-002) |
 | frontend | app | — | `frontend/src/app/router.tsx` | Ruta `/foods` bajo demanda (NFR-001) |
 | frontend | tests | `frontend/src/features/foods/pages/FoodsPage.test.tsx`, `frontend/src/features/foods/format.test.ts`, `frontend/src/features/foods/schemas.test.ts`, `frontend/src/features/foods/searchError.test.ts`, `frontend/src/app/foodsRoute.test.tsx`, `frontend/src/components/layout/noFoodsLink.test.tsx` | — | Pruebas (sección 5) |
@@ -95,7 +96,7 @@ class Food(Base):
 class FoodRepository(BaseRepository):
     def __init__(self, session): ...
     def get_by_fdc_ids(self, fdc_ids: list[int]) -> list[Food]: ...            # con defer(Food.embedding); orden libre
-    def find_text_matches(self, query: str, limit: int) -> list[int]: ...       # FDC IDs por ts_rank_cd desc, fdc_id asc
+    def find_text_matches(self, query: str, limit: int) -> list[int]: ...       # FDC IDs por ts_rank_cd(..., 2) desc, fdc_id asc
     def find_semantic_matches(
         self, vector: list[float], max_distance: float, limit: int
     ) -> list[int]: ...                                                         # FDC IDs con vector y distancia <= max, por distancia asc, fdc_id asc
@@ -200,9 +201,17 @@ def search(): ...
 
 `backend/scripts/import_usda_foods.py`
 ```python
+_LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1", "postgres"}
+def _is_local(host: str | None) -> bool: ...      # host no nulo y host.lower() en _LOCAL_HOSTS
+def _confirm() -> bool: ...                        # input() del aviso [s/N]; EOFError → False
 def main(argv: list[str] | None = None) -> int: ...
-# python -m scripts.import_usda_foods --foundation <carpeta> --sr-legacy <carpeta>   (al menos una de las dos)
+# python -m scripts.import_usda_foods --foundation <carpeta> --sr-legacy <carpeta> [--yes]   (al menos una de las dos carpetas)
 ```
+
+**Confirmación del script** (textos exactos de la sección 6 de la spec):
+- aviso: `"La base de datos NO es local. ¿Escribir en ella? [s/N]: "`;
+- respuestas afirmativas, tras `strip().lower()`: `s`, `si`, `sí`, `y`, `yes`;
+- cancelación: `"Importación cancelada: no se ha escrito nada."` y código 1.
 
 **Mensajes de error de la importación** (exactos, en `UsdaFileError`):
 - archivo inexistente: `f"No se encontró el archivo {path}."`;
@@ -287,11 +296,24 @@ export function FoodsPage(): ReactElement
    hay pendientes, no se llama a Voyage (AC-003.2).
 4. **Resumen:** `missing_embedding` de cada fuente = `count_missing_embedding_by_data_type()` tras la fase 2 (REQ-005).
 
-**Script** (`scripts/import_usda_foods.py`): `argparse` con `--foundation` y `--sr-legacy` (al menos una), crea la app
-con `create_app()` (usa `FLASK_ENV`; por defecto, desarrollo), imprime el entorno y la base de destino sin contraseña
-(`make_url(uri).render_as_string(hide_password=True)`), construye el servicio con `FoodRepository(db.session)`,
-`UnitOfWork(db.session)` y el singleton `embedding_client`, imprime `format_summary` y devuelve 0; ante `UsdaFileError`
-imprime el mensaje y devuelve 1. No lleva lógica propia.
+**Script** (`scripts/import_usda_foods.py`): `argparse` con `--foundation` y `--sr-legacy` (al menos una; si no,
+`parser.error`) y `--yes` (`store_true`). Crea la app con `create_app()` (usa `FLASK_ENV`; por defecto, desarrollo) y,
+dentro de `app.app_context()`:
+1. Imprime el entorno y la base de destino sin contraseña (`make_url(uri).render_as_string(hide_password=True)`).
+2. **Confirmación** (AC-001.8 a AC-001.12): si no se pasó `--yes` y `_is_local(url.host)` es falso, llama a
+   `_confirm()` una sola vez. Si devuelve `False`, imprime el mensaje de cancelación y devuelve 1 **antes de construir
+   el servicio**, así que no se escribe nada. Con `--yes`, o con un host local, no se pregunta.
+   - **Criterio de «host local»:** el `host` de la URL de SQLAlchemy, sin distinguir mayúsculas, es `localhost`,
+     `127.0.0.1`, `::1` (SQLAlchemy quita los corchetes de `[::1]`) o `postgres` (el nombre del servicio en
+     `docker-compose`). Una URL sin host (`host is None`, p. ej. `postgresql:///fitnerd`, socket local) o con cualquier
+     otro host se trata como **no local**: ante la duda, se pregunta.
+   - `_confirm()` usa `input()`; un `EOFError` (sin entrada interactiva, p. ej. en CI o con la entrada redirigida)
+     cuenta como «no».
+3. Construye el servicio con `FoodRepository(db.session)`, `UnitOfWork(db.session)` y el singleton `embedding_client`,
+   imprime `format_summary` y devuelve 0; ante `UsdaFileError` imprime el mensaje y devuelve 1.
+
+Fuera de la confirmación, el script no lleva lógica propia; la confirmación es interacción con el operador y por eso
+vive en el script y no en el servicio.
 
 **Búsqueda** (`FoodSearchService.search`), dependencias por constructor: `FoodRepository`, `EmbeddingClient`
 (`embed_query`), `RateLimiter`, `max_distance`.
@@ -310,9 +332,14 @@ imprime el mensaje y devuelve 1. No lleva lógica propia.
    y SR Legacy no se fusionan (AC-006.9).
 
 **Repositorio** (consultas con parámetros enlazados, Art. P3.4):
-- Texto: `Food.search_vector @@ websearch_to_tsquery('english', :q)`, orden `ts_rank_cd(search_vector, tsquery) DESC,
-  fdc_id ASC`, `LIMIT`. `websearch_to_tsquery` no falla con entradas arbitrarias y no distingue mayúsculas (AC-006.5).
-  Los alimentos sin vector se encuentran por aquí (AC-006.6).
+- Texto: `Food.search_vector @@ websearch_to_tsquery('english', :q)`, orden `ts_rank_cd(search_vector, tsquery, 2)
+  DESC, fdc_id ASC`, `LIMIT`. `websearch_to_tsquery` no falla con entradas arbitrarias y no distingue mayúsculas
+  (AC-006.5). Los alimentos sin vector se encuentran por aquí (AC-006.6).
+  - **Normalización 2** (AC-006.10): divide el rango por la longitud del documento, de modo que una descripción corta y
+    exacta («Bananas, raw») va por delante de descripciones largas que solo mencionan la palabra («Babyfood, banana
+    apple dessert, strained, …»). Sin ella, el rango empata y el desempate por `fdc_id` puede dejar la corta fuera de
+    los 40 candidatos. Solo cambia el orden **dentro** de la lista de texto; la fusión RRF no cambia, así que AC-006.3
+    se mantiene.
 - Similitud: `Food.embedding.cosine_distance(vector)` (como `TranscriptChunkRepository.find_similar`), con
   `embedding IS NOT NULL` y distancia `<= max_distance`.
 
@@ -355,12 +382,12 @@ y `<Route path="/foods" element={<RouteSuspense className={IN_LAYOUT}><FoodsPage
 ## 4. Mapa REQ → diseño
 | REQ / NFR | Dónde se resuelve |
 |---|---|
-| REQ-001 | `services/usda_csv_reader.py` (`read_usda_dataset`: filtro de tipo, nutrientes y preferencia de energía); `FoodImportService.run` fase 1; modelo `Food` y migración |
+| REQ-001 | `services/usda_csv_reader.py` (`read_usda_dataset`: filtro de tipo, nutrientes y preferencia de energía); `FoodImportService.run` fase 1; modelo `Food` y migración; confirmación del script (`_is_local`, `_confirm`, `--yes`) para AC-001.8 a AC-001.12 |
 | REQ-002 | `FoodImportService.run` fase 1 (comparación por `fdc_id` con `get_by_fdc_ids`; sin borrados) |
 | REQ-003 | Fase 1 (`embedding = None` si cambia la descripción) y fase 2 (`list_missing_embedding` + `embed_documents`) |
 | REQ-004 | Validación previa de todos los CSV (`UsdaFileError`, sin escribir); fase 2 con commit por lote y parada en el primer fallo |
 | REQ-005 | `ImportSummary`/`SourceSummary`, `count_missing_embedding_by_data_type`, `format_summary` y el script |
-| REQ-006 | `FoodSearchService.search` + `fuse_rankings` + `FoodRepository.find_text_matches`/`find_semantic_matches`/`get_by_fdc_ids`; `food_to_json` |
+| REQ-006 | `FoodSearchService.search` + `fuse_rankings` + `FoodRepository.find_text_matches` (con `ts_rank_cd` normalizado, AC-006.10)/`find_semantic_matches`/`get_by_fdc_ids`; `food_to_json` |
 | REQ-007 | Umbral `max_distance` en `find_semantic_matches`; fusión vacía → `{"results": []}` |
 | REQ-008 | `normalize_query` antes del límite y de Voyage (`ValidationError` → 400) |
 | REQ-009 | `@require_auth` en `food_routes.search` |
@@ -402,6 +429,16 @@ food_columns=None, nutrient_columns=None)` escribe `food.csv` y `food_nutrient.c
 | `test_services/test_food_import_service.py` | `db_session` con `FoodRepository` y `UnitOfWork` reales, `FakeFoodEmbeddingClient` | AC-001.1, 001.2, 001.4 (guardado), AC-002.1–002.3, AC-003.1–003.3 (número y contenido de `document_calls`), AC-004.1–004.4 (la base no cambia ante un error de archivo; fallo de Voyage y reanudación), AC-005.1, 005.2 y `format_summary` |
 | `test_services/test_food_search_service.py` | Unitario, `FakeFoodRepository`, `FakeFoodEmbeddingClient`, `FakeRateLimiter` | `normalize_query` (AC-008.1–008.3), sin llamar a Voyage ni al límite ante 400 (AC-008.4), clave y valores del límite y 429 sin Voyage (AC-010.1), 503 aunque haya texto (AC-011.1, 011.2), `fuse_rankings` (AC-006.3, 006.4, lista vacía de REQ-007) |
 | `test_routes/test_food_routes.py` | Integración, `client`, Postgres real; `FakeVoyageClient` y `FakeRedisClient` instalados en los singletons con un fixture `autouse` que los restaura | AC-006.1, 006.2, 006.4–006.9, AC-007.1, 007.2, AC-008.1–008.4 (400 y contador sin cambios), AC-009.1, 009.2, AC-010.1–010.3 (30 búsquedas reales con `FakeRedisClient`), AC-011.1–011.3, y AC-002.3 extremo a extremo (alimento ausente de la reimportación sigue en la búsqueda) |
+| `test_services/test_food_text_ranking.py` | Integración del repositorio, `db_session` con Postgres real (`FoodRepository` real; el `tsvector` lo genera Postgres) | AC-006.10: «Bananas, raw» frente a 50 descripciones largas de «Babyfood, banana…» con FDC ID menores (está entre los 40 candidatos y por delante de todas las largas) y frente a solo dos largas (va primero y aparecen las tres). Tiene que ser contra Postgres: `ts_rank_cd` no se puede simular en un doble |
+| `test_scripts/test_import_usda_foods_script.py` | Unitario, sin base ni red; dobles `FakeApp` (con la URL de cada caso, nunca una real), `FakeImportService`, `FakeFoodRepository` y `FakeUnitOfWork`, y un `input` falso que registra los avisos y puede lanzar `EOFError` | AC-001.8 (`s`, `S`, `si`, `sí` → un aviso, una ejecución, código 0), AC-001.9 (`n`, vacío y `EOFError` → código 1 y el servicio ni se construye), AC-001.10 (`--yes` → sin aviso, código 0), AC-001.11 (`localhost`, `127.0.0.1`, `[::1]`, `postgres`, `LOCALHOST` → sin aviso), AC-001.12 (sin host y `servidor-raro` → aviso y código 1) |
+
+«No se escribe nada» (AC-001.9 y AC-001.12) se comprueba con que `FoodImportService` no llega a construirse: el script
+cancela antes de crear el servicio, que es el único que escribe.
+
+**Marcadores de los tests de la F9:** `test_import_usda_foods_script.py` lleva hoy `# SDD: 021 REQ-001` y
+`test_food_text_ranking.py` `# SDD: 021 REQ-006 AC-006.1`, porque se escribieron antes de que existieran los AC. El
+`test-author` los actualiza a `AC-001.8` … `AC-001.12` y `AC-006.10` (y quita el comentario que dice que la spec no
+tiene un AC propio), sin cambiar la lógica de los tests, para que la trazabilidad de B1 los encuentre.
 
 Los alimentos de las pruebas de ruta se insertan con `Food(...)` y `db.session` dentro de `app.app_context()` (o con
 `FoodImportService`), con vectores de `basis_vector`/`vector_with_similarity`; la consulta sin relación usa un vector
@@ -409,7 +446,15 @@ ortogonal (distancia 1 > 0,6). AC-009.2 usa un token mal formado y uno caducado 
 minutos negativos, o el patrón ya usado en los tests de autenticación).
 
 **Sobre P1.3:** sustituir el atributo `client` de los singletons `rate_limiter` y `embedding_client` en un fixture que lo
-restaura es el patrón vigente (`test_coach_feedback_routes.py`); no se usa `monkeypatch` ni `unittest.mock`.
+restaura es el patrón vigente (`test_coach_feedback_routes.py`); no se usa `unittest.mock`.
+
+**Excepción justificada a P1.3 (`monkeypatch` en `test_import_usda_foods_script.py`):** el script es el punto de
+entrada de la línea de comandos y no recibe dependencias por constructor: llama a `create_app()`, construye
+`FoodRepository`, `UnitOfWork` y `FoodImportService` y lee de `input()`. Para probar la confirmación sin una base real
+(y sin arriesgar nunca una URL de producción) el test sustituye con `monkeypatch.setattr` esos nombres del módulo del
+script y `builtins.input` por dobles escritos a mano (no `unittest.mock`), y `monkeypatch` los restaura al terminar.
+Alternativa descartada: añadir parámetros de inyección a `main()` solo para los tests, que cambiaría la firma del
+punto de entrada sin aportar nada al operador. El resto de los tests de la feature no usa `monkeypatch`.
 
 ### frontend
 Red simulada con `vi.mock("@/features/foods/api", () => ({ searchFoods: vi.fn() }))` (Art. P1.4); `QueryClient` con
@@ -438,7 +483,9 @@ la calidad no es buena (orientativo: menos de 16 de 20), se anota en el backlog 
 | Riesgo | Probabilidad | Impacto | Mitigación |
 |---|---|---|---|
 | Calidad baja con consultas en español (texto con lógica AND en inglés; umbral 0,6 sin calibrar) | Media | Medio | Fusión RRF que no depende del texto; validación manual de 20 consultas; constantes `DEFAULT_MAX_DISTANCE`, `TEXT_CANDIDATES` y `RRF_K` aisladas en el servicio; backlog para la 022 |
-| Ejecutar la importación contra la base equivocada (p. ej. Supabase desde local) | Baja | Alto | `create_app()` sin `FLASK_ENV` usa desarrollo; el script imprime el entorno y la base sin contraseña antes de escribir; el runbook indica ejecutarlo en la instancia con `docker compose … run` |
+| Ejecutar la importación contra la base equivocada (p. ej. Supabase desde local) | Baja | Alto | `create_app()` sin `FLASK_ENV` usa desarrollo; el script imprime el entorno y la base sin contraseña y, si el host no es local, pide confirmación [s/N] (por defecto, no; sin entrada interactiva, no) salvo `--yes` (AC-001.8 a AC-001.12); el runbook indica ejecutarlo en la instancia con `docker compose … run` |
+| `--yes` en el runbook de producción anula la protección si se copia a un entorno equivocado | Baja | Medio | El script sigue imprimiendo el entorno y la base antes de escribir; el `doc-keeper` documenta la ejecución en producción sin `--yes` (con `docker compose … run`, que es interactivo, el operador responde «s») y `--yes` solo como opción para ejecuciones no interactivas |
+| El orden de texto cambia con la normalización y desplaza resultados que antes salían | Baja | Bajo | Solo reordena la lista de texto (no la filtra) y RRF sigue premiando a quien está en las dos listas (AC-006.3); test contra Postgres (AC-006.10) y validación manual de las 20 consultas |
 | Límites de uso de Voyage durante la importación (~65 lotes) | Media | Bajo | Commit por lote, parada en el primer fallo y reanudación al volver a ejecutar (REQ-004) |
 | Migración que no coincide con el modelo (columna generada, índice GIN) sin que los tests lo detecten | Media | Medio | El modelo declara lo mismo; revisión manual del `reviewer` (Art. P2.4); el `verifier` aplica `flask db upgrade` en la base de desarrollo antes de importar |
 | `backend/scripts/` no está en los globs de producción del ámbito `backend` | Media | Bajo | El script es una envoltura sin lógica; toda la lógica y los tests están en `services/`. Si un hook bloquea la escritura, el `implementer` lo informa |
@@ -449,7 +496,9 @@ la calidad no es buena (orientativo: menos de 16 de 20), se anota en el backlog 
 - **B1/B4/B5:** todos los REQ y NFR mapeados (sección 4) y cada AC con su test (sección 5); esqueletos según P1.5 y B5.6.
 - **P1:** tests en `test_services/` y `test_routes/`, nombres en inglés y docstrings en español; dobles escritos a mano e
   inyectados por constructor o instalados en el atributo `client` de los singletons (patrón existente); sin
-  `unittest.mock` ni `monkeypatch`. Frontend: tests junto al archivo, `vitest` sin globales, red simulada en `api.ts`.
+  `unittest.mock`. `monkeypatch` solo en `test_import_usda_foods_script.py`, justificado en la sección 5 (P1.3 lo
+  admite con justificación en el plan). Frontend: tests junto al archivo, `vitest` sin globales, red simulada en
+  `api.ts`.
 - **P2 backend:** capas `routes → services → repositories → models`; solo `UnitOfWork` hace commit (también en la
   importación); dependencias por constructor y `_build_food_search_service()`; reutiliza `utils/embeddings.py` y
   `utils/rate_limiter.py`; migración Alembic incluida y revisada a mano. **Justificación:** `UsdaFileError` no está en
@@ -465,9 +514,11 @@ la calidad no es buena (orientativo: menos de 16 de 20), se anota en el backlog 
 - **P4:** migración incluida; los pasos manuales de producción (copiar los CSV a la instancia, `flask db upgrade`,
   ejecutar la importación con `docker compose -f docker-compose.prod.yml run --rm -v <carpeta>:/data/usda:ro backend
   python -m scripts.import_usda_foods …` y comprobar el tamaño) los documenta el `doc-keeper` en `docs/deploy-runbook.md`.
-- Ningún «DEBERÍA» queda sin cumplir.
+- Ningún «DEBERÍA» queda sin cumplir; el único «NO DEBE salvo justificación» que se usa (`monkeypatch`, P1.3) queda
+  justificado en la sección 5.
 
 ## 8. ADRs
 - [ADR-0029](../../docs/sdd/decisions/ADR-0029-base-de-alimentos-usda-y-busqueda-hibrida.md): base de alimentos en
   `public.foods` con `fdc_id` natural, `tsvector` generado en inglés, vector de la descripción original sin índice
-  vectorial, búsqueda híbrida con RRF en el servicio e importación en dos fases reanudable (Propuesta).
+  vectorial, búsqueda híbrida con RRF en el servicio (candidatos de texto por `ts_rank_cd` con normalización 2) e
+  importación en dos fases reanudable, con confirmación del script si la base no es local (Propuesta).

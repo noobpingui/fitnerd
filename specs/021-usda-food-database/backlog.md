@@ -97,3 +97,7 @@
 ## spec · spec-writer (corrección de F9)
 - [ ] Volver a etiquetar los tests (test-author): `test_import_usda_foods_script.py` debe pasar de REQ-001 a los AC-001.8 a AC-001.12 y quitar el comentario de «sin AC propio»; `test_food_text_ranking.py` debe pasar de AC-006.1 a AC-006.10.
 - [ ] Los tests no cubren las respuestas afirmativas «y» y «yes» del script (la spec las documenta porque el script las acepta).
+
+## plan · planner (corrección de F9)
+- [ ] Al redactar el runbook, el doc-keeper debe confirmar si en producción se usa `--yes` o la confirmación interactiva (`docker compose run` es interactivo; `--yes` solo para ejecuciones no interactivas).
+- [ ] Con `--yes` no se pide confirmación si se copia el comando a otro entorno.

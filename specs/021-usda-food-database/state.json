@@ -10,14 +10,17 @@
   "branch": "feat/021-usda-food-database",
   "base_branch": "main",
   "created_at": "2026-10-20T01:56:03.911Z",
-  "stage": "plan",
+  "stage": "tasks",
   "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-10-20T09:26:01.907Z",
       "note": "Aprobado"
     },
-    "plan": null,
+    "plan": {
+      "at": "2026-10-20T09:28:04.380Z",
+      "note": "auto (gate_mode=flow): plan con confirmación del script y normalización del ranking"
+    },
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -27,7 +30,7 @@
     "close": null
   },
   "commits": {
-    "spec": "ad99f98",
+    "spec": "1c367c8",
     "plan": "2fa19ca",
     "tasks": "5182f7d",
     "tests": "b1ac9ee",
@@ -534,6 +537,36 @@
       "stage": "spec",
       "event": "approved",
       "note": "Aprobado"
+    },
+    {
+      "at": "2026-10-20T09:26:02.240Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 1c367c8"
+    },
+    {
+      "at": "2026-10-20T09:26:02.453Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Actualizar plan.md con los AC nuevos (F9)"
+    },
+    {
+      "at": "2026-10-20T09:28:04.262Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan y ADR-0029 actualizados con F9"
+    },
+    {
+      "at": "2026-10-20T09:28:04.380Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan con confirmación del script y normalización del ranking"
+    },
+    {
+      "at": "2026-10-20T09:28:04.499Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "monkeypatch en test_import_usda_foods_script justificado en plan sec. 5 (P1.3); ADR-0029 sigue Propuesta"
     }
   ]
 }
