@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "feature": "022-meal-diary",
+  "title": "Diario de comidas con totales del día frente al objetivo de Macros",
+  "type": "feature",
+  "scope": [
+    "backend",
+    "frontend"
+  ],
+  "branch": "feat/022-meal-diary",
+  "base_branch": "main",
+  "created_at": "2026-10-20T17:28:30.526Z",
+  "stage": "plan",
+  "status": "in_progress",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-20T17:47:52.617Z",
+      "note": "Si"
+    },
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
+    "verify": null,
+    "review": null,
+    "docs": null,
+    "close": null
+  },
+  "commits": {},
+  "iterations": {
+    "tests": 0,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": null,
+    "at": null
+  },
+  "verify": {
+    "result": null,
+    "at": null
+  },
+  "review": {
+    "verdict": null,
+    "at": null
+  },
+  "tests_snapshot": null,
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-20T17:28:30.526Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama feat/022-meal-diary desde main"
+    },
+    {
+      "at": "2026-10-20T17:30:44.880Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Escribir spec.md desde idea.md"
+    },
+    {
+      "at": "2026-10-20T17:36:08.425Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "11 preguntas abiertas (día, tipos de comida, personalizados, límites, nulos, navegación, legal)"
+    },
+    {
+      "at": "2026-10-20T17:44:50.646Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec con 16 REQ, 86 AC y 2 NFR; 11 preguntas resueltas"
+    },
+    {
+      "at": "2026-10-20T17:47:52.617Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Si"
+    }
+  ]
+}
