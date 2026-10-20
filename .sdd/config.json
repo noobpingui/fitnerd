@@ -31,7 +31,8 @@
       "root": "backend",
       "prod": [
         "backend/{app,config,extensions,wsgi}.py",
-        "backend/{routes,services,repositories,models,utils,decorators,exceptions,unit_of_work,migrations}/**"
+        "backend/{routes,services,repositories,models,utils,decorators,exceptions,unit_of_work,migrations}/**",
+        "backend/scripts/**"
       ],
       "tests": [
         "backend/tests/**"

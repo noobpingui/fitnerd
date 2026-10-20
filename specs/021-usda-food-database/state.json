@@ -1,0 +1,781 @@
+{
+  "schema_version": 1,
+  "feature": "021-usda-food-database",
+  "title": "Base de alimentos de USDA en Postgres con búsqueda híbrida",
+  "type": "feature",
+  "scope": [
+    "backend",
+    "frontend"
+  ],
+  "branch": "feat/021-usda-food-database",
+  "base_branch": "main",
+  "created_at": "2026-10-20T01:56:03.911Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-20T09:26:01.907Z",
+      "note": "Aprobado"
+    },
+    "plan": {
+      "at": "2026-10-20T09:28:04.380Z",
+      "note": "auto (gate_mode=flow): plan con confirmación del script y normalización del ranking"
+    },
+    "tasks": {
+      "at": "2026-10-20T09:28:46.189Z",
+      "note": "auto (gate_mode=flow): 50 tareas, 2 nuevas de reetiquetado"
+    },
+    "tests": {
+      "at": "2026-10-20T09:30:47.803Z",
+      "note": "auto (gate_mode=flow): red_check PASS autorizado por el usuario como excepción documentada (F9)"
+    },
+    "implement": {
+      "at": "2026-10-20T09:30:58.007Z",
+      "note": "auto (gate_mode=flow): sin cambios de producción (F9 solo toca spec, plan, tasks y marcadores de tests)"
+    },
+    "verify": {
+      "at": "2026-10-20T09:35:26.519Z",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    "review": {
+      "at": "2026-10-20T09:39:33.892Z",
+      "note": "Sí (confirma las excepciones del red check de F4 y F9)"
+    },
+    "docs": {
+      "at": "2026-10-20T09:41:13.384Z",
+      "note": "auto (gate_mode=flow): documentación de la 021"
+    },
+    "close": {
+      "at": "2026-10-20T09:50:44.238Z",
+      "note": "si"
+    }
+  },
+  "commits": {
+    "spec": "1c367c8",
+    "plan": "20a6a29",
+    "tasks": "2b53ca6",
+    "tests": "b8cd1af",
+    "implement": "d4c1113",
+    "review": "9189a33",
+    "docs": "4f46dd9"
+  },
+  "iterations": {
+    "tests": 2,
+    "implement": 0,
+    "review": 2
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-10-20T09:30:47.680Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-10-20T09:35:11.748Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-10-20T09:37:13.040Z"
+  },
+  "tests_snapshot": {
+    "at": "2026-10-20T09:29:32.309Z",
+    "reason": "reetiquetado de marcadores SDD de los tests (F9) y test de y/yes",
+    "sha256": {
+      "backend/tests/fakes.py": "a5783da3199d0795ab0d5d5745a8357188db08aedd96a8a53c9910e44205639f",
+      "backend/tests/test_routes/test_food_routes.py": "9448007142db256390d8f315b320bd00d959ff4776349303ed17c0ce854debc4",
+      "backend/tests/test_scripts/test_import_usda_foods_script.py": "ff392ce0647fd7ebf651c83d6006ed192f3a905a89b1db998c34d1cbd0ab10b2",
+      "backend/tests/test_services/test_food_import_service.py": "4097c6348c90385b24190297a2e767daeeee11683d3d5ea810a97fa966854bb3",
+      "backend/tests/test_services/test_food_search_service.py": "3d61847148fb38aca65d5ffd2919691e937291305965ab7bca0c06f1cadb05df",
+      "backend/tests/test_services/test_food_text_ranking.py": "e3a12be7e9ddcf333e467ea0cb36fe2c47acf49552ae7db6e4f2c41b8b8c0f6b",
+      "backend/tests/test_services/test_usda_csv_reader.py": "a47a02dde0e872e76bd355fe290f58865a1efbbaf2f9a3cfc03552861f90bd01",
+      "backend/tests/usda_samples.py": "46d9017f8deb6d0bdb078dbe1403b0290fbe0036d25143db04c57b0711eab9c9",
+      "frontend/src/app/foodsRoute.test.tsx": "c8f9472f1413a80e1603d88060f897bc493ec9080db83bdd1a06b9c7ecb10241",
+      "frontend/src/components/layout/noFoodsLink.test.tsx": "cb6c86ee597de7b882b8a107566a52b47831a4ddf79a60b9b3a21366b4488705",
+      "frontend/src/features/foods/format.test.ts": "b64f7c4c9bfce7168ff473b4415e001ccfd0be5f4b3e2ede3da10edf9dadf55b",
+      "frontend/src/features/foods/pages/FoodsPage.test.tsx": "9811c029cddce74d9cf25965339b08e14d69a039e20e450e128616657bc76099",
+      "frontend/src/features/foods/schemas.test.ts": "6172f2f95a1491a363e9b0c9f3011245a125511f1dc9f8025453640881d001e5",
+      "frontend/src/features/foods/searchError.test.ts": "a8b670ef2321b47d2981e8051584ede74297461201c862baef6933710b9f601c"
+    }
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-20T01:56:03.911Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama feat/021-usda-food-database desde main"
+    },
+    {
+      "at": "2026-10-20T01:57:17.125Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Redactar spec.md de la base de alimentos USDA"
+    },
+    {
+      "at": "2026-10-20T02:00:28.774Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "Q1-Q10 de la spec pendientes de respuesta del usuario (Q6: interpretación del Art. P3.3)"
+    },
+    {
+      "at": "2026-10-20T04:21:08.955Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "Spec 021: 14 REQ, 60 AC, 2 NFR; Q1-Q10 resueltas"
+    },
+    {
+      "at": "2026-10-20T04:23:50.620Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "aprobado"
+    },
+    {
+      "at": "2026-10-20T04:23:50.900Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: ad99f98"
+    },
+    {
+      "at": "2026-10-20T04:23:51.104Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Diseñar plan.md de la base de alimentos USDA"
+    },
+    {
+      "at": "2026-10-20T04:33:28.233Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md + ADR-0029; migración c8e2a4f6b9d3 no destructiva"
+    },
+    {
+      "at": "2026-10-20T04:33:28.326Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan de tabla foods, importación en 2 fases y búsqueda RRF"
+    },
+    {
+      "at": "2026-10-20T04:33:32.216Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "ADR-0029 (foods + RRF); fdc_id PK; sin HNSW; umbral 0.6; migracion c8e2a4f6b9d3"
+    },
+    {
+      "at": "2026-10-20T04:33:32.451Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 2fa19ca"
+    },
+    {
+      "at": "2026-10-20T04:33:32.621Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Descomponer plan.md en tareas"
+    },
+    {
+      "at": "2026-10-20T04:34:54.512Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "48 tareas, 60 AC cubiertos"
+    },
+    {
+      "at": "2026-10-20T04:34:54.605Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 48 tareas (10 scaffold, 25 test, 12 impl, 1 migration)"
+    },
+    {
+      "at": "2026-10-20T04:34:54.862Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 5182f7d"
+    },
+    {
+      "at": "2026-10-20T04:34:55.027Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold"
+    },
+    {
+      "at": "2026-10-20T04:36:22.848Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-20T04:43:02.626Z",
+      "stage": "tests",
+      "event": "blocked",
+      "note": "Entorno: Docker Desktop apagado, Postgres (localhost:5433) inaccesible; el red check del backend necesita docker compose up -d postgres redis"
+    },
+    {
+      "at": "2026-10-20T06:43:14.591Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (entorno resuelto)"
+    },
+    {
+      "at": "2026-10-20T06:45:41.402Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Backend: 100 nuevos fallan (rojo legítimo: NotImplementedError o 404). Frontend: 43 fallan legítimamente, pero 6 pasan sin implementación (format DATA_TYPE_LABELS, schemas acepta 2, noFoodsLink x2, foodsRoute x2) → FAIL, responsable test-author."
+    },
+    {
+      "at": "2026-10-20T06:45:52.198Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL: 6 tests frontend pasan sin implementación (F1-F4) · tests 1/3"
+    },
+    {
+      "at": "2026-10-20T06:47:13.066Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (iteración 1)"
+    },
+    {
+      "at": "2026-10-20T06:49:12.285Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red check iteración 1: backend 100 fallan (67 NotImplementedError, resto 404 de ruta inexistente); frontend 48 fallan por comportamiento ausente (F1-F4 corregidos, 0 pasan sin implementación); scaffolds sin lógica"
+    },
+    {
+      "at": "2026-10-20T06:49:22.247Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS: 100 backend y 48 frontend fallan por comportamiento ausente"
+    },
+    {
+      "at": "2026-10-20T06:49:22.342Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "12 archivo(s) de test: tests 021 tras red check PASS"
+    },
+    {
+      "at": "2026-10-20T06:49:22.477Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 148 tests rojos legítimos"
+    },
+    {
+      "at": "2026-10-20T06:49:26.779Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: b1ac9ee"
+    },
+    {
+      "at": "2026-10-20T06:49:26.975Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar tareas impl y migration de tasks.md"
+    },
+    {
+      "at": "2026-10-20T06:56:54.575Z",
+      "stage": "implement",
+      "event": "needs_input",
+      "note": "T-054 bloqueada por role-guard: backend/scripts/** no está en scopes.backend.prod de .sdd/config.json"
+    },
+    {
+      "at": "2026-10-20T07:03:39.273Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "Todas las tareas impl y migration hechas; 1175 tests backend y 842 frontend en verde"
+    },
+    {
+      "at": "2026-10-20T07:03:39.371Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): implementación completa; backend/scripts/** añadido a scopes.backend.prod con aprobación del usuario"
+    },
+    {
+      "at": "2026-10-20T07:03:45.439Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "Migracion c8e2a4f6b9d3 escrita a mano (BD dev por detras del head); config: backend/scripts/** en prod"
+    },
+    {
+      "at": "2026-10-20T07:03:45.533Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: d08158d"
+    },
+    {
+      "at": "2026-10-20T07:03:45.708Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa: tests, lint, typecheck y build"
+    },
+    {
+      "at": "2026-10-20T07:07:32.724Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify FAIL: Backend: 1175 passed; ratchet ruff 13 E501 nuevas en tests (test-author). Frontend: 842 passed, lint, tsc y build OK; chunk entrada 384.53 kB. Manual: 20 consultas Voyage, tamaño public.foods, migración no aplicada."
+    },
+    {
+      "at": "2026-10-20T07:07:45.468Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "verify FAIL: 13 E501 nuevas del ratchet en tests de la feature · tests 2/3"
+    },
+    {
+      "at": "2026-10-20T07:08:53.194Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "E501 corregidas; 100 tests de la feature en verde"
+    },
+    {
+      "at": "2026-10-20T07:08:53.286Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "12 archivo(s) de test: tests 021 tras corregir E501 (iteración 2)"
+    },
+    {
+      "at": "2026-10-20T07:08:53.420Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): reformateo de 13 líneas E501 en tests"
+    },
+    {
+      "at": "2026-10-20T07:08:59.009Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "Sin cambios de producción: la corrección fue solo de formato en tests"
+    },
+    {
+      "at": "2026-10-20T07:08:59.104Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): sin cambios de producción en la iteración 2"
+    },
+    {
+      "at": "2026-10-20T07:08:59.373Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: d009a5a"
+    },
+    {
+      "at": "2026-10-20T07:08:59.541Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa, iteración 2"
+    },
+    {
+      "at": "2026-10-20T07:12:14.478Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Iteración 2: backend 1175 passed; ratchet sin violaciones nuevas; frontend 842 passed, lint, tsc y build OK (chunk 384,53 kB); trazabilidad completa. Manual: 20 consultas Voyage, tamaño public.foods, migración no aplicada."
+    },
+    {
+      "at": "2026-10-20T07:12:21.959Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: 1175 backend, 842 frontend, ratchet limpio, build 384,5 kB"
+    },
+    {
+      "at": "2026-10-20T07:12:22.054Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-20T07:12:22.242Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review independiente de la feature"
+    },
+    {
+      "at": "2026-10-20T07:16:00.412Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "CHANGES_REQUESTED"
+    },
+    {
+      "at": "2026-10-20T07:16:00.516Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "review CHANGES_REQUESTED: F1 MAYOR (migración nullable vs NOT NULL del modelo) · review 1/3"
+    },
+    {
+      "at": "2026-10-20T08:30:28.457Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F1 migración NOT NULL, F3 zip strict, F5 espacio en router"
+    },
+    {
+      "at": "2026-10-20T08:30:28.564Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): correcciones de review F1, F3 y F5"
+    },
+    {
+      "at": "2026-10-20T08:30:28.931Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 0618094"
+    },
+    {
+      "at": "2026-10-20T08:30:29.114Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa tras correcciones de review"
+    },
+    {
+      "at": "2026-10-20T08:33:55.805Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Iteración 3 tras correcciones de review F1, F3 y F5: backend 1175 passed; ratchet sin violaciones nuevas; frontend 842 passed, lint, tsc y build OK (chunk 384,53 kB); trazabilidad completa (61 AC, 14 REQ, 2 NFR, 48/48 tareas). Manual: 20 consultas Voyage, tamaño public.foods, migración no aplicada."
+    },
+    {
+      "at": "2026-10-20T08:34:08.377Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS tras correcciones de review"
+    },
+    {
+      "at": "2026-10-20T08:34:08.481Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-20T08:34:08.694Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review iteración 2"
+    },
+    {
+      "at": "2026-10-20T08:35:57.178Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-20T08:35:57.308Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED en iteración 2; 0 bloqueantes, 0 mayores abiertos"
+    },
+    {
+      "at": "2026-10-20T08:44:35.439Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "Usuario pide corregir F4 y F2 en esta pasada; el resto al backlog · review 2/3"
+    },
+    {
+      "at": "2026-10-20T09:11:57.562Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Pasada pedida por el usuario: tests de F4 y de ordenación de texto («banana») antes del arreglo de ts_rank_cd"
+    },
+    {
+      "at": "2026-10-20T09:13:16.016Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "17 tests nuevos: 2 de ordenación en rojo (verificado por el test-author), 15 de F4 en verde (script ya implementado)"
+    },
+    {
+      "at": "2026-10-20T09:13:16.135Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "14 archivo(s) de test: tests 021: F4 y ordenación de texto (pasada pedida por el usuario)"
+    },
+    {
+      "at": "2026-10-20T09:13:16.305Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): sin red check formal; 2 tests en rojo comprobados por el test-author, 15 de F4 pasan porque el script ya existe"
+    },
+    {
+      "at": "2026-10-20T09:15:13.930Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F4 (confirmación en el script) y ts_rank_cd normalizado; 1192 tests de backend en verde"
+    },
+    {
+      "at": "2026-10-20T09:15:14.046Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F4 y normalización de ts_rank_cd"
+    },
+    {
+      "at": "2026-10-20T09:15:14.424Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: d4c1113"
+    },
+    {
+      "at": "2026-10-20T09:15:31.653Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa tras F4 y normalización de ts_rank_cd"
+    },
+    {
+      "at": "2026-10-20T09:19:51.408Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify full tras la pasada F4 y ordenación: backend 1192 passed, ratchet sin violaciones nuevas; frontend test 842 passed, lint, tsc y build OK; 61 AC cubiertos con marcador SDD: 021 y en verde; sin skip nuevos. Quedan manuales: calidad de búsqueda (22 consultas, hallazgos en backlog) y medición en producción."
+    },
+    {
+      "at": "2026-10-20T09:20:02.413Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: 1192 backend, 842 frontend, ratchet limpio, build 384,5 kB"
+    },
+    {
+      "at": "2026-10-20T09:20:02.528Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-20T09:20:02.761Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review final tras F4 y ordenación de texto"
+    },
+    {
+      "at": "2026-10-20T09:21:50.398Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-20T09:21:50.580Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED en la tercera pasada; 0 bloqueantes, 0 mayores, 1 menor y 4 nits abiertos"
+    },
+    {
+      "at": "2026-10-20T09:23:14.591Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Usuario pide corregir F9: añadir a la spec los AC de la importación segura (F4) y del orden por longitud (ts_rank_cd)"
+    },
+    {
+      "at": "2026-10-20T09:24:09.217Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "F9: spec con AC-001.8 a AC-001.12 y AC-006.10 (67 AC)"
+    },
+    {
+      "at": "2026-10-20T09:26:01.907Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Aprobado"
+    },
+    {
+      "at": "2026-10-20T09:26:02.240Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 1c367c8"
+    },
+    {
+      "at": "2026-10-20T09:26:02.453Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Actualizar plan.md con los AC nuevos (F9)"
+    },
+    {
+      "at": "2026-10-20T09:28:04.262Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan y ADR-0029 actualizados con F9"
+    },
+    {
+      "at": "2026-10-20T09:28:04.380Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan con confirmación del script y normalización del ranking"
+    },
+    {
+      "at": "2026-10-20T09:28:04.499Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "monkeypatch en test_import_usda_foods_script justificado en plan sec. 5 (P1.3); ADR-0029 sigue Propuesta"
+    },
+    {
+      "at": "2026-10-20T09:28:04.826Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 20a6a29"
+    },
+    {
+      "at": "2026-10-20T09:28:05.055Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Actualizar tasks.md con los AC nuevos (F9)"
+    },
+    {
+      "at": "2026-10-20T09:28:46.067Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "50 tareas: T-045 y T-046 de reetiquetado de tests"
+    },
+    {
+      "at": "2026-10-20T09:28:46.189Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 50 tareas, 2 nuevas de reetiquetado"
+    },
+    {
+      "at": "2026-10-20T09:28:46.528Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 2b53ca6"
+    },
+    {
+      "at": "2026-10-20T09:28:46.751Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Reetiquetado de marcadores SDD (T-045, T-046); sin scaffold ni red check"
+    },
+    {
+      "at": "2026-10-20T09:29:32.184Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Marcadores reetiquetados a AC-001.8..12 y AC-006.10; test nuevo de y/yes; 21 casos en verde"
+    },
+    {
+      "at": "2026-10-20T09:29:32.309Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "14 archivo(s) de test: reetiquetado de marcadores SDD de los tests (F9) y test de y/yes"
+    },
+    {
+      "at": "2026-10-20T09:29:32.627Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tests: 2b53ca6"
+    },
+    {
+      "at": "2026-10-20T09:30:47.680Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Excepción autorizada por el usuario (F9): el red check real ya dio PASS con estos tests en la primera pasada (b1ac9ee); esta pasada solo reetiqueta marcadores SDD y añade un test de y/yes, sin comportamiento nuevo"
+    },
+    {
+      "at": "2026-10-20T09:30:47.803Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red_check PASS autorizado por el usuario como excepción documentada (F9)"
+    },
+    {
+      "at": "2026-10-20T09:30:48.146Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: b8cd1af"
+    },
+    {
+      "at": "2026-10-20T09:30:57.882Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "Sin cambios de producción en la pasada F9; el código ya estaba implementado"
+    },
+    {
+      "at": "2026-10-20T09:30:58.007Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): sin cambios de producción (F9 solo toca spec, plan, tasks y marcadores de tests)"
+    },
+    {
+      "at": "2026-10-20T09:30:58.225Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa tras F9"
+    },
+    {
+      "at": "2026-10-20T09:35:11.748Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify full tras F9: backend 1196 passed; ratchet sin violaciones nuevas; frontend 842 passed, lint, tsc y build OK (chunk 384,53 kB); 67/67 AC con marcador SDD: 021 en verde; 50/50 tareas; sin skip nuevos. Manual: calidad de búsqueda (22 consultas, hallazgos en backlog), tamaño en producción y revisión visual."
+    },
+    {
+      "at": "2026-10-20T09:35:26.407Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: 1196 backend, 842 frontend, 67/67 AC trazados"
+    },
+    {
+      "at": "2026-10-20T09:35:26.519Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-20T09:35:26.726Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review final tras F9"
+    },
+    {
+      "at": "2026-10-20T09:37:13.040Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-20T09:37:13.169Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED (cuarta pasada); 0 bloqueantes, 0 mayores, 1 menor (F11) y 4 nits"
+    },
+    {
+      "at": "2026-10-20T09:39:33.892Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Sí (confirma las excepciones del red check de F4 y F9)"
+    },
+    {
+      "at": "2026-10-20T09:39:34.256Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: 9189a33"
+    },
+    {
+      "at": "2026-10-20T09:39:34.476Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Documentar la feature: runbook, README, CLAUDE.md"
+    },
+    {
+      "at": "2026-10-20T09:41:13.261Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "CLAUDE.md, runbook y README actualizados; docs-report.md"
+    },
+    {
+      "at": "2026-10-20T09:41:13.384Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): documentación de la 021"
+    },
+    {
+      "at": "2026-10-20T09:41:13.708Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: 4f46dd9"
+    },
+    {
+      "at": "2026-10-20T09:41:22.372Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Cierre de la 021"
+    },
+    {
+      "at": "2026-10-20T09:41:54.345Z",
+      "stage": "close",
+      "event": "done",
+      "note": "checklist de hecho completo; 18 puntos al backlog global"
+    },
+    {
+      "at": "2026-10-20T09:50:44.238Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "si"
+    },
+    {
+      "at": "2026-10-20T09:50:44.238Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
+    }
+  ]
+}

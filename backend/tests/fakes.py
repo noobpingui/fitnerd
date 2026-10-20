@@ -298,3 +298,107 @@ class FakeSequenceClock:
         index = min(self.calls, len(self.instants) - 1)
         self.calls += 1
         return self.instants[index]
+
+
+# --- Spec 021: base de alimentos de USDA ---------------------------------
+
+
+def basis_vector(index, dimensions=1024):
+    """Vector unitario con un 1.0 en `index` y ceros en el resto. Dos vectores
+    de base distintos son ortogonales (similitud coseno 0, distancia 1)."""
+    vector = [0.0] * dimensions
+    vector[index] = 1.0
+    return vector
+
+
+def vector_with_similarity(similarity, dimensions=1024):
+    """Vector unitario cuyo coseno con `basis_vector(0)` es `similarity`
+    (distancia coseno = 1 - similarity). Sirve para colocar alimentos y
+    consultas a distancias conocidas en una columna `vector(1024)`."""
+    import math
+
+    vector = [0.0] * dimensions
+    vector[0] = similarity
+    vector[1] = math.sqrt(max(0.0, 1.0 - similarity * similarity))
+    return vector
+
+
+class FakeFoodEmbeddingClient:
+    """Doble de `EmbeddingClient` (spec 021): `vectors` asigna un vector a cada
+    texto exacto; los demas reciben `default_vector` (por defecto
+    `basis_vector(1)`). `document_calls` guarda la lista de textos de cada
+    llamada a `embed_documents` y `query_calls` cada texto de `embed_query`.
+    `raise_error` es mutable: un test puede hacer que falle y luego que
+    responda."""
+
+    def __init__(self, vectors=None, default_vector=None, raise_error=None):
+        self.vectors = dict(vectors or {})
+        self.default_vector = default_vector if default_vector is not None else basis_vector(1)
+        self.raise_error = raise_error
+        self.document_calls = []
+        self.query_calls = []
+
+    def _vector_for(self, text):
+        return list(self.vectors.get(text, self.default_vector))
+
+    def embed_documents(self, texts):
+        self.document_calls.append(list(texts))
+        if self.raise_error is not None:
+            raise self.raise_error
+        return [self._vector_for(text) for text in texts]
+
+    def embed_query(self, text):
+        self.query_calls.append(text)
+        if self.raise_error is not None:
+            raise self.raise_error
+        return self._vector_for(text)
+
+
+class FakeVoyageClient:
+    """Doble del `voyageai.Client` que se instala en el singleton
+    (`embedding_client.client = FakeVoyageClient(...)`): asi la ruta usa el
+    `EmbeddingClient` real sin red. `embed` devuelve un objeto con
+    `embeddings` y `total_tokens`; `calls` guarda cada llamada."""
+
+    def __init__(self, vectors=None, default_vector=None, raise_error=None):
+        self.vectors = dict(vectors or {})
+        self.default_vector = default_vector if default_vector is not None else basis_vector(1)
+        self.raise_error = raise_error
+        self.calls = []
+
+    def embed(self, texts, model=None, input_type=None):
+        from types import SimpleNamespace
+
+        self.calls.append({"texts": list(texts), "model": model, "input_type": input_type})
+        if self.raise_error is not None:
+            raise self.raise_error
+        embeddings = [list(self.vectors.get(text, self.default_vector)) for text in texts]
+        return SimpleNamespace(embeddings=embeddings, total_tokens=len(texts))
+
+
+class FakeFoodRepository:
+    """Doble de `FoodRepository` en memoria (spec 021): devuelve las listas de
+    FDC IDs preparadas (`text_ids`, `semantic_ids`) respetando `limit`, y
+    registra las llamadas en `text_calls` y `semantic_calls`. `foods` son los
+    alimentos que devuelve `get_by_fdc_ids` (objetos con `fdc_id`)."""
+
+    def __init__(self, foods=None, text_ids=None, semantic_ids=None):
+        self.foods = list(foods or [])
+        self.text_ids = list(text_ids or [])
+        self.semantic_ids = list(semantic_ids or [])
+        self.text_calls = []
+        self.semantic_calls = []
+        self.get_calls = []
+
+    def find_text_matches(self, query, limit):
+        self.text_calls.append((query, limit))
+        return self.text_ids[:limit]
+
+    def find_semantic_matches(self, vector, max_distance, limit):
+        self.semantic_calls.append((vector, max_distance, limit))
+        return self.semantic_ids[:limit]
+
+    def get_by_fdc_ids(self, fdc_ids):
+        self.get_calls.append(list(fdc_ids))
+        wanted = set(fdc_ids)
+        return [food for food in self.foods if food.fdc_id in wanted]
