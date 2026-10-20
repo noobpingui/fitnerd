@@ -99,7 +99,10 @@ def test_energy_falls_back_to_atwater_general_then_atwater_specific(tmp_path):
 # SDD: 021 REQ-001 AC-001.4
 def test_missing_nutrient_is_none_not_zero(tmp_path):
     """Un nutriente ausente queda como None; un 0 real del archivo se conserva."""
-    foods = [(1, FOUNDATION_TYPE, "Food without carbs"), (2, FOUNDATION_TYPE, "Food with zero carbs")]
+    foods = [
+        (1, FOUNDATION_TYPE, "Food without carbs"),
+        (2, FOUNDATION_TYPE, "Food with zero carbs"),
+    ]
     nutrients = [
         (1, ENERGY_KCAL, 100.0),
         (1, PROTEIN, 10.0),
@@ -132,7 +135,9 @@ def test_empty_amount_is_no_data(tmp_path):
 def test_nutrients_other_than_the_four_are_ignored(tmp_path):
     """Un nutriente distinto (sodio) no altera los cuatro valores guardados."""
     foods = [(1, FOUNDATION_TYPE, "Food with sodium")]
-    nutrients = macro_nutrients(1, kcal=100.0, protein=5.0, carbs=10.0, fat=2.0) + [(1, SODIUM, 999.0)]
+    nutrients = macro_nutrients(1, kcal=100.0, protein=5.0, carbs=10.0, fat=2.0) + [
+        (1, SODIUM, 999.0)
+    ]
     write_usda_dataset(tmp_path, foods, nutrients)
 
     record = by_id(read_usda_dataset(tmp_path, "foundation"))[1]

@@ -36,7 +36,9 @@ def make_service(text_ids=None, semantic_ids=None, foods=None, allowed=True, rai
         text_ids=text_ids,
         semantic_ids=semantic_ids,
     )
-    embedding_client = FakeFoodEmbeddingClient(default_vector=basis_vector(3), raise_error=raise_error)
+    embedding_client = FakeFoodEmbeddingClient(
+        default_vector=basis_vector(3), raise_error=raise_error
+    )
     rate_limiter = FakeRateLimiter(allowed=allowed)
     service = FoodSearchService(repository, embedding_client, rate_limiter)
     return service, repository, embedding_client, rate_limiter

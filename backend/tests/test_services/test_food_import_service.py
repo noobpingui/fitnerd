@@ -43,7 +43,9 @@ def foundation_dir(tmp_path, name="foundation", descriptions=None, protein_of_fi
     nutrients = []
     for index, (fdc_id, _, _) in enumerate(foods):
         protein = protein_of_first if index == 0 else 5.0 + index
-        nutrients += macro_nutrients(fdc_id, kcal=100.0 + index, protein=protein, carbs=1.0 + index, fat=2.0)
+        nutrients += macro_nutrients(
+            fdc_id, kcal=100.0 + index, protein=protein, carbs=1.0 + index, fat=2.0
+        )
     return write_usda_dataset(tmp_path / name, foods, nutrients)
 
 
@@ -139,13 +141,18 @@ def test_summary_counts_added_foods_per_source(db_session, tmp_path):
     assert list(summary.sources) == ["foundation", "sr_legacy"]
     foundation = summary.sources["foundation"]
     legacy = summary.sources["sr_legacy"]
-    assert (foundation.added, foundation.updated, foundation.unchanged, foundation.missing_embedding) == (
-        3,
-        0,
-        0,
-        0,
-    )
-    assert (legacy.added, legacy.updated, legacy.unchanged, legacy.missing_embedding) == (2, 0, 0, 0)
+    assert (
+        foundation.added,
+        foundation.updated,
+        foundation.unchanged,
+        foundation.missing_embedding,
+    ) == (3, 0, 0, 0)
+    assert (
+        legacy.added,
+        legacy.updated,
+        legacy.unchanged,
+        legacy.missing_embedding,
+    ) == (2, 0, 0, 0)
     assert summary.embedding_failed is False
 
 
@@ -219,7 +226,9 @@ def test_new_foods_get_a_semantic_representation(db_session, tmp_path):
     service.run([foundation_source(foundation_dir(tmp_path))])
 
     requested = [text for call in client.document_calls for text in call]
-    assert sorted(requested) == sorted(["Chicken, breast, raw", "Rice, white, raw", "Egg, whole, raw"])
+    assert sorted(requested) == sorted(
+        ["Chicken, breast, raw", "Rice, white, raw", "Egg, whole, raw"]
+    )
     for fdc_id in (1001, 1002, 1003):
         assert stored(db_session, fdc_id).embedding is not None
 
@@ -305,7 +314,10 @@ def test_a_failing_second_source_prevents_writing_the_first(db_session, tmp_path
 
     with pytest.raises(UsdaFileError):
         service.run(
-            [foundation_source(foundation_dir(tmp_path)), sr_legacy_source(tmp_path / "does-not-exist")]
+            [
+                foundation_source(foundation_dir(tmp_path)),
+                sr_legacy_source(tmp_path / "does-not-exist"),
+            ]
         )
 
     assert count_foods(db_session) == 0
@@ -400,7 +412,10 @@ def test_format_summary_adds_a_final_line_when_the_provider_failed():
 
     lines = format_summary(summary).splitlines()
 
-    assert lines[0] == "Foundation: 0 añadidos, 1 actualizados, 2 sin cambios, 0 sin representación semántica."
+    assert lines[0] == (
+        "Foundation: 0 añadidos, 1 actualizados, 2 sin cambios, "
+        "0 sin representación semántica."
+    )
     assert lines[-1] == (
         "El proveedor de embeddings falló: vuelve a ejecutar la importación para "
         "completar las representaciones semánticas pendientes."

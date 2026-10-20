@@ -46,3 +46,9 @@
 ## implement · implementer (T-054)
 - [ ] Corregir las líneas de más de 100 caracteres (E501) en los tests del 021: `test_food_search_service.py`, `test_usda_csv_reader.py` y `usda_samples.py`, entre otros. Lo debe hacer quien pueda editar tests.
 - [x] `import_usda_foods.py` imprime `FLASK_ENV` con valor por defecto `development`; `create_app()` cae a `default` = `DevelopmentConfig`, así que coinciden.
+
+## verify · verifier (full)
+- [ ] Desajuste modelo/migración: `backend/models/food.py` declara `search_vector` como `Mapped[str]` (NOT NULL por defecto) y la migración `c8e2a4f6b9d3` lo crea `nullable=True`. Es columna generada, sin impacto práctico, pero los tests no lo detectan (`create_all`).
+- [ ] Aplicar la migración `c8e2a4f6b9d3` en la base de desarrollo y medir `public.foods` tras la importación (pasos manuales del plan).
+- [ ] Validación manual de calidad de búsqueda (20 consultas, Q8) pendiente.
+- [ ] `state.json`: `verify.result` sigue null porque la CLI registró el resultado en `stage_result`; la entrada history/result refleja FAIL.

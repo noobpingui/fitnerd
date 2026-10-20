@@ -40,7 +40,9 @@ def write_usda_dataset(directory, foods, nutrients, food_columns=None, nutrient_
     nutrient_columns = list(nutrient_columns or NUTRIENT_HEADERS)
 
     with open(directory / "food.csv", "w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=food_columns, quoting=csv.QUOTE_ALL, extrasaction="ignore")
+        writer = csv.DictWriter(
+            handle, fieldnames=food_columns, quoting=csv.QUOTE_ALL, extrasaction="ignore"
+        )
         writer.writeheader()
         for fdc_id, data_type, description in foods:
             writer.writerow(

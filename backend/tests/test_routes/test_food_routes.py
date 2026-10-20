@@ -25,7 +25,9 @@ EMPTY_MESSAGE = "Escribe qué alimento quieres buscar."
 SHORT_MESSAGE = "La búsqueda debe tener al menos 2 caracteres."
 LONG_MESSAGE = "La búsqueda no puede superar los 100 caracteres."
 LIMIT_MESSAGE = "Alcanzaste el límite de 30 búsquedas por minuto. Vuelve a intentarlo en un rato."
-UNAVAILABLE_MESSAGE = "La búsqueda no está disponible en este momento. Vuelve a intentarlo en un rato."
+UNAVAILABLE_MESSAGE = (
+    "La búsqueda no está disponible en este momento. Vuelve a intentarlo en un rato."
+)
 
 # Vector que la consulta recibe por defecto: ortogonal a los de los alimentos.
 UNRELATED = basis_vector(5)
@@ -118,13 +120,19 @@ def test_spanish_query_finds_the_chicken_by_semantic_similarity(client, app, voy
 
 
 # SDD: 021 REQ-006 AC-006.3
-def test_food_matching_by_text_and_similarity_comes_before_a_similarity_only_match(client, app, voyage):
+def test_food_matching_by_text_and_similarity_comes_before_a_similarity_only_match(
+    client, app, voyage
+):
     """Quien coincide por texto y por similitud va antes que quien solo
     coincide por similitud, aunque este último esté más cerca del vector."""
     seed(
         app,
         {"fdc_id": 1, "description": "Turkey, breast, raw", "embedding": basis_vector(0)},
-        {"fdc_id": 2, "description": "Chicken, thigh, raw", "embedding": vector_with_similarity(0.8)},
+        {
+            "fdc_id": 2,
+            "description": "Chicken, thigh, raw",
+            "embedding": vector_with_similarity(0.8),
+        },
     )
     voyage.vectors["chicken"] = basis_vector(0)
 
