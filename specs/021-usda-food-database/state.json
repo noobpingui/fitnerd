@@ -10,7 +10,7 @@
   "branch": "feat/021-usda-food-database",
   "base_branch": "main",
   "created_at": "2026-10-20T01:56:03.911Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,7 +25,10 @@
       "at": "2026-10-20T04:34:54.605Z",
       "note": "auto (gate_mode=flow): 48 tareas (10 scaffold, 25 test, 12 impl, 1 migration)"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-20T06:49:22.477Z",
+      "note": "auto (gate_mode=flow): red check PASS, 148 tests rojos legítimos"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -34,17 +37,18 @@
   },
   "commits": {
     "spec": "ad99f98",
-    "plan": "2fa19ca"
+    "plan": "2fa19ca",
+    "tasks": "5182f7d"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 1,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-20T06:49:12.285Z"
   },
   "verify": {
     "result": null,
@@ -54,7 +58,24 @@
     "verdict": null,
     "at": null
   },
-  "tests_snapshot": null,
+  "tests_snapshot": {
+    "at": "2026-10-20T06:49:22.342Z",
+    "reason": "tests 021 tras red check PASS",
+    "sha256": {
+      "backend/tests/fakes.py": "a5783da3199d0795ab0d5d5745a8357188db08aedd96a8a53c9910e44205639f",
+      "backend/tests/test_routes/test_food_routes.py": "6e9b59281be98fa06c30bd8e5296cf0f962eeab2c15be1dcb0a67a7419f79aa4",
+      "backend/tests/test_services/test_food_import_service.py": "f4b19a748f5abe9b474d68b7e212499d7e0b7d01792e130d01e196dcc837f794",
+      "backend/tests/test_services/test_food_search_service.py": "bea0b8155b1ff7737e508f6c123304996ed31eea4843ae70ac88686805c482d1",
+      "backend/tests/test_services/test_usda_csv_reader.py": "5bdcfb0b77ddf488ed6f574ca0a5aa605f69794844973d5b42a24948d209d52b",
+      "backend/tests/usda_samples.py": "afc24da2e61b7306394c68cde998a20372524e2cd117eb43e9aecbe85d4d0974",
+      "frontend/src/app/foodsRoute.test.tsx": "c8f9472f1413a80e1603d88060f897bc493ec9080db83bdd1a06b9c7ecb10241",
+      "frontend/src/components/layout/noFoodsLink.test.tsx": "cb6c86ee597de7b882b8a107566a52b47831a4ddf79a60b9b3a21366b4488705",
+      "frontend/src/features/foods/format.test.ts": "b64f7c4c9bfce7168ff473b4415e001ccfd0be5f4b3e2ede3da10edf9dadf55b",
+      "frontend/src/features/foods/pages/FoodsPage.test.tsx": "9811c029cddce74d9cf25965339b08e14d69a039e20e450e128616657bc76099",
+      "frontend/src/features/foods/schemas.test.ts": "6172f2f95a1491a363e9b0c9f3011245a125511f1dc9f8025453640881d001e5",
+      "frontend/src/features/foods/searchError.test.ts": "a8b670ef2321b47d2981e8051584ede74297461201c862baef6933710b9f601c"
+    }
+  },
   "bypass": false,
   "history": [
     {
@@ -140,6 +161,78 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): 48 tareas (10 scaffold, 25 test, 12 impl, 1 migration)"
+    },
+    {
+      "at": "2026-10-20T04:34:54.862Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 5182f7d"
+    },
+    {
+      "at": "2026-10-20T04:34:55.027Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold"
+    },
+    {
+      "at": "2026-10-20T04:36:22.848Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-20T04:43:02.626Z",
+      "stage": "tests",
+      "event": "blocked",
+      "note": "Entorno: Docker Desktop apagado, Postgres (localhost:5433) inaccesible; el red check del backend necesita docker compose up -d postgres redis"
+    },
+    {
+      "at": "2026-10-20T06:43:14.591Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (entorno resuelto)"
+    },
+    {
+      "at": "2026-10-20T06:45:41.402Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Backend: 100 nuevos fallan (rojo legítimo: NotImplementedError o 404). Frontend: 43 fallan legítimamente, pero 6 pasan sin implementación (format DATA_TYPE_LABELS, schemas acepta 2, noFoodsLink x2, foodsRoute x2) → FAIL, responsable test-author."
+    },
+    {
+      "at": "2026-10-20T06:45:52.198Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL: 6 tests frontend pasan sin implementación (F1-F4) · tests 1/3"
+    },
+    {
+      "at": "2026-10-20T06:47:13.066Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (iteración 1)"
+    },
+    {
+      "at": "2026-10-20T06:49:12.285Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red check iteración 1: backend 100 fallan (67 NotImplementedError, resto 404 de ruta inexistente); frontend 48 fallan por comportamiento ausente (F1-F4 corregidos, 0 pasan sin implementación); scaffolds sin lógica"
+    },
+    {
+      "at": "2026-10-20T06:49:22.247Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS: 100 backend y 48 frontend fallan por comportamiento ausente"
+    },
+    {
+      "at": "2026-10-20T06:49:22.342Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "12 archivo(s) de test: tests 021 tras red check PASS"
+    },
+    {
+      "at": "2026-10-20T06:49:22.477Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 148 tests rojos legítimos"
     }
   ]
 }
