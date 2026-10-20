@@ -77,7 +77,7 @@
 - Tamaño de `public.foods`: 48 MB (tabla 2,8 MB, índices 2,1 MB, el resto TOAST de los vectores); base completa 58 MB. Cabe en los 500 MB de Supabase.
 - Datos: SR Legacy completo; en Foundation faltan kcal en 91 de 469 alimentos, proteína en 44, carbohidratos en 92 y grasa en 56 (se guardan como «sin dato»).
 - Consultas (22: 12 en español y 10 en inglés): sin errores ni listas vacías; en inglés y en español los alimentos comunes salen bien (huevo frito, aguacate, plátano maduro, queso fresco, frijoles negros, atún, leche entera). Ver problemas en los puntos siguientes.
-- [ ] «banana» (inglés) no devuelve «Bananas, raw» en los 20 primeros (salen Babyfood, Melon, Pepper); «banano» y «plátano» sí. Revisar el orden de los candidatos de texto antes de la 023.
+- [x] «banana» (inglés) no devuelve «Bananas, raw» en los 20 primeros (salen Babyfood, Melon, Pepper); «banano» y «plátano» sí. Revisar el orden de los candidatos de texto antes de la 023.
 - [ ] «avena cocida» no devuelve avena en los primeros 5 (sí «avena» sola y «oats cooked»); las consultas en español de varias palabras son más débiles.
 - [ ] El umbral 0,6 filtra poco: «xyzzy qwerty» y «zapato de cuero» devuelven 1 resultado absurdo cada una. Probar 0,5 o menos.
 - [ ] Documentar en el runbook: los ZIP de USDA traen una carpeta anidada (`FoodData_Central_..._csv_AAAA-MM-DD/`) y el script debe apuntar a ella, no a la carpeta del ZIP.
@@ -86,3 +86,14 @@
 ## tests · test-author (pasada F4 y ordenación de texto)
 - [ ] La spec no tiene AC para la importación segura (confirmación con base no local y `--yes`). Conviene añadir un AC (p. ej. en REQ-001 o un REQ nuevo) y reetiquetar estos tests (hoy llevan `021 REQ-001`).
 - [ ] La spec tampoco recoge el criterio de relevancia por longitud de descripción (normalizar `ts_rank_cd`). Conviene añadir un AC en REQ-006 (los tests de ordenación llevan hoy `021 REQ-006 AC-006.1`).
+
+## review · reviewer (tercera pasada)
+- [ ] F6 (NIT, test-author): `frontend/src/app/foodsRoute.test.tsx:113`, el marcador `AC-012.1` debería ser `REQ-012`.
+- [ ] F7 (NIT): las notas de `state.json` dicen «60 AC», pero `spec.md` tiene 61; corregirlo en la documentación.
+- [ ] F8 (NIT, implementer): un túnel SSH a `localhost` se tomaría por base local y no preguntaría; advertirlo en el runbook o decidir también por `FLASK_ENV`.
+- [ ] F9 (MENOR, spec-writer): faltan los AC de la importación segura y del orden por longitud; añadirlos y reetiquetar los tests (hoy llevan `REQ-001` y `AC-006.1`).
+- [x] F10 (NIT): marcar como hecho el punto «banana» (hecho por el orquestador).
+
+## spec · spec-writer (corrección de F9)
+- [ ] Volver a etiquetar los tests (test-author): `test_import_usda_foods_script.py` debe pasar de REQ-001 a los AC-001.8 a AC-001.12 y quitar el comentario de «sin AC propio»; `test_food_text_ranking.py` debe pasar de AC-006.1 a AC-006.10.
+- [ ] Los tests no cubren las respuestas afirmativas «y» y «yes» del script (la spec las documenta porque el script las acepta).

@@ -1,94 +1,87 @@
 # Review 021 — Base de alimentos de USDA en Postgres con búsqueda híbrida
 
-- **Iteración:** 2 de 3
-- **Diff revisado:** `git diff main...feat/021-usda-food-database` @ `0618094` (+ cambios sin commitear: solo `backlog.md`, `state.json` y `verify-report.md` de la feature)
+- **Iteración:** 2 de 3 (tercera pasada, pedida por el usuario tras el APPROVED anterior)
+- **Diff revisado:** `git diff main...feat/021-usda-food-database` @ `d4c1113`, centrado en `0618094..d4c1113` (+ cambios sin commitear: solo `state.json` y `verify-report.md` de la feature)
 - **Veredicto:** APPROVED
 
 ## 1. Resumen
-Segunda pasada tras las correcciones de la iteración 1. El commit `0618094` toca solo tres líneas de código, una por
-hallazgo: F1 (la migración crea `search_vector` como `NOT NULL`), F3 (`zip(..., strict=True)`) y F5 (el espacio en
-`router.tsx`). He comprobado que F1 está resuelto de verdad: el DDL que compila el modelo y el SQL offline de la
-migración son idénticos. No hay regresiones: los tests no cambiaron, el snapshot es idéntico y los 100 tests de la
-feature pasan. Quedan F2, F4 y F6, menores, en el backlog para que los decida el usuario en el gate.
+Desde el APPROVED anterior entran dos commits, `adeb9e6` (tests) y `d4c1113` (implementación), que hacen tres cosas.
+F4: `import_usda_foods.py` pide confirmación `[s/N]`, o `--yes`, si la base no es local. Ranking: `find_text_matches`
+normaliza `ts_rank_cd` por la longitud del documento. Tests: 17 nuevos. La lógica de «host local» es segura por defecto, el AC-006.3 se
+sigue cumpliendo y no veo regresiones. He comprobado en la base local, con una consulta de solo lectura, que «banana» devuelve ahora «Bananas, raw» en
+primer lugar. Solo quedan hallazgos MENORES y NIT.
 
 ## 2. Cumplimiento de la spec
-Sin cambios respecto a la iteración 1: el commit de correcciones no altera ningún comportamiento especificado.
+Ningún AC cambia de comportamiento salvo el orden interno de los candidatos de texto, que la spec no fija. Lo que no se
+menciona abajo sigue igual que en la iteración 2.
 
 | REQ / AC | ¿Implementado como se especificó? | Evidencia (archivo:línea o test) |
 |---|---|---|
-| AC-001.1, AC-001.2 | Sí | `backend/services/usda_csv_reader.py:117-141`; `backend/services/food_import_service.py:69-87`; tests `test_usda_csv_reader.py`, `test_food_import_service.py` |
-| AC-001.3, AC-001.6, AC-001.7 | Sí | `usda_csv_reader.py:123-131`: orden 1008 → 2047 → 2048 → `None`, nunca calculado desde los macros |
-| AC-001.4 | Sí | `usda_csv_reader.py:103-109` y `:137-139` (valor ausente = `None`, no 0) |
-| AC-001.5 | Sí | `usda_csv_reader.py:36-45,101-102` |
-| AC-002.1 – AC-002.3 | Sí | `food_import_service.py:89-114`; los ausentes no se tocan (`test_food_routes.py:424`) |
-| AC-003.1 – AC-003.3 | Sí | `food_import_service.py:110-111` y `:115-131` |
-| AC-004.1 – AC-004.4 | Sí | `food_import_service.py:45-50,115-131`; `usda_csv_reader.py:48-61` |
-| AC-005.1, AC-005.2 | Sí | `food_import_service.py:61-65`, `format_summary` en `:134-145` |
-| AC-006.1 – AC-006.9 | Sí | `backend/services/food_search_service.py:40-47,59-83`; `backend/repositories/food_repository.py:19-40`; `backend/routes/food_routes.py:16-35` |
-| AC-007.1, AC-007.2 | Sí | `food_search_service.py:79-80`; `food_repository.py:36` |
-| AC-008.1 – AC-008.4 | Sí | `food_search_service.py:29-37,60` |
-| AC-009.1, AC-009.2 | Sí | `food_routes.py:31` (`@require_auth`) |
-| AC-010.1 – AC-010.3 | Sí | `food_search_service.py:62-68` |
-| AC-011.1 – AC-011.3 | Sí | `food_search_service.py:70-74` |
-| AC-012.1 – AC-012.8 | Sí | `frontend/src/features/foods/pages/FoodsPage.tsx`, `components/FoodSearchForm.tsx`, `components/FoodResultList.tsx`, `format.ts`; sin cambios en `Navbar` ni `BottomTabBar` |
-| AC-013.1 – AC-013.7 | Sí | `frontend/src/features/foods/schemas.ts:8-15`; `FoodSearchForm.tsx:50`; `searchError.ts:5-11`; `FoodsPage.tsx:33-47` |
-| AC-014.1 | Sí | `FoodsPage.tsx:8-9,53` |
-| AC-N001.1 | Sí | `frontend/src/app/router.tsx:28,162-169`; chunk de entrada 384,53 kB (verify-report, iteración 3) |
-| AC-N002.1, AC-N002.2 | Sí | `FoodSearchForm.tsx:45-51`; `FoodsPage.tsx:29` |
-| Alcance §3: 20 consultas manuales y tamaño de `public.foods` | **Pendiente** | `verify-report.md` §3 (F2, en el backlog) |
+| AC-001.1 – AC-005.2 | Sí (sin cambios) | `usda_csv_reader.py`, `food_import_service.py`; la confirmación de `import_usda_foods.py:57-60` va antes de construir el servicio, así que la importación no cambia cuando se continúa |
+| AC-006.1 | Sí | `backend/repositories/food_repository.py:25-29`; «chicken breast» sigue pasando (`test_food_routes.py`); además, `test_food_text_ranking.py:17-54` |
+| AC-006.3 | Sí | La fusión RRF no cambia (`backend/services/food_search_service.py:39-46`). La normalización solo reordena la lista de texto, y quien coincide por las dos vías suma dos términos `1/(k+pos)`. Con `k=60` y 40 candidatos por lista, eso supera siempre a quien solo está en una (`test_fuse_rankings_double_hit_wins_even_at_the_end_of_both_lists`, `test_food_routes.py:122-141`, en verde) |
+| AC-006.2, AC-006.4 – AC-006.9 | Sí (sin cambios) | `food_search_service.py:57-83`; los 79 tests de búsqueda, script y ranking pasan (ejecutados en esta revisión) |
+| AC-007.1 – AC-014.1, AC-N001.1, AC-N002.1, AC-N002.2 | Sí (sin cambios) | Ver la iteración 2; el frontend no cambia en esta pasada (842 tests, lint, tsc y build en verde según el verify-report) |
+| Alcance §3: consultas manuales y tamaño de `public.foods` | Hecho en local | `backlog.md`, sección «validación manual de F2»: 22 consultas, 48 MB, migraciones aplicadas en local. La medición en producción sigue pendiente (P4, etapa docs) |
 
 ## 3. Cumplimiento del plan
-- **F1, resuelto:** `backend/migrations/versions/c8e2a4f6b9d3_create_foods_table.py:35` tiene ahora `nullable=False`.
-  Lo he comprobado comparando el `CREATE TABLE` que compila `Food.__table__` con el SQL offline de la migración
-  (`FLASK_ENV=development flask db upgrade e5b7d9f1a3c6:c8e2a4f6b9d3 --sql`, sin conectar a la base). Coinciden columna a
-  columna, incluida `search_vector TSVECTOR GENERATED ALWAYS AS (to_tsvector('english'::regconfig, description)) STORED
-  NOT NULL`, la `CHECK` `ck_foods_data_type`, la clave primaria y el índice GIN `ix_foods_search_vector`.
-  `flask db heads` devuelve una sola cabeza, `c8e2a4f6b9d3`.
-- **F3, resuelto:** `backend/services/food_import_service.py:125` usa `zip(pending, vectors, strict=True)`. Si los
-  vectores no cuadran, se lanza `ValueError` dentro del `try`: rollback del lote, `embedding_failed` y fin del bucle. Ya
-  no puede quedarse en un bucle infinito.
-- **F5, resuelto:** `frontend/src/app/router.tsx:29` vuelve a ser idéntico a `main`. El diff del router contra `main`
-  solo añade `FoodsPage` y su ruta.
-- El resto de desviaciones (migración escrita a mano, `backend/scripts/**` en `.sdd/config.json`) ya se valoraron como
-  justificadas en la iteración 1.
+- **F4, resuelto (`backend/scripts/import_usda_foods.py:17-30,57-60`):** es seguro por defecto.
+  - `_is_local` devuelve `False` si no hay host (socket Unix, `postgresql:///db`) o si el host es desconocido. Solo se
+    tratan como locales `localhost`, `127.0.0.1`, `::1` y `postgres`, sin distinguir mayúsculas.
+  - `postgres` es el nombre del servicio de `docker-compose.yml`. `docker-compose.prod.yml` no tiene servicio `postgres`
+    (línea 4), y la base de producción es un host de Supabase, que no es local y siempre pregunta.
+  - La respuesta por defecto (vacía), cualquier texto que no sea `s/si/sí/y/yes` y `EOFError` (sin TTY, CI) cancelan
+    con código 1 antes de construir el servicio o de escribir nada.
+  - Antes de preguntar, el script muestra la URL con la contraseña oculta (`render_as_string(hide_password=True)`).
+  - Lo que se escapa son los casos raros en los que un host local apunta en realidad a una base remota, como un túnel SSH a `localhost` o
+    `127.0.0.2`. Esos los trato en sentido contrario: `127.0.0.2` pregunta, y está bien. Ver F8.
+- **Normalización `ts_rank_cd(..., 2)` (`food_repository.py:25`):** divide el rango por la longitud del documento. Lo
+  he contrastado contra la base local importada (8.262 alimentos), con una consulta de solo lectura. Los primeros para
+  «banana» son ahora `Bananas, raw`, `Bananas, dehydrated…`, `Melon, banana`… El problema que anotó el orquestador
+  queda corregido. El desempate por `fdc_id` se mantiene, y `websearch_to_tsquery` sigue sin interpolar la consulta (SQL
+  parametrizado).
+- **Desviación respecto a la spec:** ni la confirmación del script ni el criterio de relevancia por longitud tienen AC
+  propio, y los tests llevan los marcadores aproximados `REQ-001` y `AC-006.1`. Está justificado como pasada pedida por el usuario y ya
+  figura en el backlog del test-author. Ver F9.
 
 ## 4. Checklist de la constitución
 ### Parte I (base)
-- [x] B2: cada agente se mantuvo en su rol. `snapshot --check` es idéntico (0 cambiados, borrados o añadidos). Desde
-      `commits.tests` (`b1ac9ee`), los tests solo cambiaron en `d009a5a`, la corrección de formato E501 autorizada
-      (`rework tests` y `snapshot` posterior en `history`). `0618094` no toca tests.
-- [x] B4: los marcadores `SDD: 021 …` son coherentes con los AC, con la salvedad menor de F6 (en el backlog).
-- [x] B5: no hay tests borrados, saltados ni debilitados, ni llamadas a Voyage o Redis reales. Los 100 tests de la
-      feature pasan (ejecutados en esta revisión).
-- [x] B5.7: el ratchet de ruff no da violaciones nuevas, y `npm run lint`, `npx tsc -b` y `npm run build` pasan
-      (verify-report, iteración 3).
-- [x] B6.5: no hay secretos ni variables nuevas.
+- [x] B2: `snapshot --check` es idéntico (0 cambiados, borrados o añadidos). Desde `commits.tests` (`b1ac9ee`), los
+      tests cambian en `d009a5a` (E501) y `adeb9e6` (17 tests nuevos). Los dos están autorizados en `history`
+      (`rework tests` → `done` → `snapshot` a las 07:08 y a las 09:11-09:13). `d4c1113` no toca tests.
+- [x] B4: los marcadores son coherentes en lo esencial. Los de esta pasada son aproximados, por falta de AC (F9).
+- [x] B5: no hay tests borrados, saltados ni debilitados. Los tests del script usan dobles escritos a mano y una URL
+      `.invalid`, sin base ni red reales. Los de ranking usan el Postgres de pruebas. El de ranking con 50
+      descripciones largas fallaría sin la normalización: las largas tienen un FDC ID menor y ganarían el desempate.
+      Prueba de verdad el cambio.
+- [x] B5.7: el ratchet de ruff no da violaciones nuevas (verify-report).
+- [x] B6.5: no hay secretos ni variables nuevas. La URL impresa oculta la contraseña.
 
 ### Parte II (proyecto)
-- [x] P1: los marcadores, la ubicación y el nombre de los tests y los dobles escritos a mano siguen la convención.
-- [x] P2.1 / P2.2: capas respetadas; solo `UnitOfWork` hace commit; inyección por constructor.
-- [x] P2.3: excepciones de `custom_exceptions.py` para los errores HTTP; `UsdaFileError` justificada en el plan.
-- [x] P2.4: la migración está incluida, revisada y **coincide con el modelo** (F1 resuelto).
-- [x] P2.5: reutiliza `utils/embeddings.py` y `utils/rate_limiter.py`.
-- [x] P2 frontend: estructura de feature, `apiFetch`, TanStack Query, react-hook-form con zod y componentes de `ui/`.
-- [x] P2 General: textos, comentarios y docstrings en español correcto.
-- [x] P3.1 – P3.5: autenticación, validación de entrada y salida, límite en Redis, SQL parametrizado y sin secretos.
-- [x] P4: la migración es no destructiva y coincide con el modelo. Documentar en `docs/deploy-runbook.md` los pasos
-      manuales (`flask db upgrade`, copiar los CSV e importar en la instancia, medir el tamaño) le toca al `doc-keeper`
-      en la etapa docs.
+- [x] P1: los tests están en `tests/test_scripts/` y `tests/test_services/`, con dobles escritos a mano y marcador `SDD: 021`.
+- [x] P2.1 / P2.2: el cambio de ranking se queda en el repositorio. El script sigue construyendo el servicio con
+      inyección por constructor.
+- [x] P2 General: mensajes y comentarios en español correcto.
+- [x] P3.4: SQL parametrizado (`func.websearch_to_tsquery` con parámetro ligado).
+- [x] P4: sin migraciones nuevas en esta pasada. Una operación que escribe en una base no local exige ahora
+      confirmación explícita.
 
 ## 5. Hallazgos
 | # | Severidad | Archivo:línea | Hallazgo | Responsable |
 |---|---|---|---|---|
-| F1 | ~~MAYOR~~ resuelto | `backend/migrations/versions/c8e2a4f6b9d3_create_foods_table.py:35` | Resuelto en `0618094`: la migración y el modelo generan el mismo DDL (comprobado). | implementer |
-| F2 | MENOR (backlog) | `specs/021-usda-food-database/verify-report.md` §3 | Siguen sin hacerse las 20 consultas manuales contra Voyage ni la medición del tamaño de `public.foods`, y la migración no se ha aplicado en ninguna base. El usuario debe hacerlo o diferirlo explícitamente antes de `close` y del despliegue en Supabase. | implementer |
-| F3 | ~~MENOR~~ resuelto | `backend/services/food_import_service.py:125` | Resuelto: `zip(..., strict=True)`. | implementer |
-| F4 | MENOR (backlog) | `backend/scripts/import_usda_foods.py:31-38` | El script escribe sin pedir confirmación cuando la base no es local. Valorar un `--yes` o una confirmación interactiva. | implementer |
-| F5 | ~~NIT~~ resuelto | `frontend/src/app/router.tsx:29` | Resuelto: la línea vuelve a ser idéntica a `main`. | implementer |
-| F6 | NIT (backlog) | `frontend/src/app/foodsRoute.test.tsx:113` | El marcador `AC-012.1` del test «con el onboarding pendiente, /foods no se muestra» debería ser `REQ-012`. | test-author |
-| F7 | NIT | `specs/021-usda-food-database/state.json` (notas de `history`) | Las notas de `spec` y `tasks` dicen «60 AC», pero `spec.md` tiene 61 (58 de REQ y 3 de NFR). Ya está en el backlog del verifier. Basta con usar la cifra correcta en la documentación de la etapa docs. | implementer |
+| F1 | ~~MAYOR~~ resuelto | `backend/migrations/versions/c8e2a4f6b9d3_create_foods_table.py:35` | Resuelto en `0618094`. | implementer |
+| F2 | ~~MENOR~~ resuelto en local | `specs/021-usda-food-database/backlog.md` (validación manual de F2) | Migraciones aplicadas, importación real, 22 consultas y tamaño (48 MB) medidos en local. Quedan pendientes la medición en producción y el runbook (etapa docs). | implementer |
+| F3 | ~~MENOR~~ resuelto | `backend/services/food_import_service.py:125` | Resuelto en `0618094`. | implementer |
+| F4 | ~~MENOR~~ resuelto | `backend/scripts/import_usda_foods.py:17-30,57-60` | Confirmación `[s/N]` o `--yes` con base no local. Ante la duda (sin host o con host desconocido) pregunta. EOF y respuesta vacía cancelan. | implementer |
+| F5 | ~~NIT~~ resuelto | `frontend/src/app/router.tsx:29` | Resuelto en `0618094`. | implementer |
+| F6 | NIT (backlog) | `frontend/src/app/foodsRoute.test.tsx:113` | El marcador `AC-012.1` debería ser `REQ-012`. | test-author |
+| F7 | NIT (backlog) | `specs/021-usda-food-database/state.json` (notas) | «60 AC» frente a los 61 de `spec.md`. Corregirlo en la documentación. | implementer |
+| F8 | NIT | `backend/scripts/import_usda_foods.py:17` | Un túnel SSH (`localhost:XXXX` → Supabase) se tomaría por local y no preguntaría. Basta con advertirlo en el runbook, o con decidir la pregunta por `FLASK_ENV` además del host. | implementer |
+| F9 | MENOR (backlog) | `backend/tests/test_scripts/test_import_usda_foods_script.py:89-164`; `backend/tests/test_services/test_food_text_ranking.py:16,42` | Ni la importación segura ni el orden por longitud tienen AC en `spec.md`, y los tests llevan los marcadores aproximados `REQ-001` y `AC-006.1`. Conviene añadir los dos AC y reetiquetar. Ya está anotado en el backlog del test-author. | spec-writer |
+| F10 | NIT | `specs/021-usda-food-database/backlog.md` (validación manual, punto «banana») | El punto sigue abierto `[ ]`, pero ya está corregido: en local, «Bananas, raw» sale primero. Marcarlo como hecho en la etapa docs. | implementer |
 
 ## 6. Decisión
-APPROVED: no quedan hallazgos BLOQUEANTES ni MAYORES. F1 está resuelto y comprobado contra el DDL del modelo, y las
-correcciones no causan regresiones. F2 (pasos manuales antes del despliegue), F4 y F6 quedan en el backlog de la feature
-para que los decida el usuario en el gate de review.
+APPROVED: no quedan hallazgos BLOQUEANTES ni MAYORES. La confirmación del script es segura por defecto, la
+normalización de `ts_rank_cd` corrige el caso «banana» sin afectar al AC-006.3, y los tests nuevos están autorizados
+en `history` y prueban de verdad los cambios. F6 – F10 son menores o NIT. Junto con «avena cocida» y el umbral 0,6 del
+backlog, los decide el usuario en el gate de review.

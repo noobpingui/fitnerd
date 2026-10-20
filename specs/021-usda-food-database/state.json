@@ -10,29 +10,17 @@
   "branch": "feat/021-usda-food-database",
   "base_branch": "main",
   "created_at": "2026-10-20T01:56:03.911Z",
-  "stage": "verify",
+  "stage": "plan",
   "status": "in_progress",
   "approvals": {
     "spec": {
-      "at": "2026-10-20T04:23:50.620Z",
-      "note": "aprobado"
+      "at": "2026-10-20T09:26:01.907Z",
+      "note": "Aprobado"
     },
-    "plan": {
-      "at": "2026-10-20T04:33:28.326Z",
-      "note": "auto (gate_mode=flow): plan de tabla foods, importación en 2 fases y búsqueda RRF"
-    },
-    "tasks": {
-      "at": "2026-10-20T04:34:54.605Z",
-      "note": "auto (gate_mode=flow): 48 tareas (10 scaffold, 25 test, 12 impl, 1 migration)"
-    },
-    "tests": {
-      "at": "2026-10-20T09:13:16.305Z",
-      "note": "auto (gate_mode=flow): sin red check formal; 2 tests en rojo comprobados por el test-author, 15 de F4 pasan porque el script ya existe"
-    },
-    "implement": {
-      "at": "2026-10-20T09:15:14.046Z",
-      "note": "auto (gate_mode=flow): F4 y normalización de ts_rank_cd"
-    },
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
     "verify": null,
     "review": null,
     "docs": null,
@@ -43,7 +31,7 @@
     "plan": "2fa19ca",
     "tasks": "5182f7d",
     "tests": "b1ac9ee",
-    "implement": "0618094"
+    "implement": "d4c1113"
   },
   "iterations": {
     "tests": 2,
@@ -52,8 +40,8 @@
   },
   "max_iterations": 3,
   "red_check": {
-    "result": "PASS",
-    "at": "2026-10-20T06:49:12.285Z"
+    "result": null,
+    "at": null
   },
   "verify": {
     "result": null,
@@ -480,6 +468,72 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): F4 y normalización de ts_rank_cd"
+    },
+    {
+      "at": "2026-10-20T09:15:14.424Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: d4c1113"
+    },
+    {
+      "at": "2026-10-20T09:15:31.653Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa tras F4 y normalización de ts_rank_cd"
+    },
+    {
+      "at": "2026-10-20T09:19:51.408Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify full tras la pasada F4 y ordenación: backend 1192 passed, ratchet sin violaciones nuevas; frontend test 842 passed, lint, tsc y build OK; 61 AC cubiertos con marcador SDD: 021 y en verde; sin skip nuevos. Quedan manuales: calidad de búsqueda (22 consultas, hallazgos en backlog) y medición en producción."
+    },
+    {
+      "at": "2026-10-20T09:20:02.413Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: 1192 backend, 842 frontend, ratchet limpio, build 384,5 kB"
+    },
+    {
+      "at": "2026-10-20T09:20:02.528Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-20T09:20:02.761Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review final tras F4 y ordenación de texto"
+    },
+    {
+      "at": "2026-10-20T09:21:50.398Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-20T09:21:50.580Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED en la tercera pasada; 0 bloqueantes, 0 mayores, 1 menor y 4 nits abiertos"
+    },
+    {
+      "at": "2026-10-20T09:23:14.591Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Usuario pide corregir F9: añadir a la spec los AC de la importación segura (F4) y del orden por longitud (ts_rank_cd)"
+    },
+    {
+      "at": "2026-10-20T09:24:09.217Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "F9: spec con AC-001.8 a AC-001.12 y AC-006.10 (67 AC)"
+    },
+    {
+      "at": "2026-10-20T09:26:01.907Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Aprobado"
     }
   ]
 }

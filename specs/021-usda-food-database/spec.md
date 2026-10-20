@@ -37,6 +37,7 @@ que se ejecuta a mano** para **tener la base de alimentos en producción sin dep
   nutrientes por 100 g: energía (kcal), proteína (g), carbohidratos (g) y grasa (g).
 - Una representación semántica de cada alimento, calculada con el proveedor de embeddings que ya usa el coach (Voyage),
   para la búsqueda por similitud.
+- Confirmación antes de escribir cuando la base de destino no es local, con la opción `--yes` para omitirla.
 - Reimportación sin duplicados y reanudación de los alimentos que se quedaron sin representación semántica.
 - El endpoint `GET /api/foods/search?q=…` con búsqueda híbrida (texto y similitud), con sesión iniciada, validación de
   la consulta y límite de uso.
@@ -74,6 +75,10 @@ SHALL guardar cada alimento de esos conjuntos con su FDC ID, su descripción ori
 valores por 100 g de energía (kcal), proteína (g), carbohidratos (g) y grasa (g). Para la energía SHALL usar, por este
 orden de preferencia, el valor de energía en kcal; si no existe, el de Atwater general; si no existe, el de Atwater
 específico; y si no existe ninguno, «sin dato». La energía nunca se calcula a partir de los macros.
+IF la base de datos de destino no es local y el operador no indicó `--yes` THEN THE SYSTEM SHALL pedir confirmación
+`[s/N]` antes de escribir nada, y SHALL cancelar la importación sin escribir y con un código de salida distinto de 0
+salvo que la respuesta sea afirmativa. Se considera local solo un host `localhost`, `127.0.0.1`, `::1` o `postgres`
+(sin distinguir mayúsculas); una base sin host o con cualquier otro host se considera no local.
 
 - **AC-001.1:** Given unos archivos de Foundation Foods de muestra con 3 alimentos y sus nutrientes, When se ejecuta la
   importación, Then quedan guardados los 3 alimentos con su FDC ID, su descripción, el origen «Foundation» y los cuatro
@@ -91,6 +96,19 @@ específico; y si no existe ninguno, «sin dato». La energía nunca se calcula 
   ejecuta la importación, Then su energía guardada es 165.
 - **AC-001.7:** Given un alimento de muestra sin ningún valor de energía pero con proteína, carbohidratos y grasa, When
   se ejecuta la importación, Then su energía queda como «sin dato», no calculada a partir de los macros.
+- **AC-001.8:** Given una base de destino con un host no local y sin `--yes`, When se ejecuta la importación y el
+  operador responde «s», «S», «si» o «sí», Then se pide la confirmación una sola vez, la importación se ejecuta y
+  termina con código 0.
+- **AC-001.9:** Given una base de destino con un host no local y sin `--yes`, When el operador responde «n», deja la
+  respuesta vacía o no hay entrada interactiva (fin de entrada), Then la importación se cancela con un código de salida
+  distinto de 0 y no se escribe nada en la base.
+- **AC-001.10:** Given una base de destino con un host no local, When se ejecuta la importación con `--yes`, Then no se
+  pide confirmación y la importación se ejecuta con código 0.
+- **AC-001.11:** Given una base de destino con host `localhost`, `127.0.0.1`, `::1`, `postgres` o `LOCALHOST`, When se
+  ejecuta la importación sin `--yes`, Then no se pide confirmación y la importación se ejecuta con código 0.
+- **AC-001.12:** Given una base de destino sin host o con un host desconocido (p. ej. `servidor-raro`), When se ejecuta
+  la importación sin `--yes` y el operador responde «n», Then se pide confirmación (se trata como no local), la
+  importación se cancela con un código distinto de 0 y no se escribe nada.
 
 ### REQ-002 — Reimportación sin duplicados
 WHEN el operador vuelve a ejecutar la importación sobre una base que ya tiene alimentos THE SYSTEM SHALL actualizar los
@@ -146,7 +164,8 @@ WHEN un usuario con sesión iniciada pide `GET /api/foods/search?q={consulta}` c
 responder 200 con hasta 20 alimentos ordenados por relevancia, combinando la coincidencia de texto con la descripción y
 la similitud de significado entre la consulta y el alimento. El número máximo de resultados es fijo; el cliente no puede
 cambiarlo. Los alimentos de Foundation Foods y SR Legacy se devuelven por separado aunque sean casi iguales, cada uno
-con su conjunto de origen.
+con su conjunto de origen. En la coincidencia de texto, ante igual coincidencia con la consulta, una descripción corta y
+exacta SHALL puntuar por encima de una larga que solo menciona la palabra.
 
 - **AC-006.1:** Given alimentos «Chicken, broilers or fryers, breast, meat only, raw» y «Rice, white, long-grain,
   regular, raw», When se busca `q=chicken breast`, Then el primer resultado es el pollo.
@@ -167,6 +186,12 @@ con su conjunto de origen.
   Then la respuesta tiene exactamente 20 resultados.
 - **AC-006.9:** Given «Milk, whole, 3.25% milkfat» guardado una vez como Foundation (FDC ID 1) y otra como SR Legacy
   (FDC ID 2), When se busca `q=whole milk`, Then aparecen los dos resultados, cada uno con su FDC ID y su origen.
+- **AC-006.10:** Given «Bananas, raw» y 50 descripciones largas que solo mencionan la palabra (p. ej. «Babyfood, banana
+  apple dessert, strained, …») con FDC ID menores, When se obtienen los candidatos por coincidencia de texto para
+  `banana`, Then «Bananas, raw» está entre ellos y va por delante de todas las largas; y Given solo «Bananas, raw» y dos
+  descripciones largas de «Babyfood, banana…», Then «Bananas, raw» va primero y aparecen las tres. Este criterio ordena
+  la coincidencia de texto y no altera AC-006.3: un alimento que coincide por texto y por similitud sigue por delante de
+  uno que coincide por una sola vía.
 
 ### REQ-007 — Búsqueda sin resultados relevantes
 IF ningún alimento coincide con la consulta por texto y ninguno supera la similitud mínima de relevancia THEN THE SYSTEM
@@ -353,6 +378,10 @@ estado de la búsqueda (buscando, sin resultados, error).
   error que nombra el archivo y, si aplica, la columna que falla.
 - Se ejecuta a mano contra la base que indique la configuración del entorno; en producción, después de aplicar la
   migración (paso manual documentado en el runbook).
+- Antes de escribir, muestra el entorno y la base de destino (sin contraseña). Si la base no es local y no se indicó
+  `--yes`, pregunta «La base de datos NO es local. ¿Escribir en ella? [s/N]: »; son afirmativas «s», «si», «sí», «y» y
+  «yes» (sin distinguir mayúsculas). Cualquier otra respuesta, la respuesta vacía o el fin de entrada muestran
+  «Importación cancelada: no se ha escrito nada.» y terminan con código 1 (REQ-001, AC-001.8 a AC-001.12).
 
 ## 7. Preguntas abiertas
 
