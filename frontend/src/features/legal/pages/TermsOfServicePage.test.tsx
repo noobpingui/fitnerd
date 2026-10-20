@@ -43,6 +43,27 @@ describe("TermsOfServicePage", () => {
     expect(text).not.toContain("2 de septiembre de 2026")
   })
 
+  // SDD: 022 REQ-016 AC-016.1
+  it("«Datos nutricionales» atribuye los datos a USDA y avisa de que los valores son aproximados", () => {
+    renderPage()
+    const text = sectionOf("Datos nutricionales").textContent ?? ""
+
+    expect(text).toContain(
+      "Datos: U.S. Department of Agriculture, Agricultural Research Service. FoodData Central."
+    )
+    expect(text).toContain(
+      "Los valores nutricionales son aproximados y pueden variar según el alimento y su preparación."
+    )
+  })
+
+  // SDD: 022 REQ-016 AC-016.1
+  it("la última actualización ya no es la del 14 de octubre de 2026", () => {
+    renderPage()
+    const text = document.body.textContent ?? ""
+
+    expect(text).toContain("Última actualización: 20 de octubre de 2026")
+  })
+
   // SDD: 012 REQ-007 AC-007.6
   it("no contiene formas de voseo", () => {
     renderPage()

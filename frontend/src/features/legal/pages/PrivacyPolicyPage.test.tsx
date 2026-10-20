@@ -49,6 +49,42 @@ describe("PrivacyPolicyPage", () => {
     expect(within(section).getByText(/Voyage AI/)).toBeInTheDocument()
   })
 
+  // SDD: 022 REQ-016 AC-016.2
+  it("'Qué información recolectamos' incluye «Diario de comidas:» con los alimentos y cantidades", () => {
+    renderPage()
+    const section = sectionOf("Qué información recolectamos")
+
+    const entry = within(section)
+      .getAllByRole("listitem")
+      .find((item) => /Diario de comidas:/.test(item.textContent ?? ""))
+
+    expect(entry).toBeDefined()
+    const text = entry?.textContent ?? ""
+    expect(text).toMatch(/alimentos/i)
+    expect(text).toMatch(/cantidades/i)
+  })
+
+  // SDD: 022 REQ-016 AC-016.2
+  it("el punto de Voyage AI menciona el texto de las búsquedas de alimentos", () => {
+    renderPage()
+    const section = sectionOf("Con quién se comparte")
+
+    const entry = within(section)
+      .getAllByRole("listitem")
+      .find((item) => /Voyage AI/.test(item.textContent ?? ""))
+
+    expect(entry).toBeDefined()
+    expect(entry?.textContent).toMatch(/búsquedas de alimentos/i)
+    expect(entry?.textContent).toMatch(/preguntas/i)
+  })
+
+  // SDD: 022 REQ-016 AC-016.2
+  it("la última actualización es la del 20 de octubre de 2026", () => {
+    renderPage()
+
+    expect(document.body.textContent ?? "").toContain("Última actualización: 20 de octubre de 2026")
+  })
+
   // SDD: 005 REQ-012 AC-012.3
   it("menciona a Langfuse en 'Tus derechos'", () => {
     renderPage()

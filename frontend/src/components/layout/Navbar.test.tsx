@@ -24,7 +24,8 @@ describe("Navbar", () => {
   })
 
   // SDD: 012 REQ-005 AC-005.1
-  it("muestra solo Macros, Métricas, Coach y Tienda, en ese orden, sin Catálogo ni Favoritos", () => {
+  // SDD: 022 REQ-015 AC-015.1
+  it("muestra Diario, Macros, Métricas, Coach y Tienda, en ese orden, sin Catálogo ni Favoritos", () => {
     render(
       <QueryClientProvider client={new QueryClient()}>
         <MemoryRouter>
@@ -39,8 +40,35 @@ describe("Navbar", () => {
       .filter((link) => link.getAttribute("href") !== "/home")
       .map((link) => link.textContent)
 
-    expect(sectionLinks).toEqual(["Macros", "Métricas", "Coach", "Tienda"])
+    expect(sectionLinks).toEqual(["Diario", "Macros", "Métricas", "Coach", "Tienda"])
     expect(screen.queryByRole("link", { name: "Catálogo" })).not.toBeInTheDocument()
     expect(screen.queryByRole("link", { name: "Favoritos" })).not.toBeInTheDocument()
+  })
+
+  // SDD: 022 REQ-015 AC-015.1
+  it("«Diario» lleva a /diary", () => {
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <MemoryRouter>
+          <Navbar />
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+
+    expect(screen.getByRole("link", { name: "Diario" })).toHaveAttribute("href", "/diary")
+  })
+
+  // SDD: 022 REQ-015 AC-015.3
+  it("en /diary la entrada «Diario» aparece como activa y las demás no", () => {
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <MemoryRouter initialEntries={["/diary"]}>
+          <Navbar />
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+
+    expect(screen.getByRole("link", { name: "Diario" })).toHaveAttribute("aria-current", "page")
+    expect(screen.getByRole("link", { name: "Macros" })).not.toHaveAttribute("aria-current")
   })
 })

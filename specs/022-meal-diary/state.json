@@ -10,7 +10,7 @@
   "branch": "feat/022-meal-diary",
   "base_branch": "main",
   "created_at": "2026-10-20T17:28:30.526Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,7 +25,10 @@
       "at": "2026-10-20T17:58:45.205Z",
       "note": "auto (gate_mode=flow): 65 tareas, cobertura de 86 AC y 3 AC-N"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-20T20:15:45.219Z",
+      "note": "auto (gate_mode=flow): red check PASS tras 2 correcciones"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -34,17 +37,18 @@
   },
   "commits": {
     "spec": "31e0517",
-    "plan": "89dd14a"
+    "plan": "89dd14a",
+    "tasks": "140fcb2"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 2,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-20T20:15:36.879Z"
   },
   "verify": {
     "result": null,
@@ -54,7 +58,29 @@
     "verdict": null,
     "at": null
   },
-  "tests_snapshot": null,
+  "tests_snapshot": {
+    "at": "2026-10-20T20:15:45.098Z",
+    "reason": "tests rojos aprobados (red check PASS)",
+    "sha256": {
+      "backend/tests/fakes.py": "c9f8578e900b73ed0791467d34d744640e73a2f77b173f642288e2239225ccfb",
+      "backend/tests/test_routes/test_meal_routes.py": "4de39810070a40adf72a1eb554a737f45dc41228beb1e6db729877e6556d2b39",
+      "backend/tests/test_services/test_meal_rules.py": "eb7f861f6ee161f466c1e482f8a5afdb5d60ad6154d2368fa8e8be4c7b989c39",
+      "backend/tests/test_services/test_meal_service.py": "8b4712c1916dd531e84ddad66905251cffd85ae7fb2d18b0690f3322e50aa364",
+      "frontend/src/app/diaryRoute.test.tsx": "c1f5953c9ea80a1c908e9a18556a527e9bd39b0bd33be175e5657b92beb1a0aa",
+      "frontend/src/components/layout/BottomTabBar.test.tsx": "15cc53953383fd413c07a80569664463ccd3381210b5b0829857216d175ae1bd",
+      "frontend/src/components/layout/Navbar.test.tsx": "d448fb3e740072e2e79fad0fabc5ae67022927622e239818c5442b300e9acb2e",
+      "frontend/src/features/diary/components/AddFoodDialog.test.tsx": "7b44072842f842411af2543032120dd40776cd48cc903cada1a8477dfdfbce50",
+      "frontend/src/features/diary/components/EditGramsDialog.test.tsx": "62cc07c66062d88b6229f085a3696999c259b0cd0592368e8e1dec4403bd4170",
+      "frontend/src/features/diary/errors.test.ts": "53c4c5bace7a45c92fa479a8bd155d5a7dce2cbde2c829682a07c32edeeb80b1",
+      "frontend/src/features/diary/format.test.ts": "5cb0c58505a88bce504941908ee411238186b462348ed47c2a0722cea215f96b",
+      "frontend/src/features/diary/nutrition.test.ts": "aa2727582d448bb7752a8f8dc4f601f1cdb8c575f2bb0ac7bf40acc3341de08a",
+      "frontend/src/features/diary/pages/DiaryPage.test.tsx": "675e6b53e8305d77c36fdaea5e0b3cd1953d7c90054e9151574219641f249c06",
+      "frontend/src/features/diary/schemas.test.ts": "c1ec55e16140d40771deccea31bc618470d203f541cf7ce71f72235e8e408b51",
+      "frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx": "76cd581403a1a04710aeee7607a6227d8ee4a979d65ec070de591e4d64d8f06e",
+      "frontend/src/features/legal/pages/TermsOfServicePage.test.tsx": "c6d4b2f4e0a58c504d6a9ce992e4ad6a5e2b2a49e4ff648ce07b1ef41dfbab08",
+      "frontend/src/test/diaryFixtures.ts": "59f0f4066488fa816174498995efdf2893aeb28d9670f8273bf1ee8ab66f7fd8"
+    }
+  },
   "bypass": false,
   "history": [
     {
@@ -140,6 +166,102 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): 65 tareas, cobertura de 86 AC y 3 AC-N"
+    },
+    {
+      "at": "2026-10-20T17:58:58.509Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 140fcb2"
+    },
+    {
+      "at": "2026-10-20T17:58:58.651Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests en 3 pasos: scaffold, test-author, red check"
+    },
+    {
+      "at": "2026-10-20T17:58:58.725Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: esqueletos (13 tareas scaffold)"
+    },
+    {
+      "at": "2026-10-20T18:00:40.287Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (27 tareas test)"
+    },
+    {
+      "at": "2026-10-20T18:28:45.887Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (verifier)"
+    },
+    {
+      "at": "2026-10-20T18:32:46.851Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Red: 16 tests nuevos pasan sin implementación (guardas de contenido existente y constantes del scaffold; test de fecha débil en legales); backend unit 194/194 fallan por not implemented (--noconftest); suite de rutas BLOCKED (entorno, Postgres 5433 no responde); frontend 162 fallos legítimos; scaffold sin lógica."
+    },
+    {
+      "at": "2026-10-20T18:33:01.596Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red check FAIL: 16 tests de frontend pasan sin implementación (fechas legales débiles, guardas y constantes del scaffold) · tests 1/3"
+    },
+    {
+      "at": "2026-10-20T20:09:15.168Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3 (repetición): red check tras corregir tests (iteración 1/3)"
+    },
+    {
+      "at": "2026-10-20T20:12:41.148Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Red: 1 test nuevo de backend pasa sin implementación (test_ids_beyond_the_integer_range_are_not_found_without_a_server_error, solo comprueba 404); backend 290 fallos legítimos de 291 con Postgres arriba; frontend 164 fallos legítimos de 177 (13 pasan son guardas legales preexistentes); scaffold sin lógica."
+    },
+    {
+      "at": "2026-10-20T20:12:53.764Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red check FAIL: test_ids_beyond_the_integer_range_are_not_found_without_a_server_error pasa sin implementación (solo asserta 404) · tests 2/3"
+    },
+    {
+      "at": "2026-10-20T20:13:22.751Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3 (repetición 2): red check tras endurecer AC-009.5 (iteración 2/3)"
+    },
+    {
+      "at": "2026-10-20T20:15:36.879Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red: 291 backend y 164 frontend tests nuevos fallan por comportamiento ausente (not implemented, 404 de ruta inexistente, texto/rol ausente); 13 guardas legales preexistentes pasan y no cuentan; scaffolds sin lógica."
+    },
+    {
+      "at": "2026-10-20T20:15:45.002Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS: 291 backend y 164 frontend fallan por la razón correcta"
+    },
+    {
+      "at": "2026-10-20T20:15:45.098Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "17 archivo(s) de test: tests rojos aprobados (red check PASS)"
+    },
+    {
+      "at": "2026-10-20T20:15:45.219Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS tras 2 correcciones"
+    },
+    {
+      "at": "2026-10-20T20:15:45.309Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Red check PASS en la 3.ª pasada (2 correcciones de tests: 16 tests de frontend sin rojo; AC-009.5 solo asertaba 404). 13 guardas legales preexistentes (005/012) excluidas del criterio."
     }
   ]
 }
