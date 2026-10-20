@@ -19,3 +19,7 @@
 - [ ] Pausas o reintentos entre lotes de Voyage si los límites de uso hacen lenta la importación.
 - [ ] `backend/scripts/**` no está en los globs de producción del ámbito `backend` de `.sdd/config.json`; valorar añadirlo.
 - [ ] El `doc-keeper` debe documentar en `docs/deploy-runbook.md` los pasos de producción: copiar los CSV a EC2, `flask db upgrade`, `docker compose -f docker-compose.prod.yml run --rm -v <carpeta>:/data/usda:ro backend python -m scripts.import_usda_foods …` y medir el tamaño.
+
+## tasks · task-breaker
+- [ ] `backend/scripts/` no está en los globs de producción del ámbito `backend`, así que un hook podría bloquear T-054. Si pasa, el implementer lo informa (ya está anotado en los riesgos del plan).
+- [ ] Los pasos manuales de producción (migración, importación, medición del tamaño de `public.foods`) quedan para el `doc-keeper` en `docs/deploy-runbook.md`; no hay tarea `docs` en este archivo.
