@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "feature": "021-usda-food-database",
+  "title": "Base de alimentos de USDA en Postgres con búsqueda híbrida",
+  "type": "feature",
+  "scope": [
+    "backend",
+    "frontend"
+  ],
+  "branch": "feat/021-usda-food-database",
+  "base_branch": "main",
+  "created_at": "2026-10-20T01:56:03.911Z",
+  "stage": "plan",
+  "status": "in_progress",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-20T04:23:50.620Z",
+      "note": "aprobado"
+    },
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
+    "verify": null,
+    "review": null,
+    "docs": null,
+    "close": null
+  },
+  "commits": {},
+  "iterations": {
+    "tests": 0,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": null,
+    "at": null
+  },
+  "verify": {
+    "result": null,
+    "at": null
+  },
+  "review": {
+    "verdict": null,
+    "at": null
+  },
+  "tests_snapshot": null,
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-20T01:56:03.911Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama feat/021-usda-food-database desde main"
+    },
+    {
+      "at": "2026-10-20T01:57:17.125Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Redactar spec.md de la base de alimentos USDA"
+    },
+    {
+      "at": "2026-10-20T02:00:28.774Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "Q1-Q10 de la spec pendientes de respuesta del usuario (Q6: interpretación del Art. P3.3)"
+    },
+    {
+      "at": "2026-10-20T04:21:08.955Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "Spec 021: 14 REQ, 60 AC, 2 NFR; Q1-Q10 resueltas"
+    },
+    {
+      "at": "2026-10-20T04:23:50.620Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "aprobado"
+    }
+  ]
+}
