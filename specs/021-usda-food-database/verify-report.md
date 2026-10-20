@@ -1,18 +1,22 @@
 # Verify report 021 — Base de alimentos de USDA en Postgres con búsqueda híbrida
 
-- **Modo:** full (etapa verify, iteración 2)
-- **Fecha:** 2026-10-20T07:09:09.071Z · **Rama:** `feat/021-usda-food-database` @ `d009a5a` · **Base:** `main`
+- **Modo:** full (etapa verify, iteración 3)
+- **Fecha:** 2026-10-20T08:30:33.429Z · **Rama:** `feat/021-usda-food-database` @ `0618094` · **Base:** `main`
 - **Resultado:** PASS
 
 ## 1. Comandos ejecutados
 | Ámbito | Comando (cwd) | Resultado | Resumen de la salida |
 |---|---|---|---|
-| backend | `".venv/Scripts/python.exe" -m pytest -q` (`backend`) | ✅ | 1175 passed, 0 failed, 0 skipped |
-| backend | ratchet de ruff: `lint-ratchet.mjs backend` (raíz del repo) | ✅ | sin violaciones nuevas respecto a main (exit 0); los 13 E501 de la iteración 1 están corregidos |
+| backend | `".venv/Scripts/python.exe" -m pytest -q` (`backend`) | ✅ | 1175 passed, 0 failed |
+| backend | ratchet de ruff: `lint-ratchet.mjs backend` (raíz del repo) | ✅ | sin violaciones nuevas respecto a main (exit 0); las 13 E501 de la iteración 1 siguen corregidas |
 | frontend | `npm test` (`frontend`) | ✅ | 842 passed en 65 archivos, 0 failed |
 | frontend | `npm run lint` (`frontend`) | ✅ | oxlint sin errores ni avisos (exit 0) |
 | frontend | `npx tsc -b` (`frontend`) | ✅ | sin errores de tipos (exit 0) |
 | frontend | `npm run build` (`frontend`) | ✅ | Chunk de entrada `index-*.js`: 384,53 kB (gzip 122,88 kB), por debajo de 500 kB (ADR-0026, NFR-001). `FoodsPage` en chunk propio de 3,72 kB. |
+
+Revisión de las correcciones de review de esta iteración:
+- **F1 (migración vs modelo):** `search_vector` en la migración `c8e2a4f6b9d3` tiene ya `nullable=False`, igual que `Mapped[str]` del modelo. Las demás columnas también coinciden. Los 1175 tests pasan con la migración corregida.
+- **F3 (zip strict) y F5 (espacio en el router):** cubiertos por la suite completa en verde y por el ratchet sin violaciones nuevas.
 
 Entorno: Postgres (5433) respondía; dependencias instaladas en backend y frontend. No hay errores de entorno.
 
@@ -36,19 +40,17 @@ Entorno: Postgres (5433) respondía; dependencias instaladas en backend y fronte
 | NFR-001 | AC-N001.1 | T-043, T-062 | `frontend/src/app/foodsRoute.test.tsx` | ✅ |
 | NFR-002 | AC-N002.1, AC-N002.2 | T-042, T-060, T-061 | `frontend/src/features/foods/pages/FoodsPage.test.tsx` | ✅ |
 
-- AC sin test: —  (los 60 AC tienen al menos un marcador `SDD: 021` y sus tests pasan)
+- AC sin test: — (los 61 AC que aparecen en `spec.md` tienen al menos un marcador `SDD: 021` y sus tests pasan)
 - REQ sin tarea: —
 - Tareas sin marcar `[x]`: — (48 de 48 marcadas)
-- `skip`, `xfail`, `.only` o equivalentes nuevos en el diff: ninguno (búsqueda en `backend/tests` y `frontend/src`)
+- `skip`, `xfail`, `.only` o equivalentes nuevos en el diff: ninguno (búsqueda en `backend/tests` y `frontend/src`; las coincidencias de «only» son texto de la spec, no marcas de test)
 
 ## 3. Criterios de aceptación manuales
 - **Calidad de la búsqueda en español e inglés (Q8, REQ-006 y REQ-012):** 20 consultas reales contra Voyage con la base importada. **Manual, no ejecutado** (requiere la importación real y Voyage; no se usa producción ni Supabase).
 - **Tamaño de `public.foods`** (`SELECT pg_size_pretty(pg_total_relation_size('public.foods'))`, plan.md): **manual, no medido** (requiere la importación real; se anota aquí cuando se haga).
-- **Migración `c8e2a4f6b9d3`:** no aplicada por esta verificación (el verifier no aplica migraciones). Su aplicación en la base de desarrollo y la importación real quedan pendientes de decisión del orquestador; no afectan al resultado de verify.
+- **Migración `c8e2a4f6b9d3`:** no aplicada por esta verificación (el verifier no aplica migraciones). Su revisión está en `down_revision = 'e5b7d9f1a3c6'`, única cabeza encadenada, y su aplicación en producción queda como paso manual documentado (P4).
 
 ## 4. Fallos (si los hay)
 | # | Qué falló | Salida relevante (recortada) | Responsable probable (test-author · implementer · entorno) |
 |---|---|---|---|
-| — | Ninguno en esta iteración. El fallo F1 de la iteración 1 (13 E501 del ratchet en tests) está corregido: `lint-ratchet.mjs backend` sale con 0. | — | — |
-
-Observación no bloqueante para el backlog (no cambia el resultado): en `backend/models/food.py`, `search_vector` está declarado como `Mapped[str]` (NOT NULL por defecto), mientras que la migración `c8e2a4f6b9d3` lo crea con `nullable=True`. Es una columna generada, así que en la práctica nunca es nula, pero el modelo y la migración no coinciden. Los tests no lo detectan (create_all).
+| — | Ninguno | — | — |

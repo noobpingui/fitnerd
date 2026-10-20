@@ -1,115 +1,94 @@
 # Review 021 — Base de alimentos de USDA en Postgres con búsqueda híbrida
 
-- **Iteración:** 1 de 3
-- **Diff revisado:** `git diff main...feat/021-usda-food-database` @ `d009a5a` (+ cambios sin commitear: solo `state.json` y `verify-report.md` de la feature)
-- **Veredicto:** CHANGES_REQUESTED
+- **Iteración:** 2 de 3
+- **Diff revisado:** `git diff main...feat/021-usda-food-database` @ `0618094` (+ cambios sin commitear: solo `backlog.md`, `state.json` y `verify-report.md` de la feature)
+- **Veredicto:** APPROVED
 
 ## 1. Resumen
-La feature añade la tabla `public.foods` (modelo `Food` y migración `c8e2a4f6b9d3`), el lector de CSV de USDA, la
-importación en dos fases reanudable, el endpoint `GET /api/foods/search` con fusión RRF de texto y similitud, y la
-pantalla «Alimentos» en `/foods`, cargada bajo demanda. El código está limpio, sigue las capas y el plan casi al pie de
-la letra, y los tests prueban de verdad cada AC. Lo único que impide aprobar es que la migración, escrita a mano, no
-coincide con el modelo en la nulabilidad de `search_vector`. Es un cambio de una línea que conviene hacer ahora, antes
-de que la migración se aplique en algún sitio.
+Segunda pasada tras las correcciones de la iteración 1. El commit `0618094` toca solo tres líneas de código, una por
+hallazgo: F1 (la migración crea `search_vector` como `NOT NULL`), F3 (`zip(..., strict=True)`) y F5 (el espacio en
+`router.tsx`). He comprobado que F1 está resuelto de verdad: el DDL que compila el modelo y el SQL offline de la
+migración son idénticos. No hay regresiones: los tests no cambiaron, el snapshot es idéntico y los 100 tests de la
+feature pasan. Quedan F2, F4 y F6, menores, en el backlog para que los decida el usuario en el gate.
 
 ## 2. Cumplimiento de la spec
+Sin cambios respecto a la iteración 1: el commit de correcciones no altera ningún comportamiento especificado.
+
 | REQ / AC | ¿Implementado como se especificó? | Evidencia (archivo:línea o test) |
 |---|---|---|
-| AC-001.1, AC-001.2 | Sí | `backend/services/usda_csv_reader.py:117-141` (filtro por `USDA_DATA_TYPES`, registro con los 4 valores); `backend/services/food_import_service.py:69-87` (alta); tests `test_usda_csv_reader.py`, `test_food_import_service.py` |
-| AC-001.3, AC-001.6, AC-001.7 | Sí | `usda_csv_reader.py:123-131`: orden 1008 → 2047 → 2048 → `None`; nunca se calcula a partir de los macros |
-| AC-001.4 | Sí | `usda_csv_reader.py:103-109` (`amount` vacío = `None`) y `:137-139` (`found.get` → `None`, no 0) |
-| AC-001.5 | Sí | `usda_csv_reader.py:36-45,101-102` (`_WANTED_NUTRIENTS`) |
-| AC-002.1, AC-002.2 | Sí | `food_import_service.py:89-114` (comparación por `fdc_id`; `unchanged`/`updated`) |
-| AC-002.3 | Sí | Los alimentos ausentes no se tocan; `test_food_routes.py:424` lo prueba de extremo a extremo |
-| AC-003.1 – AC-003.3 | Sí | `food_import_service.py:110-111` (`embedding = None` solo si cambia la descripción) y `:117-131` (solo pendientes; sin pendientes no llama a Voyage) |
-| AC-004.1, AC-004.2 | Sí | `food_import_service.py:45-50` (se leen todas las fuentes antes de escribir); `usda_csv_reader.py:48-61` (mensajes con archivo y columna) |
-| AC-004.3, AC-004.4 | Sí | `food_import_service.py:117-131` (commit por lote, rollback y parada en el primer fallo; reanudación en la siguiente ejecución) |
-| AC-005.1, AC-005.2 | Sí | `food_import_service.py:61-65` y `format_summary` en `:134-145` |
-| AC-006.1 – AC-006.9 | Sí | `backend/services/food_search_service.py:59-83`, `fuse_rankings` en `:40-47`; `backend/repositories/food_repository.py:19-40`; `backend/routes/food_routes.py:16-35` (solo lee `q`) |
-| AC-007.1, AC-007.2 | Sí | `food_search_service.py:79-80`; umbral `max_distance` en `food_repository.py:36` |
-| AC-008.1 – AC-008.4 | Sí | `food_search_service.py:29-37`, llamado antes del límite y de Voyage (`:60`) |
+| AC-001.1, AC-001.2 | Sí | `backend/services/usda_csv_reader.py:117-141`; `backend/services/food_import_service.py:69-87`; tests `test_usda_csv_reader.py`, `test_food_import_service.py` |
+| AC-001.3, AC-001.6, AC-001.7 | Sí | `usda_csv_reader.py:123-131`: orden 1008 → 2047 → 2048 → `None`, nunca calculado desde los macros |
+| AC-001.4 | Sí | `usda_csv_reader.py:103-109` y `:137-139` (valor ausente = `None`, no 0) |
+| AC-001.5 | Sí | `usda_csv_reader.py:36-45,101-102` |
+| AC-002.1 – AC-002.3 | Sí | `food_import_service.py:89-114`; los ausentes no se tocan (`test_food_routes.py:424`) |
+| AC-003.1 – AC-003.3 | Sí | `food_import_service.py:110-111` y `:115-131` |
+| AC-004.1 – AC-004.4 | Sí | `food_import_service.py:45-50,115-131`; `usda_csv_reader.py:48-61` |
+| AC-005.1, AC-005.2 | Sí | `food_import_service.py:61-65`, `format_summary` en `:134-145` |
+| AC-006.1 – AC-006.9 | Sí | `backend/services/food_search_service.py:40-47,59-83`; `backend/repositories/food_repository.py:19-40`; `backend/routes/food_routes.py:16-35` |
+| AC-007.1, AC-007.2 | Sí | `food_search_service.py:79-80`; `food_repository.py:36` |
+| AC-008.1 – AC-008.4 | Sí | `food_search_service.py:29-37,60` |
 | AC-009.1, AC-009.2 | Sí | `food_routes.py:31` (`@require_auth`) |
-| AC-010.1 – AC-010.3 | Sí | `food_search_service.py:62-68` (clave por `user_id` del token, 30 por 60 s, antes de Voyage; cuenta también las que acaban en 503) |
-| AC-011.1 – AC-011.3 | Sí | `food_search_service.py:70-74` (`ServiceUnavailableError`, sin resultados parciales) |
-| AC-012.1 – AC-012.7 | Sí | `frontend/src/features/foods/pages/FoodsPage.tsx`, `components/FoodSearchForm.tsx`, `components/FoodResultList.tsx`, `format.ts` |
-| AC-012.8 | Sí | Sin cambios en `Navbar` ni `BottomTabBar`; `noFoodsLink.test.tsx` |
-| AC-013.1 – AC-013.3 | Sí | `frontend/src/features/foods/schemas.ts:8-15`; `FoodSearchForm.tsx:50` (`maxLength`) |
-| AC-013.4 – AC-013.7 | Sí | `frontend/src/features/foods/searchError.ts:5-11`; `FoodsPage.tsx:33-47` («Reintentar» con `variables`; el formulario nunca se vacía) |
+| AC-010.1 – AC-010.3 | Sí | `food_search_service.py:62-68` |
+| AC-011.1 – AC-011.3 | Sí | `food_search_service.py:70-74` |
+| AC-012.1 – AC-012.8 | Sí | `frontend/src/features/foods/pages/FoodsPage.tsx`, `components/FoodSearchForm.tsx`, `components/FoodResultList.tsx`, `format.ts`; sin cambios en `Navbar` ni `BottomTabBar` |
+| AC-013.1 – AC-013.7 | Sí | `frontend/src/features/foods/schemas.ts:8-15`; `FoodSearchForm.tsx:50`; `searchError.ts:5-11`; `FoodsPage.tsx:33-47` |
 | AC-014.1 | Sí | `FoodsPage.tsx:8-9,53` |
-| AC-N001.1 | Sí | `frontend/src/app/router.tsx:28,162-169`; build con el chunk de entrada en 384,53 kB (verify-report) |
-| AC-N002.1, AC-N002.2 | Sí | `FoodSearchForm.tsx:45-51` (`FormLabel` + `type="search"`); `FoodsPage.tsx:29` (`role="status"`, `aria-live="polite"`) |
-| Alcance §3: validación manual de unas 20 consultas y tamaño de `public.foods` | **Pendiente** | `verify-report.md` §3: «Manual, no ejecutado» (ver F2) |
+| AC-N001.1 | Sí | `frontend/src/app/router.tsx:28,162-169`; chunk de entrada 384,53 kB (verify-report, iteración 3) |
+| AC-N002.1, AC-N002.2 | Sí | `FoodSearchForm.tsx:45-51`; `FoodsPage.tsx:29` |
+| Alcance §3: 20 consultas manuales y tamaño de `public.foods` | **Pendiente** | `verify-report.md` §3 (F2, en el backlog) |
 
 ## 3. Cumplimiento del plan
-- La implementación sigue las firmas, los mensajes y la lógica de las secciones 3.2 y 3.3 del plan sin desviaciones
-  funcionales.
-- **Migración:** el plan pedía generarla con `flask db migrate` y revisarla a mano. Se escribió a mano y quedó
-  `search_vector` con `nullable=True`, mientras que el modelo (`Mapped[str]`) crea `NOT NULL` con `create_all()` (F1).
-  Lo he comprobado con el DDL que compila el modelo y con el SQL offline de la migración
-  (`flask db upgrade e5b7d9f1a3c6:c8e2a4f6b9d3 --sql`, sin conexión a la base). El resto coincide: tipos, `CHECK`
-  `ck_foods_data_type`, columna generada `STORED`, índice GIN `ix_foods_search_vector`, clave primaria, `schema='public'`
-  y `down_revision = 'e5b7d9f1a3c6'`. `alembic heads` devuelve una sola cabeza (`c8e2a4f6b9d3`), y el downgrade borra el
-  índice y la tabla.
-- **Riesgo «migración que no coincide con el modelo»:** la mitigación del plan («el `verifier` aplica `flask db upgrade`
-  en la base de desarrollo antes de importar») no se ejecutó: la migración no se ha aplicado en ninguna base (F2).
-- **`.sdd/config.json`:** añade `backend/scripts/**` a los globs de producción del ámbito `backend`. Lo aprobó el usuario
-  (según el orquestador) y resuelve el riesgo anotado en el plan. Justificado.
-- **Script de importación:** cumple la mitigación del plan. `create_app()` sin `FLASK_ENV` cae en `default` →
-  `DevelopmentConfig` (`backend/app.py:21`, `backend/config.py:133`), no en producción como `wsgi.py`. Antes de escribir
-  imprime el entorno y la base sin contraseña (`backend/scripts/import_usda_foods.py:31-36`). Solo apunta a producción
-  con `FLASK_ENV=production`, que es lo que fija `docker-compose.prod.yml` en la instancia. No pide confirmación antes de
-  escribir (F4, menor).
+- **F1, resuelto:** `backend/migrations/versions/c8e2a4f6b9d3_create_foods_table.py:35` tiene ahora `nullable=False`.
+  Lo he comprobado comparando el `CREATE TABLE` que compila `Food.__table__` con el SQL offline de la migración
+  (`FLASK_ENV=development flask db upgrade e5b7d9f1a3c6:c8e2a4f6b9d3 --sql`, sin conectar a la base). Coinciden columna a
+  columna, incluida `search_vector TSVECTOR GENERATED ALWAYS AS (to_tsvector('english'::regconfig, description)) STORED
+  NOT NULL`, la `CHECK` `ck_foods_data_type`, la clave primaria y el índice GIN `ix_foods_search_vector`.
+  `flask db heads` devuelve una sola cabeza, `c8e2a4f6b9d3`.
+- **F3, resuelto:** `backend/services/food_import_service.py:125` usa `zip(pending, vectors, strict=True)`. Si los
+  vectores no cuadran, se lanza `ValueError` dentro del `try`: rollback del lote, `embedding_failed` y fin del bucle. Ya
+  no puede quedarse en un bucle infinito.
+- **F5, resuelto:** `frontend/src/app/router.tsx:29` vuelve a ser idéntico a `main`. El diff del router contra `main`
+  solo añade `FoodsPage` y su ruta.
+- El resto de desviaciones (migración escrita a mano, `backend/scripts/**` en `.sdd/config.json`) ya se valoraron como
+  justificadas en la iteración 1.
 
 ## 4. Checklist de la constitución
 ### Parte I (base)
-- [x] B2: cada agente se mantuvo en su rol. `snapshot --check` es idéntico. Los tests cambiaron desde `commits.tests`
-      (`b1ac9ee`) solo en `d009a5a`, una corrección autorizada (`rework tests` y `snapshot` posterior en `history`), y el
-      diff es solo de formato (E501), sin cambios de aserciones.
-- [x] B4: los marcadores `SDD: 021 …` son coherentes con los AC (con una salvedad menor, F6).
-- [x] B5: no hay tests borrados, saltados ni debilitados. Ningún test llama a Voyage ni a Redis reales (dobles en
-      `tests/fakes.py` instalados en el atributo `client` de los singletons, patrón existente). Los esqueletos están
-      sustituidos por la implementación.
-- [x] B5.7: el ratchet de ruff no da violaciones nuevas, y `npm run lint` y `npx tsc -b` pasan sin errores
-      (verify-report, iteración 2).
-- [x] B6.5: no hay secretos ni variables nuevas (se reutilizan `VOYAGE_*` y `REDIS_URL`).
+- [x] B2: cada agente se mantuvo en su rol. `snapshot --check` es idéntico (0 cambiados, borrados o añadidos). Desde
+      `commits.tests` (`b1ac9ee`), los tests solo cambiaron en `d009a5a`, la corrección de formato E501 autorizada
+      (`rework tests` y `snapshot` posterior en `history`). `0618094` no toca tests.
+- [x] B4: los marcadores `SDD: 021 …` son coherentes con los AC, con la salvedad menor de F6 (en el backlog).
+- [x] B5: no hay tests borrados, saltados ni debilitados, ni llamadas a Voyage o Redis reales. Los 100 tests de la
+      feature pasan (ejecutados en esta revisión).
+- [x] B5.7: el ratchet de ruff no da violaciones nuevas, y `npm run lint`, `npx tsc -b` y `npm run build` pasan
+      (verify-report, iteración 3).
+- [x] B6.5: no hay secretos ni variables nuevas.
 
 ### Parte II (proyecto)
-- [x] P1.1 / P1.2: los marcadores llevan el número de spec, y los docstrings y comentarios están en español.
-- [x] P1 backend: los tests están en `test_services/` y `test_routes/`, con nombres en inglés y dobles escritos a mano,
-      sin `unittest.mock` ni `monkeypatch`.
-- [x] P1 frontend: los tests están junto a su archivo, con `vitest` importado, `it("…")` en español y la red simulada en
-      `@/features/foods/api`.
-- [x] P2.1 / P2.2: se respetan las capas `routes → services → repositories → models`. Solo `UnitOfWork` hace commit,
-      también en la importación, y las dependencias se inyectan por constructor con `_build_food_search_service()`.
-- [x] P2.3: los errores HTTP usan `ValidationError`, `RateLimitError` y `ServiceUnavailableError`. `UsdaFileError` queda
-      fuera de `custom_exceptions.py`, con justificación en el plan (§7): no es un error HTTP.
-- [ ] P2.4: la migración está incluida pero **no coincide con el modelo** en la nulabilidad de `search_vector` (F1).
-- [x] P2.5: reutiliza `utils/embeddings.py` (`embed_query`, `embed_documents`) y `utils/rate_limiter.py`.
-- [x] P2 frontend: la feature `foods` tiene `api.ts`, `hooks.ts`, `types.ts`, `schemas.ts`, `components/` y `pages/`. Usa
-      `apiFetch`, TanStack Query (mutación), react-hook-form con zod y los componentes de `@/components/ui/`.
-- [x] P2 General: los textos visibles, comentarios y docstrings están en español correcto, sin voseo.
-- [x] P3.1: `@require_auth`. El `user_id` del token solo se usa en la clave del límite y no se recibe del cliente.
-- [x] P3.2: la consulta se valida en el servicio (`ValidationError`) y con zod en el frontend, y la respuesta también se
-      valida con zod (`foodSearchResponseSchema`).
-- [x] P3.3: límite en Redis de 30 por minuto y por usuario, y los fallos de Voyage salen como 503.
-- [x] P3.4: las consultas usan el ORM y parámetros enlazados (`websearch_to_tsquery`, `cosine_distance`), sin
-      concatenar SQL.
-- [x] P3.5: no hay `.env` ni claves en el diff.
-- [ ] P4: la migración está incluida, pero falta corregir F1. Los pasos manuales de producción (`flask db upgrade`,
-      copiar los CSV e importar en la instancia, medir el tamaño) los tiene que documentar el `doc-keeper` en
-      `docs/deploy-runbook.md` (pendiente de su etapa).
+- [x] P1: los marcadores, la ubicación y el nombre de los tests y los dobles escritos a mano siguen la convención.
+- [x] P2.1 / P2.2: capas respetadas; solo `UnitOfWork` hace commit; inyección por constructor.
+- [x] P2.3: excepciones de `custom_exceptions.py` para los errores HTTP; `UsdaFileError` justificada en el plan.
+- [x] P2.4: la migración está incluida, revisada y **coincide con el modelo** (F1 resuelto).
+- [x] P2.5: reutiliza `utils/embeddings.py` y `utils/rate_limiter.py`.
+- [x] P2 frontend: estructura de feature, `apiFetch`, TanStack Query, react-hook-form con zod y componentes de `ui/`.
+- [x] P2 General: textos, comentarios y docstrings en español correcto.
+- [x] P3.1 – P3.5: autenticación, validación de entrada y salida, límite en Redis, SQL parametrizado y sin secretos.
+- [x] P4: la migración es no destructiva y coincide con el modelo. Documentar en `docs/deploy-runbook.md` los pasos
+      manuales (`flask db upgrade`, copiar los CSV e importar en la instancia, medir el tamaño) le toca al `doc-keeper`
+      en la etapa docs.
 
 ## 5. Hallazgos
 | # | Severidad | Archivo:línea | Hallazgo | Responsable |
 |---|---|---|---|---|
-| F1 | MAYOR | `backend/migrations/versions/c8e2a4f6b9d3_create_foods_table.py:35` (frente a `backend/models/food.py:29`) | La migración crea `search_vector` con `nullable=True`, pero el modelo declara `Mapped[str]`, y `create_all()` (lo que usan los tests) emite `... STORED NOT NULL`. Comprobado con el DDL del modelo y con el SQL offline de la migración. Producción tendría un esquema distinto del probado, y el próximo `flask db migrate` propondría un `alter_column` espurio. Art. P2.4 exige que la migración se revise a mano y coincida con el modelo. La migración aún no se ha aplicado en ninguna base, así que corregirla ahora es cambiar `nullable=True` por `nullable=False`; después haría falta otra migración. | implementer |
-| F2 | MENOR | `specs/021-usda-food-database/verify-report.md` §3 | La spec (§3, «Incluye») pide validar a mano unas 20 consultas reales y el plan pide medir el tamaño de `public.foods` (riesgo de los 500 MB de Supabase), pero no se hizo ninguna de las dos cosas. La migración tampoco se ha aplicado en la base de desarrollo, que era la mitigación del plan para el riesgo de desajuste entre modelo y migración. No bloquea el código, pero hay que hacerlo (o que el usuario lo difiera explícitamente) antes del gate de `close` y del despliegue en Supabase. | implementer |
-| F3 | MENOR | `backend/services/food_import_service.py:125` | `zip(pending, vectors)` sin `strict=True`: si el proveedor devolviera menos vectores que textos, los alimentos sobrantes quedarían sin vector sin que nadie lo detectara. En el caso límite (siempre uno menos), el bucle `while True` de `_complete_embeddings` no terminaría nunca. Conviene usar `zip(..., strict=True)`, que convierte la discrepancia en un fallo controlado (`embedding_failed`). | implementer |
-| F4 | MENOR | `backend/scripts/import_usda_foods.py:31-38` | El script imprime el entorno y la base de destino, pero escribe enseguida, sin confirmación. El plan califica de «Alto» el impacto de importar contra la base equivocada. Valorar un `--yes` o una confirmación interactiva cuando la base no es local. | implementer |
-| F5 | NIT | `frontend/src/app/router.tsx:29` | Se tocó sin querer la línea de `CoachPage`: ahora es `const CoachPage =lazyNamed(` (falta el espacio después de `=`). Es un cambio fuera del alcance de la feature. | implementer |
-| F6 | NIT | `frontend/src/app/foodsRoute.test.tsx:113` | El test «con el onboarding pendiente, /foods no se muestra» lleva el marcador `AC-012.1`, que habla del estado inicial de la pantalla. Lo que prueba es la condición del enunciado de REQ-012 (onboarding completado), así que bastaría con el marcador `REQ-012`. | test-author |
+| F1 | ~~MAYOR~~ resuelto | `backend/migrations/versions/c8e2a4f6b9d3_create_foods_table.py:35` | Resuelto en `0618094`: la migración y el modelo generan el mismo DDL (comprobado). | implementer |
+| F2 | MENOR (backlog) | `specs/021-usda-food-database/verify-report.md` §3 | Siguen sin hacerse las 20 consultas manuales contra Voyage ni la medición del tamaño de `public.foods`, y la migración no se ha aplicado en ninguna base. El usuario debe hacerlo o diferirlo explícitamente antes de `close` y del despliegue en Supabase. | implementer |
+| F3 | ~~MENOR~~ resuelto | `backend/services/food_import_service.py:125` | Resuelto: `zip(..., strict=True)`. | implementer |
+| F4 | MENOR (backlog) | `backend/scripts/import_usda_foods.py:31-38` | El script escribe sin pedir confirmación cuando la base no es local. Valorar un `--yes` o una confirmación interactiva. | implementer |
+| F5 | ~~NIT~~ resuelto | `frontend/src/app/router.tsx:29` | Resuelto: la línea vuelve a ser idéntica a `main`. | implementer |
+| F6 | NIT (backlog) | `frontend/src/app/foodsRoute.test.tsx:113` | El marcador `AC-012.1` del test «con el onboarding pendiente, /foods no se muestra» debería ser `REQ-012`. | test-author |
+| F7 | NIT | `specs/021-usda-food-database/state.json` (notas de `history`) | Las notas de `spec` y `tasks` dicen «60 AC», pero `spec.md` tiene 61 (58 de REQ y 3 de NFR). Ya está en el backlog del verifier. Basta con usar la cifra correcta en la documentación de la etapa docs. | implementer |
 
 ## 6. Decisión
-CHANGES_REQUESTED: hay un hallazgo MAYOR abierto (F1, responsable `implementer`), una corrección de una línea en la
-migración. Los MENORES y los NIT se pueden corregir en la misma iteración o pasar al backlog con la aprobación del
-usuario. F2 es un paso manual que el usuario debe hacer o diferir explícitamente antes de `close`.
+APPROVED: no quedan hallazgos BLOQUEANTES ni MAYORES. F1 está resuelto y comprobado contra el DDL del modelo, y las
+correcciones no causan regresiones. F2 (pasos manuales antes del despliegue), F4 y F6 quedan en el backlog de la feature
+para que los decida el usuario en el gate de review.
