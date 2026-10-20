@@ -188,6 +188,16 @@ Migración `c8e2a4f6b9d3` (ADR-0029): crea `public.foods` (con su `CHECK`, la co
 8. **Comprobación manual:** con una cuenta real, abre `/foods` (no hay enlace en la navegación, se entra por la URL) y busca «pechuga de pollo» y «banana». Debe haber resultados y la atribución a USDA.
 9. **Marcha atrás:** revertir el merge basta para el código. `flask db downgrade` a `e5b7d9f1a3c6` borra `public.foods`; los datos importados se recuperan volviendo a ejecutar el script. Vaciar la tabla no afecta a nada más: aún no hay otra tabla que la referencie.
 
+### Caso B (aditiva): 022, diario de comidas
+
+Migración `b3d5f7a9c1e4` (ADR-0030): crea las tablas `meals` y `meal_items` (con sus restricciones e índices). Es aditiva, no toca datos existentes y no se aplica sola. El diario (`/diary`, `/api/meals`) no necesita variables nuevas ni importar datos. Orden: backup, migración, merge y CD.
+
+1. **Volcado completo** (paso 3) **verificado** en `C:/Users/alber/fitnerd-backups`.
+2. **Migración antes del merge** (caso B): `cd backend && FLASK_ENV=production .venv/Scripts/python.exe -m flask db upgrade`, con `FLASK_ENV` escrito a propósito (sin él, `flask` usa producción igualmente; en local se usa `development`). Comprobación de solo lectura posterior: `alembic_version` = `b3d5f7a9c1e4` y existen `public.meals` y `public.meal_items` (`to_regclass`), vacías.
+3. **Merge y CD** (paso 6).
+4. **Comprobación manual:** con una cuenta real, abre `/diary` (enlace «Diario» en la navegación), añade un alimento de USDA a una comida y uno personalizado, cambia sus gramos y quítalo; comprueba que los totales del día se comparan con el objetivo de Macros. Recarga forzada de las pestañas abiertas.
+5. **Marcha atrás:** revertir el merge basta para el código. `flask db downgrade` a `c8e2a4f6b9d3` **borra las dos tablas con sus datos** (las comidas registradas se pierden); úsalo solo si la migración estorba de verdad y con el volcado a mano.
+
 ### Caso C (destructiva): migración después del CD
 
 1. Backup completo (paso 3) **verificado**, con el recuento de filas de lo que se va a borrar.

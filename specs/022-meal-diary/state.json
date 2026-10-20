@@ -10,7 +10,7 @@
   "branch": "feat/022-meal-diary",
   "base_branch": "main",
   "created_at": "2026-10-20T17:28:30.526Z",
-  "stage": "docs",
+  "stage": "close",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -41,7 +41,10 @@
       "at": "2026-10-20T21:12:36.253Z",
       "note": "Sí, apruebo la review"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-20T21:13:56.793Z",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
     "close": null
   },
   "commits": {
@@ -49,7 +52,8 @@
     "plan": "89dd14a",
     "tasks": "140fcb2",
     "tests": "37dbf5d",
-    "implement": "e1f4de4"
+    "implement": "e1f4de4",
+    "review": "1ade108"
   },
   "iterations": {
     "tests": 3,
@@ -555,6 +559,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Sí, apruebo la review"
+    },
+    {
+      "at": "2026-10-20T21:12:36.488Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: 1ade108"
+    },
+    {
+      "at": "2026-10-20T21:12:36.652Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Actualizar documentación y pasar ADR-0030 a Aceptada"
+    },
+    {
+      "at": "2026-10-20T21:13:56.709Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "ADR-0030 Aceptada; runbook, CLAUDE.md y README actualizados"
+    },
+    {
+      "at": "2026-10-20T21:13:56.793Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): docs actualizados"
     }
   ]
 }

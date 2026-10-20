@@ -76,3 +76,6 @@
 
 ## review (3.ª pasada) · reviewer
 - [ ] F6 (NIT, test-author): falta un test de que meals.updated_at avanza al añadir, editar o quitar alimentos (backend/models/meal.py:45-48), y otro de «-0» en el formulario personalizado (frontend/src/features/diary/schemas.ts:38).
+
+## docs · doc-keeper
+- [ ] Añadir la fila de 022 en la sección 8 del runbook al desplegar, con la medición de las tablas nuevas si interesa.

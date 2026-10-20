@@ -1,7 +1,7 @@
 # ADR-0030: Diario de comidas con copia de los valores nutricionales y día decidido por el cliente
 
-- **Estado:** Propuesta · 2026-10-20 (plan de `022-meal-diary`)
-- **Decidido por:** el `planner`; pendiente de revisión por el usuario en el gate de `review`.
+- **Estado:** Aceptada · 2026-10-20 (plan de `022-meal-diary`; aceptada por el usuario en la review)
+- **Decidido por:** el `planner`; revisada y aceptada por el usuario en el gate de `review`.
 
 ## Contexto
 La spec 022 añade un diario de comidas: comidas por usuario, fecha y tipo (desayuno, almuerzo, cena y meriendas) con
