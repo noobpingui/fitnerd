@@ -52,6 +52,7 @@ Marcadores `# SDD: 024 REQ-… AC-…`, nombres en inglés, docstrings en españ
 - [x] T-028 [REQ-004, REQ-005, AC-004.1, AC-005.1, AC-005.2, AC-005.3] (test) Ruta: 401 sin cabecera, caducado e inválido sin llamar al proveedor; límite de 10 por hora con el 11.º en 429, independiente por usuario, y 400 que no cuentan — `backend/tests/test_routes/test_meal_analysis_routes.py`
 - [x] T-029 [REQ-006, REQ-009, AC-006.2, AC-009.1, AC-009.2, AC-009.3, AC-009.4] (test) Ruta: `gallo-pinto` a `unmatched` de extremo a extremo, 503 con proveedor que lanza, con texto no interpretable, sin catálogo y con `vision_client.client = None` — `backend/tests/test_routes/test_meal_analysis_routes.py`
 - [x] T-030 [REQ-010, NFR-001, NFR-002, AC-010.1, AC-010.2, AC-N001.1, AC-N002.3] (test) Ruta: la imagen que recibe el proveedor no tiene EXIF ni bloque de texto; ninguna tabla cambia tras un 200 y un 503; 400 y 429 no crean trazas; `app.request_class` es `InMemoryUploadRequest` y su `_get_file_stream` devuelve `BytesIO` — `backend/tests/test_routes/test_meal_analysis_routes.py`
+- [ ] T-058 [REQ-009, AC-009.1] (test) `test_gunicorn_timeout_exceeds_the_vision_provider_budget` (review F1, plan 3.5 y 5): lee el `CMD` de `backend/Dockerfile`, comprueba que es `gunicorn` con un único `--timeout` entero ≥ `VISION_CONNECT_TIMEOUT_SECONDS + VISION_TIMEOUT_SECONDS + 30`; archivo nuevo, requiere reabrir la etapa de tests; en rojo hasta T-059 — `backend/tests/test_services/test_server_timeout.py`
 
 ## Fase B — Implementación (implementer)
 Sin tareas `migration`: no hay cambios de modelo. Orden: configuración y dependencias → utilidades → reglas puras →
@@ -75,6 +76,7 @@ servicio → ruta.
 - [x] T-055 [REQ-001, REQ-005, REQ-009, AC-001.1, AC-005.1, AC-005.3, AC-009.1, AC-009.3] (impl) Implementar `MealImageAnalysisService.analyze`: `prepare_photo`, límite de uso, catálogo, proveedor y saneado, con `except Exception` a `ServiceUnavailableError` y registro seguro del fallo — `backend/services/meal_image_analysis_service.py`
 - [x] T-056 [NFR-002, AC-N002.1, AC-N002.2, AC-N002.3, AC-N002.4] (impl) Añadir a `analyze` la traza `meal-image-analysis` (paso `vision` con tokens, puntuaciones `outcome`, `items_count` y `unmatched_count`) fuera del `try` del proveedor y sin traza ante 400 o 429 — `backend/services/meal_image_analysis_service.py`
 - [x] T-057 [REQ-001, REQ-002, REQ-003, REQ-004, AC-001.1, AC-002.1, AC-003.5, AC-004.1] (impl) Añadir la ruta `POST /analyze` con `@require_auth`, `request.max_content_length` de 4 MB, lectura de `request.files.getlist("image")` y traducción de `RequestEntityTooLarge` a `PayloadTooLargeError`, `_build_meal_image_analysis_service()` y `_serialize_analysis` — `backend/routes/meal_routes.py`
+- [ ] T-059 [REQ-009, AC-009.1] (config) Añadir `"--timeout", "90"` al `CMD` de gunicorn (`["gunicorn", "--bind", "0.0.0.0:5000", "--timeout", "90", "wsgi:app"]`), sin cambiar workers ni clase de worker, y actualizar el comentario en español del `CMD` (review F1, plan 3.5). Nota: `backend/Dockerfile` no está en los globs de producción del ámbito `backend`; si el role-guard bloquea al implementer, lo aplica el orquestador con autorización del usuario — `backend/Dockerfile`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |
@@ -107,7 +109,7 @@ servicio → ruta.
 | REQ-007 | AC-007.4 | T-014 | T-047 |
 | REQ-008 | AC-008.1 | T-015 | T-048 |
 | REQ-008 | AC-008.2 | T-015 | T-048 |
-| REQ-009 | AC-009.1 | T-020, T-023, T-029 | T-050, T-055 |
+| REQ-009 | AC-009.1 | T-020, T-023, T-029, T-058 | T-050, T-055, T-059 |
 | REQ-009 | AC-009.2 | T-020, T-029 | T-051 |
 | REQ-009 | AC-009.3 | T-023, T-029 | T-055 |
 | REQ-009 | AC-009.4 | T-020, T-029 | T-040, T-050, T-054 |

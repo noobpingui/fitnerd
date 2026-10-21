@@ -9,7 +9,7 @@
   "branch": "feat/024-meal-image-analysis",
   "base_branch": "main",
   "created_at": "2026-10-21T19:01:11.612Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -20,7 +20,10 @@
       "at": "2026-10-21T20:08:46.411Z",
       "note": "auto (gate_mode=flow): corrección de review F1, gunicorn --timeout 90"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-21T20:09:12.707Z",
+      "note": "auto (gate_mode=flow): 48 tareas, T-058 y T-059 nuevas"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -30,7 +33,7 @@
   },
   "commits": {
     "spec": "e267a28",
-    "plan": "6e67e2d",
+    "plan": "7834e22",
     "tasks": "0a02cc0",
     "tests": "5d99e15",
     "implement": "79810e4"
@@ -331,6 +334,30 @@
       "stage": "plan",
       "event": "approved",
       "note": "auto (gate_mode=flow): corrección de review F1, gunicorn --timeout 90"
+    },
+    {
+      "at": "2026-10-21T20:08:46.611Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 7834e22"
+    },
+    {
+      "at": "2026-10-21T20:08:46.768Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Añadir tareas del plan corregido (test de timeout y Dockerfile)"
+    },
+    {
+      "at": "2026-10-21T20:09:12.626Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "48 tareas (T-058, T-059 nuevas)"
+    },
+    {
+      "at": "2026-10-21T20:09:12.707Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 48 tareas, T-058 y T-059 nuevas"
     }
   ]
 }
