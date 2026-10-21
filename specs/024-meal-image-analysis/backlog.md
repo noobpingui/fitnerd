@@ -81,3 +81,8 @@
 ## tests · orquestador (excepción autorizada)
 - [ ] F9: `backend/tests/test_services/test_server_timeout.py` lo borró el orquestador con `git rm` y autorización explícita del usuario ("Autorizo"), porque el test-author no puede borrar archivos. Su contenido está idéntico en `test_gunicorn_config.py`.
 - [ ] doc-keeper/harness: permitir al test-author borrar o renombrar archivos de tests propios.
+
+## review · reviewer (iteración 3, APPROVED)
+- [ ] F10 NIT (test-author): `test_icc_profile_is_stripped` no cubre PNG; el descarte de `iCCP` solo lo garantiza la lista blanca de `_strip_png`, sin un test que lo fije.
+- [ ] F11 NIT (planner): el código comprueba las dimensiones antes que la integridad, al revés que el orden «lectura, dimensiones» de la sección 6 de la spec. Un archivo truncado de más de 8000 px da el mensaje de las dimensiones; desde F2 la integridad se puede comprobar antes sin coste.
+- [ ] Revisión manual de Q9 con unas 10 fotos reales, incluida alguna en Display P3, para confirmar que quitar el ICC no empeora el reconocimiento.

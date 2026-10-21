@@ -1,98 +1,116 @@
 # Review 024 — Análisis de la foto de una comida con alimentos propuestos del catálogo
 
-- **Iteración:** 2 de 4
-- **Diff revisado:** `git diff main...feat/024-meal-image-analysis` @ `e83804b`. Sin cambios de código sin commitear: solo `backlog.md`, `state.json` y `verify-report.md` de la feature, del orquestador. Revisión centrada en `git diff 79810e4 e83804b`, la corrección de F1.
+- **Iteración:** 3 de 4
+- **Diff revisado:** `git diff main...feat/024-meal-image-analysis` @ `cba4a18`. Sin cambios de código sin commitear: solo `state.json` y `verify-report.md` de la feature, del orquestador. Revisión centrada en `git diff e83804b cba4a18`, las correcciones de F2 a F9.
 - **Veredicto:** APPROVED
 
 ## 1. Resumen
 
-La iteración 1 corrige F1 (MAYOR). Gunicorn arranca ahora con `--timeout 90` en el `CMD` de `backend/Dockerfile:27`,
-por encima del peor caso del servidor (unos 38 s: 5 s de conexión y 30 s de lectura de Bedrock, más la validación y las
-credenciales). Así, un Bedrock lento vuelve a acabar en el 503 con JSON de REQ-009 y no en un 502 de Caddy. Un test
-nuevo de configuración (T-058) evita que vuelva a pasar. El plan (sección 3.5) y el ADR-0032 justifican la decisión,
-incluido mantener un solo worker *sync*. Fuera de eso, el diff solo toca artefactos de la feature y documentación: no
-hay regresiones. Quedan abiertos los hallazgos MENOR y NIT de la iteración anterior, que ya están en el backlog.
+La iteración 2 corrige todos los hallazgos abiertos (F2–F9) sin cambiar la spec ni el orden de validaciones. Lo más
+importante es F2: la validación ya no decodifica píxeles en ningún formato. PNG se comprueba con `verify()`, JPEG con el
+recorrido de segmentos (exige un `SOF` admitido, un `SOS` y un `EOI`) y WebP con el *demuxer* de libwebp y el
+recorrido RIFF. También se corrigen F4 (`init_app` ya no impide arrancar la app), F6 (`input` que no es objeto da 503 con
+`VisionProviderError`) y F8 (el perfil ICC se descarta en los tres formatos). Los tests de F3, F7 y F9 ahora prueban lo
+que dicen. No encuentro regresiones; quedan dos NIT nuevos.
 
 ## 2. Cumplimiento de la spec
 
-Fuera de AC-009.1, el código de producción no cambió desde `79810e4`. La evidencia de la iteración 1 sigue valiendo y
-aquí se resume.
+Fuera de lo que se cita, el código de producción no cambió desde `e83804b` y la evidencia de las iteraciones anteriores
+sigue valiendo.
 
 | REQ / AC | ¿Implementado como se especificó? | Evidencia (archivo:línea o test) |
 |---|---|---|
-| AC-001.1 – AC-001.5 | Sí | `backend/services/meal_image_rules.py:71-152`, `backend/routes/meal_routes.py:33-51`, `backend/utils/vision_client.py:79-89` |
-| AC-002.1 – AC-002.4 | Sí | `backend/routes/meal_routes.py:124`, `backend/services/meal_photo.py:174-177` |
-| AC-003.1 – AC-003.6 | Sí (el test de AC-003.5 es débil, F3) | `backend/services/meal_photo.py:41-49,162-195`, `backend/routes/meal_routes.py:122-126` |
-| AC-004.1 | Sí | `@require_auth` en `backend/routes/meal_routes.py:120` |
-| AC-005.1 – AC-005.3 | Sí | `backend/services/meal_image_analysis_service.py:37-44` |
-| AC-006.1 – AC-006.3 | Sí | `backend/services/meal_image_rules.py:115-148` |
-| AC-007.1 – AC-007.4 | Sí | `backend/services/meal_image_rules.py:81-100` |
-| AC-008.1 – AC-008.2 | Sí | `backend/services/meal_image_rules.py:116-120`, `entries[:MAX_PROPOSED_FOODS]` |
-| AC-009.1 | **Sí** (antes, Parcial) | `backend/utils/vision_client.py:9-10,27-32` (5 s de conexión, 30 s de lectura, un solo intento), `backend/services/meal_image_analysis_service.py:78-84` (503) y `backend/Dockerfile:27` (`--timeout 90`). Comprobado que `docker-compose.prod.yml` no sobrescribe el `command` del servicio `backend`, que nadie define `GUNICORN_CMD_ARGS` y que el `Caddyfile` usa `reverse_proxy backend:5000` sin tiempo límite de respuesta. Test `test_gunicorn_timeout_exceeds_the_vision_provider_budget` en verde. |
-| AC-009.2 – AC-009.4 | Sí | `backend/utils/vision_client.py:56-66,77-78,106-121`, `backend/services/meal_image_analysis_service.py:53-55` |
-| AC-010.1 – AC-010.2 | Sí | `backend/services/meal_photo.py:52-116` |
-| AC-N001.1 – AC-N001.2 | Sí | `backend/utils/in_memory_request.py:8-13`, `backend/app.py:22`, `backend/utils/vision_client.py:35-42` |
-| AC-N002.1 – AC-N002.4 | Sí | `backend/services/meal_image_analysis_service.py:48-91` |
+| AC-001.1 – AC-001.5 | Sí | `backend/services/meal_image_rules.py`, `backend/routes/meal_routes.py`, `backend/utils/vision_client.py:84-136` (sin cambios de comportamiento) |
+| AC-002.1 – AC-002.4 | Sí | `backend/services/meal_photo.py:181-184`; AC-002.4 también con el archivo extra de 3,5 MB de `test_request_body_under_4_mb_with_an_extra_file_is_analyzed` |
+| AC-003.1 – AC-003.2 | Sí | `backend/services/meal_photo.py:41-49,188-195` (`formats=[…]` forzado) |
+| AC-003.3 | Sí | JPEG truncado: `meal_photo.py:103-107` (sin `EOI`); sin escaneo o proceso no admitido: `meal_photo.py:69-79`; PNG: `verify()` en `meal_photo.py:175-176` y `IEND` en `:127`; WebP: *demuxer* al abrir y `meal_photo.py:133-144`. Lo he comprobado a mano con un JPEG, un PNG y un WebP truncados (también un WebP truncado con el tamaño RIFF reescrito): los cuatro dan 400 «No se pudo leer la imagen.». |
+| AC-003.4 | Sí | `backend/services/meal_photo.py:186-187` |
+| AC-003.5 | Sí (el test ya prueba el límite del cuerpo, F3) | `test_request_body_over_4_mb_returns_413_in_spanish` (foto pequeña + archivo extra de 4 MB → 413) y `test_request_body_under_4_mb_with_an_extra_file_is_analyzed` (3,5 MB → 200) |
+| AC-003.6 | Sí | `backend/services/meal_photo.py:196-197`. Un WebP *lossless* de 8000 × 8000 (38 bytes) se valida en 0,00 s con un pico de `tracemalloc` de 4,4 KB, y un JPEG progresivo de 8000 × 6000 en 0,016 s: ya no se decodifica. |
+| AC-004.1 | Sí | `@require_auth` en `backend/routes/meal_routes.py` (sin cambios) |
+| AC-005.1 – AC-005.3 | Sí | `backend/services/meal_image_analysis_service.py` (sin cambios) |
+| AC-006.1 – AC-008.2 | Sí | `backend/services/meal_image_rules.py` (sin cambios) |
+| AC-009.1 | Sí | `backend/Dockerfile:27` (`--timeout 90`, sin cambios en esta iteración), test movido a `backend/tests/test_services/test_gunicorn_config.py` |
+| AC-009.2 | Sí (F6 corregido) | `backend/utils/vision_client.py:124-126` |
+| AC-009.3 | Sí | sin cambios |
+| AC-009.4 | Sí (F4 corregido) | `backend/utils/vision_client.py:59-78`: `client = None` al empezar, región saneada con `strip()`, sin región no llama a la fábrica y la fábrica va en `try … except Exception` con `describe_vision_error` (nunca `str(exc)`). `test_app_with_an_empty_bedrock_region_starts_and_answers_503` prueba `create_app` real con `BEDROCK_REGION=""`. |
+| AC-010.1 | Sí (F8 corregido) | JPEG: `APP2` fuera por `meal_photo.py:90`; PNG: `iCCP` fuera de la lista blanca `meal_photo.py:22-27`; WebP: `ICCP` fuera de `meal_photo.py:28` y bit `0x20` de `VP8X` borrado en `:150`. Comprobado también con un WebP animado con ICC: sale sin perfil, con sus 3 fotogramas y legible. |
+| AC-010.2 | Sí | `backend/services/meal_photo.py:110-127` |
+| AC-N001.1 – AC-N001.2 | Sí | sin cambios; el test de AC-N001.1 ya consulta el diario con el mismo usuario (F7) |
+| AC-N002.1 – AC-N002.4 | Sí | sin cambios |
 
 ## 3. Cumplimiento del plan
 
-- La corrección sigue al pie de la letra la sección 3.5 del plan y las tareas T-058 y T-059:
-  - un único `--timeout 90`, sin cambiar workers ni la clase de worker;
-  - comentario en español en el `CMD`;
-  - test puro que lee el `CMD` con `json.loads` y lo compara con `VISION_CONNECT_TIMEOUT_SECONDS + VISION_TIMEOUT_SECONDS + 30`.
-- El plan corrige además la mitigación de la sección 6 que señaló F2: ya no dice que el límite de 10 por hora acota el
-  coste de decodificar, y deja la corrección en el backlog.
-- Desviación de proceso, justificada y anotada en el backlog: `backend/Dockerfile` lo editó el orquestador con
-  autorización explícita del usuario, porque está fuera de los globs `prod` de `.sdd/config.json` y el role-guard
-  bloqueó al implementer. El cambio coincide exactamente con T-059. Queda pendiente un `chore/…` para añadir el
-  archivo a esos globs.
-- La documentación del paso manual de producción (Art. P4), que ahora incluye comprobar el `--timeout 90` tras
-  desplegar, sigue asignada a la etapa `docs`.
+- La implementación sigue la sección 10 del plan y las tareas T-060 a T-075, sin desviaciones:
+  - F2: `_check_integrity` solo llama a `verify()` en PNG, y `_strip_jpeg` rechaza los `SOF` fuera de `FFC0`–`FFC2` (sin
+    afectar a `FFC4`, `FFC8` ni `FFCC`) y el `EOI` sin `SOF` y `SOS`;
+  - F4: `init_app` como en la sección 3.2;
+  - F5: el comentario de `PayloadTooLargeError` está en español;
+  - F6: `isinstance(tool_input, dict)` antes de leer `foods`;
+  - F8: WebP sin `ICCP` y sin el bit `0x20`.
+- El plan dice que en esta iteración no se toca `backend/Dockerfile`, y así es: no aparece en `git diff e83804b HEAD`.
+- ADR-0032 y su línea del índice se amplían con F2, F4 y F8. Las decisiones que no cambian la spec (aceptar que un
+  archivo con estructura correcta y píxeles corruptos llegue al proveedor, y que el `calloc` de libwebp no ocupe memoria
+  residente con glibc) están en la sección 3.3 y los riesgos del plan, y en el backlog de la feature.
+- Desviación de proceso, justificada y anotada en el backlog: el orquestador borró `test_server_timeout.py` con
+  `git rm` y autorización explícita del usuario, porque el test-author no puede borrar archivos. El contenido sigue en
+  `test_gunicorn_config.py`, al que solo se añade un docstring de módulo, y el test no cambia.
 
 ## 4. Checklist de la constitución
 
 ### Parte I (base)
-- [x] B2: `snapshot --check` idéntico (8 archivos, snapshot del 2026-10-21T20:10:20Z tras añadir T-058, con `rework` y
-  `snapshot` registrados en `history`); `git diff 459110b HEAD -- backend/tests` vacío: los tests no cambiaron durante
-  implement. La edición del `Dockerfile` por el orquestador está autorizada y anotada.
-- [x] B4: `# SDD: 024 REQ-009 AC-009.1` en `backend/tests/test_services/test_server_timeout.py:20`, coherente con lo
-  que prueba.
-- [x] B5: ningún test borrado, saltado ni debilitado; T-058 no usa red ni servicios externos; la suite pasa (1983) y
-  he vuelto a ejecutar `test_server_timeout.py` y `test_vision_client.py` (18 pasan).
-- [x] B5.7: ratchet sin violaciones nuevas (verify-report, iteración 2).
+- [x] B2: `snapshot --check` idéntico (8 archivos, snapshot del 2026-10-21T21:02:30Z). El `rework tests` de la E501 y
+  su `snapshot` posterior están en `history`. `git diff d2e5273 HEAD -- backend/tests` está vacío: los tests no
+  cambiaron durante implement. El borrado de `test_server_timeout.py` está autorizado y anotado.
+- [x] B4: los marcadores nuevos (`# SDD: 024 REQ-003 AC-003.3/AC-003.5/AC-003.6`, `REQ-009 AC-009.2/AC-009.4`,
+  `REQ-010 AC-010.1`) coinciden con lo que prueba cada test. El de `test_webp_validation_does_not_decode_pixels`
+  (AC-003.6) protege el coste de validar a las dimensiones admitidas; es razonable.
+- [x] B5: no se borra, salta ni debilita ningún test. F3 y F7 refuerzan dos tests y F9 solo los renombra. Sin red
+  ni AWS: `FakeClientFactory`, `WrongShapeClient` local y `FakeRedisClient`. Ejecuté los seis archivos de la feature:
+  pasan los 180 tests. La suite completa pasa (1997, verify-report).
+- [x] B5.7: `ruff check` limpio en los siete archivos tocados de producción y de tests; el ratchet no da violaciones nuevas (verify-report).
 - [x] B6.5: sin secretos ni variables nuevas.
 
 ### Parte II (proyecto)
-- [x] P1.1–P1.5 (backend): marcador con número de spec, nombre en inglés, sin `unittest.mock` ni `monkeypatch`.
-- [x] P2.1–P2.5: sin cambios de capas en esta iteración; lo revisado en la iteración 1 sigue igual.
-- [ ] P2.General.1: el comentario en inglés de `backend/exceptions/custom_exceptions.py:42` sigue abierto (F5, NIT).
-  El comentario nuevo del `Dockerfile` está en español, sin tildes, como el resto del archivo.
-- [x] P3.1–P3.5: sin cambios. P3.3 (fallos del proveedor → `ServiceUnavailableError`) ahora también se cumple en
-  producción ante un proveedor lento.
-- [ ] P4: el paso manual de producción sigue pendiente de la etapa `docs`, que también debe incluir la comprobación
-  de `--timeout 90`.
+- [x] P1.General.1–2 y P1.backend.1–5: los marcadores llevan el número de spec, los nombres de los tests están en
+  inglés y los docstrings en español. No se usan `unittest.mock` ni `monkeypatch`, porque los dobles se inyectan por
+  constructor o en atributos de singletons, que los fixtures autouse restauran. `tracemalloc` mide y no sustituye nada.
+- [x] P2.1–P2.3: sin cambios de capas; las excepciones siguen siendo las de `custom_exceptions.py`.
+- [x] P2.4: sin cambios de modelo ni migraciones (`git diff main...HEAD -- backend/migrations backend/models` vacío en la feature).
+- [x] P2.5: el aviso de `init_app` reutiliza `describe_vision_error`; no se duplica nada.
+- [x] P2.General.1: el comentario de `backend/exceptions/custom_exceptions.py:42` (F5), el de `meal_photo.py:173-174` y los avisos del log están en español.
+- [x] P3.1–P3.5: sin cambios. P3.3 sale reforzado, porque una región vacía o inválida ya no tumba la app y deja el endpoint en 503.
+- [ ] P4: el paso manual de producción (IAM, variables, IMDS y comprobación de `--timeout 90`) sigue pendiente de la
+  etapa `docs`; no bloquea esta revisión.
 
 ## 5. Hallazgos
 
 | # | Severidad | Archivo:línea | Hallazgo | Responsable |
 |---|---|---|---|---|
-| F1 | ~~MAYOR~~ CORREGIDO | `backend/Dockerfile:27`, `backend/tests/test_services/test_server_timeout.py:21-36` | Corregido: gunicorn arranca con `--timeout 90`, por encima de 5 + 30 s de Bedrock, y T-058 lo protege. Ni el compose de producción ni el `Caddyfile` lo anulan. El comportamiento real (503 y no 502 ante un Bedrock lento) solo se puede comprobar tras desplegar; está en el backlog del verifier. | planner |
-| F2 | MENOR | `backend/services/meal_photo.py:168-169`, `backend/services/meal_image_analysis_service.py:37-38` | Sigue abierto. Un WebP *lossless* de 8000 × 8000 que ocupa unos 2,5 KB se decodifica entero con `image.load()` antes del límite de uso: reserva unos 256 MB y gasta 0,37 s de CPU en cada petición, también en las que acaban en 429. El plan ya no dice que el límite lo acote, y el único worker *sync* evita decodificar dos fotos a la vez. La corrección (comprobar el WebP solo por su estructura, bajar el tope de píxeles o poner un límite barato antes de validar) está en el backlog. | planner |
-| F3 | MENOR | `backend/tests/test_routes/test_meal_analysis_routes.py:419-427` | Sigue abierto. El test de AC-003.5 envía un archivo de más de 4 MB, que ya supera los 3 MB de la imagen, así que no prueba el límite de 4 MB del cuerpo. Debería enviar una imagen pequeña y otro campo grande. | test-author |
-| F4 | MENOR | `backend/config.py:94`, `backend/utils/vision_client.py:61-66` | Sigue abierto. Si `BEDROCK_REGION` existe pero está vacía y el modelo está configurado, `boto3.client(region_name="")` falla en `create_app` y el backend no arranca, en lugar de dejar el endpoint en 503. | implementer |
-| F5 | NIT | `backend/exceptions/custom_exceptions.py:42` | Sigue abierto: comentario nuevo en inglés (Art. P2.General.1). | implementer |
-| F6 | NIT | `backend/utils/vision_client.py:112` | Sigue abierto. Si `input` no es un `dict`, salta un `AttributeError` en lugar de `VisionProviderError`; la respuesta sigue siendo 503. | implementer |
-| F7 | NIT | `backend/tests/test_routes/test_meal_analysis_routes.py:651-657` | Sigue abierto. En AC-N001.1, el diario se consulta con un usuario distinto del que hizo los análisis. | test-author |
-| F8 | NIT | `backend/services/meal_photo.py:80` | Sigue abierto. Al descartar APP2 se pierde el perfil ICC del JPEG; conviene comprobarlo en la revisión manual de Q9. | planner |
-| F9 | NIT | `backend/tests/test_services/test_server_timeout.py:1` | Nuevo. T-058 es un test de configuración del despliegue y está en `test_services/`, aunque no prueba ningún servicio. Funciona igual, pero sería más fácil de encontrar en una carpeta o un archivo de configuración. | test-author |
+| F1 | ~~MAYOR~~ CORREGIDO (iteración 1) | `backend/Dockerfile:27` | Sin cambios desde la iteración anterior. | planner |
+| F2 | ~~MENOR~~ CORREGIDO | `backend/services/meal_photo.py:69-79,172-176` | La validación ya no decodifica píxeles: no hay `load()` ni `draft()`. Mi prueba, un WebP *lossless* de 8000 × 8000 de 38 bytes, se valida al instante con un pico de 4,4 KB. Los truncados de los tres formatos siguen dando 400. `test_webp_validation_does_not_decode_pixels` evita que se vuelva a decodificar. | planner |
+| F3 | ~~MENOR~~ CORREGIDO | `backend/tests/test_routes/test_meal_analysis_routes.py:418-447` | El test envía una foto pequeña con un archivo extra de 4 MB (413) y de 3,5 MB (200): prueba el límite de 4 MB del cuerpo. | test-author |
+| F4 | ~~MENOR~~ CORREGIDO | `backend/utils/vision_client.py:59-78` | `init_app` nunca lanza. El test de rutas crea una app real con `BEDROCK_REGION=""` y obtiene 503. | implementer |
+| F5 | ~~NIT~~ CORREGIDO | `backend/exceptions/custom_exceptions.py:42` | El comentario está en español. | implementer |
+| F6 | ~~NIT~~ CORREGIDO | `backend/utils/vision_client.py:124-126` | Un `input` que no es `dict` da `VisionProviderError`. | implementer |
+| F7 | ~~NIT~~ CORREGIDO | `backend/tests/test_routes/test_meal_analysis_routes.py:674-692` | Los análisis y la consulta del diario usan el mismo UUID. | test-author |
+| F8 | ~~NIT~~ CORREGIDO | `backend/services/meal_photo.py:28,150` | El perfil ICC se descarta en JPEG, PNG y WebP, con la justificación frente a REQ-010 en el plan (sección 3.3) y en ADR-0032. Queda comprobar en la revisión manual de Q9, con alguna foto en Display P3, que la precisión no empeora. | planner |
+| F9 | ~~NIT~~ CORREGIDO | `backend/tests/test_services/test_gunicorn_config.py:1-4` | El test está renombrado y lleva un docstring que dice que es un test de configuración del despliegue. | test-author |
+| F10 | NIT | `backend/tests/test_services/test_meal_photo.py:341-358` | `test_icc_profile_is_stripped` solo cubre `jpeg` y `webp`. El descarte de `iCCP` en PNG solo lo garantiza la lista blanca de `_strip_png`, sin un test que lo fije. Bastaría añadir el caso `png`, o un helper `png_bytes(icc_profile=…)`, para que los tres formatos queden protegidos igual, como pide F8. | test-author |
+| F11 | NIT | `backend/services/meal_photo.py:196-202` | La sección 6 de la spec fija el orden «lectura, dimensiones», pero el código comprueba las dimensiones (`:196`) antes de la integridad (`:199`). Un archivo truncado de más de 8000 px responde «…8000 píxeles por lado» en lugar de «No se pudo leer la imagen.». Las dos respuestas son 400 y solo pasa con archivos fabricados. El orden venía del plan para no decodificar imágenes enormes, y desde F2 ya no se decodifica: se podría mover `_check_integrity` y `strip_photo_metadata` antes del control de dimensiones sin coste. | planner |
 
 ## 6. Decisión
 
-**APPROVED.** F1, el único hallazgo MAYOR, está corregido: el `--timeout 90` está en el `CMD` real de producción,
-nada lo anula, el test lo protege y la decisión está justificada en el plan y en el ADR-0032. No quedan hallazgos
-BLOQUEANTES ni MAYORES. Los MENORES (F2–F4) y los NIT (F5–F9) pueden ir al backlog con la aprobación del usuario. Siguen
-pendientes, sin bloquear:
-- la revisión manual de precisión con unas 10 fotos reales (Q9) en el gate de `review`;
+**APPROVED.** Los hallazgos F2 a F9 están corregidos según el plan, sin cambiar la spec, y no hay regresiones:
+
+- los truncados de los tres formatos siguen dando 400 (AC-003.3);
+- 8000 × 6000 se analiza (AC-003.6);
+- el ICC se descarta en los tres formatos y la imagen sigue legible (REQ-010);
+- `create_app` arranca con la región vacía y responde 503 (AC-009.4).
+
+Los tests no cambiaron durante implement y la suite pasa. No quedan hallazgos BLOQUEANTES ni MAYORES. Los NIT F10 y
+F11 pueden ir al backlog con la aprobación del usuario. Siguen pendientes, sin bloquear:
+- la revisión manual de precisión con unas 10 fotos reales (Q9) en el gate de `review`, con alguna foto en Display P3 por F8;
 - comprobar en producción que un Bedrock lento devuelve 503 y no 502;
 - la documentación del paso manual de producción (Art. P4) en la etapa `docs`;
 - el `chore/…` que añade `backend/Dockerfile` a los globs `prod`.

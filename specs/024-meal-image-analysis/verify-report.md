@@ -1,57 +1,51 @@
 # Verify report 024 — Análisis de la foto de una comida con alimentos propuestos del catálogo
 
-- **Modo:** red (tras la etapa tests, ronda de corrección F2–F9: tests T-060 a T-069)
-- **Fecha:** 2026-10-21T20:56:41.000Z · **Rama:** `feat/024-meal-image-analysis` @ `97108e5` (HEAD; cambios de tests sin commit) · **Base:** `main`
+- **Modo:** full (etapa verify, tras las correcciones F2–F9 de la review, iteración 3)
+- **Fecha:** 2026-10-21T21:06:23.853Z · **Rama:** `feat/024-meal-image-analysis` @ `cba4a18` (HEAD; sin cambios de código sin commit, solo `state.json`) · **Base:** `main`
 - **Resultado:** PASS
 
 ## 1. Comandos ejecutados
-Ámbito tocado: `backend` (único ámbito de `changed --json`). En modo red solo se ejecutan los tests nuevos; `lint`/ratchet, `typecheck` y `build` no se ejecutan en esta fase.
+Ámbito tocado: `backend` (único ámbito de `changed --json`). Los comandos `typecheck` y `build` son `null` en la config del ámbito y no se listan.
 
 | Ámbito | Comando (cwd) | Resultado | Resumen de la salida |
 |---|---|---|---|
-| backend | `".venv/Scripts/python.exe" -m pytest -q tests/test_services/test_gunicorn_config.py tests/test_services/test_meal_photo.py tests/test_services/test_vision_client.py tests/test_routes/test_meal_analysis_routes.py` (`backend`) | ⚠️ | 91 passed, 10 failed (los 10 fallos son rojo legítimo esperado, ver sección 4). Sin errores de colección ni de fixture. |
-| backend | `".venv/Scripts/python.exe" -m pytest -q` sobre los 4 nodos de caracterización (`test_jpeg_with_an_unsupported_coding_process_is_unreadable`, `test_jpeg_without_a_scan_is_unreadable`, `test_request_body_over_4_mb_returns_413_in_spanish`, `test_request_body_under_4_mb_with_an_extra_file_is_analyzed`), `test_analyses_write_nothing_to_the_database` y `test_gunicorn_config.py` | ✅ | 7 passed (verificación individual de T-062, T-067, T-068 y T-069) |
-
-Comprobación de `skip`, `xfail`, `.only`, `.skip` y `unittest.mock`/`monkeypatch` en las líneas añadidas del diff de tests: ninguna.
+| backend | `".venv/Scripts/python.exe" -m pytest -q` (`backend`) | ✅ | 1997 passed, 0 failed, 0 skipped (189,98 s). Incluye los 40 AC con test `SDD:` en verde y `test_gunicorn_config.py`. |
+| backend | ratchet de ruff `node .../lint-ratchet.mjs backend` (raíz del repo) | ✅ | Sin violaciones nuevas respecto a `main` en los 18 archivos tocados (las previas se toleran: app.py 3, config.py 2, custom_exceptions.py 3, extensions.py 2). |
+| backend | `typecheck` | — | No aplica (`null`). |
+| backend | `build` | — | No aplica (`null`). |
 
 ## 2. Trazabilidad
-Alcance de esta ronda (modo red): solo los AC que cubren T-060 a T-069. El resto de la trazabilidad se comprobará en `verify` (full).
 
 | REQ / NFR | AC | Tareas | Tests con `SDD:` | Estado del test |
 |---|---|---|---|---|
-| REQ-003 | AC-003.6 | T-060, T-061 | `test_meal_photo.py::test_webp_validation_does_not_decode_pixels` | ❌ rojo legítimo (pico de 36,2 MB frente a < 8 MB: se decodifica el WebP) |
-| REQ-003 | AC-003.3 | T-062 | `test_meal_photo.py::test_jpeg_with_an_unsupported_coding_process_is_unreadable`, `test_meal_photo.py::test_jpeg_without_a_scan_is_unreadable` | ✅ caracterización (pasan) |
-| REQ-010 | AC-010.1 | T-060, T-063 | `test_meal_photo.py::test_icc_profile_is_stripped[jpeg]` | ✅ caracterización (pasa) |
-| REQ-010 | AC-010.1 | T-063 | `test_meal_photo.py::test_icc_profile_is_stripped[webp]` | ❌ rojo legítimo (el chunk `ICCP` sigue en la salida) |
-| REQ-009 | AC-009.4 | T-064 | `test_vision_client.py::test_init_app_with_a_model_and_no_region_leaves_the_client_unconfigured[none|empty|blank]` (3 casos) | ❌ rojo legítimo (el cliente queda instanciado con región vacía) |
-| REQ-009 | AC-009.4 | T-064 | `test_vision_client.py::test_init_app_survives_a_client_factory_that_fails` | ❌ rojo legítimo (`NoRegionError` escapa de `init_app`) |
-| REQ-009 | AC-009.4 | T-065 | `test_meal_analysis_routes.py::test_app_with_an_empty_bedrock_region_starts_and_answers_503` | ❌ rojo legítimo (`create_app` falla con `ValueError: Invalid endpoint` al pasar región vacía) |
-| REQ-009 | AC-009.2 | T-066 | `test_vision_client.py::test_tool_input_that_is_not_an_object_is_not_interpretable[str|list|int]` (3 casos) | ❌ rojo legítimo (`AttributeError` en `recognize_foods` en vez de `VisionProviderError`) |
-| REQ-003 | AC-003.5 | T-067 | `test_meal_analysis_routes.py::test_request_body_over_4_mb_returns_413_in_spanish`, `test_request_body_under_4_mb_with_an_extra_file_is_analyzed` | ✅ pasan (corrección de test) |
-| NFR-001 | AC-N001.1 | T-068 | `test_meal_analysis_routes.py::test_analyses_write_nothing_to_the_database` | ✅ pasa (refuerzo de test) |
-| REQ-009 | AC-009.1 | T-069 | `test_gunicorn_config.py::test_gunicorn_timeout_exceeds_the_vision_provider_budget` | ✅ pasa (renombrado desde `test_server_timeout.py`) |
+| REQ-001 | AC-001.1 … AC-001.5 | T-012, T-016, T-020, T-022, T-025, T-048, T-049, T-051, T-055, T-057 | `test_meal_image_rules.py`, `test_vision_client.py`, `test_meal_image_analysis_service.py`, `test_meal_analysis_routes.py` | ✅ |
+| REQ-002 | AC-002.1 … AC-002.4 | T-017, T-026, T-046, T-057, T-067 | `test_meal_photo.py`, `test_meal_analysis_routes.py` | ✅ |
+| REQ-003 | AC-003.1 … AC-003.6 | T-017, T-018, T-027, T-042, T-043, T-046, T-060, T-061, T-062, T-067, T-070, T-071, T-075 | `test_meal_photo.py`, `test_meal_analysis_routes.py` | ✅ |
+| REQ-004 | AC-004.1 | T-028, T-057 | `test_meal_analysis_routes.py` | ✅ |
+| REQ-005 | AC-005.1 … AC-005.3 | T-005, T-022, T-028, T-055 | `test_meal_image_analysis_service.py`, `test_meal_analysis_routes.py` | ✅ |
+| REQ-006 | AC-006.1 … AC-006.3 | T-013, T-029, T-048 | `test_meal_image_rules.py`, `test_meal_analysis_routes.py` | ✅ |
+| REQ-007 | AC-007.1 … AC-007.4 | T-014, T-047 | `test_meal_image_rules.py` | ✅ |
+| REQ-008 | AC-008.1, AC-008.2 | T-015, T-048 | `test_meal_image_rules.py` | ✅ |
+| REQ-009 | AC-009.1 … AC-009.4 | T-020, T-023, T-029, T-050, T-051, T-052, T-055, T-058, T-059, T-064, T-065, T-066, T-069, T-073, T-074 | `test_vision_client.py`, `test_meal_image_analysis_service.py`, `test_meal_analysis_routes.py`, `test_gunicorn_config.py` | ✅ |
+| REQ-010 | AC-010.1, AC-010.2 | T-011, T-019, T-030, T-044, T-045, T-060, T-063, T-072 | `test_meal_photo.py`, `test_meal_analysis_routes.py` | ✅ |
+| NFR-001 | AC-N001.1, AC-N001.2 | T-021, T-023, T-030, T-052, T-053, T-068 | `test_vision_client.py`, `test_meal_image_analysis_service.py`, `test_meal_analysis_routes.py` | ✅ |
+| NFR-002 | AC-N002.1 … AC-N002.4 | T-024, T-030, T-056 | `test_meal_image_analysis_service.py`, `test_meal_analysis_routes.py` | ✅ |
 
-- AC sin test: — (en esta ronda; el resto se comprobará en `verify`)
-- REQ sin tarea: — (en esta ronda)
-- Tareas sin marcar `[x]`: T-070 a T-075 (implementación de la ronda, pendiente: esperado en esta fase)
-- `skip`, `xfail`, `.only`, `.skip` o equivalentes nuevos en el diff: —
-- Nota de estado: `backend/tests/test_services/test_server_timeout.py` figura como borrado en el índice (`git rm` autorizado por el usuario) y `test_gunicorn_config.py` es nuevo y sin añadir al índice; el snapshot de tests de `state.json` sigue sin regenerar.
+- AC de `spec.md` sin test `SDD:`: ninguno (40 de 40 AC cubiertos; 121 IDs de AC distintos aparecen en marcadores de `backend/tests`).
+- REQ / NFR de `spec.md` sin tarea: ninguno (REQ-001 a REQ-010 y NFR-001, NFR-002 aparecen en `tasks.md`).
+- Tareas sin marcar `[x]`: ninguna (64 de 64 marcadas).
+- `skip`, `xfail`, `.only`, `.skip` o equivalentes nuevos en el diff: ninguno. Las coincidencias de la palabra «only» en el diff son nombres de tests (p. ej. `test_trace_outcome_is_answered_with_only_unmatched_foods`), no marcadores.
+- Tests congelados: el contenido de `backend/tests/` coincide con el último commit de tests (`d2e5273`) y el `tests_snapshot` de `state.json` corresponde a esos blobs (verificado con sha256 del contenido en git). Las diferencias de hash en disco se deben solo a los finales de línea CRLF del checkout de Windows.
+- `backend/tests/test_services/test_server_timeout.py` ya no existe; su sustituto `backend/tests/test_services/test_gunicorn_config.py` pasa y tiene el mismo hash que el snapshot.
+- Configuración de despliegue: `backend/Dockerfile` usa `--timeout 90` (presupuesto de 5 + 30 + 30 s, cubierto por `test_gunicorn_timeout_exceeds_the_vision_provider_budget`).
+- Migraciones: no hay cambios de modelo ni migraciones en la feature (coherente con el plan).
 
 ## 3. Criterios de aceptación manuales
-Ninguno en esta ronda. Los AC cubiertos son automáticos.
+- Q9 de `spec.md` (no es un AC automatizado y no bloquea salvo decisión del usuario): revisión manual de la precisión de estimación de gramos y alimentos con unas 10 fotos reales contra el proveedor real en local. Pendiente de hacer por el usuario y de anotar en la feature.
+- No hay AC visuales ni de UX: la feature es solo backend.
 
 ## 4. Fallos (si los hay)
-Los 10 casos siguientes fallan por comportamiento ausente (rojo legítimo, esperado por las tareas T-070 a T-075). No son fallos del test ni de entorno.
+Ninguno. Todas las comprobaciones automáticas están en verde.
 
-| # | Qué falló | Salida relevante (recortada) | Responsable probable (test-author · implementer · entorno) |
-|---|---|---|---|
-| 1 | `test_webp_validation_does_not_decode_pixels` | `assert 36156515 < 8388608` | — (rojo legítimo, falta T-070) |
-| 2 | `test_icc_profile_is_stripped[webp]` | `assert b'fitnerd-icc-device-model' not in b'RIFF…ICCP…'` | — (rojo legítimo, falta T-072) |
-| 3–5 | `test_init_app_with_a_model_and_no_region_leaves_the_client_unconfigured[none|empty|blank]` | `assert vision.client is None` (queda un `FakeBedrockRuntimeClient`) | — (rojo legítimo, falta T-073) |
-| 6 | `test_init_app_survives_a_client_factory_that_fails` | `botocore.exceptions.NoRegionError` escapa de `init_app` | — (rojo legítimo, falta T-073) |
-| 7 | `test_app_with_an_empty_bedrock_region_starts_and_answers_503` | `create_app` → `init_app` → `ValueError: Invalid endpoint: https://bedrock-runtime..amazonaws.com` | — (rojo legítimo, falta T-073) |
-| 8–10 | `test_tool_input_that_is_not_an_object_is_not_interpretable[str|list|int]` | `AttributeError: 'str' object has no attribute 'get'` en `recognize_foods` | — (rojo legítimo, falta T-074) |
-
-Nota de clasificación: los casos 6, 7 y 8–10 provienen de excepciones lanzadas por el código de producción (no por el test ni por el fixture) en el punto exacto que las tareas T-073 y T-074 corrigen. Se clasifican como rojo legítimo porque la aserción esperada (no lanzar, `VisionProviderError`) es el comportamiento que falta.
-
-Hallazgos de esta ronda: ninguno.
+Pendiente para la etapa `docs` (no es un fallo de verify):
+- Art. P4 (Parte II): la configuración del proveedor en producción (`BEDROCK_VISION_MODEL_ID`, `BEDROCK_REGION`, permisos de Bedrock en la instancia EC2) todavía no aparece en `docs/deploy-runbook.md` ni en un `docs-report.md`. Solo está en `backend/.env.example` y en el ADR-0032. Lo debe cubrir el `doc-keeper`.

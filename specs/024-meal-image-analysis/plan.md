@@ -25,7 +25,7 @@ acabe en el 503 de la spec y no en un 502 del proxy (sección 3.5). Arquitectura
 |---|---|---|---|---|
 | backend | routes | — | `backend/routes/meal_routes.py` | Ruta `POST /api/meals/analyze`, límite de cuerpo de 4 MB por petición, traducción del 413 de Werkzeug, `_build_meal_image_analysis_service()` y serialización. |
 | backend | services | `backend/services/meal_image_analysis_service.py` | — | Orquestación: validación, límite de uso, catálogo, proveedor, saneado, trazas y traducción de fallos a 503. |
-| backend | services | `backend/services/meal_photo.py` | — | Funciones puras de la foto: presencia, tamaño, formato real, lectura, dimensiones, integridad estructural sin decodificar píxeles y quitado de metadatos, incluido el perfil ICC (JPEG, PNG, WebP). Iteración 2 de la review: F2 y F8. |
+| backend | services | `backend/services/meal_photo.py` | — | Funciones puras de la foto: presencia, tamaño, formato real, lectura, dimensiones, integridad estructural sin decodificar píxeles y quitado de metadatos, incluido el perfil ICC (JPEG, PNG, WebP). Iteración 2 de la review: F2 y F8. Iteración 3: dimensiones después de la integridad (F11). |
 | backend | services | `backend/services/meal_image_rules.py` | — | Funciones puras: prompt del modelo, esquema de la herramienta, saneado de gramos, confianza y nombres, duplicados, máximo de 20 y cálculo de nutrientes y totales. |
 | backend | utils | `backend/utils/vision_client.py` | — | Adaptador `BedrockVisionClient` (boto3 `bedrock-runtime`, `converse`), configuración del cliente (30 s, sin reintentos) y descripción segura de errores. Iteración 2 de la review: región vacía o cliente que no se puede crear dejan el proveedor sin configurar (F4) y un `input` que no es un objeto es una respuesta no interpretable (F6). |
 | backend | utils | `backend/utils/in_memory_request.py` | — | Clase de petición de Flask que guarda los archivos subidos en memoria (nunca en un temporal en disco, NFR-001). |
@@ -55,14 +55,18 @@ la spec. Orden de comprobaciones implementado:
 3. presencia y número de archivos en `image` → 400;
 4. tamaño de la foto > 3 MB → 413;
 5. formato real (bytes mágicos) → 400;
-6. lectura (Pillow abre la cabecera con el formato detectado) → 400 «No se pudo leer la imagen.»;
-7. dimensiones (de la cabecera, antes de decodificar) → 400;
-8. integridad **estructural** (recorrido de segmentos, chunks y CRC, sin decodificar píxeles) y quitado de metadatos
-   → 400 «No se pudo leer la imagen.» si fallan;
-9. límite de uso (Redis) → 429;
-10. catálogo vacío, proveedor sin configurar, error, tiempo agotado o respuesta no interpretable → 503.
+6. lectura → 400 «No se pudo leer la imagen.»: Pillow abre la cabecera con el formato detectado y después se comprueba
+   la integridad **estructural** (recorrido de segmentos, chunks y CRC, sin decodificar píxeles) y se quitan los
+   metadatos; cualquier fallo de los tres pasos es «lectura»;
+7. dimensiones (de la cabecera ya leída) → 400;
+8. límite de uso (Redis) → 429;
+9. catálogo vacío, proveedor sin configurar, error, tiempo agotado o respuesta no interpretable → 503.
 
-El orden es el de la sección 6 de la spec (la integridad forma parte de «lectura») y no cambia en la iteración 2.
+El orden es el de la sección 6 de la spec: «lectura» (apertura, integridad y quitado de metadatos) va **entera** antes de
+«dimensiones». Hasta la iteración 2 el código comprobaba las dimensiones entre la apertura y la integridad, para no
+decodificar imágenes enormes; desde F2 la integridad ya no decodifica, así que en la iteración 3 (review F11) se
+alinea con la spec: un archivo truncado con un lado > 8000 px da «No se pudo leer la imagen.» y no el mensaje de
+dimensiones. No cambia ningún mensaje, código ni AC.
 Antes del límite de uso **no se decodifica ningún píxel** en ningún formato (review F2, sección 3.3): el coste de
 validar es proporcional al tamaño del archivo (≤ 3 MB), no al número de píxeles, así que una foto pequeña con lados
 enormes ya no puede reservar cientos de MB, ni siquiera en las peticiones que acaban en 429. Una imagen truncada de
@@ -110,7 +114,7 @@ def prepare_photo(images: list[bytes]) -> MealPhoto: ...
 - `detect_photo_format`: `b"\xff\xd8\xff"` → `"jpeg"`; `b"\x89PNG\r\n\x1a\n"` → `"png"`; `b"RIFF" + 4 bytes + b"WEBP"` →
   `"webp"`; cualquier otra cosa (texto, GIF, HEIC…) → `None`.
 - `prepare_photo` lanza `ValidationError` (400) o `PayloadTooLargeError` (413) con las constantes de arriba, en el orden
-  3–8 de la lista anterior; `[]` o `[b""]` → `PHOTO_REQUIRED_MESSAGE`; dos o más archivos → `SINGLE_PHOTO_MESSAGE`
+  3–7 de la lista anterior; `[]` o `[b""]` → `PHOTO_REQUIRED_MESSAGE`; dos o más archivos → `SINGLE_PHOTO_MESSAGE`
   (aunque alguno esté vacío).
 - `strip_photo_metadata` lanza `ValueError` si la estructura de bytes no se puede recorrer; `prepare_photo` lo traduce a
   `UNREADABLE_PHOTO_MESSAGE`.
@@ -305,8 +309,7 @@ defecto (rol de la instancia EC2 en producción; perfil o variables `AWS_*` en l
 - `detect_photo_format` → `None` → 400 `UNSUPPORTED_FORMAT_MESSAGE` (el nombre y el `Content-Type` declarados no se
   miran: la ruta solo pasa bytes).
 - `PIL.Image.open(BytesIO(data), formats=[<formato Pillow del detectado>])`; cualquier excepción → 400
-  `UNREADABLE_PHOTO_MESSAGE`. Forzar el formato evita archivos políglotas.
-- `width > 8000 or height > 8000` → 400 `PHOTO_TOO_WIDE_MESSAGE` (sin decodificar).
+  `UNREADABLE_PHOTO_MESSAGE`. Forzar el formato evita archivos políglotas. Se guardan `width, height = image.size`.
 - Integridad **estructural, sin decodificar píxeles en ningún formato** (iteración 2, review F2; ver «Coste de validar»
   más abajo). Nunca se llama a `image.load()` ni a `image.draft()`:
   - PNG: `image.verify()` (recorre los chunks y comprueba sus CRC sin descomprimir `IDAT`), como hasta ahora;
@@ -317,7 +320,12 @@ defecto (rol de la instancia EC2 en producción; perfil o variables `AWS_*` en l
     cabeceras de cada fotograma (`VP8 `, `VP8L`, `VP8X`) sin decodificarlos; el recorrido RIFF de
     `strip_photo_metadata` comprueba además que cada chunk cabe en el archivo.
   - Cualquier excepción → 400 `UNREADABLE_PHOTO_MESSAGE`. `ImageFile.LOAD_TRUNCATED_IMAGES` se queda en `False`.
-- `strip_photo_metadata(data, fmt)`; `ValueError` → 400 `UNREADABLE_PHOTO_MESSAGE`.
+- `strip_photo_metadata(data, fmt)`; `ValueError` → 400 `UNREADABLE_PHOTO_MESSAGE`. La integridad y este paso van en
+  el mismo `try … except Exception … finally: image.close()` que ya existe.
+- Después de ese bloque (iteración 3, review F11): `width > 8000 or height > 8000` → 400 `PHOTO_TOO_WIDE_MESSAGE`. Así
+  «lectura» (apertura, integridad y quitado de metadatos) va entera antes de «dimensiones», como en la sección 6 de la
+  spec, y la imagen se cierra también cuando se rechaza por dimensiones (hasta ahora ese `raise` quedaba fuera del
+  `finally`).
 - Devuelve `MealPhoto(data=<sin metadatos>, format, size_bytes=len(original), width, height)`.
 
 **`strip_photo_metadata`** trabaja a nivel de bytes, sin volver a codificar la imagen (el resultado nunca es mayor que
@@ -721,7 +729,8 @@ quitar el perfil ICC (F8) no empeora el reconocimiento.
   en el servidor, metadatos quitados a nivel de bytes, Pillow solo para validar, archivos subidos en memoria y
   `--timeout 90` de gunicorn con un solo worker *sync* (Propuesta; ampliada en la iteración 1 de la review). En la
   iteración 2 se amplía con: validación sin decodificar píxeles (F2), perfil ICC descartado en los tres formatos (F8)
-  e `init_app` que nunca impide arrancar la app (F4).
+  e `init_app` que nunca impide arrancar la app (F4). En la iteración 3 se añade una frase: la integridad forma parte de
+  la lectura y se comprueba antes de las dimensiones (F11).
 
 ## 9. Cambios por la review (iteración 1)
 
@@ -796,3 +805,59 @@ rework de tests, y al terminar hay que regenerar el snapshot):
 
 **ADR:** el planner amplía ADR-0032 con F2, F4 y F8 en esta iteración (no hace falta un ADR nuevo: son ajustes de la
 misma decisión).
+
+## 11. Cambios por la review (iteración 3)
+
+El usuario pidió corregir los dos NIT abiertos (F10 y F11) antes de aprobar la review. Es la última iteración de review
+disponible, así que el cambio es mínimo. Ninguno cambia la spec, el orden de validaciones de su sección 6, ningún
+mensaje ni ningún AC. No hay dependencias, variables, migraciones ni cambios en `backend/Dockerfile`. Ningún test
+existente cambia ni se debilita: los dos tests de dimensiones (`test_a_side_over_8000_pixels_is_rejected` y
+`test_a_side_over_8000_pixels_returns_400`) usan PNG válidos, que pasan la integridad y siguen dando el mensaje de
+dimensiones con el orden nuevo; `test_webp_validation_does_not_decode_pixels` no se ve afectado, porque la integridad
+no decodifica.
+
+| Hallazgo | Responsable | Decisión y diseño |
+|---|---|---|
+| F10 NIT | test-author | Fijar con un test que el `iCCP` del PNG se descarta, como ya se fija en JPEG y WebP. |
+| F11 NIT | planner (diseño), test-author (test), implementer (código) | En `prepare_photo`, el control de dimensiones pasa a ir **después** del bloque de integridad y quitado de metadatos (secciones 3.2 y 3.3). |
+
+**Tests (test-author).** Reabren la etapa de tests por un rework; al terminar hay que regenerar el snapshot
+(`photo_samples.py` y `test_meal_photo.py`). Sin `unittest.mock` ni `monkeypatch`.
+
+| Hallazgo | Test | Archivo | Marcador | Estado esperado antes de implementar |
+|---|---|---|---|---|
+| F10 | Parámetro nuevo `icc_profile: bytes \| None = None`, al final de `png_bytes` (se pasa a `image.save(..., icc_profile=...)` solo si no es `None`; los llamadores actuales no cambian). Test `test_png_icc_profile_is_stripped`: `original = png_bytes(70, 50, icc_profile=b"fitnerd-icc-device-model")`; comprueba `b"iCCP" in original`; tras `strip_photo_metadata(original, "png")`, `b"iCCP" not in stripped`, `Image.open(...).info` no tiene `icc_profile`, `load()` funciona y el tamaño es `(70, 50)`. Va en un test aparte y no como tercer caso de `test_icc_profile_is_stripped` porque PNG guarda el perfil comprimido con zlib: el marcador no aparece literal en el original y la comprobación `marker in original` de ese test no vale para PNG. | `backend/tests/photo_samples.py`, `backend/tests/test_services/test_meal_photo.py` | `# SDD: 024 REQ-010 AC-010.1` | Verde antes y después (caracterización: la lista blanca de `_strip_png` ya descarta `iCCP`; el test impide que se vuelva a admitir) |
+| F11 | `test_truncated_photo_with_a_side_over_8000_pixels_is_unreadable`, parametrizado con `png` (`png_bytes(8001, 100, mode="1")[:-12]`, es decir, sin el chunk `IEND`, que ocupa 12 bytes) y `jpeg` (`jpeg_bytes(8001, 100)[:-2]`, sin el `EOI`). Las dos se abren (Pillow solo lee la cabecera) y fallan en la integridad. Comprueba que `prepare_photo` lanza `ValidationError` con `UNREADABLE_PHOTO_MESSAGE` (y no `PHOTO_TOO_WIDE_MESSAGE`). | `backend/tests/test_services/test_meal_photo.py` | `# SDD: 024 REQ-003 AC-003.3` | Rojo (hoy da `PHOTO_TOO_WIDE_MESSAGE`, porque las dimensiones se comprueban antes) |
+
+El `verifier` debe aceptar como rojo legítimo los dos casos de F11; el de F10 es de caracterización y está justificado
+arriba (Art. B5.1: se escribe antes de tocar el código, y protege una lista blanca que ya cumple).
+
+**Implementación (implementer):**
+- `[REQ-003, AC-003.3, AC-003.6]` F11: en `backend/services/meal_photo.py`, `prepare_photo` mueve
+  `if width > MAX_PHOTO_SIDE or height > MAX_PHOTO_SIDE: raise ValidationError(PHOTO_TOO_WIDE_MESSAGE)` desde antes del
+  bloque `try: _check_integrity(...); clean = strip_photo_metadata(...) … finally: image.close()` a justo después de
+  él, antes del `return`. Nada más cambia: ni los mensajes, ni `_check_integrity`, ni los recorridos. Resultado:
+
+  ```python
+  try:
+      image = Image.open(io.BytesIO(data), formats=[_PILLOW_FORMATS[photo_format]])
+      width, height = image.size
+  except Exception:
+      raise ValidationError(UNREADABLE_PHOTO_MESSAGE) from None
+  try:
+      _check_integrity(image, photo_format)
+      clean = strip_photo_metadata(data, photo_format)
+  except Exception:
+      raise ValidationError(UNREADABLE_PHOTO_MESSAGE) from None
+  finally:
+      image.close()
+  if width > MAX_PHOTO_SIDE or height > MAX_PHOTO_SIDE:
+      raise ValidationError(PHOTO_TOO_WIDE_MESSAGE)
+  ```
+
+  Coste: validar la estructura de una foto con lados > 8000 px antes de rechazarla es proporcional al archivo (≤ 3 MB)
+  y no a los píxeles (F2), así que no reabre el problema de memoria. De paso, la imagen se cierra también al rechazarla
+  por dimensiones.
+
+**ADR:** el planner añade a ADR-0032 una frase sobre F11 (la integridad forma parte de la lectura y va antes de las
+dimensiones). No hace falta un ADR nuevo ni cambiar la fila del índice.

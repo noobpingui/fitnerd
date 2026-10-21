@@ -45,7 +45,8 @@ Opciones consideradas:
   8000 × 8000 de pocos KB ya no reservan cientos de MB. A cambio, un archivo con estructura correcta y píxeles
   corruptos llega al proveedor (503) en lugar de dar 400, como ya pasaba con el PNG. Se descartaron mover la
   decodificación después del límite (cambia el orden de la spec y haría contar fotos ilegibles) y un tope de píxeles
-  (AC-003.6 exige aceptar 8000 × 6000).
+  (AC-003.6 exige aceptar 8000 × 6000). Como la integridad ya no decodifica, forma parte de la «lectura» y se comprueba
+  antes de las dimensiones, en el orden de la sección 6 de la spec (iteración 3, F11).
 - Los errores del proveedor se registran solo con su tipo y su código (`describe_vision_error`), nunca con `str(exc)`,
   porque `ParamValidationError` de botocore incluye el valor de los parámetros (los bytes de la imagen).
 - La app usa `InMemoryUploadRequest` (`app.request_class`) para que los archivos subidos nunca toquen el disco; la
