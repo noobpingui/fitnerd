@@ -10,14 +10,17 @@
   "branch": "feat/023-generic-food-catalog",
   "base_branch": "main",
   "created_at": "2026-10-21T05:27:32.707Z",
-  "stage": "plan",
+  "stage": "tasks",
   "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-10-21T08:56:42.267Z",
       "note": "Si"
     },
-    "plan": null,
+    "plan": {
+      "at": "2026-10-21T08:57:18.756Z",
+      "note": "auto (gate_mode=flow): ajuste acotado del plan"
+    },
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -27,7 +30,7 @@
     "close": null
   },
   "commits": {
-    "spec": "84f397e",
+    "spec": "11311ba",
     "plan": "4d9a95d",
     "tasks": "4685b3e",
     "tests": "73274c3",
@@ -600,6 +603,30 @@
       "stage": "spec",
       "event": "approved",
       "note": "Si"
+    },
+    {
+      "at": "2026-10-21T08:56:42.576Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 11311ba"
+    },
+    {
+      "at": "2026-10-21T08:56:42.681Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Ajuste: 261 filas, sin la frase de Términos"
+    },
+    {
+      "at": "2026-10-21T08:57:18.650Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan ajustado: sin frase de Términos, 261 filas"
+    },
+    {
+      "at": "2026-10-21T08:57:18.756Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): ajuste acotado del plan"
     }
   ]
 }

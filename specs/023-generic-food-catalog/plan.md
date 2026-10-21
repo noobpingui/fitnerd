@@ -455,8 +455,9 @@ por `error_handlers` (Art. P2.3). El blueprint se registra en `routes/__init__.p
 - Router: la ruta `/foods` (en el mismo sitio, dentro de `AppLayout`) pasa a `element={<Navigate to="/diary" replace
   />}` y se quita la declaración `const FoodsPage = lazyNamed(...)` (REQ-011). Así `/foods` sigue exigiendo sesión y
   onboarding antes de redirigir. `Navbar` y `BottomTabBar` no cambian (AC-011.2).
-- Legal: en `TermsOfServicePage`, la sección «Datos nutricionales» conserva sus dos frases y añade «Algunos alimentos de
-  comida local se añadieron a mano a partir de otras tablas de composición de alimentos.» (AC-012.1). En
+- Legal: en `TermsOfServicePage`, la sección «Datos nutricionales» queda como en la 022 (atribución a USDA y aviso de
+  valores aproximados) y no añade texto; en particular, no contiene la frase sobre alimentos añadidos a mano; la
+  página solo cambia la fecha de actualización (AC-012.1). En
   `PrivacyPolicyPage`, el punto de Voyage AI queda como «recibe el texto de tus preguntas para buscar el contenido
   relacionado.» (AC-012.2). `updatedAt` de las dos: «21 de octubre de 2026» (AC-012.3).
 
@@ -469,7 +470,7 @@ producción:
 - Filas `manual` solo para comida local que USDA no tiene, con una `reference` concreta y comprobable (tabla y código
   del alimento). **No se inventan valores:** si no hay una fuente verificable, se elige una alternativa de USDA o el
   alimento se deja fuera y se anota en el backlog. El `implementer` lista las filas `manual` en su informe para que el
-  usuario las revise en el gate de `review` (Q10). Tras la revisión de la spec (sin «Yuca cocida»), el CSV tiene 264
+  usuario las revise en el gate de `review` (Q10). Tras la revisión de la spec (sin «Yuca cocida»), el CSV tiene 261
   filas, ninguna `manual`; el formato `manual` se conserva para el futuro.
 - Antes de cerrar la tarea, el `implementer` (y después el `verifier`) ejecuta la carga contra la base de desarrollo con
   `FLASK_ENV=development` y comprueba que no hay errores (la igualdad con USDA no la puede comprobar ningún test).
@@ -500,7 +501,7 @@ producción:
 | REQ-009 | `useCatalogSearch`, `searchCatalog`, `catalogSearchResponseSchema`, `CatalogResultList`, `AddFoodDialog` (descripción, ejemplo y payload `catalog_id`), `FoodSearchForm.placeholder` |
 | REQ-010 | `sourceLabel` (`null` en `catalog`), `MealItemRow`, `MealItem.catalog_id`, `mealResponseSchema` |
 | REQ-011 | `router.tsx`: `/foods` → `<Navigate to="/diary" replace />` dentro de `AppLayout`, sin `FoodsPage`; navegación sin cambios |
-| REQ-012 | `TermsOfServicePage.tsx` y `PrivacyPolicyPage.tsx` (textos y `updatedAt`) |
+| REQ-012 | `TermsOfServicePage.tsx` (solo `updatedAt`) y `PrivacyPolicyPage.tsx` (texto de Voyage y `updatedAt`) |
 | NFR-001 | `CatalogSearchService` solo recibe el repositorio: sin `embedding_client` ni `rate_limiter` |
 | NFR-002 | `searchbox` de `FoodSearchForm`, `ul aria-label="Resultados"` y `aria-label="Elegir {nombre}"` en `CatalogResultList`, región `role="status"` del diálogo |
 
