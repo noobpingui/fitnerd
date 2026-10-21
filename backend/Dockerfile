@@ -20,4 +20,8 @@ FROM python:3.13-slim
   # servidor de desarrollo de Flask que nos viene avisando en cada arranque
   # local ("This is a development server. Do not use it in production").
   # wsgi:app = "importa wsgi.py, usa la variable app de ahi".
-  CMD ["gunicorn", "--bind", "0.0.0.0:5000", "wsgi:app"]
+  # --timeout 90: el analisis de fotos puede esperar a Bedrock hasta unos 38 s
+  # (5 s de conexion + 30 s de lectura + validacion y credenciales); con el
+  # valor por defecto de 30 s gunicorn mataba el worker y el cliente recibia
+  # un 502 en vez del 503 con JSON (spec 024, REQ-009).
+  CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--timeout", "90", "wsgi:app"]

@@ -57,3 +57,6 @@
 - [ ] Valorar un plazo absoluto para la llamada a Bedrock si en el futuro se usa streaming (`converse_stream`), donde `read_timeout` ya no equivale al tiempo total.
 - [ ] doc-keeper: mencionar en el runbook que, tras desplegar, hay que comprobar que gunicorn arrancó con `--timeout 90`.
 - [ ] Si el role-guard no deja al implementer editar `backend/Dockerfile` (fuera de los globs de producción), lo aplica el orquestador con autorización del usuario.
+
+## implement · orquestador (excepción autorizada)
+- [ ] T-059: `backend/Dockerfile` (fuera de los globs `prod` de `.sdd/config.json`) lo editó el orquestador con autorización explícita del usuario ("La opcion 1"), porque el role-guard bloqueó al implementer. El usuario prefirió no tocar `config.json` a mitad de feature. Pendiente: incluir `backend/Dockerfile` en los globs `prod` en un `chore/…` aparte.
