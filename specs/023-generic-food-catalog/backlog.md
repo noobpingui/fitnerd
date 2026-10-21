@@ -59,3 +59,9 @@
 - [ ] Los sinónimos «dolfín» y «lampuga» de mahimahi, y algunos sinónimos regionales («zapote» para mamey, «tuna», «anona»), son suposiciones a partir del uso en Costa Rica y México. El reviewer debe revisarlos.
 - [ ] Retirar las búsquedas por `fdc_id` de USDA de `/api/meals` y retirar `public.foods` cuando el catálogo sea estable (Q2 de la spec), más una biblioteca «mis alimentos» y recientes.
 - [ ] Nota de migración para el doc-keeper: aplicar `d4f6a8c0e2b5` antes del merge y ejecutar `python -m scripts.load_food_catalog` de forma interactiva después del CD.
+
+## verify · verifier
+- [ ] Excluir backend/scripts/data/** (no Python) del ámbito prod y del ratchet de .sdd/config.json.
+- [ ] Corregir las 7 E501 de los tests de 023 (o aceptarlas de forma explícita) antes del cierre; el implementer no puede tocarlas.
+- [ ] Revisión manual del CSV del catálogo en el gate de review (reglas de contenido de la spec y 1 fila manual sin verificar).
+- [ ] Los pasos de producción (migración d4f6a8c0e2b5 antes del merge y carga del CSV tras el CD) deben quedar en docs/deploy-runbook.md en la etapa docs (Art. P4).

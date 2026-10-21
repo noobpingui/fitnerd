@@ -11,7 +11,7 @@
     "language": "en",
     "style": "imperative, no conventional prefixes"
   },
-  "max_iterations": 3,
+  "max_iterations": 4,
   "gate_mode": "flow",
   "paths": {
     "specs": "specs",
@@ -32,7 +32,8 @@
       "prod": [
         "backend/{app,config,extensions,wsgi}.py",
         "backend/{routes,services,repositories,models,utils,decorators,exceptions,unit_of_work,migrations}/**",
-        "backend/scripts/**"
+        "backend/scripts/*.py",
+        "backend/scripts/**/*.py"
       ],
       "tests": [
         "backend/tests/**"

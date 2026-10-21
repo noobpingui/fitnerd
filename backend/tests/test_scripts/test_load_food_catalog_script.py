@@ -267,7 +267,10 @@ def test_is_local_host(host, expected):
 # SDD: 023 REQ-002 AC-002.5
 @pytest.mark.parametrize(
     "answer, expected",
-    [("s", True), (" Sí ", True), ("YES", True), ("y", True), ("n", False), ("", False), ("x", False)],
+    [
+        ("s", True), (" Sí ", True), ("YES", True), ("y", True),
+        ("n", False), ("", False), ("x", False),
+    ],
 )
 def test_confirm_remote_write_reads_the_answer(monkeypatch, answer, expected):
     """Respuestas afirmativas (con espacios y cualquier caja) confirman; el resto no."""

@@ -246,7 +246,9 @@ def test_the_summary_starts_at_zero_and_is_formatted_in_one_line():
 # SDD: 023 REQ-003 AC-003.5
 def test_a_row_with_the_exact_values_of_the_usda_food_171477_is_loaded(env):
     """165, 31,0, 0,0 y 3,57 coinciden con USDA: la fila se carga."""
-    summary = env.load([chicken(calories_kcal="165", protein_g="31.0", carbs_g="0.0", fat_g="3.57")])
+    summary = env.load(
+        [chicken(calories_kcal="165", protein_g="31.0", carbs_g="0.0", fat_g="3.57")]
+    )
 
     assert summary.added == 1
 

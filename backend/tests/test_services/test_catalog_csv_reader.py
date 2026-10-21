@@ -168,7 +168,10 @@ def test_a_file_with_a_byte_order_mark_is_read(tmp_path):
     """Un CSV UTF-8 con BOM (como lo guarda Excel) se lee igual."""
     path = tmp_path / "bom.csv"
     header = ",".join(CATALOG_COLUMNS)
-    row = "pechuga-de-pollo-a-la-plancha,Pechuga de pollo a la plancha,,165.0,31.0,0.0,3.57,usda,171477,"
+    row = (
+        "pechuga-de-pollo-a-la-plancha,Pechuga de pollo a la plancha,"
+        ",165.0,31.0,0.0,3.57,usda,171477,"
+    )
     path.write_text(header + "\n" + row + "\n", encoding="utf-8-sig")
 
     records = read_catalog_csv(path)
@@ -287,7 +290,10 @@ def test_calories_out_of_range_name_their_own_rule(tmp_path):
     """901 kcal: «calories_kcal» debe estar entre 0 y 900."""
     message = read_error(csv_with(tmp_path, [chicken(calories_kcal="901")]))
 
-    assert "- Fila 1 (pechuga-de-pollo-a-la-plancha): «calories_kcal» debe estar entre 0 y 900." in message
+    assert (
+        "- Fila 1 (pechuga-de-pollo-a-la-plancha): «calories_kcal» debe estar entre 0 y 900."
+        in message
+    )
 
 
 # SDD: 023 REQ-003 AC-003.3
@@ -385,7 +391,10 @@ def test_a_source_that_is_not_usda_or_manual_is_rejected(tmp_path, value):
 # SDD: 023 REQ-003 AC-003.3
 @pytest.mark.parametrize(
     "value",
-    ["", "a", "Arroz-Blanco", "arroz blanco", "plátano", "-arroz", "arroz-", "arroz--blanco", "a" * 61],
+    [
+        "", "a", "Arroz-Blanco", "arroz blanco", "plátano", "-arroz", "arroz-",
+        "arroz--blanco", "a" * 61,
+    ],
 )
 def test_an_invalid_id_names_the_row_and_the_rule(tmp_path, value):
     """Identificadores con mayúsculas, tildes, espacios, guiones mal puestos o

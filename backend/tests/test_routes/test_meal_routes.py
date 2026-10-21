@@ -1212,7 +1212,9 @@ def test_post_to_an_existing_meal_adds_a_catalog_item_and_returns_200(client, he
 
 
 # SDD: 023 REQ-006 AC-006.2
-def test_post_accepts_a_catalog_usda_and_custom_item_in_that_order(client, headers, catalog, chicken):
+def test_post_accepts_a_catalog_usda_and_custom_item_in_that_order(
+    client, headers, catalog, chicken
+):
     """Catálogo, USDA y personalizado: los tres, en ese orden, cada uno con su `source`."""
     response = post(client, headers, [catalog_item(), usda(), GALLO])
 

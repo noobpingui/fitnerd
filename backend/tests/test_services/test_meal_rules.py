@@ -310,7 +310,8 @@ def test_parse_items_rejects_two_decimals_in_a_catalog_item():
 
 # SDD: 023 REQ-006 AC-006.3
 @pytest.mark.parametrize(
-    "catalog_id", ["Banano", "plátano", "piña", "-banano", "banano-", "a--b", "a", "a" * 61, 5, True, [1]]
+    "catalog_id",
+    ["Banano", "plátano", "piña", "-banano", "banano-", "a--b", "a", "a" * 61, 5, True, [1]],
 )
 def test_parse_items_rejects_a_catalog_id_with_an_invalid_format(catalog_id):
     """Un identificador con formato no válido es un alimento que no existe."""
