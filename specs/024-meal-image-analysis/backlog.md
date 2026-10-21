@@ -77,3 +77,7 @@
 - [ ] Un test de que un WebP truncado da 400 (hoy ya lo rechaza el demuxer al abrir; no se añade para no meter otro test que ya pasa).
 - [ ] Riesgo F2: un archivo con la estructura correcta pero píxeles corruptos ya no da 400; llega al proveedor y acaba en 503, que cuenta para el límite (mismo criterio que el PNG).
 - [ ] Riesgo F2: el plan se apoya en que libwebp reserva con calloc sin ocupar memoria residente con glibc mientras no se decodifique.
+
+## tests · orquestador (excepción autorizada)
+- [ ] F9: `backend/tests/test_services/test_server_timeout.py` lo borró el orquestador con `git rm` y autorización explícita del usuario ("Autorizo"), porque el test-author no puede borrar archivos. Su contenido está idéntico en `test_gunicorn_config.py`.
+- [ ] doc-keeper/harness: permitir al test-author borrar o renombrar archivos de tests propios.

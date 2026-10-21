@@ -25,13 +25,20 @@ def _noise_image(width: int, height: int, mode: str = "RGB") -> Image.Image:
     return Image.frombytes(mode, (width, height), raw)
 
 
-def jpeg_bytes(width: int = 64, height: int = 48, exif: bytes | None = None) -> bytes:
+def jpeg_bytes(
+    width: int = 64,
+    height: int = 48,
+    exif: bytes | None = None,
+    icc_profile: bytes | None = None,
+) -> bytes:
     image = Image.new("RGB", (width, height), (200, 120, 40))
     buffer = io.BytesIO()
-    if exif is None:
-        image.save(buffer, format="JPEG")
-    else:
-        image.save(buffer, format="JPEG", exif=exif)
+    options = {}
+    if exif is not None:
+        options["exif"] = exif
+    if icc_profile is not None:
+        options["icc_profile"] = icc_profile
+    image.save(buffer, format="JPEG", **options)
     return buffer.getvalue()
 
 
@@ -52,13 +59,29 @@ def png_bytes(
     return buffer.getvalue()
 
 
-def webp_bytes(width: int = 64, height: int = 48, exif: bytes | None = None) -> bytes:
+def webp_bytes(
+    width: int = 64,
+    height: int = 48,
+    exif: bytes | None = None,
+    icc_profile: bytes | None = None,
+) -> bytes:
     image = Image.new("RGB", (width, height), (40, 160, 90))
     buffer = io.BytesIO()
-    if exif is None:
-        image.save(buffer, format="WEBP")
-    else:
-        image.save(buffer, format="WEBP", exif=exif)
+    options = {}
+    if exif is not None:
+        options["exif"] = exif
+    if icc_profile is not None:
+        options["icc_profile"] = icc_profile
+    image.save(buffer, format="WEBP", **options)
+    return buffer.getvalue()
+
+
+def flat_webp(width: int, height: int) -> bytes:
+    """WebP lossless de un solo color: ocupa pocos KB aunque tenga millones de
+    píxeles (`method=0` lo hace rápido de generar)."""
+    image = Image.new("RGB", (width, height), (40, 160, 90))
+    buffer = io.BytesIO()
+    image.save(buffer, format="WEBP", lossless=True, method=0)
     return buffer.getvalue()
 
 

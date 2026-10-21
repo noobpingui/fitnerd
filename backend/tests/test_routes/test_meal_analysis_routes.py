@@ -417,14 +417,34 @@ def test_photo_of_3_mb_plus_one_byte_returns_413(client, app, bedrock):
 
 # SDD: 024 REQ-003 AC-003.5
 def test_request_body_over_4_mb_returns_413_in_spanish(client, app, bedrock):
-    """Un cuerpo de más de 4 MB: 413 con el mensaje en español, no el genérico."""
+    """Foto pequeña válida y un segundo archivo de 4 MB en otro campo: el cuerpo
+    supera los 4 MB y da 413 con el mensaje en español, sin llamar al proveedor."""
     seed(app)
 
-    response = analyze(client, app, b"\xff\xd8\xff" + b"0" * (4 * MB))
+    response = analyze(
+        client, app, jpeg_bytes(), extra=upload(b"0" * (4 * MB), "extra.bin", "application/octet-stream")
+    )
 
     assert response.status_code == 413
     assert response.get_json() == {"error": TOO_LARGE}
     assert bedrock.calls == []
+
+
+# SDD: 024 REQ-003 AC-003.5
+def test_request_body_under_4_mb_with_an_extra_file_is_analyzed(client, app, bedrock):
+    """Con un archivo extra de 3,5 MB el cuerpo sigue por debajo de 4 MB: se
+    analiza (los campos extra se ignoran)."""
+    seed(app)
+
+    response = analyze(
+        client,
+        app,
+        jpeg_bytes(),
+        extra=upload(b"0" * (MB * 7 // 2), "extra.bin", "application/octet-stream"),
+    )
+
+    assert response.status_code == 200
+    assert len(bedrock.calls) == 1
 
 
 # SDD: 024 REQ-003 AC-003.6
@@ -603,6 +623,21 @@ def test_unconfigured_provider_returns_503(client, app):
     assert response.get_json() == {"error": UNAVAILABLE}
 
 
+# SDD: 024 REQ-009 AC-009.4
+def test_app_with_an_empty_bedrock_region_starts_and_answers_503(client, app, make_app):
+    """Con modelo pero `BEDROCK_REGION=""`, la app arranca, el proveedor queda
+    sin configurar y un análisis válido responde 503."""
+    make_app("testing", BEDROCK_VISION_MODEL_ID="modelo", BEDROCK_REGION="")
+    rate_limiter.client = FakeRedisClient()
+    seed(app)
+
+    assert vision_client.configured is False
+    response = analyze(client, app, jpeg_bytes())
+
+    assert response.status_code == 503
+    assert response.get_json() == {"error": UNAVAILABLE}
+
+
 # SDD: 024 REQ-010 AC-010.1
 def test_provider_receives_the_jpeg_without_exif_or_gps(client, app, bedrock):
     """La imagen que recibe el proveedor no tiene EXIF, GPS ni modelo de cámara
@@ -639,19 +674,20 @@ def test_provider_receives_the_png_without_the_text_chunk(client, app, bedrock):
 # SDD: 024 NFR-001 AC-N001.1
 def test_analyses_write_nothing_to_the_database(client, app, bedrock):
     """Un análisis 200 y otro 503 no cambian ninguna tabla y el diario sigue vacío."""
+    user_id = "5f0c2a52-3b1e-4a6d-9a47-0c1f2d3e4b5a"
     seed(app)
     bedrock.foods = [rice_150()]
     before = row_counts(app)
 
-    assert analyze(client, app, jpeg_bytes()).status_code == 200
+    assert analyze(client, app, jpeg_bytes(), user_id=user_id).status_code == 200
     bedrock.raise_error = RuntimeError("caído")
-    assert analyze(client, app, jpeg_bytes()).status_code == 503
+    assert analyze(client, app, jpeg_bytes(), user_id=user_id).status_code == 503
 
     assert row_counts(app) == before
     diary = client.get(
         "/api/meals",
         query_string={"date": date.today().isoformat()},
-        headers=auth_headers(app, "5f0c2a52-3b1e-4a6d-9a47-0c1f2d3e4b5a"),
+        headers=auth_headers(app, user_id),
     )
     assert diary.status_code == 200
     assert diary.get_json()["meals"] == []

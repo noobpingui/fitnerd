@@ -1,3 +1,8 @@
+"""Test de configuración del despliegue (spec 024): comprueba el `CMD` de
+gunicorn del `Dockerfile` del backend, no ningún servicio. El tiempo límite del
+servidor debe superar el presupuesto del proveedor de visión.
+"""
+
 import json
 from pathlib import Path
 

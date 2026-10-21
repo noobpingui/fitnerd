@@ -4,6 +4,7 @@ se generan en memoria con `tests/photo_samples.py`; no hay Flask ni red.
 """
 
 import io
+import tracemalloc
 
 import pytest
 from PIL import Image
@@ -25,6 +26,7 @@ from tests.photo_samples import (
     CAMERA_MODEL,
     PNG_TEXT_KEY,
     PNG_TEXT_VALUE,
+    flat_webp,
     gif_bytes,
     jpeg_bytes,
     jpeg_with_gps_exif,
@@ -288,6 +290,72 @@ def test_strip_photo_metadata_on_webp_without_exif_stays_readable():
     with Image.open(io.BytesIO(stripped)) as image:
         image.load()
         assert image.size == (33, 21)
+
+
+# SDD: 024 REQ-003 AC-003.6
+def test_webp_validation_does_not_decode_pixels():
+    """Un WebP plano de 3000 × 3000 (unos KB) se valida sin decodificar los
+    píxeles: el pico de memoria es menor de 8 MB (decodificar reservaría 27 MB)."""
+    data = flat_webp(3000, 3000)
+
+    tracemalloc.start()
+    try:
+        photo = prepare_photo([data])
+        _, peak = tracemalloc.get_traced_memory()
+    finally:
+        tracemalloc.stop()
+
+    assert photo.width == 3000
+    assert peak < 8 * 1024 * 1024
+
+
+# SDD: 024 REQ-003 AC-003.3
+def test_jpeg_with_an_unsupported_coding_process_is_unreadable():
+    """Un JPEG con el marcador `FFC0` cambiado por `FFC3` (sin pérdida, no
+    admitido) no se puede leer."""
+    data = jpeg_bytes()
+    assert b"\xff\xc0" in data
+    unsupported = data.replace(b"\xff\xc0", b"\xff\xc3", 1)
+
+    error = reject([unsupported])
+
+    assert isinstance(error, ValidationError)
+    assert error.message == UNREADABLE_PHOTO_MESSAGE
+
+
+# SDD: 024 REQ-003 AC-003.3
+def test_jpeg_without_a_scan_is_unreadable():
+    """Un JPEG cortado justo antes de su `SOS` y cerrado con `EOI` no trae
+    datos de imagen: no se puede leer."""
+    data = jpeg_bytes()
+    without_scan = data[: data.index(b"\xff\xda")] + b"\xff\xd9"
+
+    error = reject([without_scan])
+
+    assert isinstance(error, ValidationError)
+    assert error.message == UNREADABLE_PHOTO_MESSAGE
+
+
+# SDD: 024 REQ-010 AC-010.1
+@pytest.mark.parametrize(
+    "make_photo, image_format",
+    [(jpeg_bytes, "jpeg"), (webp_bytes, "webp")],
+    ids=["jpeg", "webp"],
+)
+def test_icc_profile_is_stripped(make_photo, image_format):
+    """El perfil ICC se descarta (puede identificar el dispositivo) y la imagen
+    sigue leyéndose con sus dimensiones."""
+    marker = b"fitnerd-icc-device-model"
+    original = make_photo(70, 50, icc_profile=marker)
+    assert marker in original
+
+    stripped = strip_photo_metadata(original, image_format)
+
+    assert marker not in stripped
+    with Image.open(io.BytesIO(stripped)) as image:
+        assert "icc_profile" not in image.info
+        image.load()
+        assert image.size == (70, 50)
 
 
 # SDD: 024 REQ-003 AC-003.3

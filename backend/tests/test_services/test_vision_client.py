@@ -4,7 +4,12 @@ constructor: nada sale a la red ni a AWS.
 """
 
 import pytest
-from botocore.exceptions import ClientError, ParamValidationError, ReadTimeoutError
+from botocore.exceptions import (
+    ClientError,
+    NoRegionError,
+    ParamValidationError,
+    ReadTimeoutError,
+)
 
 from services.meal_image_rules import FOODS_TOOL_NAME, FOODS_TOOL_SCHEMA
 from tests.fakes import FakeBedrockRuntimeClient
@@ -57,6 +62,39 @@ def test_init_app_without_a_model_leaves_the_client_unconfigured(model_id):
     assert vision.client is None
     assert vision.configured is False
     assert factory.calls == []
+
+
+# SDD: 024 REQ-009 AC-009.4
+@pytest.mark.parametrize("region", [None, "", "   "], ids=["none", "empty", "blank"])
+def test_init_app_with_a_model_and_no_region_leaves_the_client_unconfigured(region):
+    """Con modelo pero sin región (None, vacía o en blanco): sin cliente, la
+    fábrica no se llama y `recognize_foods` lanza `VisionProviderError`."""
+    factory = FakeClientFactory(FakeBedrockRuntimeClient())
+    vision = BedrockVisionClient(client_factory=factory)
+
+    vision.init_app(FakeApp({"BEDROCK_VISION_MODEL_ID": MODEL_ID, "BEDROCK_REGION": region}))
+
+    assert vision.client is None
+    assert vision.configured is False
+    assert factory.calls == []
+    with pytest.raises(VisionProviderError):
+        vision.recognize_foods(IMAGE, "jpeg", "s", "p")
+
+
+# SDD: 024 REQ-009 AC-009.4
+def test_init_app_survives_a_client_factory_that_fails():
+    """Si la fábrica lanza (`NoRegionError`), `init_app` no lanza y el
+    proveedor queda sin configurar."""
+
+    def failing_factory(*args, **kwargs):
+        raise NoRegionError()
+
+    vision = BedrockVisionClient(client_factory=failing_factory)
+
+    vision.init_app(FakeApp({"BEDROCK_VISION_MODEL_ID": MODEL_ID, "BEDROCK_REGION": REGION}))
+
+    assert vision.client is None
+    assert vision.configured is False
 
 
 # SDD: 024 REQ-009 AC-009.4
@@ -178,6 +216,38 @@ def test_foods_that_are_not_a_list_are_not_interpretable():
                                     "toolUseId": "t",
                                     "name": "report_foods",
                                     "input": {"foods": "arroz"},
+                                }
+                            }
+                        ],
+                    }
+                },
+                "stopReason": "tool_use",
+                "usage": {"inputTokens": 1, "outputTokens": 1},
+            }
+
+    vision, _, _ = make_vision(WrongShapeClient())
+
+    with pytest.raises(VisionProviderError):
+        vision.recognize_foods(IMAGE, "jpeg", "s", "p")
+
+
+# SDD: 024 REQ-009 AC-009.2
+@pytest.mark.parametrize("tool_input", ["arroz", ["arroz"], 42], ids=["str", "list", "int"])
+def test_tool_input_that_is_not_an_object_is_not_interpretable(tool_input):
+    """Si el `input` de la herramienta no es un objeto, error del proveedor."""
+
+    class WrongShapeClient:
+        def converse(self, **kwargs):
+            return {
+                "output": {
+                    "message": {
+                        "role": "assistant",
+                        "content": [
+                            {
+                                "toolUse": {
+                                    "toolUseId": "t",
+                                    "name": "report_foods",
+                                    "input": tool_input,
                                 }
                             }
                         ],
