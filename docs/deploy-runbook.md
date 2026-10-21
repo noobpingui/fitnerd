@@ -131,6 +131,8 @@ La revisión que devuelve tiene que ser la `down_revision` de la primera migraci
    cd backend
    FLASK_ENV=production .venv/Scripts/python.exe -m flask db upgrade
    ```
+   **Desde local, `backend/.env` no trae `FRONTEND_BASE_URL`** y `ProductionConfig` exige que exista y empiece por `https://` (spec 020): pásala solo para el comando, `FRONTEND_BASE_URL=https://fitnerd.betofallas.dev FLASK_ENV=production .venv/Scripts/python.exe -m flask db upgrade`; si no, la app no arranca y el error sale antes de tocar la base. La migración no la usa.
+   Antes del merge, la instancia aún no tiene el archivo de la migración, así que `exec backend flask db upgrade` allí solo sirve después del CD (como en la 022).
    Alternativa en la instancia: `docker compose -f docker-compose.prod.yml exec backend flask db upgrade`.
 3. Repite la comprobación de solo lectura: revisión nueva, tablas o restricciones creadas, recuento de filas sin cambios.
 4. Merge del PR (`gh pr merge N --merge`) y paso 6.
@@ -273,5 +275,6 @@ Merge del PR y paso 6.
 | 2026-10-18 | 019, correo canónico con restricción CHECK | #22, `650fac9` | `e5b7d9f1a3c6`, aplicada antes del merge (sin cambios de datos: 0 correos no canónicos, 0 conflictos; solo creó las dos CHECK) | `prod-2026-10-18.dump` |
 | 2026-10-20 | 021, base de alimentos de USDA | #26, `e0d3c1e` | `c8e2a4f6b9d3` (`foods`), aplicada hoy junto con la de la 022 (ver la fila siguiente); importación de 8.262 alimentos, `public.foods` ocupa 50 MB | `prod-2026-10-20.dump` |
 | 2026-10-20 | 022, diario de comidas | #27, `c4be21e` | `b3d5f7a9c1e4` (`meals`, `meal_items`), aplicada después del merge, a continuación de la `c8e2a4f6b9d3` | `prod-2026-10-20.dump` |
+| 2026-10-21 | 023, catálogo genérico de alimentos | #30, `fb72991` | `d4f6a8c0e2b5` (`catalog_foods`, `meal_items.catalog_id`), aplicada antes del merge desde local; carga del catálogo en EC2 después del CD: 261 alimentos | `prod-2026-10-21.dump` |
 
 Añade una fila en cada despliegue.
