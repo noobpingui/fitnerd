@@ -36,3 +36,24 @@
 - [ ] La orientación EXIF se pierde al quitar los metadatos; la 025 debe aplicarla al redimensionar en el cliente.
 - [ ] En `vision_client.py`, el import de `FOODS_TOOL_NAME` y `FOODS_TOOL_SCHEMA` es local, dentro de `recognize_foods`, para evitar un ciclo de importación entre `extensions.py` y los servicios.
 - [ ] Test incorrecto `test_analyses_write_nothing_to_the_database`: usa `user_id` "user-1" que no es UUID. Aprobado por el usuario devolverlo al test-author junto con 3 E501 (L73 y L213 de test_meal_analysis_routes.py, L225 de test_meal_image_rules.py).
+
+## verify · verifier
+- [ ] Revisión manual de precisión del modelo con ~10 fotos reales contra el proveedor real en local (spec Q9), en el gate de review.
+- [ ] Documentar el paso manual de producción de Bedrock (permisos de la instancia EC2, BEDROCK_VISION_MODEL_ID, BEDROCK_REGION) en docs/deploy-runbook.md (Art. P4), en la etapa docs.
+- [ ] Actualizar la Política de privacidad al enviar fotos a AWS en la spec 025 (Q7).
+
+## review · reviewer (iteración 1, CHANGES_REQUESTED)
+- [ ] F2 MENOR (planner): un WebP de 8000×8000 de solo 2,5 KB obliga a reservar unos 256 MB y 0,37 s de CPU por petición. La decodificación se hace antes del límite de uso, también en las peticiones que acaban en 429, así que el límite no acota este coste, al contrario de lo que dice la sección 6 del plan.
+- [ ] F3 MENOR (test-author): el test de AC-003.5 no prueba el límite de 4 MB del cuerpo, porque el archivo enviado ya supera los 3 MB. Debería enviar una imagen pequeña y un campo extra grande.
+- [ ] F4 MENOR (implementer): con BEDROCK_REGION vacía y el modelo configurado, create_app falla al arrancar en lugar de dejar el endpoint en 503.
+- [ ] F5 NIT (implementer): comentario nuevo en inglés en exceptions/custom_exceptions.py:42.
+- [ ] F6 NIT (implementer): si el bloque toolUse trae un input que no es un dict, salta un AttributeError en lugar de VisionProviderError. Acaba igualmente en 503.
+- [ ] F7 NIT (test-author): en AC-N001.1, el diario se consulta con un usuario distinto del que hizo los análisis.
+- [ ] F8 NIT (planner): se pierde el perfil ICC del JPEG; conviene comprobarlo en la revisión manual de Q9.
+
+## plan · planner (corrección de review F1)
+- [ ] Pasar gunicorn a hilos o a más workers cuando la memoria de decodificación esté acotada (F2), para que un análisis o una pregunta al coach no bloqueen al resto de la API.
+- [ ] Fijar un tiempo límite (y los reintentos) en el cliente de Anthropic del coach (`utils/llm_client.py`, hoy con el valor por defecto del SDK); con `--timeout 90`, gunicorn lo corta a los 90 s en lugar de a los 30 s.
+- [ ] Valorar un plazo absoluto para la llamada a Bedrock si en el futuro se usa streaming (`converse_stream`), donde `read_timeout` ya no equivale al tiempo total.
+- [ ] doc-keeper: mencionar en el runbook que, tras desplegar, hay que comprobar que gunicorn arrancó con `--timeout 90`.
+- [ ] Si el role-guard no deja al implementer editar `backend/Dockerfile` (fuera de los globs de producción), lo aplica el orquestador con autorización del usuario.

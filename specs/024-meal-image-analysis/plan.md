@@ -14,7 +14,8 @@ alimentos. El proveedor es un adaptador nuevo, `BedrockVisionClient` (`utils/vis
 (dependencia ya existente) con la API `converse` de Bedrock y salida estructurada por *tool use*. La respuesta del
 modelo se sanea con funciones puras (`services/meal_image_rules.py`) que toman nombres y valores del catálogo y
 calculan los nutrientes con `portion_nutrients` y `sum_nutrients` del diario. Las trazas usan el `Tracer` de ADR-0017.
-No hay cambios de modelo ni migraciones. Arquitectura y elección de proveedor en
+No hay cambios de modelo ni migraciones. En producción, gunicorn pasa a `--timeout 90` para que un proveedor lento
+acabe en el 503 de la spec y no en un 502 del proxy (sección 3.5). Arquitectura y elección de proveedor en
 [ADR-0032](../../docs/sdd/decisions/ADR-0032-analisis-de-foto-de-comida-con-bedrock.md).
 
 ## 2. Impacto en la arquitectura
@@ -31,7 +32,8 @@ No hay cambios de modelo ni migraciones. Arquitectura y elección de proveedor e
 | backend | app / extensions / config | — | `backend/extensions.py`, `backend/app.py`, `backend/config.py` | Singleton `vision_client`, su `init_app`, `app.request_class` y variables `BEDROCK_VISION_MODEL_ID` y `BEDROCK_REGION` (en `TestingConfig`, modelo fijo a `None`). |
 | backend | dependencias | — | `backend/requirements.txt` | Declarar `pillow` de forma explícita (ya se instala como dependencia de `voyageai`, versión 12.3.0 en el venv). |
 | backend | entorno | — | `backend/.env.example` | Documentar `BEDROCK_VISION_MODEL_ID` y `BEDROCK_REGION` (Art. P3.5). |
-| backend | tests | `backend/tests/test_routes/test_meal_analysis_routes.py`, `backend/tests/test_services/test_meal_image_analysis_service.py`, `backend/tests/test_services/test_meal_image_rules.py`, `backend/tests/test_services/test_meal_photo.py`, `backend/tests/test_services/test_vision_client.py`, `backend/tests/photo_samples.py` | `backend/tests/fakes.py` | Tests de la spec y dobles nuevos (`FakeVisionClient`, `FakeBedrockRuntimeClient`). |
+| backend | servidor (gunicorn) | — | `backend/Dockerfile` | Fijar `--timeout 90` en el `CMD` de gunicorn para que un Bedrock lento acabe siempre en el 503 de REQ-009 y no en un 502 del proxy (sección 3.5; review F1). |
+| backend | tests | `backend/tests/test_routes/test_meal_analysis_routes.py`, `backend/tests/test_services/test_meal_image_analysis_service.py`, `backend/tests/test_services/test_meal_image_rules.py`, `backend/tests/test_services/test_meal_photo.py`, `backend/tests/test_services/test_vision_client.py`, `backend/tests/photo_samples.py`, `backend/tests/test_services/test_server_timeout.py` | `backend/tests/fakes.py` | Tests de la spec y dobles nuevos (`FakeVisionClient`, `FakeBedrockRuntimeClient`). |
 | docs | ADR | `docs/sdd/decisions/ADR-0032-analisis-de-foto-de-comida-con-bedrock.md` | `docs/sdd/decisions/README.md` | Decisión de arquitectura nueva. |
 | docs | runbook | — | `docs/deploy-runbook.md` (lo hace el `doc-keeper`) | Paso manual de producción: permisos de Bedrock en el rol de la instancia, acceso al modelo, variables y comprobación de IMDS desde el contenedor (Art. P4). |
 
@@ -380,6 +382,63 @@ nuevo porque `LLMClient` envuelve el SDK de Anthropic directo y el proveedor ped
 
 No aplica: la pantalla es la spec 025.
 
+### 3.5 Presupuesto de tiempo y servidor (review F1)
+
+**Problema.** En producción el backend corre con `gunicorn --bind 0.0.0.0:5000 wsgi:app` (`backend/Dockerfile`): un
+solo worker *sync* y `--timeout` por defecto de **30 s**. Con un worker *sync*, gunicorn mata el worker si una petición
+pasa de ese tiempo; Caddy responde entonces 502 sin cuerpo `{"error": …}`, la traza no se cierra con `error` y el
+intento ya contó para el límite. La espera máxima con Bedrock (5 s de conexión + 30 s de lectura) supera esos 30 s, así
+que un proveedor lento no da el 503 de REQ-009.
+
+**Presupuesto de una petición de análisis** (peor caso del lado del servidor):
+
+| Tramo | Tope | De dónde sale |
+|---|---|---|
+| Validación de la foto, Redis, lectura del catálogo y saneado | ~1 s | WebP de 8000 × 8000 decodificado: 0,37 s (medido en la review); el resto, milisegundos. |
+| Credenciales del rol de EC2 (IMDSv2, solo si no están en caché) | ~2 s | `boto3` usa 1 s de espera y 1 intento para el token y otro tanto para las credenciales; si no llega, falla rápido (503). |
+| Conexión a Bedrock | 5 s | `connect_timeout` (`VISION_CONNECT_TIMEOUT_SECONDS`). |
+| Respuesta de Bedrock | 30 s | `read_timeout` (`VISION_TIMEOUT_SECONDS`). |
+| **Total del servidor** | **~38 s** | |
+
+`read_timeout` mide el tiempo sin recibir datos del socket, no el total. Con `converse` (no *streaming*), Bedrock no
+envía nada hasta terminar de generar, así que la primera lectura espera toda la inferencia y el resto del cuerpo
+(unos KB) llega seguido: en la práctica, «no responde en 30 s» de REQ-009 es exactamente ese `read_timeout`. Los
+valores de 30 s y 5 s **no cambian** (los fijan `test_build_client_config_uses_a_30_second_read_timeout_and_no_retries`
+y la spec).
+
+**Decisión.** Subir el `--timeout` de gunicorn a **90 s** en el `CMD` de `backend/Dockerfile`:
+
+```dockerfile
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--timeout", "90", "wsgi:app"]
+```
+
+- 90 s ≥ 38 s del servidor + unos 50 s para que el cliente suba el cuerpo: con un worker *sync*, gunicorn cuenta
+  también la lectura del cuerpo, porque Caddy (`reverse_proxy` por defecto) no lo almacena antes de reenviarlo. 4 MB en
+  50 s son unos 0,7 Mbit/s; la 025 enviará fotos ya reducidas, muy por debajo.
+- Así, ante un Bedrock lento o caído, salta antes el `ReadTimeoutError` o `ConnectTimeoutError` de botocore, el
+  servicio responde el 503 con el mensaje de la spec, la traza se cierra con `outcome` `error` y el fallo queda en el
+  log (AC-009.1, AC-N002.2).
+- Si gunicorn llegara a cortar a los 90 s, sería por un cliente que sube muy despacio, no por el proveedor: la petición
+  todavía no llegó al límite de uso ni a la traza.
+- **Se mantienen un worker y la clase *sync*.** No se añaden workers ni hilos (`--workers`, `--threads`, `gthread`):
+  la instancia es una t3.micro (1 GB de RAM y 1 GB de swap, ADR-0016) y, mientras no se resuelva F2 (un WebP de
+  8000 × 8000 reserva unos 256 MB al validarse), atender varias fotos a la vez multiplicaría ese pico de memoria y
+  podría tumbar el contenedor. Con un worker *sync* solo se decodifica una foto a la vez.
+- Consecuencia aceptada: mientras dura un análisis (hasta unos 38 s en el peor caso, normalmente unos segundos), el
+  resto de peticiones de la API esperan en cola. Ya ocurre hoy con el coach (llamada a Claude en el mismo worker). Pasar
+  a hilos queda en el backlog, condicionado a acotar antes la memoria de decodificación (F2).
+- Efecto en el resto de la app: ninguno funcional. El coach pasa de cortarse con 502 a los 30 s a poder esperar hasta
+  90 s (su cliente de Anthropic no fija tiempo límite; acotarlo queda en el backlog).
+- **Despliegue:** sin variables nuevas ni pasos manuales extra. El CD ya reconstruye la imagen
+  (`docker compose -f docker-compose.prod.yml up -d --build`), así que el cambio del `CMD` se aplica solo. El
+  `doc-keeper` lo menciona en el paso de producción de la 024 en `docs/deploy-runbook.md` (comprobar tras desplegar
+  que el proceso arrancó con `--timeout 90`, por ejemplo con `docker compose -f docker-compose.prod.yml top backend`).
+  Caddy no tiene tiempo límite de respuesta por defecto en `reverse_proxy`, así que no hay que tocar el `Caddyfile`.
+
+**Protección contra regresiones:** un test de configuración (sección 5) lee el `CMD` de `backend/Dockerfile` y
+comprueba que `--timeout` es un entero ≥ `VISION_CONNECT_TIMEOUT_SECONDS + VISION_TIMEOUT_SECONDS + 30` (es decir,
+≥ 65 s con los valores actuales): si alguien sube los tiempos de Bedrock o quita el `--timeout`, el test falla.
+
 ## 4. Mapa REQ → diseño
 
 | REQ / NFR | Dónde se resuelve |
@@ -392,7 +451,7 @@ No aplica: la pantalla es la spec 025.
 | REQ-006 | `build_analysis`: nombre y `per_100g` de `catalog_by_id`, `portion_nutrients`; id inexistente → `unmatched` con nombre o descarte. |
 | REQ-007 | `parse_estimated_grams`, `parse_confidence`, `clean_unmatched_name`. |
 | REQ-008 | `build_analysis`: unión de duplicados del catálogo (suma con tope, menor confianza, primera posición) y tope de 20 tras unir. |
-| REQ-009 | `build_client_config` (30 s, sin reintentos); `VisionProviderError` (sin configurar, respuesta no interpretable, catálogo vacío); `except Exception` del servicio → `ServiceUnavailableError`; `logger.error` con `describe_vision_error`. |
+| REQ-009 | `build_client_config` (30 s, sin reintentos); `VisionProviderError` (sin configurar, respuesta no interpretable, catálogo vacío); `except Exception` del servicio → `ServiceUnavailableError`; `logger.error` con `describe_vision_error`; `--timeout 90` de gunicorn en `backend/Dockerfile`, por encima del presupuesto del servidor (~38 s), para que el 503 llegue al cliente en producción (sección 3.5). |
 | REQ-010 | `strip_photo_metadata` (JPEG, PNG y WebP a nivel de bytes), aplicado en `prepare_photo` antes de enviar. |
 | NFR-001 | Sin repositorios de escritura ni `UnitOfWork`; `InMemoryUploadRequest` (archivos en memoria); logs y pasos de traza solo con `describe_vision_error`; trazas sin la imagen. |
 | NFR-002 | Pasos 3–6 de `analyze`: traza `meal-image-analysis` con usuario, `format`, `size_bytes`, paso `vision` con tokens, puntuaciones `outcome`, `items_count` y `unmatched_count`; ninguna traza antes de la validación ni con 429; trazas fuera del `try` del proveedor. |
@@ -474,6 +533,18 @@ y `model_id` en `vision_client` y `FakeRedisClient` en `rate_limiter`, y los res
 **Comprobación de configuración:** un test de `app.request_class is InMemoryUploadRequest` y de que
 `_get_file_stream` devuelve un `BytesIO` (NFR-001).
 
+**Tiempo límite del servidor — `test_services/test_server_timeout.py`** (review F1, `# SDD: 024 REQ-009 AC-009.1`):
+test puro, sin Flask ni red. Lee `backend/Dockerfile` (`Path(__file__).resolve().parents[2] / "Dockerfile"`), toma la
+línea que empieza por `CMD`, interpreta su array con `json.loads` y comprueba que:
+- el ejecutable es `gunicorn` y aparece `--timeout` exactamente una vez, seguido de un entero;
+- ese entero es ≥ `VISION_CONNECT_TIMEOUT_SECONDS + VISION_TIMEOUT_SECONDS + 30` (importados de
+  `utils.vision_client`), es decir, que gunicorn nunca corta antes de que botocore agote sus tiempos y el servicio
+  responda 503.
+
+Nombre propuesto: `test_gunicorn_timeout_exceeds_the_vision_provider_budget`. En rojo hoy (el `CMD` no lleva
+`--timeout`); pasa con el cambio de la sección 3.5. Los tests de AC-009.1 con dobles (servicio y ruta) siguen cubriendo
+la traducción a 503; este cubre la parte que solo existe en producción. No hace falta probar gunicorn de verdad.
+
 **Fuera de los tests (Q9):** revisión manual en el gate de `review` con unas 10 fotos reales contra Bedrock en local
 (con `FLASK_ENV=development`, `BEDROCK_VISION_MODEL_ID` y credenciales de AWS locales); el resultado se anota en la
 feature, sin guardar fotos en el repositorio.
@@ -485,7 +556,9 @@ feature, sin guardar fotos en el repositorio.
 | La estimación de gramos del modelo es imprecisa (riesgo principal del plan de registro con foto). | Alta | Medio | Gramos enteros acotados, confianza visible, la 025 permite editar antes de guardar; revisión manual con fotos reales (Q9) en el gate de `review`. |
 | Un mensaje de error de botocore (`ParamValidationError`) incluye los bytes de la imagen y acaba en el log o en la traza. | Media | Alto | `describe_vision_error` solo con tipo y código; `logger.error` sin `exc_info`; `step.fail` con una excepción saneada; test AC-N001.2 con una excepción que contiene los bytes. |
 | El contenedor del backend no obtiene credenciales del rol de EC2 (IMDSv2 con límite de saltos 1). | Media | Medio | Sin credenciales el endpoint responde 503 y el resto de la app sigue igual; el runbook incluye comprobar `HttpPutResponseHopLimit` = 2 y probar el endpoint tras desplegar. |
-| Memoria al validar: decodificar un WebP de 8000 × 8000 son unos 256 MB por petición. | Baja | Medio | Dimensiones comprobadas antes de decodificar; JPEG a 1/8 de escala con `draft` y PNG con `verify` (sin píxeles); el límite de 10 análisis por hora acota el abuso; la 025 enviará fotos ya reducidas. Tope global en el backlog. |
+| Memoria al validar: decodificar un WebP de 8000 × 8000 son unos 256 MB por petición. | Baja | Medio | Dimensiones comprobadas antes de decodificar; JPEG a 1/8 de escala con `draft` y PNG con `verify` (sin píxeles); con un solo worker *sync* (sección 3.5) solo se decodifica una foto a la vez; la 025 enviará fotos ya reducidas. El límite de 10 análisis por hora **no** acota este coste, porque la validación va antes del límite (AC-005.3; review F2): la corrección queda en el backlog. |
+| Un Bedrock lento acaba en un 502 del proxy (gunicorn mata el worker a los 30 s por defecto) en lugar del 503 de REQ-009. | Media | Medio | `--timeout 90` en el `CMD` de gunicorn, por encima del presupuesto del servidor (~38 s); test de configuración que lee el `Dockerfile` y lo compara con los tiempos de Bedrock (sección 3.5). |
+| Con un solo worker *sync*, un análisis lento deja en cola al resto de la API mientras dura. | Media | Bajo | Ya ocurre con el coach; el peor caso queda acotado por los tiempos de Bedrock (~38 s). Hilos o más workers en el backlog, después de acotar la memoria de decodificación (F2) en una t3.micro. |
 | Quitar metadatos a nivel de bytes corrompe un archivo raro (JPEG progresivo, PNG animado). | Baja | Bajo | Recorrido de segmentos y chunks con lista blanca; si la estructura no se puede recorrer, 400 «No se pudo leer la imagen.»; tests con JPEG, PNG y WebP generados por Pillow. |
 | La orientación EXIF se pierde y el modelo ve la foto girada. | Media | Bajo | Los modelos de visión reconocen alimentos girados; la 025 aplicará la orientación al redimensionar en el cliente. |
 | Coste por análisis (imagen más unos 260 alimentos en el prompt, que suman varios miles de tokens). | Media | Bajo | 10 por hora y usuario; tokens en la traza para medir el coste real; caché de prompt y tope global en el backlog. |
@@ -513,12 +586,14 @@ feature, sin guardar fotos en el repositorio.
 - **Art. P3.1:** `@require_auth` y `user_id` del token (solo para el límite y la traza; no hay datos de usuario que
   filtrar).
 - **Art. P3.2:** toda la entrada (la foto y también la salida del modelo) se valida en servicios con `ValidationError`.
-- **Art. P3.3:** límite de uso en Redis con `utils/rate_limiter.py`; fallos del proveedor → `ServiceUnavailableError`.
+- **Art. P3.3:** límite de uso en Redis con `utils/rate_limiter.py`; fallos del proveedor → `ServiceUnavailableError`,
+  también en producción ante un proveedor lento gracias al `--timeout 90` de gunicorn (sección 3.5).
 - **Art. P3.4:** sin SQL a mano.
 - **Art. P4:** el paso manual de producción (política IAM `bedrock:InvokeModel` en el rol de la instancia para el
   perfil de inferencia y sus modelos, acceso al modelo en la consola de Bedrock, `BEDROCK_VISION_MODEL_ID` y
   `BEDROCK_REGION` en el `backend/.env` de EC2, límite de saltos de IMDS y prueba manual) lo documenta el
-  `doc-keeper` en `docs/deploy-runbook.md`.
+  `doc-keeper` en `docs/deploy-runbook.md`, junto con el nuevo `--timeout 90` de gunicorn (se aplica solo con el CD;
+  solo hay que comprobarlo tras desplegar).
 - **Art. P2.General.1:** mensajes y comentarios en español, sin voseo (el `SYSTEM_PROMPT` también).
 - **Dependencia:** `pillow` se declara en `requirements.txt`; ya estaba instalada como dependencia de `voyageai`, y la
   spec (Q6, aceptada) delegó esta decisión en el plan. No hay ningún "DEBERÍA" incumplido.
@@ -527,5 +602,21 @@ feature, sin guardar fotos en el repositorio.
 
 - [ADR-0032](../../docs/sdd/decisions/ADR-0032-analisis-de-foto-de-comida-con-bedrock.md): análisis de la foto de una
   comida con Bedrock `converse` y *tool use* detrás de `BedrockVisionClient`, catálogo completo en el prompt, saneado
-  en el servidor, metadatos quitados a nivel de bytes, Pillow solo para validar y archivos subidos en memoria
-  (Propuesta).
+  en el servidor, metadatos quitados a nivel de bytes, Pillow solo para validar, archivos subidos en memoria y
+  `--timeout 90` de gunicorn con un solo worker *sync* (Propuesta; ampliada en la iteración 1 de la review).
+
+## 9. Cambios por la review (iteración 1)
+
+Solo se corrige **F1** (MAYOR). F2–F8 van al backlog de la feature; F2 solo se toca para corregir la mitigación
+equivocada de la sección 6, porque la decisión de F1 (un worker *sync*) depende de ella.
+
+Tareas que el `task-breaker` debe añadir a `tasks.md` (en el formato del archivo):
+- **Test** `[REQ-009, AC-009.1]`: `test_gunicorn_timeout_exceeds_the_vision_provider_budget` en
+  `backend/tests/test_services/test_server_timeout.py` (sección 5). Requiere reabrir la etapa de tests: es un archivo
+  nuevo fuera del snapshot actual.
+- **Config** `[REQ-009, AC-009.1]`: añadir `"--timeout", "90"` al `CMD` de `backend/Dockerfile`, sin cambiar workers
+  ni clase de worker, y actualizar el comentario en español que explica el `CMD` (sección 3.5).
+
+`backend/Dockerfile` no está en los globs de producción del ámbito `backend` (`.sdd/config.json`); si el role-guard
+no deja al `implementer` editarlo (como pasó con `requirements.txt`), lo aplica el orquestador con la autorización del
+usuario.

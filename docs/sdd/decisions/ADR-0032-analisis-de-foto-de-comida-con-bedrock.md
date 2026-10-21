@@ -39,6 +39,13 @@ Opciones consideradas:
 - La app usa `InMemoryUploadRequest` (`app.request_class`) para que los archivos subidos nunca toquen el disco; la
   ruta fija `request.max_content_length` en 4 MB solo para esa petición y traduce el 413 de Werkzeug a
   `PayloadTooLargeError` con el mensaje en español.
+- **Tiempo límite del servidor** (añadido en la iteración 1 de la review, F1): gunicorn corre con `--timeout 90` en el
+  `CMD` de `backend/Dockerfile`, por encima del peor caso del servidor (unos 38 s: validación, credenciales del rol,
+  5 s de conexión y 30 s de lectura de Bedrock) más margen para la subida del cuerpo. Con el valor por defecto (30 s),
+  un worker *sync* moría antes de que botocore agotara sus tiempos y el cliente recibía un 502 de Caddy en lugar del
+  503 de la spec. Se mantienen un solo worker y la clase *sync*: en una t3.micro, atender varias fotos a la vez
+  multiplicaría el pico de memoria de decodificar un WebP grande. Un test lee el `CMD` y lo compara con los tiempos de
+  `utils/vision_client.py`.
 
 ## Consecuencias
 - Cambiar de modelo es cambiar una variable; cambiar de proveedor es escribir otro adaptador con `recognize_foods`.
@@ -50,3 +57,6 @@ Opciones consideradas:
 - En producción hace falta un paso manual: permiso `bedrock:InvokeModel` en el rol de la instancia, acceso al modelo,
   las dos variables y que el contenedor llegue a IMDSv2 (límite de saltos 2). Sin eso el endpoint responde 503 y el
   resto de la app no cambia.
+- Mientras dura un análisis (hasta unos 38 s en el peor caso), el resto de peticiones esperan en cola en el único
+  worker, como ya pasa con el coach. Pasar a hilos queda pendiente de acotar antes la memoria de decodificación. El
+  coach también gana margen: gunicorn ya no lo corta a los 30 s. El nuevo `--timeout` se aplica solo con el CD.
