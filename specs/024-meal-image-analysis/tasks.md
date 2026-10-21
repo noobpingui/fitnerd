@@ -54,6 +54,23 @@ Marcadores `# SDD: 024 REQ-… AC-…`, nombres en inglés, docstrings en españ
 - [x] T-030 [REQ-010, NFR-001, NFR-002, AC-010.1, AC-010.2, AC-N001.1, AC-N002.3] (test) Ruta: la imagen que recibe el proveedor no tiene EXIF ni bloque de texto; ninguna tabla cambia tras un 200 y un 503; 400 y 429 no crean trazas; `app.request_class` es `InMemoryUploadRequest` y su `_get_file_stream` devuelve `BytesIO` — `backend/tests/test_routes/test_meal_analysis_routes.py`
 - [x] T-058 [REQ-009, AC-009.1] (test) `test_gunicorn_timeout_exceeds_the_vision_provider_budget` (review F1, plan 3.5 y 5): lee el `CMD` de `backend/Dockerfile`, comprueba que es `gunicorn` con un único `--timeout` entero ≥ `VISION_CONNECT_TIMEOUT_SECONDS + VISION_TIMEOUT_SECONDS + 30`; archivo nuevo, requiere reabrir la etapa de tests; en rojo hasta T-059 — `backend/tests/test_services/test_server_timeout.py`
 
+### Fase A — Tests de la iteración 2 de la review (F2–F9, test-author)
+Reabren la etapa de tests. Ningún test existente se borra ni se debilita; no hace falta scaffold (los símbolos ya
+existen). Al terminar hay que regenerar el snapshot de tests (`test_server_timeout.py` sale y `test_gunicorn_config.py`
+entra). Rojo legítimo esperado: T-061, T-063 (`webp`), T-064, T-065 y T-066; T-062, T-067, T-068 y T-069 son
+caracterización o corrección de tests ya verdes.
+
+- [ ] T-060 [REQ-003, REQ-010, AC-003.6, AC-010.1] (test) F2/F8: añadir el helper `flat_webp(width, height)` (WebP *lossless* de un solo color, `lossless=True`, `method=0`) y el parámetro `icc_profile=None` en `jpeg_bytes` y `webp_bytes` — `backend/tests/photo_samples.py`
+- [ ] T-061 [REQ-003, AC-003.6] (test) F2: `test_webp_validation_does_not_decode_pixels` (WebP plano de 3000 × 3000 generado antes de medir; con `tracemalloc` el pico de `prepare_photo` es < 8 MB y `width == 3000`; `tracemalloc.stop()` en `finally`) — `backend/tests/test_services/test_meal_photo.py`
+- [ ] T-062 [REQ-003, AC-003.3] (test) F2 (caracterización): `test_jpeg_with_an_unsupported_coding_process_is_unreadable` (`FFC0` cambiado por `FFC3`) y `test_jpeg_without_a_scan_is_unreadable` (cortado antes de `FFDA` y terminado con `FFD9`) dan `UNREADABLE_PHOTO_MESSAGE` — `backend/tests/test_services/test_meal_photo.py`
+- [ ] T-063 [REQ-010, AC-010.1] (test) F8: `test_icc_profile_is_stripped` parametrizado `jpeg`/`webp` (el resultado no contiene el marcador del perfil, `info` sin `icc_profile`, la imagen se lee con `load()` y conserva sus dimensiones) — `backend/tests/test_services/test_meal_photo.py`
+- [ ] T-064 [REQ-009, AC-009.4] (test) F4: `test_init_app_with_a_model_and_no_region_leaves_the_client_unconfigured` (región `None`, `""` y `"   "`: sin cliente, fábrica sin llamar, `recognize_foods` lanza `VisionProviderError`) y `test_init_app_survives_a_client_factory_that_fails` (`NoRegionError`) — `backend/tests/test_services/test_vision_client.py`
+- [ ] T-065 [REQ-009, AC-009.4] (test) F4: `test_app_with_an_empty_bedrock_region_starts_and_answers_503` (`make_app("testing", BEDROCK_VISION_MODEL_ID="modelo", BEDROCK_REGION="")` no lanza, `vision_client.configured` es `False`, se reinstala `FakeRedisClient` y un `POST` válido responde 503 con el mensaje exacto) — `backend/tests/test_routes/test_meal_analysis_routes.py`
+- [ ] T-066 [REQ-009, AC-009.2] (test) F6: `test_tool_input_that_is_not_an_object_is_not_interpretable` parametrizado con `input` `"arroz"`, `["arroz"]` y `42` (cliente local `WrongShapeClient`, sin tocar `fakes.py`) lanza `VisionProviderError` — `backend/tests/test_services/test_vision_client.py`
+- [ ] T-067 [REQ-002, REQ-003, AC-002.4, AC-003.5] (test) F3: reescribir `test_request_body_over_4_mb_returns_413_in_spanish` (foto pequeña válida más un segundo archivo de 4 MB en el campo `extra`: 413, mensaje en español, sin llamadas) y añadir `test_request_body_under_4_mb_with_an_extra_file_is_analyzed` (archivo extra de 3,5 MB: 200); el archivo extra va como tupla `BytesIO`, no como texto — `backend/tests/test_routes/test_meal_analysis_routes.py`
+- [ ] T-068 [NFR-001, AC-N001.1] (test) F7: en `test_analyses_write_nothing_to_the_database` usar el mismo UUID (constante del test) para los dos análisis y para la consulta de `GET /api/meals`; refuerza el test de T-030 sin debilitarlo — `backend/tests/test_routes/test_meal_analysis_routes.py`
+- [ ] T-069 [REQ-009, AC-009.1] (test) F9: renombrar `test_server_timeout.py` a `test_gunicorn_config.py` sin cambiar el test (`DOCKERFILE` sigue siendo `parents[2] / "Dockerfile"`) y añadir un docstring de módulo en español que diga que es un test de configuración del despliegue. Nota: **sustituye la ruta de T-058**, que se conserva intacta por trazabilidad; desde esta tarea el test de T-058 vive en la ruta nueva y el archivo antiguo desaparece — `backend/tests/test_services/test_gunicorn_config.py`
+
 ## Fase B — Implementación (implementer)
 Sin tareas `migration`: no hay cambios de modelo. Orden: configuración y dependencias → utilidades → reglas puras →
 servicio → ruta.
@@ -78,6 +95,17 @@ servicio → ruta.
 - [x] T-057 [REQ-001, REQ-002, REQ-003, REQ-004, AC-001.1, AC-002.1, AC-003.5, AC-004.1] (impl) Añadir la ruta `POST /analyze` con `@require_auth`, `request.max_content_length` de 4 MB, lectura de `request.files.getlist("image")` y traducción de `RequestEntityTooLarge` a `PayloadTooLargeError`, `_build_meal_image_analysis_service()` y `_serialize_analysis` — `backend/routes/meal_routes.py`
 - [x] T-059 [REQ-009, AC-009.1] (config) Añadir `"--timeout", "90"` al `CMD` de gunicorn (`["gunicorn", "--bind", "0.0.0.0:5000", "--timeout", "90", "wsgi:app"]`), sin cambiar workers ni clase de worker, y actualizar el comentario en español del `CMD` (review F1, plan 3.5). Nota: `backend/Dockerfile` no está en los globs de producción del ámbito `backend`; si el role-guard bloquea al implementer, lo aplica el orquestador con autorización del usuario — `backend/Dockerfile`
 
+### Fase B — Implementación de la iteración 2 de la review (F2, F4, F5, F6, F8, implementer)
+Sin migraciones ni `backend/Dockerfile`. Cada tarea se cumple cuando pasan los tests de la fase A de la iteración 2 que
+cubren sus mismos AC.
+
+- [ ] T-070 [REQ-003, AC-003.3, AC-003.6] (impl) F2: `_check_integrity` deja de llamar a `image.draft` y `image.load` (solo `image.verify()` en PNG; sin decodificar píxeles en ningún formato; `LOAD_TRUNCATED_IMAGES` sigue en `False`) — `backend/services/meal_photo.py`
+- [ ] T-071 [REQ-003, AC-003.3] (impl) F2: `_strip_jpeg` lanza `ValueError` si aparece un `SOF` distinto de `FFC0`–`FFC2` (sin tocar `FFC4`, `FFC8` ni `FFCC`) o si llega al `EOI` sin haber visto un `SOF` y al menos un `SOS` — `backend/services/meal_photo.py`
+- [ ] T-072 [REQ-010, AC-010.1] (impl) F8: WebP descarta el chunk `ICCP` (`_WEBP_KEPT_CHUNKS` sin `ICCP`) y `VP8X` borra el bit `0x20` además de `0x08` y `0x04`, recalculando el tamaño RIFF — `backend/services/meal_photo.py`
+- [ ] T-073 [REQ-009, AC-009.4] (impl) F4: `BedrockVisionClient.init_app` nunca lanza: región saneada con `strip()`, sin región no llama a la fábrica y avisa, `try … except Exception` alrededor de la fábrica con `logging.getLogger(__name__)` y `describe_vision_error` (nunca `str(exc)`), cliente `None` ante cualquier fallo — `backend/utils/vision_client.py`
+- [ ] T-074 [REQ-009, AC-009.2] (impl) F6: `recognize_foods` comprueba `isinstance(tool_input, dict)` antes de leer `foods` y lanza `VisionProviderError("unexpected vision response")` si no lo es — `backend/utils/vision_client.py`
+- [ ] T-075 [REQ-003, AC-003.4] (impl) F5: comentario en español sobre `PayloadTooLargeError`, sin tocar los comentarios previos del archivo — `backend/exceptions/custom_exceptions.py`
+
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |
 |---|---|---|---|
@@ -89,13 +117,13 @@ servicio → ruta.
 | REQ-002 | AC-002.1 | T-017, T-026 | T-046, T-057 |
 | REQ-002 | AC-002.2 | T-017, T-026 | T-046 |
 | REQ-002 | AC-002.3 | T-017, T-026 | T-046 |
-| REQ-002 | AC-002.4 | T-026 | T-057 |
+| REQ-002 | AC-002.4 | T-026, T-067 | T-057 |
 | REQ-003 | AC-003.1 | T-017, T-027 | T-043, T-046 |
 | REQ-003 | AC-003.2 | T-017, T-027 | T-043 |
-| REQ-003 | AC-003.3 | T-017, T-027 | T-046 |
-| REQ-003 | AC-003.4 | T-018, T-027 | T-042, T-046 |
-| REQ-003 | AC-003.5 | T-027 | T-042, T-057 |
-| REQ-003 | AC-003.6 | T-018, T-027 | T-046 |
+| REQ-003 | AC-003.3 | T-017, T-027, T-062 | T-046, T-070, T-071 |
+| REQ-003 | AC-003.4 | T-018, T-027 | T-042, T-046, T-075 |
+| REQ-003 | AC-003.5 | T-027, T-067 | T-042, T-057 |
+| REQ-003 | AC-003.6 | T-018, T-027, T-060, T-061 | T-046, T-070 |
 | REQ-004 | AC-004.1 | T-028 | T-057 |
 | REQ-005 | AC-005.1 | T-022, T-028 | T-055 |
 | REQ-005 | AC-005.2 | T-022, T-028 | T-055 |
@@ -109,13 +137,13 @@ servicio → ruta.
 | REQ-007 | AC-007.4 | T-014 | T-047 |
 | REQ-008 | AC-008.1 | T-015 | T-048 |
 | REQ-008 | AC-008.2 | T-015 | T-048 |
-| REQ-009 | AC-009.1 | T-020, T-023, T-029, T-058 | T-050, T-055, T-059 |
-| REQ-009 | AC-009.2 | T-020, T-029 | T-051 |
+| REQ-009 | AC-009.1 | T-020, T-023, T-029, T-058, T-069 | T-050, T-055, T-059 |
+| REQ-009 | AC-009.2 | T-020, T-029, T-066 | T-051, T-074 |
 | REQ-009 | AC-009.3 | T-023, T-029 | T-055 |
-| REQ-009 | AC-009.4 | T-020, T-029 | T-040, T-050, T-054 |
-| REQ-010 | AC-010.1 | T-019, T-030 | T-044 |
+| REQ-009 | AC-009.4 | T-020, T-029, T-064, T-065 | T-040, T-050, T-054, T-073 |
+| REQ-010 | AC-010.1 | T-019, T-030, T-060, T-063 | T-044, T-072 |
 | REQ-010 | AC-010.2 | T-019, T-030 | T-045 |
-| NFR-001 | AC-N001.1 | T-030 | T-053 |
+| NFR-001 | AC-N001.1 | T-030, T-068 | T-053 |
 | NFR-001 | AC-N001.2 | T-021, T-023 | T-052, T-055 |
 | NFR-002 | AC-N002.1 | T-024 | T-056 |
 | NFR-002 | AC-N002.2 | T-024 | T-056 |

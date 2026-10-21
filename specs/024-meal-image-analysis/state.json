@@ -9,7 +9,7 @@
   "branch": "feat/024-meal-image-analysis",
   "base_branch": "main",
   "created_at": "2026-10-21T19:01:11.612Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -20,7 +20,10 @@
       "at": "2026-10-21T20:52:01.933Z",
       "note": "auto (gate_mode=flow): correcciones F2-F9 pedidas por el usuario"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-21T20:52:54.048Z",
+      "note": "auto (gate_mode=flow): 64 tareas, 16 nuevas para F2-F9"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -30,7 +33,7 @@
   },
   "commits": {
     "spec": "e267a28",
-    "plan": "7834e22",
+    "plan": "7668f7f",
     "tasks": "67cc92a",
     "tests": "459110b",
     "implement": "e83804b"
@@ -494,6 +497,30 @@
       "stage": "plan",
       "event": "approved",
       "note": "auto (gate_mode=flow): correcciones F2-F9 pedidas por el usuario"
+    },
+    {
+      "at": "2026-10-21T20:52:02.215Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 7668f7f"
+    },
+    {
+      "at": "2026-10-21T20:52:02.371Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Tareas de las correcciones F2-F9"
+    },
+    {
+      "at": "2026-10-21T20:52:53.956Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "64 tareas (T-060 a T-075 nuevas)"
+    },
+    {
+      "at": "2026-10-21T20:52:54.048Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 64 tareas, 16 nuevas para F2-F9"
     }
   ]
 }
