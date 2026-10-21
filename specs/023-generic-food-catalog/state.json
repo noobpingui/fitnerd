@@ -10,7 +10,7 @@
   "branch": "feat/023-generic-food-catalog",
   "base_branch": "main",
   "created_at": "2026-10-21T05:27:32.707Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,7 +25,10 @@
       "at": "2026-10-21T08:30:26.825Z",
       "note": "auto (gate_mode=flow): ajuste acotado de tareas"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-21T08:34:24.989Z",
+      "note": "auto (gate_mode=flow): red check PASS acotado, tests del CSV"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -35,7 +38,7 @@
   "commits": {
     "spec": "84f397e",
     "plan": "4d9a95d",
-    "tasks": "aeebe4e",
+    "tasks": "4685b3e",
     "tests": "e7792b5",
     "implement": "d9459f3"
   },
@@ -46,8 +49,8 @@
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-21T08:34:15.736Z"
   },
   "verify": {
     "result": null,
@@ -58,8 +61,8 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-21T08:14:16.235Z",
-    "reason": "formato de 7 líneas largas en tests",
+    "at": "2026-10-21T08:34:24.848Z",
+    "reason": "tests del CSV actualizados a lista de 39 y nuevo estado",
     "sha256": {
       "backend/tests/catalog_samples.py": "973c68eaf6b348e6c0e73a74047b96fb4bf16ff58ef80b824b700c98e93b159a",
       "backend/tests/fakes.py": "af7507f0d411f45a0123a232faf644353fb13c6efd1ea18f127f8ad5ae9c9b30",
@@ -71,7 +74,7 @@
       "backend/tests/test_services/test_catalog_migration.py": "4992d7b4d25ab0f94a1c3bb370b446f3cf1f84b7905534bd995cebd02dc224f5",
       "backend/tests/test_services/test_catalog_rules.py": "104718cc8931a01232c1046791806ff1f2b4478ba23b0d14dbc3fa0cce1c0a03",
       "backend/tests/test_services/test_catalog_search_service.py": "81bcc483f4569083de5d9c2c3cc270b16fea91233cfdcf6742867ed3577f9f6f",
-      "backend/tests/test_services/test_food_catalog_csv.py": "441e90110ba708510a48a0885c7e4c5171a6dca26da040f60638764aee2a0774",
+      "backend/tests/test_services/test_food_catalog_csv.py": "0bdee952fc667342c552471bae821b3cffa4f1f831bbce0337d24d27fb43f018",
       "backend/tests/test_services/test_meal_rules.py": "4862f9dc81c63aa717d206df801c1b84a02c9158cb11373acacd1d6e8126d07d",
       "backend/tests/test_services/test_meal_service.py": "81175d10012974fb68e08061f6f45323ad351f9614a25d2c2cf8a8fe9143a0aa",
       "frontend/src/app/diaryRoute.test.tsx": "3a726b4bceda4e880979b53a970f0877818c49aeb0ad732d1d3db66763244630",
@@ -462,6 +465,60 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): ajuste acotado de tareas"
+    },
+    {
+      "at": "2026-10-21T08:30:27.083Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 4685b3e"
+    },
+    {
+      "at": "2026-10-21T08:30:27.293Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (sin scaffold nuevo); tareas T-028 y T-035"
+    },
+    {
+      "at": "2026-10-21T08:31:26.375Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier (red) sobre T-028 y T-035"
+    },
+    {
+      "at": "2026-10-21T08:32:37.030Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: T-028/T-035: 9 de 16 casos fallan por contenido del CSV (rojo legítimo). FAIL: test_the_minimum_list_has_39_foods pasa sin implementación (solo comprueba la constante del test; responsable test-author). Snapshot solo difiere en test_food_catalog_csv.py."
+    },
+    {
+      "at": "2026-10-21T08:32:48.557Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red FAIL (ronda de revisión de la spec): test_the_minimum_list_has_39_foods solo comprueba su propia constante y pasa sin implementación; corrección sin contador por cambio de spec"
+    },
+    {
+      "at": "2026-10-21T08:34:15.736Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red check acotado repetido: 10 tests nuevos de test_food_catalog_csv.py fallan por contenido del CSV (rojo legítimo); 6 guardas pasan; solo cambia el archivo de test entre los de código."
+    },
+    {
+      "at": "2026-10-21T08:34:24.736Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red PASS acotado: 10 tests del CSV fallan por contenido"
+    },
+    {
+      "at": "2026-10-21T08:34:24.848Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "26 archivo(s) de test: tests del CSV actualizados a lista de 39 y nuevo estado"
+    },
+    {
+      "at": "2026-10-21T08:34:24.989Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS acotado, tests del CSV"
     }
   ]
 }

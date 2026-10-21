@@ -12,7 +12,7 @@ from services.catalog_rules import FORBIDDEN_NAME_WORDS, term_key, words
 
 CATALOG_CSV = Path(__file__).parents[2] / "scripts" / "data" / "food_catalog.csv"
 
-# Lista mínima de la sección 6 de la spec (40 alimentos).
+# Lista mínima de la sección 6 de la spec (39 alimentos, sin yuca).
 MINIMUM_LIST = [
     "Arroz blanco cocido",
     "Arroz integral cocido",
@@ -23,7 +23,6 @@ MINIMUM_LIST = [
     "Avena cocida",
     "Pasta cocida",
     "Papa cocida",
-    "Yuca cocida",
     "Plátano maduro cocido",
     "Tortilla de maíz",
     "Pan blanco",
@@ -64,10 +63,22 @@ def records():
 
 
 # SDD: 023 REQ-001 AC-001.4
-def test_the_minimum_list_has_40_foods():
-    """La constante del test es la lista de 40 alimentos de la spec."""
-    assert len(MINIMUM_LIST) == 40
-    assert len({term_key(name) for name in MINIMUM_LIST}) == 40
+def test_the_minimum_list_has_39_foods(records):
+    """La lista mínima tiene 39 alimentos distintos y el CSV real los contiene
+    todos, cada uno en una fila distinta."""
+    assert len(MINIMUM_LIST) == 39
+    assert len({term_key(name) for name in MINIMUM_LIST}) == 39
+
+    rows_by_term = {}
+    for index, record in enumerate(records):
+        for term in [record.name, *record.synonyms]:
+            rows_by_term.setdefault(term_key(term), index)
+
+    rows = {rows_by_term.get(term_key(name)) for name in MINIMUM_LIST}
+
+    assert None not in rows
+    assert len(rows) == 39
+    assert "yuca-cocida" not in {record.id for record in records}
 
 
 # SDD: 023 REQ-001 AC-001.1
@@ -112,7 +123,7 @@ def test_no_name_contains_a_forbidden_word(records):
 
 # SDD: 023 REQ-001 AC-001.4
 def test_the_catalog_covers_the_minimum_list_by_name_or_synonym(records):
-    """Cada uno de los 40 alimentos de la lista mínima aparece, por su nombre o
+    """Cada uno de los 39 alimentos de la lista mínima aparece, por su nombre o
     por un sinónimo."""
     available = set()
     for record in records:
@@ -132,3 +143,76 @@ def test_every_manual_row_has_a_reference_and_every_usda_row_an_fdc_id(records):
 
     assert manual_without_reference == []
     assert usda_without_fdc_id == []
+
+
+# SDD: 023 REQ-001 AC-001.1
+def test_the_csv_has_fewer_than_265_foods(records):
+    """Tras quitar «Yuca cocida» el catálogo queda en 264 filas o menos."""
+    assert 250 <= len(records) < 265
+
+
+# SDD: 023 REQ-001 AC-001.4
+def test_there_is_no_yuca_row(records):
+    """La yuca salió de la lista mínima y no hay fila `yuca-cocida`."""
+    assert "yuca-cocida" not in {record.id for record in records}
+
+
+# SDD: 023 REQ-001 AC-001.1
+def test_no_row_has_the_manual_source(records):
+    """Sin la yuca, ninguna fila usa la fuente `manual`."""
+    assert [r.id for r in records if r.source == "manual"] == []
+
+
+def _synonym_words(records):
+    """Pares (id, palabras sueltas) de cada sinónimo del catálogo."""
+    return [(r.id, set(words(synonym))) for r in records for synonym in r.synonyms]
+
+
+# SDD: 023 REQ-001 AC-001.3
+def test_no_synonym_is_a_brand_name(records):
+    """Las marcas comerciales están fuera de alcance: ni «pan bimbo» ni «queso filadelfia»."""
+    brands = {"bimbo", "filadelfia", "philadelphia"}
+
+    offenders = [row_id for row_id, found in _synonym_words(records) if found & brands]
+
+    assert offenders == []
+
+
+# SDD: 023 REQ-001 AC-001.3
+def test_contramuslo_is_not_a_synonym_of_the_drumstick(records):
+    """«contramuslo» es el muslo, no la pierna (drumstick)."""
+    leg = [r for r in records if r.id == "pierna-de-pollo-cocida"]
+
+    offenders = [
+        synonym for r in leg for synonym in r.synonyms if "contramuslo" in words(synonym)
+    ]
+
+    assert offenders == []
+
+
+# SDD: 023 REQ-001 AC-001.3
+def test_limonada_is_not_a_synonym_of_lemon_juice(records):
+    """La limonada es jugo diluido (una combinación), no jugo de limón puro."""
+    juice = [r for r in records if r.id == "jugo-de-limon"]
+
+    offenders = [
+        synonym for r in juice for synonym in r.synonyms if "limonada" in words(synonym)
+    ]
+
+    assert offenders == []
+
+
+# SDD: 023 REQ-001 AC-001.3
+@pytest.mark.parametrize(
+    "first, second",
+    [
+        ("zanahoria", "zanahoria-cocida"),
+        ("champinones", "champinones-cocidos"),
+        ("frijoles-blancos-cocidos", "frijoles-navy-cocidos"),
+    ],
+)
+def test_a_food_does_not_have_two_versions(records, first, second):
+    """Una sola versión por alimento (regla 3): no coexisten ambas filas."""
+    ids = {record.id for record in records}
+
+    assert not {first, second} <= ids

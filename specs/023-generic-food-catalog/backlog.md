@@ -89,3 +89,10 @@
 - [ ] specs/023-generic-food-catalog/plan.md: línea 530 («los 40 de la lista mínima» debe decir 39).
 - [ ] specs/023-generic-food-catalog/tasks.md: línea 45, T-028 («con los 40 de la lista mínima» debe decir 39).
 - [ ] specs/023-generic-food-catalog/verify-report.md: línea 49, que menciona la fila `yuca-cocida`. Se queda desactualizada cuando se vuelva a pasar la verificación.
+
+## tests (corrección por review) · test-author
+- [ ] F5 (nombres que no son español neutro) y F6 quedan sin test automatizado; los comprueba la review.
+- [ ] «contramuslo» debería ir en «Muslo de pollo al horno»; el test solo comprueba que no sea sinónimo de Pierna.
+
+## tests (red, corrección por review) · verifier
+- [ ] Antes de la siguiente ronda, el test-author podría revisar el resto de tests del archivo para asegurar que cada uno falla sin el CSV corregido.
