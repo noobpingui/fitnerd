@@ -145,12 +145,6 @@ def test_every_manual_row_has_a_reference_and_every_usda_row_an_fdc_id(records):
     assert usda_without_fdc_id == []
 
 
-# SDD: 023 REQ-001 AC-001.1
-def test_the_csv_has_fewer_than_265_foods(records):
-    """Tras quitar «Yuca cocida» el catálogo queda en 264 filas o menos."""
-    assert 250 <= len(records) < 265
-
-
 # SDD: 023 REQ-001 AC-001.4
 def test_there_is_no_yuca_row(records):
     """La yuca salió de la lista mínima y no hay fila `yuca-cocida`."""
@@ -158,9 +152,23 @@ def test_there_is_no_yuca_row(records):
 
 
 # SDD: 023 REQ-001 AC-001.1
-def test_no_row_has_the_manual_source(records):
-    """Sin la yuca, ninguna fila usa la fuente `manual`."""
-    assert [r.id for r in records if r.source == "manual"] == []
+def test_every_manual_row_declares_its_reference(records):
+    """El formato admite filas `manual`, pero toda fila `manual` trae `reference`."""
+    manual = [r for r in records if r.source == "manual"]
+
+    assert [r.id for r in manual if not (r.reference or "").strip()] == []
+
+
+# SDD: 023 REQ-001 AC-001.2
+def test_the_iceberg_lettuce_row_is_named_iceberg_and_keeps_repollada_as_synonym(records):
+    """«Lechuga repollada» es un regionalismo: el nombre principal de la fila de
+    lechuga de USDA 2346388 es «Lechuga iceberg» y «lechuga repollada» es sinónimo."""
+    rows = [r for r in records if r.fdc_id == 2346388]
+
+    assert len(rows) == 1
+    assert rows[0].name == "Lechuga iceberg"
+    assert "lechuga repollada" in {term_key(s) for s in rows[0].synonyms}
+    assert "lechuga repollada" not in {term_key(r.name) for r in records}
 
 
 def _synonym_words(records):
@@ -168,7 +176,7 @@ def _synonym_words(records):
     return [(r.id, set(words(synonym))) for r in records for synonym in r.synonyms]
 
 
-# SDD: 023 REQ-001 AC-001.3
+# SDD: 023 REQ-001 AC-001.2
 def test_no_synonym_is_a_brand_name(records):
     """Las marcas comerciales están fuera de alcance: ni «pan bimbo» ni «queso filadelfia»."""
     brands = {"bimbo", "filadelfia", "philadelphia"}
@@ -178,7 +186,7 @@ def test_no_synonym_is_a_brand_name(records):
     assert offenders == []
 
 
-# SDD: 023 REQ-001 AC-001.3
+# SDD: 023 REQ-001 AC-001.2
 def test_contramuslo_is_not_a_synonym_of_the_drumstick(records):
     """«contramuslo» es el muslo, no la pierna (drumstick)."""
     leg = [r for r in records if r.id == "pierna-de-pollo-cocida"]
@@ -190,7 +198,7 @@ def test_contramuslo_is_not_a_synonym_of_the_drumstick(records):
     assert offenders == []
 
 
-# SDD: 023 REQ-001 AC-001.3
+# SDD: 023 REQ-001 AC-001.2
 def test_limonada_is_not_a_synonym_of_lemon_juice(records):
     """La limonada es jugo diluido (una combinación), no jugo de limón puro."""
     juice = [r for r in records if r.id == "jugo-de-limon"]

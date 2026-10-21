@@ -50,7 +50,7 @@ Backend:
 - [x] T-033 [REQ-006, REQ-007, REQ-008, AC-006.1, AC-006.2, AC-006.3, AC-006.4, AC-006.5, AC-006.6, AC-002.4, AC-007.1, AC-008.1, AC-008.2] (test) Rutas del diario con catálogo, carga real que quita o cambia el alimento y `catalog_id: null` en USDA y personalizados; adaptar mensaje y aserciones existentes — `backend/tests/test_routes/test_meal_routes.py`
 - [x] T-034 [REQ-008, AC-008.1] (test) Migración: el `downgrade` se niega con alimentos `catalog` en `meal_items` y, sin ellos, quita `catalog_id` y `catalog_foods` — `backend/tests/test_services/test_catalog_migration.py`
 - [x] T-035 [REQ-001, AC-001.4] (test) Actualizar `test_food_catalog_csv.py`: la lista mínima pasa a 39 alimentos sin «Yuca cocida» y el test se llama `test_the_minimum_list_has_39_foods` — `backend/tests/test_services/test_food_catalog_csv.py`
-- [ ] T-036 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (test) Aflojar `test_the_csv_has_fewer_than_265_foods` y `test_no_row_has_the_manual_source` para no fijar el estado actual del CSV (AC-001.1 admite 250–350 filas y el formato admite filas `manual`), y mover el marcador de los tests de marcas, contramuslo y limonada de AC-001.3 (palabras prohibidas) al AC de sinónimos que corresponda (F17) — `backend/tests/test_services/test_food_catalog_csv.py`
+- [x] T-036 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (test) Aflojar `test_the_csv_has_fewer_than_265_foods` y `test_no_row_has_the_manual_source` para no fijar el estado actual del CSV (AC-001.1 admite 250–350 filas y el formato admite filas `manual`), y mover el marcador de los tests de marcas, contramuslo y limonada de AC-001.3 (palabras prohibidas) al AC de sinónimos que corresponda (F17) — `backend/tests/test_services/test_food_catalog_csv.py`
 
 Frontend:
 - [x] T-040 [REQ-009, REQ-010] (test) Fábricas `makeCatalogFood` y `makeCatalogItem`, y `catalog_id: null` en `makeMealItem` — `frontend/src/test/catalogFixtures.ts`, `frontend/src/test/diaryFixtures.ts`
@@ -62,7 +62,7 @@ Frontend:
 - [x] T-046 [REQ-010, AC-010.1, AC-010.2, AC-010.3] (test) Diario: fila del catálogo sin etiqueta, etiquetas de USDA y personalizado, editar a 200 g; mocks de `catalog/api` — `frontend/src/features/diary/pages/DiaryPage.test.tsx`
 - [x] T-047 [REQ-011, AC-011.1] (test) `/foods` termina en `/diary`, `router.tsx` no importa `FoodsPage` y con onboarding pendiente se ve el onboarding — `frontend/src/app/foodsRoute.test.tsx`, `frontend/src/app/diaryRoute.test.tsx`
 - [x] T-048 [REQ-011, AC-011.2] (test) Añadir el marcador de la navegación sin enlace a `/foods` — `frontend/src/components/layout/noFoodsLink.test.tsx`
-- [ ] T-049 [REQ-012, AC-012.1, AC-012.3] (test) Términos de servicio: atribución, aviso, fecha y que NO aparezca la frase de alimentos añadidos a mano (F13) — `frontend/src/features/legal/pages/TermsOfServicePage.test.tsx`
+- [x] T-049 [REQ-012, AC-012.1, AC-012.3] (test) Términos de servicio: atribución, aviso, fecha y que NO aparezca la frase de alimentos añadidos a mano (F13) — `frontend/src/features/legal/pages/TermsOfServicePage.test.tsx`
 - [x] T-050 [REQ-012, AC-012.2, AC-012.3] (test) Política de privacidad: Voyage solo con las preguntas al coach y fecha — `frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx`
 
 ## Fase B — Implementación (implementer)

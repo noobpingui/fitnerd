@@ -10,7 +10,7 @@
   "branch": "feat/023-generic-food-catalog",
   "base_branch": "main",
   "created_at": "2026-10-21T05:27:32.707Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,7 +25,10 @@
       "at": "2026-10-21T08:58:02.752Z",
       "note": "auto (gate_mode=flow): ajuste acotado de tareas"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-21T09:01:11.578Z",
+      "note": "auto (gate_mode=flow): red check PASS acotado"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -35,7 +38,7 @@
   "commits": {
     "spec": "11311ba",
     "plan": "654ee92",
-    "tasks": "4685b3e",
+    "tasks": "a66dcf8",
     "tests": "73274c3",
     "implement": "1f0ae95"
   },
@@ -46,8 +49,8 @@
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-21T09:01:00.734Z"
   },
   "verify": {
     "result": null,
@@ -58,8 +61,8 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-21T08:34:24.848Z",
-    "reason": "tests del CSV actualizados a lista de 39 y nuevo estado",
+    "at": "2026-10-21T09:01:11.428Z",
+    "reason": "tests de Términos y CSV ajustados (F13, F16, F17)",
     "sha256": {
       "backend/tests/catalog_samples.py": "973c68eaf6b348e6c0e73a74047b96fb4bf16ff58ef80b824b700c98e93b159a",
       "backend/tests/fakes.py": "af7507f0d411f45a0123a232faf644353fb13c6efd1ea18f127f8ad5ae9c9b30",
@@ -71,7 +74,7 @@
       "backend/tests/test_services/test_catalog_migration.py": "4992d7b4d25ab0f94a1c3bb370b446f3cf1f84b7905534bd995cebd02dc224f5",
       "backend/tests/test_services/test_catalog_rules.py": "104718cc8931a01232c1046791806ff1f2b4478ba23b0d14dbc3fa0cce1c0a03",
       "backend/tests/test_services/test_catalog_search_service.py": "81bcc483f4569083de5d9c2c3cc270b16fea91233cfdcf6742867ed3577f9f6f",
-      "backend/tests/test_services/test_food_catalog_csv.py": "0bdee952fc667342c552471bae821b3cffa4f1f831bbce0337d24d27fb43f018",
+      "backend/tests/test_services/test_food_catalog_csv.py": "0234b6dca81b42765af14e4ead684f722c4eaf1208c5e8c256837139c375e85e",
       "backend/tests/test_services/test_meal_rules.py": "4862f9dc81c63aa717d206df801c1b84a02c9158cb11373acacd1d6e8126d07d",
       "backend/tests/test_services/test_meal_service.py": "81175d10012974fb68e08061f6f45323ad351f9614a25d2c2cf8a8fe9143a0aa",
       "frontend/src/app/diaryRoute.test.tsx": "3a726b4bceda4e880979b53a970f0877818c49aeb0ad732d1d3db66763244630",
@@ -84,7 +87,7 @@
       "frontend/src/features/diary/pages/DiaryPage.test.tsx": "db0d75d241da58020e7ec81d87c36924ee53b6f8adbe388e9d7cf9c3488b1e5b",
       "frontend/src/features/diary/schemas.test.ts": "06fb008297a5594c48fe09a9898ed19f7862dadee092a30092e58e9a3026b6eb",
       "frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx": "ea70e17a023aa84a54b8b2023c44db4c0f30f16bffd2b3841324628052567b26",
-      "frontend/src/features/legal/pages/TermsOfServicePage.test.tsx": "14462037ca2007af5d3c558944ca7f3bce9852d3628eb7b3744a2f6a3c6cdbbe",
+      "frontend/src/features/legal/pages/TermsOfServicePage.test.tsx": "2922699e479ca8c4ad6c9790931859b754fdbf6752a3b2d3a748027908e52fe5",
       "frontend/src/test/catalogFixtures.ts": "b5424e5b99f17982fd465ade2fc8bf80f630c6ed8ac28c095e8c796a91fab1c9",
       "frontend/src/test/diaryFixtures.ts": "17f2a7bf3f85b173aa876a05cacd3adc991a5ccb6ebb08bd56aed7eaded26bb0"
     }
@@ -654,6 +657,42 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): ajuste acotado de tareas"
+    },
+    {
+      "at": "2026-10-21T08:58:02.999Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: a66dcf8"
+    },
+    {
+      "at": "2026-10-21T08:58:03.110Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (T-036 y T-049)"
+    },
+    {
+      "at": "2026-10-21T09:01:00.734Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Ronda acotada (tests de T-049 y T-036): los 2 tests nuevos en rojo fallan por contenido ausente (lechuga iceberg pendiente T-126; frase de Términos pendiente T-138). Resto de los tests de esos archivos son guardas, relajaciones o reetiquetados. 67/67 AC con marcador. Resto de tests nuevos de la feature no reejecutados en esta ronda."
+    },
+    {
+      "at": "2026-10-21T09:01:11.334Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red PASS acotado: Términos (F13) y lechuga iceberg (F16) fallan por contenido"
+    },
+    {
+      "at": "2026-10-21T09:01:11.428Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "26 archivo(s) de test: tests de Términos y CSV ajustados (F13, F16, F17)"
+    },
+    {
+      "at": "2026-10-21T09:01:11.578Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS acotado"
     }
   ]
 }

@@ -57,13 +57,14 @@ describe("TermsOfServicePage", () => {
   })
 
   // SDD: 023 REQ-012 AC-012.1
-  it("«Datos nutricionales» avisa de que algunos alimentos de comida local se añadieron a mano", () => {
+  it("«Datos nutricionales» mantiene la atribución a USDA y el aviso de valores aproximados, sin la frase de alimentos añadidos a mano", () => {
     renderPage()
     const text = sectionOf("Datos nutricionales").textContent ?? ""
 
-    expect(text).toContain(
-      "Algunos alimentos de comida local se añadieron a mano a partir de otras tablas de composición de alimentos."
-    )
+    expect(text).toContain("U.S. Department of Agriculture")
+    expect(text).toContain("Los valores nutricionales son aproximados")
+    expect(text).not.toContain("Algunos alimentos de comida local")
+    expect(text).not.toContain("se añadieron a mano")
   })
 
   // SDD: 023 REQ-012 AC-012.3
