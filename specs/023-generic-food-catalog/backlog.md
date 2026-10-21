@@ -124,3 +124,11 @@
 
 ## implement (corrección F13) · implementer
 - [ ] Test intermitente del perfil, «B entra con el onboarding pendiente y sin ver la fecha de nacimiento» (NFR-002 AC-N002.1). Falló una vez de dos pasadas completas de `npm test`.
+
+## verify (4.ª pasada) · verifier
+- [ ] El test «B entra con el onboarding pendiente y sin ver la fecha de nacimiento de A» (frontend/src/app/accountSwitch.test.tsx:68), que el implementer vio fallar una vez, pasó en la suite completa de esta ronda y en una repetición aislada. No está en los archivos de la 023 (no aparece en git diff main...HEAD), así que no se atribuye a esta feature; no se ha reproducido, y no se puede afirmar que sea intermitente con dos pasadas.
+
+## review (3.ª pasada) · reviewer
+- [ ] F21 NIT (test-author): los marcadores AC-001.2 de los tests de marcas, contramuslo, limonada y lechuga iceberg (`test_food_catalog_csv.py:162,179,189,201`) no corresponden a la unicidad de nombres; encajan mejor con AC-001.1 (reglas de la sección 6).
+- [ ] F22 NIT (spec-writer): el texto de «Términos de servicio» no cambia respecto a la 022, pero su fecha pasa a «21 de octubre de 2026» (`TermsOfServicePage.tsx:5`). Lo pide AC-012.3; valorar si conviene en una revisión futura.
+- [ ] doc-keeper: en `docs/deploy-runbook.md`, la migración `d4f6a8c0e2b5` antes del merge y la carga del CSV tras el CD. En `CLAUDE.md`, que `/foods` redirige a `/diary` y que el diario busca en el catálogo.
