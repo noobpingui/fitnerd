@@ -17,3 +17,7 @@
 - [ ] Enviar los sinónimos del catálogo en el prompt si mejora el reconocimiento.
 - [ ] Límite global de memoria o concurrencia al decodificar fotos grandes (WebP de 8000 × 8000).
 - [ ] Política de privacidad: mencionar el envío de fotos a AWS (va con la 025).
+
+## tasks · task-breaker
+- [ ] La documentación del paso manual de producción (IAM `bedrock:InvokeModel`, acceso al modelo, variables, IMDS) y el ADR-0032 no llevan tarea. El plan los asigna al doc-keeper (`docs/deploy-runbook.md`) y al planner (ADR).
+- [ ] La revisión manual de Q9, con unas 10 fotos reales contra Bedrock, queda para el gate de review.
