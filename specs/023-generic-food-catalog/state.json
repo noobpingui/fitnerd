@@ -10,7 +10,7 @@
   "branch": "feat/023-generic-food-catalog",
   "base_branch": "main",
   "created_at": "2026-10-21T05:27:32.707Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,7 +25,10 @@
       "at": "2026-10-21T06:11:10.744Z",
       "note": "auto (gate_mode=flow): 67 tareas con cobertura de los 67 AC"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-21T07:26:54.432Z",
+      "note": "auto (gate_mode=flow): red check PASS, 67/67 AC con test"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -34,17 +37,18 @@
   },
   "commits": {
     "spec": "1f144d3",
-    "plan": "3fbd904"
+    "plan": "3fbd904",
+    "tasks": "aeebe4e"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 3,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 3,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-21T07:26:41.134Z"
   },
   "verify": {
     "result": null,
@@ -54,7 +58,38 @@
     "verdict": null,
     "at": null
   },
-  "tests_snapshot": null,
+  "tests_snapshot": {
+    "at": "2026-10-21T07:26:54.269Z",
+    "reason": "tests rojos 023 aprobados",
+    "sha256": {
+      "backend/tests/catalog_samples.py": "973c68eaf6b348e6c0e73a74047b96fb4bf16ff58ef80b824b700c98e93b159a",
+      "backend/tests/fakes.py": "af7507f0d411f45a0123a232faf644353fb13c6efd1ea18f127f8ad5ae9c9b30",
+      "backend/tests/test_routes/test_catalog_routes.py": "4f60cb19efc9f727e163e74f31c5d0c8cf687adca17a9e624f1d97c97d3cbd10",
+      "backend/tests/test_routes/test_meal_routes.py": "7064736c00ba30867841aab90cf8259dfd77e4dd04340ac43a403773c29250fb",
+      "backend/tests/test_scripts/test_load_food_catalog_script.py": "95c37d7079bf4efccb198b5460ef05250e709fe6ae149c4dd52bc8f7e5c30bed",
+      "backend/tests/test_services/test_catalog_csv_reader.py": "c1530d5d447085435cf87503c421f1801f217b56dbf57cad0c3bcbb57c999c97",
+      "backend/tests/test_services/test_catalog_load_service.py": "43322db3208c01e5280fe380cf7abefa7f46ac87d687560613c23144bdfb16d0",
+      "backend/tests/test_services/test_catalog_migration.py": "4992d7b4d25ab0f94a1c3bb370b446f3cf1f84b7905534bd995cebd02dc224f5",
+      "backend/tests/test_services/test_catalog_rules.py": "104718cc8931a01232c1046791806ff1f2b4478ba23b0d14dbc3fa0cce1c0a03",
+      "backend/tests/test_services/test_catalog_search_service.py": "81bcc483f4569083de5d9c2c3cc270b16fea91233cfdcf6742867ed3577f9f6f",
+      "backend/tests/test_services/test_food_catalog_csv.py": "441e90110ba708510a48a0885c7e4c5171a6dca26da040f60638764aee2a0774",
+      "backend/tests/test_services/test_meal_rules.py": "c83ee6883cda994ec306309611e1f53dba07c246ed1415c714b50dbd8ddf2e67",
+      "backend/tests/test_services/test_meal_service.py": "81175d10012974fb68e08061f6f45323ad351f9614a25d2c2cf8a8fe9143a0aa",
+      "frontend/src/app/diaryRoute.test.tsx": "3a726b4bceda4e880979b53a970f0877818c49aeb0ad732d1d3db66763244630",
+      "frontend/src/app/foodsRoute.test.tsx": "4ed86959c8b496fe03c458f63722d5e7e80e312cae3197bb13b4373765852daa",
+      "frontend/src/components/layout/noFoodsLink.test.tsx": "8477c2371ec09acc7270618a4ccc048a7a031e5e33d7fb8178bba819a9ce32e3",
+      "frontend/src/features/catalog/components/CatalogResultList.test.tsx": "1d12b2fde60892977473cc499fcd134e5b545d029903b572b2a89d8fa696dcd6",
+      "frontend/src/features/catalog/schemas.test.ts": "0c0c1282af794d4893178b2bb6e884c1888f7115d656d388d71fa1578d635ebe",
+      "frontend/src/features/diary/components/AddFoodDialog.test.tsx": "dd3cc0ce3272e49696d451c610dc485371568db57eb29c1aba0b149857f9654f",
+      "frontend/src/features/diary/format.test.ts": "4bb1db7c59f9761ee3cb4917f76e35ccacdb13cb9d3711a1c61f20881ea88f7a",
+      "frontend/src/features/diary/pages/DiaryPage.test.tsx": "db0d75d241da58020e7ec81d87c36924ee53b6f8adbe388e9d7cf9c3488b1e5b",
+      "frontend/src/features/diary/schemas.test.ts": "06fb008297a5594c48fe09a9898ed19f7862dadee092a30092e58e9a3026b6eb",
+      "frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx": "ea70e17a023aa84a54b8b2023c44db4c0f30f16bffd2b3841324628052567b26",
+      "frontend/src/features/legal/pages/TermsOfServicePage.test.tsx": "14462037ca2007af5d3c558944ca7f3bce9852d3628eb7b3744a2f6a3c6cdbbe",
+      "frontend/src/test/catalogFixtures.ts": "b5424e5b99f17982fd465ade2fc8bf80f630c6ed8ac28c095e8c796a91fab1c9",
+      "frontend/src/test/diaryFixtures.ts": "17f2a7bf3f85b173aa876a05cacd3adc991a5ccb6ebb08bd56aed7eaded26bb0"
+    }
+  },
   "bypass": false,
   "history": [
     {
@@ -146,6 +181,90 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): 67 tareas con cobertura de los 67 AC"
+    },
+    {
+      "at": "2026-10-21T06:11:10.948Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: aeebe4e"
+    },
+    {
+      "at": "2026-10-21T06:11:11.143Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (implementer)"
+    },
+    {
+      "at": "2026-10-21T06:12:35.891Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-21T06:47:25.520Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier (red)"
+    },
+    {
+      "at": "2026-10-21T06:54:35.291Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Red 023: 29 tests con SDD 023 pasan sin implementación (12 backend, 17 frontend, incl. 12 de rechazo de z.never); resto rojo legítimo; guardas 021/022 excluidas. Backend 293 pass/316 fail/6 err; frontend 131 pass/56 fail. Migración d4f6a8c0e2b5 aún no existe (legítimo)."
+    },
+    {
+      "at": "2026-10-21T06:54:50.483Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL 1: 29 tests con SDD 023 pasan sin implementación (12 backend, 17 frontend) · tests 1/3"
+    },
+    {
+      "at": "2026-10-21T07:06:17.812Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Red 023 iter 2: los 29 tests de la iteración 1 ya fallan por rojo legítimo (12 backend, 3 constantes retirados; 17 frontend). Fallo nuevo: AddFoodDialog.test.tsx, mock searchFoods devuelve undefined y el componente crashea (TypeError AddFoodDialog.tsx:66), 17+ tests sin aserción alcanzada, 32 unhandled. Backend 281 pass/325 fail/6 err; frontend 114 pass/73 fail. Trazabilidad 67/67 ACs."
+    },
+    {
+      "at": "2026-10-21T07:06:42.455Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL 2: el mock searchFoods de AddFoodDialog.test.tsx devuelve undefined y rompe 17 tests por fixture, no por comportamiento · tests 2/3"
+    },
+    {
+      "at": "2026-10-21T07:18:51.744Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Red 023 iter 3: backend 281 pass/325 fail/6 err (sin cambios; rojo legítimo, guarda 022 excluida). Frontend 116 pass/71 fail; 0 Unhandled Errors y sin errores de montaje. Fallo: 2 tests marcados 023 de AddFoodDialog («sin resultados» AC-009.5 y AC-N002.2) pasan sin implementación porque el mensaje viene de la ruta USDA; responsable test-author. Trazabilidad 67/67."
+    },
+    {
+      "at": "2026-10-21T07:19:06.189Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL 3: 2 tests de AddFoodDialog (AC-009.5, AC-N002.2) pasan porque el texto sale de la ruta USDA · tests 3/3"
+    },
+    {
+      "at": "2026-10-21T07:26:41.134Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red 023 iter 3: todos los tests SDD 023 que no son guardas fallan por comportamiento ausente; 0 Unhandled Errors, 0 TypeError de fixture. Backend 281 pass/325 fail/6 err (6 setup = esqueleto read_catalog_csv). Frontend 114 pass/73 fail. Guardas excluidas: 20 casos de 022 en test_post_validation_message_and_nothing_saved, 2 de noFoodsLink y 1 de foodsRoute. Trazabilidad 67/67."
+    },
+    {
+      "at": "2026-10-21T07:26:54.167Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS tras 3 correcciones; 67/67 AC"
+    },
+    {
+      "at": "2026-10-21T07:26:54.269Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "26 archivo(s) de test: tests rojos 023 aprobados"
+    },
+    {
+      "at": "2026-10-21T07:26:54.432Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 67/67 AC con test"
     }
   ]
 }

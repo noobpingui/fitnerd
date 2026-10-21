@@ -56,12 +56,22 @@ describe("TermsOfServicePage", () => {
     )
   })
 
-  // SDD: 022 REQ-016 AC-016.1
-  it("la última actualización ya no es la del 14 de octubre de 2026", () => {
+  // SDD: 023 REQ-012 AC-012.1
+  it("«Datos nutricionales» avisa de que algunos alimentos de comida local se añadieron a mano", () => {
+    renderPage()
+    const text = sectionOf("Datos nutricionales").textContent ?? ""
+
+    expect(text).toContain(
+      "Algunos alimentos de comida local se añadieron a mano a partir de otras tablas de composición de alimentos."
+    )
+  })
+
+  // SDD: 023 REQ-012 AC-012.3
+  it("la última actualización es la del 21 de octubre de 2026", () => {
     renderPage()
     const text = document.body.textContent ?? ""
 
-    expect(text).toContain("Última actualización: 20 de octubre de 2026")
+    expect(text).toContain("Última actualización: 21 de octubre de 2026")
   })
 
   // SDD: 012 REQ-007 AC-007.6

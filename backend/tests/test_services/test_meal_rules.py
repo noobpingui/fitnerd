@@ -10,6 +10,7 @@ import pytest
 
 from exceptions.custom_exceptions import ValidationError
 from services.meal_rules import (
+    CatalogItemInput,
     CustomItemInput,
     UsdaItemInput,
     check_add_window,
@@ -27,7 +28,8 @@ OUT_OF_WINDOW = "Solo puedes registrar comidas de hoy."
 MEAL_TYPE_INVALID = "El tipo de comida no es válido."
 ITEMS_REQUIRED = "Añade al menos un alimento."
 TOO_MANY = "Una comida no puede tener más de 50 alimentos."
-ITEM_SOURCE = "Cada alimento debe ser de USDA o personalizado."
+ITEM_SOURCE = "Cada alimento debe ser del catálogo, de USDA o personalizado."
+FOOD_NOT_FOUND = "No encontramos ese alimento."
 GRAMS_RANGE = "Los gramos deben estar entre 1 y 2000."
 GRAMS_DECIMALS = "Los gramos admiten como mucho un decimal."
 NAME_REQUIRED = "Escribe el nombre del alimento."
@@ -238,10 +240,14 @@ def test_parse_items_accepts_a_mix_of_usda_and_custom_items():
 
 
 # SDD: 022 REQ-003 AC-003.7
+# SDD: 023 REQ-006 AC-006.4
 @pytest.mark.parametrize(
     "item",
     [
         {"fdc_id": 171477, "name": "Pollo", "grams": 100},
+        {"catalog_id": "arroz-blanco-cocido", "fdc_id": 171477, "grams": 100},
+        {"catalog_id": "arroz-blanco-cocido", "name": "Pollo", "grams": 100},
+        {"catalog_id": "arroz-blanco-cocido", "fdc_id": 171477, "name": "Pollo", "grams": 100},
         {"grams": 100},
         {},
         "pollo",
@@ -249,9 +255,66 @@ def test_parse_items_accepts_a_mix_of_usda_and_custom_items():
         [1, 2],
     ],
 )
-def test_parse_items_rejects_an_item_that_is_not_exactly_usda_or_custom(item):
-    """`fdc_id` y `name` a la vez, ninguno o un elemento que no es objeto."""
+def test_parse_items_rejects_an_item_that_is_not_exactly_catalog_usda_or_custom(item):
+    """Más de uno de `catalog_id`, `fdc_id` y `name`, ninguno o un elemento
+    que no es objeto: mensaje nuevo que sustituye al de la 022."""
     assert message_of(parse_items, [item]) == ITEM_SOURCE
+
+
+# SDD: 023 REQ-006 AC-006.1
+def test_parse_items_parses_a_catalog_item():
+    """Un alimento del catálogo se convierte en `CatalogItemInput` con gramos Decimal."""
+    result = parse_items([{"catalog_id": "pechuga-de-pollo-a-la-plancha", "grams": 150}])
+
+    assert result == [
+        CatalogItemInput(catalog_id="pechuga-de-pollo-a-la-plancha", grams=Decimal("150"))
+    ]
+
+
+# SDD: 023 REQ-006 AC-006.2
+def test_parse_items_accepts_a_mix_of_catalog_usda_and_custom_items_in_order():
+    """Una misma petición mezcla los tres tipos y conserva el orden."""
+    result = parse_items(
+        [{"catalog_id": "banano", "grams": 100}, {"fdc_id": 171477, "grams": 150}, custom()]
+    )
+
+    assert isinstance(result[0], CatalogItemInput)
+    assert isinstance(result[1], UsdaItemInput)
+    assert isinstance(result[2], CustomItemInput)
+
+
+# SDD: 023 REQ-006 AC-006.4
+def test_parse_items_ignores_keys_with_null_value_when_counting_sources():
+    """Una clave con valor `null` no cuenta como presente."""
+    result = parse_items([{"catalog_id": "banano", "fdc_id": None, "name": None, "grams": 100}])
+
+    assert result == [CatalogItemInput(catalog_id="banano", grams=Decimal("100"))]
+
+
+# SDD: 023 REQ-006 AC-006.5
+@pytest.mark.parametrize("grams", [None, 0, 2001, "100"])
+def test_parse_items_validates_the_grams_of_a_catalog_item(grams):
+    """Gramos ausentes, no numéricos o fuera de rango en un alimento del catálogo."""
+    item = {"catalog_id": "banano", "grams": grams}
+    if grams is None:
+        item.pop("grams")
+
+    assert message_of(parse_items, [item]) == GRAMS_RANGE
+
+
+# SDD: 023 REQ-006 AC-006.5
+def test_parse_items_rejects_two_decimals_in_a_catalog_item():
+    """150,25 g en un alimento del catálogo: «Los gramos admiten como mucho un decimal.»."""
+    assert message_of(parse_items, [{"catalog_id": "banano", "grams": 150.25}]) == GRAMS_DECIMALS
+
+
+# SDD: 023 REQ-006 AC-006.3
+@pytest.mark.parametrize(
+    "catalog_id", ["Banano", "plátano", "piña", "-banano", "banano-", "a--b", "a", "a" * 61, 5, True, [1]]
+)
+def test_parse_items_rejects_a_catalog_id_with_an_invalid_format(catalog_id):
+    """Un identificador con formato no válido es un alimento que no existe."""
+    assert message_of(parse_items, [{"catalog_id": catalog_id, "grams": 100}]) == FOOD_NOT_FOUND
 
 
 # SDD: 022 REQ-003 AC-003.4

@@ -8,11 +8,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { MemoryRouter } from "react-router"
 import { ApiError } from "@/lib/apiClient"
 import { addMealItems, getDiary, removeMealItem, updateMealItemGrams } from "@/features/diary/api"
-import { searchFoods } from "@/features/foods/api"
+import { searchCatalog } from "@/features/catalog/api"
 import { getProfile } from "@/features/profile/api"
 import { answersFromProfile } from "@/features/profile/mappers"
 import { calculateMacros, type MacroKey } from "@/features/macros/calculations"
+import { makeCatalogFood } from "@/test/catalogFixtures"
 import {
+  makeCatalogItem,
   makeCustomItem,
   makeDiary,
   makeMeal,
@@ -29,8 +31,8 @@ vi.mock("@/features/diary/api", () => ({
   updateMealItemGrams: vi.fn(),
   removeMealItem: vi.fn(),
 }))
-vi.mock("@/features/foods/api", () => ({
-  searchFoods: vi.fn(),
+vi.mock("@/features/catalog/api", () => ({
+  searchCatalog: vi.fn(),
 }))
 vi.mock("@/features/profile/api", () => ({
   getProfile: vi.fn(),
@@ -41,16 +43,20 @@ const getDiaryMock = vi.mocked(getDiary)
 const addMock = vi.mocked(addMealItems)
 const updateMock = vi.mocked(updateMealItemGrams)
 const removeMock = vi.mocked(removeMealItem)
-const searchMock = vi.mocked(searchFoods)
+const searchMock = vi.mocked(searchCatalog)
 const getProfileMock = vi.mocked(getProfile)
 
 const CHICKEN_NAME = "Chicken, broilers or fryers, breast, meat only, cooked, roasted"
-const CHICKEN_FOOD = {
-  fdc_id: 171477,
-  description: CHICKEN_NAME,
-  data_type: "sr_legacy" as const,
+const CATALOG_CHICKEN = makeCatalogFood()
+const CATALOG_CHICKEN_NAME = "Pechuga de pollo a la plancha"
+// La pechuga del catálogo registrada con 150 g: 247,5 kcal.
+const CATALOG_CHICKEN_ITEM = makeCatalogItem({
+  id: 40,
+  catalog_id: "pechuga-de-pollo-a-la-plancha",
+  name: CATALOG_CHICKEN_NAME,
   per_100g: { calories_kcal: 165, protein_g: 31, carbs_g: 0, fat_g: 3.57 },
-}
+  nutrients: { calories_kcal: 247.5, protein_g: 46.5, carbs_g: 0, fat_g: 5.36 },
+})
 const INCOMPLETE_NOTICE = "Algún alimento no tiene este dato: el total puede ser mayor."
 
 const intFormat = new Intl.NumberFormat("es-ES")
@@ -216,6 +222,43 @@ describe("DiaryPage", () => {
     expect(screen.getByText("Personalizado")).toBeInTheDocument()
   })
 
+  // SDD: 023 REQ-010 AC-010.1
+  it("un alimento del catálogo muestra su nombre, «150 g» y «195 kcal» y su fila no tiene etiqueta de origen", async () => {
+    getDiaryMock.mockResolvedValue(makeDiary([makeMeal({ items: [makeCatalogItem()] })]))
+    renderPage()
+
+    const name = await screen.findByText("Arroz blanco cocido")
+    const row = name.closest("li") as HTMLElement
+    expect(within(row).getByText("150 g")).toBeInTheDocument()
+    expect(within(row).getByText("195 kcal")).toBeInTheDocument()
+    for (const label of ["Foundation", "SR Legacy", "Personalizado", "USDA", "Catálogo"]) {
+      expect(within(row).queryByText(label)).not.toBeInTheDocument()
+    }
+    expect(within(row).getByRole("button", { name: "Editar Arroz blanco cocido" })).toBeInTheDocument()
+    expect(within(row).getByRole("button", { name: "Quitar Arroz blanco cocido" })).toBeInTheDocument()
+  })
+
+  // SDD: 023 REQ-010 AC-010.2
+  it("un alimento de SR Legacy y uno personalizado siguen mostrando «SR Legacy» y «Personalizado»", async () => {
+    getDiaryMock.mockResolvedValue(
+      makeDiary([
+        makeMeal({
+          items: [
+            makeMealItem({ data_type: "sr_legacy", name: "Rice, white" }),
+            makeCustomItem(),
+            makeCatalogItem(),
+          ],
+        }),
+      ])
+    )
+    renderPage()
+
+    expect(await screen.findByText("Rice, white")).toBeInTheDocument()
+    expect(screen.getByText("SR Legacy")).toBeInTheDocument()
+    expect(screen.getByText("Personalizado")).toBeInTheDocument()
+    expect(screen.getAllByText(/^(Foundation|SR Legacy|Personalizado)$/)).toHaveLength(2)
+  })
+
   // SDD: 022 NFR-002 AC-N002.3
   it("«Cargando el diario…» se anuncia en una región de estado", async () => {
     getDiaryMock.mockReturnValue(new Promise<Diary>(() => {}))
@@ -362,19 +405,21 @@ describe("DiaryPage", () => {
   it("tras añadir un alimento a Desayuno envía la petición, cierra el diálogo y relee el diario con los totales nuevos", async () => {
     const user = userEvent.setup()
     const goal = targets()
-    const breakfast = makeMeal({ id: 20, meal_type: "breakfast" })
+    const breakfast = makeMeal({ id: 20, meal_type: "breakfast", items: [CATALOG_CHICKEN_ITEM] })
     getDiaryMock.mockResolvedValueOnce(makeDiary())
     getDiaryMock.mockResolvedValue(makeDiary([breakfast]))
     addMock.mockResolvedValue(breakfast)
-    searchMock.mockResolvedValue({ results: [CHICKEN_FOOD] })
+    searchMock.mockResolvedValue({ results: [CATALOG_CHICKEN] })
     renderPage()
     await screen.findByText(`0 / ${intFormat.format(goal.kcal)} kcal`)
 
     await user.click(screen.getAllByRole("button", { name: "Añadir alimento" })[0])
     const dialog = await screen.findByRole("dialog", { name: "Añadir a Desayuno" })
-    await user.type(within(dialog).getByRole("searchbox", { name: "Buscar alimento" }), "chicken")
+    await user.type(within(dialog).getByRole("searchbox", { name: "Buscar alimento" }), "pollo")
     await user.click(within(dialog).getByRole("button", { name: "Buscar" }))
-    await user.click(await within(dialog).findByRole("button", { name: `Elegir ${CHICKEN_NAME}` }))
+    await user.click(
+      await within(dialog).findByRole("button", { name: `Elegir ${CATALOG_CHICKEN_NAME}` })
+    )
     const grams = within(dialog).getByLabelText("Gramos")
     await user.clear(grams)
     await user.type(grams, "150")
@@ -384,11 +429,11 @@ describe("DiaryPage", () => {
       expect(addMock).toHaveBeenCalledWith({
         date: "2026-10-20",
         meal_type: "breakfast",
-        items: [{ fdc_id: 171477, grams: 150 }],
+        items: [{ catalog_id: "pechuga-de-pollo-a-la-plancha", grams: 150 }],
       })
     )
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument())
-    expect(await screen.findByText(CHICKEN_NAME)).toBeInTheDocument()
+    expect(await screen.findByText(CATALOG_CHICKEN_NAME)).toBeInTheDocument()
     expect(getDiaryMock).toHaveBeenCalledTimes(2)
     expect(
       screen.getByText(`248 / ${intFormat.format(goal.kcal)} kcal`)
@@ -458,6 +503,34 @@ describe("DiaryPage", () => {
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument())
     expect(await screen.findByText("200 g")).toBeInTheDocument()
     expect(getDiaryMock).toHaveBeenCalledTimes(2)
+  })
+
+  // SDD: 023 REQ-010 AC-010.3
+  it("tras editar un alimento del catálogo a 200 g envía el cambio de gramos y relee el diario", async () => {
+    const user = userEvent.setup()
+    const edited = makeCatalogItem({
+      grams: 200,
+      nutrients: { calories_kcal: 260, protein_g: 5.4, carbs_g: 56.4, fat_g: 0.6 },
+    })
+    getDiaryMock.mockResolvedValueOnce(makeDiary([makeMeal({ items: [makeCatalogItem()] })]))
+    getDiaryMock.mockResolvedValue(makeDiary([makeMeal({ items: [edited] })]))
+    updateMock.mockResolvedValue(makeMeal({ items: [edited] }))
+    renderPage()
+    await screen.findByText("Arroz blanco cocido")
+
+    await user.click(screen.getByRole("button", { name: "Editar Arroz blanco cocido" }))
+    const dialog = await screen.findByRole("dialog", { name: "Editar gramos" })
+    const grams = within(dialog).getByLabelText("Gramos")
+    await user.clear(grams)
+    await user.type(grams, "200")
+    await user.click(within(dialog).getByRole("button", { name: "Guardar" }))
+
+    await waitFor(() => expect(updateMock).toHaveBeenCalledWith(12, 33, 200))
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument())
+    expect(await screen.findByText("200 g")).toBeInTheDocument()
+    expect(getDiaryMock).toHaveBeenCalledTimes(2)
+    // El alimento del catálogo no lleva etiqueta de origen, tampoco tras editarlo.
+    expect(screen.queryByText("Personalizado")).not.toBeInTheDocument()
   })
 
   // SDD: 022 REQ-013 AC-013.4

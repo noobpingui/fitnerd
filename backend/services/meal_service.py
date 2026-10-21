@@ -82,7 +82,9 @@ class MealService:
         user_repository,
         unit_of_work,
         clock=utc_now,
+        catalog_repository=None,
     ):
+        self.catalog_repository = catalog_repository
         self.meal_repository = meal_repository
         self.food_repository = food_repository
         self.user_repository = user_repository

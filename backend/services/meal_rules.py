@@ -38,6 +38,12 @@ MAX_DB_INTEGER = 2_147_483_647
 
 
 @dataclass(frozen=True)
+class CatalogItemInput:
+    catalog_id: str
+    grams: Decimal
+
+
+@dataclass(frozen=True)
 class UsdaItemInput:
     fdc_id: int
     grams: Decimal

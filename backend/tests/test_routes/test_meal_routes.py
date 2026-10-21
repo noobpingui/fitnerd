@@ -10,8 +10,13 @@ from datetime import datetime
 import pytest
 
 from extensions import db, jwt_manager
-from models import Food
+from models import CatalogFood, Food
 from models.meal import Meal, MealItem
+from repositories.catalog_food_repository import CatalogFoodRepository
+from repositories.food_repository import FoodRepository
+from services.catalog_load_service import CatalogLoadService
+from tests.catalog_samples import catalog_row, write_catalog_csv
+from unit_of_work.unit_of_work import UnitOfWork
 
 URL = "/api/meals"
 NOW = datetime(2026, 10, 21, 3, 0)
@@ -143,8 +148,10 @@ def test_post_response_has_the_full_contract_shape(client, headers, chicken):
     assert body["incomplete"] == []
     item = body["items"][0]
     assert set(item) == {
-        "id", "source", "fdc_id", "name", "data_type", "grams", "per_100g", "nutrients",
+        "id", "source", "fdc_id", "catalog_id", "name", "data_type", "grams", "per_100g",
+        "nutrients",
     }
+    assert item["catalog_id"] is None
     assert item["data_type"] == "sr_legacy"
     assert item["per_100g"] == {
         "calories_kcal": 165.0,
@@ -309,12 +316,72 @@ VALIDATION_CASES = {
         {"date": TODAY, "meal_type": "lunch", "items": [usda(100, 999999)]},
     ),
     "fdc_id_and_name": (
-        "Cada alimento debe ser de USDA o personalizado.",
+        "Cada alimento debe ser del catálogo, de USDA o personalizado.",
         {"date": TODAY, "meal_type": "lunch", "items": [{**usda(), "name": "Pollo"}]},
     ),
     "neither_fdc_id_nor_name": (
-        "Cada alimento debe ser de USDA o personalizado.",
+        "Cada alimento debe ser del catálogo, de USDA o personalizado.",
         {"date": TODAY, "meal_type": "lunch", "items": [{"grams": 100}]},
+    ),
+    "catalog_id_and_fdc_id": (
+        "Cada alimento debe ser del catálogo, de USDA o personalizado.",
+        {
+            "date": TODAY,
+            "meal_type": "lunch",
+            "items": [{"catalog_id": "banano", "fdc_id": 171477, "grams": 100}],
+        },
+    ),
+    "catalog_id_and_name": (
+        "Cada alimento debe ser del catálogo, de USDA o personalizado.",
+        {
+            "date": TODAY,
+            "meal_type": "lunch",
+            "items": [{"catalog_id": "banano", "name": "Pollo", "grams": 100}],
+        },
+    ),
+    "catalog_id_fdc_id_and_name": (
+        "Cada alimento debe ser del catálogo, de USDA o personalizado.",
+        {
+            "date": TODAY,
+            "meal_type": "lunch",
+            "items": [{"catalog_id": "banano", "fdc_id": 171477, "name": "Pollo", "grams": 100}],
+        },
+    ),
+    "catalog_grams_missing": (
+        "Los gramos deben estar entre 1 y 2000.",
+        {"date": TODAY, "meal_type": "lunch", "items": [{"catalog_id": "banano"}]},
+    ),
+    "catalog_grams_above": (
+        "Los gramos deben estar entre 1 y 2000.",
+        {
+            "date": TODAY,
+            "meal_type": "lunch",
+            "items": [{"catalog_id": "banano", "grams": 2001}],
+        },
+    ),
+    "catalog_grams_two_decimals": (
+        "Los gramos admiten como mucho un decimal.",
+        {
+            "date": TODAY,
+            "meal_type": "lunch",
+            "items": [{"catalog_id": "banano", "grams": 150.25}],
+        },
+    ),
+    "catalog_id_unknown": (
+        "No encontramos ese alimento.",
+        {
+            "date": TODAY,
+            "meal_type": "lunch",
+            "items": [{"catalog_id": "no-existe", "grams": 100}],
+        },
+    ),
+    "catalog_id_invalid_format": (
+        "No encontramos ese alimento.",
+        {
+            "date": TODAY,
+            "meal_type": "lunch",
+            "items": [{"catalog_id": "Banano Maduro", "grams": 100}],
+        },
     ),
     "name_blank": (
         "Escribe el nombre del alimento.",
@@ -429,6 +496,9 @@ VALIDATION_CASES = {
 # SDD: 022 REQ-003 AC-003.10
 # SDD: 022 REQ-003 AC-003.11
 # SDD: 022 REQ-003 AC-003.12
+# SDD: 023 REQ-006 AC-006.3
+# SDD: 023 REQ-006 AC-006.4
+# SDD: 023 REQ-006 AC-006.5
 @pytest.mark.parametrize("case", sorted(VALIDATION_CASES))
 def test_post_validation_message_and_nothing_saved(client, app, headers, chicken, case):
     """Cada caso de la tabla de límites da 400 con su mensaje exacto y no
@@ -1022,3 +1092,311 @@ def test_two_users_adding_to_the_same_date_and_type_get_separate_meals(client, h
     assert theirs.status_code == 201
     assert theirs.get_json()["id"] != mine["id"]
     assert [i["name"] for i in diary(client, headers)["meals"][0]["items"]] == ["Gallo pinto"]
+
+
+# --------------------------------------------------------------------------
+# Spec 023: alimentos del catálogo
+# --------------------------------------------------------------------------
+
+CATALOG_CHICKEN = {
+    "id": "pechuga-de-pollo-a-la-plancha",
+    "name": "Pechuga de pollo a la plancha",
+    "synonyms": ["pollo asado"],
+    "calories_kcal": 165.0,
+    "protein_g": 31.0,
+    "carbs_g": 0.0,
+    "fat_g": 3.57,
+    "source": "usda",
+    "fdc_id": 171477,
+    "reference": None,
+}
+CATALOG_BANANA = {
+    "id": "banano",
+    "name": "Banano",
+    "synonyms": [],
+    "calories_kcal": 89.0,
+    "protein_g": 1.09,
+    "carbs_g": 22.84,
+    "fat_g": 0.33,
+    "source": "manual",
+    "fdc_id": None,
+    "reference": "Tabla de prueba",
+}
+CHICKEN_PER_100G = {"calories_kcal": 165.0, "protein_g": 31.0, "carbs_g": 0.0, "fat_g": 3.57}
+
+
+def seed_catalog(app, *foods):
+    with app.app_context():
+        for fields in foods:
+            db.session.add(CatalogFood(**fields))
+        db.session.commit()
+
+
+@pytest.fixture
+def catalog(app):
+    seed_catalog(app, CATALOG_CHICKEN, CATALOG_BANANA)
+
+
+def catalog_item(grams=150, catalog_id="pechuga-de-pollo-a-la-plancha"):
+    return {"catalog_id": catalog_id, "grams": grams}
+
+
+def load_catalog(app, tmp_path, rows):
+    """Ejecuta la carga real (`CatalogLoadService`) sobre `db.session` con un
+    CSV temporal."""
+    path = write_catalog_csv(tmp_path / "catalogo.csv", rows)
+    with app.app_context():
+        service = CatalogLoadService(
+            CatalogFoodRepository(db.session),
+            FoodRepository(db.session),
+            UnitOfWork(db.session),
+        )
+        return service.run(path)
+
+
+def manual_row(**overrides):
+    values = dict(
+        id="pechuga-de-pollo-a-la-plancha",
+        name="Pechuga renombrada",
+        synonyms="",
+        calories_kcal="200.0",
+        protein_g="99.0",
+        carbs_g="0.0",
+        fat_g="1.0",
+        source="manual",
+        fdc_id="",
+        reference="Tabla de prueba",
+    )
+    values.update(overrides)
+    return catalog_row(**values)
+
+
+# SDD: 023 REQ-006 AC-006.1
+def test_post_saves_a_catalog_item_with_a_copy_of_the_catalog_data(client, headers, catalog):
+    """La pechuga del catálogo con 150 g: 201, `source` catalog con su
+    identificador, sin FDC ID ni tipo de dato, y nutrientes 247,5 / 46,5 / 0,0 / 5,36."""
+    response = post(client, headers, [catalog_item(150)])
+
+    assert response.status_code == 201
+    item = response.get_json()["items"][0]
+    assert {key: value for key, value in item.items() if key != "id"} == {
+        "source": "catalog",
+        "catalog_id": "pechuga-de-pollo-a-la-plancha",
+        "fdc_id": None,
+        "data_type": None,
+        "name": "Pechuga de pollo a la plancha",
+        "grams": 150,
+        "per_100g": CHICKEN_PER_100G,
+        "nutrients": {
+            "calories_kcal": 247.5,
+            "protein_g": 46.5,
+            "carbs_g": 0.0,
+            "fat_g": 5.36,
+        },
+    }
+
+
+# SDD: 023 REQ-006 AC-006.1
+def test_post_to_an_existing_meal_adds_a_catalog_item_and_returns_200(client, headers, catalog):
+    """Un alimento del catálogo en una comida existente: 200 y mismo `id`."""
+    first = post(client, headers, [catalog_item(150)])
+
+    second = post(client, headers, [catalog_item(100, "banano")])
+
+    assert second.status_code == 200
+    assert second.get_json()["id"] == first.get_json()["id"]
+    assert [i["name"] for i in second.get_json()["items"]] == [
+        "Pechuga de pollo a la plancha",
+        "Banano",
+    ]
+
+
+# SDD: 023 REQ-006 AC-006.2
+def test_post_accepts_a_catalog_usda_and_custom_item_in_that_order(client, headers, catalog, chicken):
+    """Catálogo, USDA y personalizado: los tres, en ese orden, cada uno con su `source`."""
+    response = post(client, headers, [catalog_item(), usda(), GALLO])
+
+    assert response.status_code == 201
+    items = response.get_json()["items"]
+    assert [i["source"] for i in items] == ["catalog", "usda", "custom"]
+    assert [i["catalog_id"] for i in items] == ["pechuga-de-pollo-a-la-plancha", None, None]
+
+
+# SDD: 023 REQ-006 AC-006.3
+def test_post_with_a_valid_catalog_item_and_an_unknown_one_saves_nothing(
+    client, app, headers, catalog
+):
+    """Un alimento válido y uno inexistente: 400 y no se guarda ninguno."""
+    response = post(client, headers, [catalog_item(), catalog_item(100, "no-existe")])
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "No encontramos ese alimento."}
+    assert counts(app) == (0, 0)
+
+
+# SDD: 023 REQ-006 AC-006.3
+def test_post_with_a_catalog_id_when_the_catalog_is_empty_is_a_400(client, app, headers):
+    """Con el catálogo sin cargar, cualquier identificador es inexistente."""
+    response = post(client, headers, [catalog_item()])
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "No encontramos ese alimento."}
+    assert counts(app) == (0, 0)
+
+
+# SDD: 023 REQ-006 AC-006.6
+def test_patch_recalculates_a_catalog_item_with_the_stored_values(client, headers, catalog):
+    """150 g pasan a 200 g: 330,0 / 62,0 / 0,0 / 7,14."""
+    created = post(client, headers, [catalog_item(150)]).get_json()
+
+    response = patch(client, headers, created["id"], created["items"][0]["id"], {"grams": 200})
+
+    assert response.status_code == 200
+    item = response.get_json()["items"][0]
+    assert item["grams"] == 200
+    assert item["nutrients"] == {
+        "calories_kcal": 330.0,
+        "protein_g": 62.0,
+        "carbs_g": 0.0,
+        "fat_g": 7.14,
+    }
+    assert item["source"] == "catalog"
+    assert item["catalog_id"] == "pechuga-de-pollo-a-la-plancha"
+
+
+# SDD: 023 REQ-007 AC-007.1
+def test_diary_keeps_the_saved_data_when_a_load_changes_the_food(
+    client, app, headers, catalog, tmp_path
+):
+    """Una carga real cambia el nombre y la proteína por 100 g del alimento:
+    el diario devuelve lo que se guardó."""
+    post(client, headers, [catalog_item(150)])
+
+    summary = load_catalog(app, tmp_path, [manual_row()])
+    assert summary.updated == 1
+
+    item = diary(client, headers)["meals"][0]["items"][0]
+    assert item["name"] == "Pechuga de pollo a la plancha"
+    assert item["per_100g"]["protein_g"] == 31.0
+    assert item["per_100g"]["calories_kcal"] == 165.0
+    assert item["nutrients"]["protein_g"] == 46.5
+    assert item["nutrients"]["calories_kcal"] == 247.5
+
+
+# SDD: 023 REQ-007 AC-007.2
+def test_patch_after_a_load_changed_the_food_uses_the_stored_values_per_100g(
+    client, app, headers, catalog, tmp_path
+):
+    """Tras una carga que cambia el alimento, cambiar los gramos recalcula con
+    los valores por 100 g guardados."""
+    created = post(client, headers, [catalog_item(150)]).get_json()
+    load_catalog(app, tmp_path, [manual_row()])
+
+    response = patch(client, headers, created["id"], created["items"][0]["id"], {"grams": 200})
+
+    item = response.get_json()["items"][0]
+    assert item["nutrients"]["calories_kcal"] == 330.0
+    assert item["nutrients"]["protein_g"] == 62.0
+    assert item["name"] == "Pechuga de pollo a la plancha"
+
+
+# SDD: 023 REQ-002 AC-002.4
+def test_diary_keeps_the_item_when_a_load_removes_the_food_from_the_catalog(
+    client, app, headers, catalog, tmp_path
+):
+    """Una carga cuyo CSV ya no trae la pechuga la quita del catálogo, pero el
+    diario devuelve el alimento con su nombre, sus valores por 100 g y sus
+    nutrientes."""
+    post(client, headers, [catalog_item(150)])
+
+    summary = load_catalog(
+        app,
+        tmp_path,
+        [manual_row(id="banano", name="Banano", calories_kcal="89.0", protein_g="1.09",
+                    carbs_g="22.84", fat_g="0.33")],
+    )
+    assert summary.removed == 1
+    with app.app_context():
+        assert db.session.get(CatalogFood, "pechuga-de-pollo-a-la-plancha") is None
+
+    item = diary(client, headers)["meals"][0]["items"][0]
+
+    assert item["source"] == "catalog"
+    assert item["catalog_id"] == "pechuga-de-pollo-a-la-plancha"
+    assert item["name"] == "Pechuga de pollo a la plancha"
+    assert item["per_100g"] == CHICKEN_PER_100G
+    assert item["nutrients"] == {
+        "calories_kcal": 247.5,
+        "protein_g": 46.5,
+        "carbs_g": 0.0,
+        "fat_g": 5.36,
+    }
+
+
+# SDD: 023 REQ-008 AC-008.1
+def test_diary_returns_usda_and_custom_items_with_a_null_catalog_id(client, headers, chicken):
+    """Los alimentos de USDA y personalizados llevan `catalog_id: null` y sus
+    campos de la 022 sin cambios."""
+    post(client, headers, [usda(150), GALLO])
+
+    items = diary(client, headers)["meals"][0]["items"]
+
+    assert [i["catalog_id"] for i in items] == [None, None]
+    assert items[0]["source"] == "usda"
+    assert items[0]["fdc_id"] == 171477
+    assert items[0]["data_type"] == "sr_legacy"
+    assert items[0]["name"] == CHICKEN_NAME
+    assert items[1]["source"] == "custom"
+    assert items[1]["fdc_id"] is None
+    assert items[1]["name"] == "Gallo pinto"
+
+
+# SDD: 023 REQ-008 AC-008.1
+def test_items_saved_before_the_spec_are_returned_with_a_null_catalog_id(client, app, headers):
+    """Filas guardadas como en la 022 (sin `catalog_id`) se devuelven con `null`."""
+    created = post(client, headers, [GALLO]).get_json()
+    with app.app_context():
+        meal = db.session.get(Meal, created["id"])
+        meal.items.append(
+            MealItem(
+                position=1, source="usda", fdc_id=171477, name=CHICKEN_NAME,
+                data_type="sr_legacy", grams=150,
+                per_100g_calories_kcal=165.0, per_100g_protein_g=31.0,
+                per_100g_carbs_g=0.0, per_100g_fat_g=3.57,
+                calories_kcal=247.5, protein_g=46.5, carbs_g=0.0, fat_g=5.36,
+            )
+        )
+        db.session.commit()
+
+    items = diary(client, headers)["meals"][0]["items"]
+
+    assert [i["source"] for i in items] == ["custom", "usda"]
+    assert [i["catalog_id"] for i in items] == [None, None]
+
+
+# SDD: 023 REQ-008 AC-008.2
+def test_patch_and_delete_of_a_usda_item_work_as_in_spec_022(client, headers, chicken):
+    """Cambiar los gramos de un alimento de USDA recalcula (330 kcal) y quitarlo
+    responde 204."""
+    meal_id, item_id = make_chicken_meal(client, headers)
+
+    patched = patch(client, headers, meal_id, item_id, {"grams": 200})
+    removed = delete_item(client, headers, meal_id, item_id)
+
+    assert patched.status_code == 200
+    assert patched.get_json()["items"][0]["nutrients"]["calories_kcal"] == 330.0
+    assert patched.get_json()["items"][0]["catalog_id"] is None
+    assert removed.status_code == 204
+
+
+# SDD: 023 REQ-008 AC-008.2
+def test_delete_of_a_catalog_item_and_its_meal_work(client, headers, catalog):
+    """Quitar el único alimento del catálogo borra la comida (204)."""
+    meal_id, item_id = (lambda m: (m["id"], m["items"][0]["id"]))(
+        post(client, headers, [catalog_item()]).get_json()
+    )
+
+    removed = delete_item(client, headers, meal_id, item_id)
+
+    assert removed.status_code == 204
+    assert diary(client, headers)["meals"] == []

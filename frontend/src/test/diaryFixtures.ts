@@ -22,6 +22,7 @@ export function makeMealItem(overrides: Partial<MealItem> = {}): MealItem {
   return {
     id: 31,
     source: "usda",
+    catalog_id: null,
     fdc_id: 171477,
     name: "Chicken, broilers or fryers, breast, meat only, cooked, roasted",
     data_type: "sr_legacy",
@@ -37,12 +38,29 @@ export function makeCustomItem(overrides: Partial<MealItem> = {}): MealItem {
   return {
     id: 32,
     source: "custom",
+    catalog_id: null,
     fdc_id: null,
     name: "Gallo pinto",
     data_type: null,
     grams: 250,
     per_100g: { calories_kcal: 160, protein_g: 5.5, carbs_g: 27, fat_g: 3.2 },
     nutrients: { calories_kcal: 400, protein_g: 13.75, carbs_g: 67.5, fat_g: 8 },
+    ...overrides,
+  }
+}
+
+// Arroz blanco cocido del catálogo registrado con 150 g: 195 kcal.
+export function makeCatalogItem(overrides: Partial<MealItem> = {}): MealItem {
+  return {
+    id: 33,
+    source: "catalog",
+    catalog_id: "arroz-blanco-cocido",
+    fdc_id: null,
+    name: "Arroz blanco cocido",
+    data_type: null,
+    grams: 150,
+    per_100g: { calories_kcal: 130, protein_g: 2.7, carbs_g: 28.2, fat_g: 0.3 },
+    nutrients: { calories_kcal: 195, protein_g: 4.05, carbs_g: 42.3, fat_g: 0.45 },
     ...overrides,
   }
 }

@@ -1,5 +1,5 @@
-// La pantalla «Alimentos» (spec 021) solo se alcanza por la URL /foods: ni la
-// barra de escritorio ni la inferior móvil la enlazan.
+// La ruta /foods (spec 021; desde la 023 redirige a /diary) no tiene entrada en la
+// navegación: ni la barra de escritorio ni la inferior móvil la enlazan.
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -35,6 +35,7 @@ describe("Navegación sin entrada a Alimentos", () => {
   })
 
   // SDD: 021 REQ-012 AC-012.8
+  // SDD: 023 REQ-011 AC-011.2
   it("la barra de escritorio no tiene enlace «Alimentos» ni apunta a /foods", () => {
     const { container } = render(
       <QueryClientProvider client={new QueryClient()}>
@@ -48,6 +49,7 @@ describe("Navegación sin entrada a Alimentos", () => {
   })
 
   // SDD: 021 REQ-012 AC-012.8
+  // SDD: 023 REQ-011 AC-011.2
   it("la barra inferior móvil no tiene enlace «Alimentos» ni apunta a /foods", () => {
     const { container } = render(
       <MemoryRouter>
