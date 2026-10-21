@@ -60,3 +60,20 @@
 
 ## implement · orquestador (excepción autorizada)
 - [ ] T-059: `backend/Dockerfile` (fuera de los globs `prod` de `.sdd/config.json`) lo editó el orquestador con autorización explícita del usuario ("La opcion 1"), porque el role-guard bloqueó al implementer. El usuario prefirió no tocar `config.json` a mitad de feature. Pendiente: incluir `backend/Dockerfile` en los globs `prod` en un `chore/…` aparte.
+
+## verify · verifier (iteración 2)
+- [ ] Comprobar en producción que un análisis lento devuelve 503 con JSON y no 502 del proxy (el test T-058 solo verifica la configuración del CMD, no el comportamiento real).
+- [ ] Las líneas de `backend/Dockerfile` (salvo FROM y CMD) van con sangría de dos espacios; es cosmético, sin efecto en el build.
+
+## review · reviewer (iteración 2, APPROVED)
+- [ ] F9 NIT (test-author): el test de configuración T-058 está en `test_services/`, aunque no prueba ningún servicio.
+- [ ] Hacer un `chore/…` que añada `backend/Dockerfile` a los globs `prod` de `.sdd/config.json`.
+- [ ] Documentar el paso manual de producción (Art. P4), incluida la comprobación de `--timeout 90`, en la etapa docs.
+
+## plan · planner (corrección de review F2-F9, iteración 2)
+- [ ] Pasar gunicorn a hilos o a más workers, midiendo antes la memoria por worker en la t3.micro (F2 ya no lo bloquea).
+- [ ] Si la revisión de Q9 muestra que quitar el ICC empeora el reconocimiento, valorar conservar un perfil saneado o convertir a sRGB.
+- [ ] Valorar un test de memoria de la validación de un JPEG progresivo grande (las reservas de libjpeg no se ven con tracemalloc).
+- [ ] Un test de que un WebP truncado da 400 (hoy ya lo rechaza el demuxer al abrir; no se añade para no meter otro test que ya pasa).
+- [ ] Riesgo F2: un archivo con la estructura correcta pero píxeles corruptos ya no da 400; llega al proveedor y acaba en 503, que cuenta para el límite (mismo criterio que el PNG).
+- [ ] Riesgo F2: el plan se apoya en que libwebp reserva con calloc sin ocupar memoria residente con glibc mientras no se decodifique.
