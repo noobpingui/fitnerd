@@ -270,4 +270,5 @@ Feature: [specs/022-meal-diary/](../specs/022-meal-diary/)
 - [ ] AC manuales para el gate de review: AC-014.2 (barra de calorías llena al superar el objetivo), AC-015.2 (barra inferior con 6 entradas en pantalla estrecha), AC-015.3 (estado activo de «Diario» en /diary).
 - [ ] Revisar los fines de línea CRLF de 5 archivos de test (fakes.py, BottomTabBar.test.tsx, Navbar.test.tsx, PrivacyPolicyPage.test.tsx, TermsOfServicePage.test.tsx) antes del cierre; comprobar si el snapshot-check se hace por hash en disco.
 - [ ] F6 (NIT, test-author): falta un test de que meals.updated_at avanza al añadir, editar o quitar alimentos (backend/models/meal.py:45-48), y otro de «-0» en el formulario personalizado (frontend/src/features/diary/schemas.ts:38).
-- [ ] Añadir la fila de 022 en la sección 8 del runbook al desplegar, con la medición de las tablas nuevas si interesa.
+- [x] Añadir la fila de 022 en la sección 8 del runbook al desplegar (hecho en `chore/022-deploy-history`).
+- [ ] Aviso visual al superar un objetivo del diario (AC-014.2 hoy solo pide el texto «X por encima del objetivo» y la barra llena): cambiar la barra a ámbar, solo en calorías o en las cuatro. Sin alerta alarmista. Decidir con el usuario; cambia un comportamiento especificado, así que va por el flujo SDD.

@@ -252,5 +252,6 @@ Merge del PR y paso 6.
 | 2026-10-15 | 013, pulido de 006–010 | #7, `0596d9e` | — | — |
 | 2026-10-15 | 014, endurecimiento de la autenticación | #13, `8f21df4` | `a7d3f9c1e5b2`, aplicada antes del merge (sin cambios de datos: 0 correos con mayúsculas) | `prod-2026-10-15.dump` |
 | 2026-10-18 | 019, correo canónico con restricción CHECK | #22, `650fac9` | `e5b7d9f1a3c6`, aplicada antes del merge (sin cambios de datos: 0 correos no canónicos, 0 conflictos; solo creó las dos CHECK) | `prod-2026-10-18.dump` |
+| 2026-10-20 | 022, diario de comidas (incluye la base de USDA de la 021) | #27, `c4be21e` | `c8e2a4f6b9d3` (`foods`) y `b3d5f7a9c1e4` (`meals`, `meal_items`), aplicadas juntas después del merge; importación de USDA: 8.262 alimentos, `public.foods` ocupa 50 MB | `prod-2026-10-20.dump` |
 
 Añade una fila en cada despliegue.
