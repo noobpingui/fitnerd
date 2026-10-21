@@ -119,7 +119,7 @@ legítimo hasta T-079.
 ### Fase B — Implementación de la iteración 3 de la review (F11, implementer)
 Sin migraciones ni `backend/Dockerfile`. Se cumple cuando pasa T-078 y siguen verdes los tests de dimensiones existentes.
 
-- [ ] T-079 [REQ-003, AC-003.3, AC-003.6] (impl) F11: en `prepare_photo`, mover la comprobación `width > MAX_PHOTO_SIDE or height > MAX_PHOTO_SIDE` (`PHOTO_TOO_WIDE_MESSAGE`) a justo después del bloque `try … finally: image.close()` de integridad y quitado de metadatos, antes del `return`; sin cambiar mensajes ni `_check_integrity` — `backend/services/meal_photo.py`
+- [x] T-079 [REQ-003, AC-003.3, AC-003.6] (impl) F11: en `prepare_photo`, mover la comprobación `width > MAX_PHOTO_SIDE or height > MAX_PHOTO_SIDE` (`PHOTO_TOO_WIDE_MESSAGE`) a justo después del bloque `try … finally: image.close()` de integridad y quitado de metadatos, antes del `return`; sin cambiar mensajes ni `_check_integrity` — `backend/services/meal_photo.py`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

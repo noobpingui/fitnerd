@@ -193,8 +193,6 @@ def prepare_photo(images: list[bytes]) -> MealPhoto:
         width, height = image.size
     except Exception:
         raise ValidationError(UNREADABLE_PHOTO_MESSAGE) from None
-    if width > MAX_PHOTO_SIDE or height > MAX_PHOTO_SIDE:
-        raise ValidationError(PHOTO_TOO_WIDE_MESSAGE)
     try:
         _check_integrity(image, photo_format)
         clean = strip_photo_metadata(data, photo_format)
@@ -202,6 +200,8 @@ def prepare_photo(images: list[bytes]) -> MealPhoto:
         raise ValidationError(UNREADABLE_PHOTO_MESSAGE) from None
     finally:
         image.close()
+    if width > MAX_PHOTO_SIDE or height > MAX_PHOTO_SIDE:
+        raise ValidationError(PHOTO_TOO_WIDE_MESSAGE)
     return MealPhoto(
         data=clean, format=photo_format, size_bytes=len(data), width=width, height=height
     )
