@@ -65,3 +65,27 @@
 - [ ] Corregir las 7 E501 de los tests de 023 (o aceptarlas de forma explícita) antes del cierre; el implementer no puede tocarlas.
 - [ ] Revisión manual del CSV del catálogo en el gate de review (reglas de contenido de la spec y 1 fila manual sin verificar).
 - [ ] Los pasos de producción (migración d4f6a8c0e2b5 antes del merge y carga del CSV tras el CD) deben quedar en docs/deploy-runbook.md en la etapa docs (Art. P4).
+
+## review · reviewer
+- [ ] F2 MENOR: hay alimentos con dos versiones: zanahoria cruda y cocida, champiñones crudos y cocidos, y frijoles blancos y navy (CSV:166-167, 192-193, 24, 218).
+- [ ] F3 MENOR: hay sinónimos con marca: «pan bimbo» (CSV:15) y «queso filadelfia» (CSV:105).
+- [ ] F4 MENOR: «contramuslo de pollo» está en Pierna y debería ir en Muslo (CSV:46); «limonada sin azúcar» en Jugo de limón es otro alimento (CSV:265).
+- [ ] F5 MENOR: hay nombres principales que no son español neutro: «Vainicas cocidas», «Frijoles navy cocidos» y «Calabaza butternut al horno».
+- [ ] F6 MENOR: hay nombres que no corresponden al alimento de USDA: «Merluza» es pollock, «Róbalo» es striped bass y «Polenta» son grits blancos.
+- [ ] F7 NIT: en Costa Rica y México, «limón» es la lima verde, y el catálogo da primero el limón amarillo (diferencia nutricional mínima).
+- [ ] F8 NIT: sinónimos dudosos: «dolfín» no lo puedo verificar, «pinha» es portugués, «tuna» se confunde con atún en inglés y «fruta del pan jaca» mezcla dos frutas. «zapote», «anona» y «lampuga» son correctos.
+- [ ] F9 NIT: «Puerro» y «Tempeh» están crudos, aunque normalmente se comen cocidos.
+- [ ] F10 NIT: falta un espacio en `UsdaItemPayload ={` (frontend/src/features/diary/types.ts:34).
+- [ ] F11 NIT: el mensaje del downgrade dice «Hay 1 alimentos…» (migración:95); si se corrige, hay que cambiar también `DOWNGRADE_MESSAGE` en `test_catalog_migration.py`.
+- [ ] F12 NIT (test-author): el comentario de frontend/src/app/diaryRoute.test.tsx:2 sigue diciendo que `/foods` muestra «Alimentos».
+- [ ] `state.json` muestra `max_iterations: 3`, pero la config vale 4.
+- [ ] Retirar FoodsPage, FoodResultList y useFoodSearch, que ya no tienen ruta (ya está en el backlog).
+- [ ] Runbook (P4): migración antes del merge y carga del catálogo tras el CD, en la etapa docs.
+
+## spec (corrección por review) · spec-writer
+- [ ] Estos archivos siguen con la lista de 40 y la yuca, y hay que corregirlos (no los edité):
+- [ ] backend/tests/test_services/test_food_catalog_csv.py: línea 15 (comentario «40 alimentos»), línea 26 («Yuca cocida» en MINIMUM_LIST), líneas 67-70 (`test_the_minimum_list_has_40_foods`, que comprueba == 40 dos veces; debe pasar a 39) y línea 115 (docstring «40 alimentos»).
+- [ ] backend/scripts/data/food_catalog.csv: línea 37 (fila `yuca-cocida`, origen manual con fuente FNDDS). Según la decisión del usuario debe salir también del catálogo. Al quitarla quedan 264 filas, dentro del rango de 250 a 350, y ya no queda ninguna fila `manual`.
+- [ ] specs/023-generic-food-catalog/plan.md: línea 530 («los 40 de la lista mínima» debe decir 39).
+- [ ] specs/023-generic-food-catalog/tasks.md: línea 45, T-028 («con los 40 de la lista mínima» debe decir 39).
+- [ ] specs/023-generic-food-catalog/verify-report.md: línea 49, que menciona la fila `yuca-cocida`. Se queda desactualizada cuando se vuelva a pasar la verificación.

@@ -92,7 +92,7 @@ límites, y origen `usda` con su FDC ID o `manual` con su fuente. Ningún nombre
 - **AC-001.3:** Given el CSV del catálogo del repositorio, When se revisan sus nombres, Then ninguno contiene como
   palabra «con», «frito», «frita», «fritos» ni «fritas».
 - **AC-001.4:** Given el CSV del catálogo del repositorio, When se revisan sus filas, Then incluye, por su nombre o por un
-  sinónimo, cada uno de los 40 alimentos de la lista mínima de la sección 6.
+  sinónimo, cada uno de los 39 alimentos de la lista mínima de la sección 6.
 
 ### REQ-002 — Carga del catálogo
 WHEN el operador ejecuta la carga con un CSV válido THE SYSTEM SHALL dejar el catálogo de la base igual al del archivo:
@@ -372,7 +372,7 @@ una fila por alimento, con estas columnas:
 
 **Lista mínima** (AC-001.4; el CSV puede usar estos nombres o los que se acuerden en la revisión, pero debe cubrir
 estos alimentos): «Arroz blanco cocido», «Arroz integral cocido», «Frijoles negros cocidos», «Frijoles rojos
-cocidos», «Lentejas cocidas», «Garbanzos cocidos», «Avena cocida», «Pasta cocida», «Papa cocida», «Yuca cocida»,
+cocidos», «Lentejas cocidas», «Garbanzos cocidos», «Avena cocida», «Pasta cocida», «Papa cocida»,
 «Plátano maduro cocido», «Tortilla de maíz», «Pan blanco», «Pan integral», «Pechuga de pollo a la plancha», «Carne de
 res molida cocida», «Lomo de cerdo a la plancha», «Atún en agua», «Salmón al horno», «Huevo cocido», «Leche entera»,
 «Leche descremada», «Yogur natural», «Queso blanco», «Banano», «Manzana», «Naranja», «Papaya», «Piña», «Mango»,
@@ -474,3 +474,8 @@ recoge la regla de plurales de REQ-004 (AC-004.12 a AC-004.16).
 - **Carga:** el proceso, ejecutado a mano, que valida el CSV y deja el catálogo de la base igual al del archivo.
 - **Operador:** la persona que ejecuta la carga (el dueño del proyecto).
 - **Base de USDA:** los alimentos de Foundation y SR Legacy importados en la spec 021.
+
+
+## Comentarios del usuario
+
+- Review F1 (yuca-cocida): «1. La opcion dos. 2. Si». La opción 2 es quitar «Yuca cocida» de la lista mínima de la spec y del catálogo hasta tener una fuente verificable; la pregunta 2 era corregir también F2 a F6 (contenido del CSV) en la misma ronda.

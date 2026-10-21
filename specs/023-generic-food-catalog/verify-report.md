@@ -1,24 +1,24 @@
 # Verify report 023 — Catálogo genérico de alimentos en español que sustituye a USDA en la búsqueda del diario
 
-- **Modo:** full (etapa verify), iteración 1 de 3
-- **Fecha:** 2026-10-21T07:48:23.472Z · **Rama:** `feat/023-generic-food-catalog` @ `d9459f3` · **Base:** `main`
-- **Resultado:** FAIL
+- **Modo:** full (etapa verify), iteración 2 (tras la corrección de formato aprobada por el usuario)
+- **Fecha:** 2026-10-21T08:14:28.523Z · **Rama:** `feat/023-generic-food-catalog` @ `e7792b5` · **Base:** `main`
+- **Resultado:** PASS
 
 ## 1. Comandos ejecutados
 Ámbitos tocados: `backend`, `frontend`. Los comandos de `typecheck` y `build` del ámbito `backend` están a `null` y no se listan.
 
 | Ámbito | Comando (cwd) | Resultado | Resumen de la salida |
 |---|---|---|---|
-| backend | `".venv/Scripts/python.exe" -m pytest -q` (`backend`) | ✅ | 1808 passed en 120,52 s (suite completa, incluidos los tests 023 y los de 021 y 022) |
-| backend | ratchet de ruff, `node scripts/lint-ratchet.mjs backend` (raíz del repo) | ❌ | Exit 1: 1058 violaciones nuevas. 1051 son del CSV `backend/scripts/data/food_catalog.csv` (E501 +86 e invalid-syntax +965), que el ratchet trata como Python por estar en el ámbito `prod` (`backend/scripts/**`). 7 son E501 en 5 archivos de test congelados. Detalle en la sección 4. Ningún archivo de código de producción tiene violaciones nuevas. |
-| frontend | `npm test` (`frontend`) | ✅ | 75 archivos, 1048 tests passed en 61,54 s |
+| backend | `".venv/Scripts/python.exe" -m pytest -q` (`backend`) | ✅ | 1808 passed en 114,88 s (suite completa, incluidos los tests 023 y los de 021 y 022) |
+| backend | ratchet de ruff, `node scripts/lint-ratchet.mjs backend` (raíz del repo) | ✅ | Exit 0: «sin violaciones nuevas respecto a main». El CSV `backend/scripts/data/food_catalog.csv` ya no entra en el ratchet (`prod` solo cubre `backend/scripts/*.py` y `backend/scripts/**/*.py`). Todos los archivos de producción y de test de la feature con 0 violaciones nuevas. |
+| frontend | `npm test` (`frontend`) | ✅ | 75 archivos, 1048 tests passed en 62,34 s |
 | frontend | `npm run lint` (`frontend`) | ✅ | oxlint, exit 0, sin errores ni warnings |
 | frontend | `npx tsc -b` (`frontend`) | ✅ | exit 0, sin errores de tipos |
 | frontend | `npm run build` (`frontend`) | ✅ | exit 0. Chunk de entrada `dist/assets/index-De6qw7Tc.js` de 384,63 kB (122,89 kB gzip), por debajo de 500 kB (ADR-0026). El chunk de `BodyMetricsPage`, 364,77 kB, es lazy y no entra en la carga inicial. |
 
-Comprobación de los archivos congelados (`tests_snapshot` de `state.json`): los 26 archivos de test del snapshot tienen en `HEAD` el mismo hash que el registrado. La copia de trabajo tiene otro hash por la conversión de fin de línea del checkout, pero `git status` está limpio en esos archivos, así que no hay cambios de contenido. Entre `e0b0f5b` y `d9459f3` no se ha modificado ningún test.
+Comprobación de los cambios desde la verificación anterior (`e0b0f5b`..`e7792b5`): en los tests solo hay reflujos de línea en 5 archivos de backend (`test_meal_routes.py`, `test_load_food_catalog_script.py`, `test_catalog_csv_reader.py`, `test_catalog_load_service.py`, `test_meal_rules.py`). Ninguno cambia aserciones, datos ni nombres de test. No hay cambios en tests de frontend. El árbol de trabajo está limpio salvo `state.json`.
 
-Comprobación de diff: `git diff main...HEAD` no añade `skip`, `xfail`, `.only`, `.skip`, `.todo` ni `fixme`, y no quita ninguno.
+Comprobación de diff: `git diff main...HEAD` no añade `skip`, `xfail`, `.only`, `.skip`, `.todo` ni `fixme`.
 
 ## 2. Trazabilidad
 | REQ / NFR | AC | Tareas | Tests con `SDD:` | Estado del test |
@@ -38,23 +38,16 @@ Comprobación de diff: `git diff main...HEAD` no añade `skip`, `xfail`, `.only`
 | NFR-001 | AC-N001.1, N001.2 | T-024, T-032, T-105, T-106 | `test_catalog_search_service.py`, `test_catalog_routes.py` | ✅ |
 | NFR-002 | AC-N002.1, N002.2 | T-042, T-043, T-132, T-136 | `CatalogResultList.test.tsx`, `AddFoodDialog.test.tsx` | ✅ |
 
-- AC sin test: — (67 de 67 ACs tienen al menos un marcador `SDD: 023` en `HEAD`, comprobado contra `spec.md`; los 67 tests pasan en la suite completa).
+- AC sin test: — (67 de 67 ACs de `spec.md` tienen un marcador `SDD: 023` en los tests, y los 67 pasan en la suite completa).
 - REQ sin tarea: — (los 12 REQ y los 2 NFR aparecen en `tasks.md`).
 - Tareas sin marcar `[x]`: — (67 de 67 marcadas; todas referencian un REQ o NFR).
 - `skip`, `xfail`, `.only` o equivalentes nuevos en el diff: —
 
 ## 3. Criterios de aceptación manuales
-Los AC de contenido y de presentación que los tests no pueden juzgar se dejan para la revisión del usuario en el gate de `review`:
+Los AC que los tests no pueden juzgar se dejan para la revisión del usuario en el gate de `review`:
 
-- **REQ-001, reglas de contenido 1 a 3 de la sección 6 de la spec:** que cada alimento sea simple, que la versión cocida o cruda sea la correcta y que no haya preparaciones con aceite. Los tests solo comprueban formato, unicidad, límites, la lista mínima y las palabras prohibidas (Q9). Además, las filas `manual` (1 en el CSV, `yuca-cocida`) tienen su `reference` pero los valores no están verificados contra la fuente.
+- **REQ-001, reglas de contenido 1 a 3 de la sección 6 de la spec:** que cada alimento sea simple, que la versión cocida o cruda sea la correcta y que no haya preparaciones con aceite. Los tests solo comprueban formato, unicidad, límites, la lista mínima y las palabras prohibidas (Q9). Además, la fila `manual` (`yuca-cocida`) tiene su `reference`, pero sus valores no están verificados contra la fuente.
 - **Aspecto del diálogo «Añadir a {sección}» y del diario (AC-009.1, AC-009.3, AC-010.1, AC-N002.1, AC-N002.2):** los tests comprueban textos, roles y regiones, pero no el diseño ni la distribución en móvil.
 
 ## 4. Fallos (si los hay)
-| # | Qué falló | Salida relevante (recortada) | Responsable probable (test-author · implementer · entorno) |
-|---|---|---|---|
-| 1 | Ratchet de backend: 7 violaciones E501 nuevas en 5 archivos de test congelados (el implementer informó de 4; el ratchet cuenta 7) | `backend/tests/test_routes/test_meal_routes.py` L1215 (102 > 100); `backend/tests/test_scripts/test_load_food_catalog_script.py` L270 (103); `backend/tests/test_services/test_catalog_csv_reader.py` L171 (105), L290 (107), L388 (104); `backend/tests/test_services/test_catalog_load_service.py` L249 (101); `backend/tests/test_services/test_meal_rules.py` L313 (106). Lint-ratchet: «1058 violación(es) nueva(s) respecto a main. FAIL» | test-author (líneas de los tests congelados por el snapshot; el cambio de formato no altera el comportamiento, pero exige reabrir el snapshot con un registro explícito) |
-| 2 | Ratchet de backend: 1051 violaciones «nuevas» en el CSV del catálogo, que no es código Python (E501 +86, invalid-syntax +965). No es un defecto del CSV: el ratchet lo pasa a ruff porque entra en el ámbito `prod` (`backend/scripts/**`) | `NUEVO backend/scripts/data/food_catalog.csv  E501 +86`; `NUEVO backend/scripts/data/food_catalog.csv  invalid-syntax +965` | entorno (configuración del ratchet o de `scopes.backend.prod` en `.sdd/config.json`; no lo corrige ningún agente de esta etapa) |
-
-Aunque se excluyera el CSV (fallo 2), el fallo 1 mantendría el ratchet en FAIL. La decisión queda para el orquestador: corregir las siete líneas de test (requiere reabrir el snapshot) o, si el usuario lo acepta de forma explícita, dejarlas como violaciones previas.
-
-Otras comprobaciones en verde: suite backend 1808/1808, suite frontend 1048/1048, lint, typecheck y build del frontend, trazabilidad 67/67, snapshot de tests congelados sin cambios, y ningún `skip` nuevo.
+Ninguno. Las dos incidencias de la iteración 1 (7 E501 en tests congelados y el CSV contado como Python) están corregidas: el formato se corrigió en `e7792b5` y la configuración de `scopes.backend.prod` ya no incluye el CSV.
