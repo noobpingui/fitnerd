@@ -10,7 +10,7 @@
   "branch": "feat/023-generic-food-catalog",
   "base_branch": "main",
   "created_at": "2026-10-21T05:27:32.707Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -21,7 +21,10 @@
       "at": "2026-10-21T08:57:18.756Z",
       "note": "auto (gate_mode=flow): ajuste acotado del plan"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-21T08:58:02.752Z",
+      "note": "auto (gate_mode=flow): ajuste acotado de tareas"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -31,7 +34,7 @@
   },
   "commits": {
     "spec": "11311ba",
-    "plan": "4d9a95d",
+    "plan": "654ee92",
     "tasks": "4685b3e",
     "tests": "73274c3",
     "implement": "1f0ae95"
@@ -627,6 +630,30 @@
       "stage": "plan",
       "event": "approved",
       "note": "auto (gate_mode=flow): ajuste acotado del plan"
+    },
+    {
+      "at": "2026-10-21T08:57:18.993Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 654ee92"
+    },
+    {
+      "at": "2026-10-21T08:57:19.097Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Ajuste: T-049, T-138, 261 filas; tareas F16 y F17"
+    },
+    {
+      "at": "2026-10-21T08:58:02.643Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks ajustadas: T-049 y T-138 reabiertas, T-036, T-126, T-127 nuevas"
+    },
+    {
+      "at": "2026-10-21T08:58:02.752Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): ajuste acotado de tareas"
     }
   ]
 }

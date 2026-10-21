@@ -50,6 +50,7 @@ Backend:
 - [x] T-033 [REQ-006, REQ-007, REQ-008, AC-006.1, AC-006.2, AC-006.3, AC-006.4, AC-006.5, AC-006.6, AC-002.4, AC-007.1, AC-008.1, AC-008.2] (test) Rutas del diario con catálogo, carga real que quita o cambia el alimento y `catalog_id: null` en USDA y personalizados; adaptar mensaje y aserciones existentes — `backend/tests/test_routes/test_meal_routes.py`
 - [x] T-034 [REQ-008, AC-008.1] (test) Migración: el `downgrade` se niega con alimentos `catalog` en `meal_items` y, sin ellos, quita `catalog_id` y `catalog_foods` — `backend/tests/test_services/test_catalog_migration.py`
 - [x] T-035 [REQ-001, AC-001.4] (test) Actualizar `test_food_catalog_csv.py`: la lista mínima pasa a 39 alimentos sin «Yuca cocida» y el test se llama `test_the_minimum_list_has_39_foods` — `backend/tests/test_services/test_food_catalog_csv.py`
+- [ ] T-036 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (test) Aflojar `test_the_csv_has_fewer_than_265_foods` y `test_no_row_has_the_manual_source` para no fijar el estado actual del CSV (AC-001.1 admite 250–350 filas y el formato admite filas `manual`), y mover el marcador de los tests de marcas, contramuslo y limonada de AC-001.3 (palabras prohibidas) al AC de sinónimos que corresponda (F17) — `backend/tests/test_services/test_food_catalog_csv.py`
 
 Frontend:
 - [x] T-040 [REQ-009, REQ-010] (test) Fábricas `makeCatalogFood` y `makeCatalogItem`, y `catalog_id: null` en `makeMealItem` — `frontend/src/test/catalogFixtures.ts`, `frontend/src/test/diaryFixtures.ts`
@@ -61,7 +62,7 @@ Frontend:
 - [x] T-046 [REQ-010, AC-010.1, AC-010.2, AC-010.3] (test) Diario: fila del catálogo sin etiqueta, etiquetas de USDA y personalizado, editar a 200 g; mocks de `catalog/api` — `frontend/src/features/diary/pages/DiaryPage.test.tsx`
 - [x] T-047 [REQ-011, AC-011.1] (test) `/foods` termina en `/diary`, `router.tsx` no importa `FoodsPage` y con onboarding pendiente se ve el onboarding — `frontend/src/app/foodsRoute.test.tsx`, `frontend/src/app/diaryRoute.test.tsx`
 - [x] T-048 [REQ-011, AC-011.2] (test) Añadir el marcador de la navegación sin enlace a `/foods` — `frontend/src/components/layout/noFoodsLink.test.tsx`
-- [x] T-049 [REQ-012, AC-012.1, AC-012.3] (test) Términos de servicio: atribución, aviso, frase de comida local y fecha — `frontend/src/features/legal/pages/TermsOfServicePage.test.tsx`
+- [ ] T-049 [REQ-012, AC-012.1, AC-012.3] (test) Términos de servicio: atribución, aviso, fecha y que NO aparezca la frase de alimentos añadidos a mano (F13) — `frontend/src/features/legal/pages/TermsOfServicePage.test.tsx`
 - [x] T-050 [REQ-012, AC-012.2, AC-012.3] (test) Política de privacidad: Voyage solo con las preguntas al coach y fecha — `frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx`
 
 ## Fase B — Implementación (implementer)
@@ -83,9 +84,11 @@ CSV del catálogo (valores `usda` copiados de `public.foods` de la base de desar
 - [x] T-120 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (config) CSV parte 1: cabecera y granos, legumbres, tubérculos, panes y pastas, incluida la parte de la lista mínima que les corresponde (la yuca no entra: se quita la fila `yuca-cocida`). Corregir los hallazgos de `review.md` F2 (alimentos con dos versiones: zanahoria, frijoles blancos/navy), F3 (sinónimos con marca), F4 (sinónimos mal asignados), F5 (nombres no neutros) y F6 (nombres que no corresponden al alimento de USDA) en las filas de esta parte — `backend/scripts/data/food_catalog.csv`
 - [x] T-121 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (config) CSV parte 2: carnes, pescados, huevo, lácteos y la parte de la lista mínima que les corresponde. Corregir los hallazgos de `review.md` F2 a F6 (dos versiones, sinónimos con marca, sinónimos mal asignados, nombres no neutros, nombres que no corresponden al alimento de USDA) en las filas de esta parte — `backend/scripts/data/food_catalog.csv`
 - [x] T-122 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (config) CSV parte 3: frutas, verduras, frutos secos, grasas y la parte de la lista mínima que les corresponde. Corregir los hallazgos de `review.md` F2 (zanahoria, champiñones), F3, F4, F5 y F6 en las filas de esta parte — `backend/scripts/data/food_catalog.csv`
-- [x] T-123 [REQ-001, REQ-003, AC-001.1, AC-001.4] (config) CSV parte 4: completar hasta 250–350 filas (el CSV queda en 264), sinónimos regionales sin repeticiones y ninguna fila `manual` (el CSV no tiene filas `manual`; la yuca no entra en la lista mínima de 39). Verificar que los hallazgos F2 a F6 de `review.md` quedan corregidos en todo el archivo — `backend/scripts/data/food_catalog.csv`
+- [x] T-123 [REQ-001, REQ-003, AC-001.1, AC-001.4] (config) CSV parte 4: completar hasta 250–350 filas (el CSV queda en 261), sinónimos regionales sin repeticiones y ninguna fila `manual` (el CSV no tiene filas `manual`; la yuca no entra en la lista mínima de 39). Verificar que los hallazgos F2 a F6 de `review.md` quedan corregidos en todo el archivo — `backend/scripts/data/food_catalog.csv`
 - [x] T-124 [REQ-001, REQ-003, AC-003.5, AC-003.6] (config) Aplicar la migración y ejecutar la carga del CSV contra la base de desarrollo con `FLASK_ENV=development`; corregir el CSV hasta que no haya errores — `backend/scripts/data/food_catalog.csv`
-- [x] T-125 [REQ-001, REQ-002, AC-002.1, AC-002.3] (config) Recargar el CSV corregido (264 filas, sin `yuca-cocida`) en la base de desarrollo con `FLASK_ENV=development` y comprobar que la carga quita la fila de la yuca y no da errores — `backend/scripts/data/food_catalog.csv`
+- [x] T-125 [REQ-001, REQ-002, AC-002.1, AC-002.3] (config) Recargar el CSV corregido (261 filas, sin `yuca-cocida`) en la base de desarrollo con `FLASK_ENV=development` y comprobar que la carga quita la fila de la yuca y no da errores — `backend/scripts/data/food_catalog.csv`
+- [ ] T-126 [REQ-001, AC-001.2, AC-001.3] (config) Cambiar «Lechuga repollada» (línea 163 del CSV) por «Lechuga iceberg» con «lechuga repollada» como sinónimo, sin repetir términos (F16) — `backend/scripts/data/food_catalog.csv`
+- [ ] T-127 [REQ-001, REQ-002, AC-002.1, AC-002.3] (config) Recargar el CSV corregido (F16) en la base de desarrollo con `FLASK_ENV=development` y comprobar que la carga no da errores — `backend/scripts/data/food_catalog.csv`
 
 Frontend:
 - [x] T-130 [REQ-009, AC-009.2] (impl) `catalogSearchResponseSchema` real — `frontend/src/features/catalog/schemas.ts`
@@ -96,16 +99,16 @@ Frontend:
 - [x] T-135 [REQ-009, AC-009.1] (impl) Prop opcional `placeholder` en `FoodSearchForm` con el ejemplo anterior por defecto — `frontend/src/features/foods/components/FoodSearchForm.tsx`
 - [x] T-136 [REQ-009, NFR-002, AC-009.1, AC-009.2, AC-009.3, AC-009.4, AC-009.5, AC-009.6, AC-009.7, AC-N002.2] (impl) `AddFoodDialog` con catálogo, nueva descripción, ejemplo y payload `catalog_id` — `frontend/src/features/diary/components/AddFoodDialog.tsx`
 - [x] T-137 [REQ-011, AC-011.1, AC-011.2] (impl) `/foods` redirige a `/diary` con `Navigate replace` y se quita `FoodsPage` del router — `frontend/src/app/router.tsx`
-- [x] T-138 [REQ-012, AC-012.1, AC-012.3] (impl) Frase de comida local y fecha «21 de octubre de 2026» en Términos de servicio — `frontend/src/features/legal/pages/TermsOfServicePage.tsx`
+- [ ] T-138 [REQ-012, AC-012.1, AC-012.3] (impl) Quitar la frase de alimentos añadidos a mano de Términos de servicio (F13) y dejar la fecha «21 de octubre de 2026» — `frontend/src/features/legal/pages/TermsOfServicePage.tsx`
 - [x] T-139 [REQ-012, AC-012.2, AC-012.3] (impl) Voyage AI solo con las preguntas al coach y fecha en Política de privacidad — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |
 |---|---|---|---|
-| REQ-001 | AC-001.1 | T-028 | T-120, T-121, T-122, T-123 |
-| REQ-001 | AC-001.2 | T-028 | T-120, T-121, T-122, T-123 |
-| REQ-001 | AC-001.3 | T-025, T-028 | T-103, T-120, T-121, T-122 |
-| REQ-001 | AC-001.4 | T-028, T-035 | T-120, T-121, T-122, T-123, T-125 |
+| REQ-001 | AC-001.1 | T-028, T-036 | T-120, T-121, T-122, T-123 |
+| REQ-001 | AC-001.2 | T-028, T-036 | T-120, T-121, T-122, T-123, T-126 |
+| REQ-001 | AC-001.3 | T-025, T-028, T-036 | T-103, T-120, T-121, T-122, T-126 |
+| REQ-001 | AC-001.4 | T-028, T-035, T-036 | T-120, T-121, T-122, T-123, T-125 |
 | REQ-002 | AC-002.1 | T-026 | T-104, T-100 |
 | REQ-002 | AC-002.2 | T-026 | T-104 |
 | REQ-002 | AC-002.3 | T-026 | T-104 |
