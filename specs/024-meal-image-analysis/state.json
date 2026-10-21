@@ -9,7 +9,7 @@
   "branch": "feat/024-meal-image-analysis",
   "base_branch": "main",
   "created_at": "2026-10-21T19:01:11.612Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -20,7 +20,10 @@
       "at": "2026-10-21T21:26:50.117Z",
       "note": "auto (gate_mode=flow): F10 y F11 pedidos por el usuario"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-21T21:27:24.626Z",
+      "note": "auto (gate_mode=flow): 68 tareas, 4 nuevas para F10 y F11"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -30,7 +33,7 @@
   },
   "commits": {
     "spec": "e267a28",
-    "plan": "7668f7f",
+    "plan": "d19b24d",
     "tasks": "97108e5",
     "tests": "d2e5273",
     "implement": "cba4a18"
@@ -698,6 +701,30 @@
       "stage": "plan",
       "event": "approved",
       "note": "auto (gate_mode=flow): F10 y F11 pedidos por el usuario"
+    },
+    {
+      "at": "2026-10-21T21:26:50.438Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: d19b24d"
+    },
+    {
+      "at": "2026-10-21T21:26:50.635Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Tareas de F10 y F11"
+    },
+    {
+      "at": "2026-10-21T21:27:24.504Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "68 tareas (T-076 a T-079 nuevas)"
+    },
+    {
+      "at": "2026-10-21T21:27:24.626Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 68 tareas, 4 nuevas para F10 y F11"
     }
   ]
 }

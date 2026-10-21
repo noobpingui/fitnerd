@@ -106,6 +106,21 @@ cubren sus mismos AC.
 - [x] T-074 [REQ-009, AC-009.2] (impl) F6: `recognize_foods` comprueba `isinstance(tool_input, dict)` antes de leer `foods` y lanza `VisionProviderError("unexpected vision response")` si no lo es — `backend/utils/vision_client.py`
 - [x] T-075 [REQ-003, AC-003.4] (impl) F5: comentario en español sobre `PayloadTooLargeError`, sin tocar los comentarios previos del archivo — `backend/exceptions/custom_exceptions.py`
 
+### Fase A — Tests de la iteración 3 de la review (F10, F11, test-author)
+Reabren la etapa de tests (plan sección 11); al terminar hay que regenerar el snapshot (`photo_samples.py` y
+`test_meal_photo.py`). Ningún test existente se borra ni se debilita; sin scaffold (los símbolos ya existen). T-076 y
+T-077 son caracterización (verdes antes y después: la lista blanca de `_strip_png` ya descarta `iCCP`); T-078 es rojo
+legítimo hasta T-079.
+
+- [ ] T-076 [REQ-010, AC-010.1] (test) F10: añadir el parámetro `icc_profile: bytes | None = None` al final de `png_bytes` (se pasa a `image.save(..., icc_profile=...)` solo si no es `None`; los llamadores actuales no cambian) — `backend/tests/photo_samples.py`
+- [ ] T-077 [REQ-010, AC-010.1] (test) F10: `test_png_icc_profile_is_stripped` (`png_bytes(70, 50, icc_profile=b"fitnerd-icc-device-model")` contiene `iCCP`; tras `strip_photo_metadata(..., "png")` ya no, `info` sin `icc_profile`, `load()` funciona y el tamaño es `(70, 50)`); test aparte porque el perfil PNG va comprimido con zlib — `backend/tests/test_services/test_meal_photo.py`
+- [ ] T-078 [REQ-003, AC-003.3, AC-003.6] (test) F11: `test_truncated_photo_with_a_side_over_8000_pixels_is_unreadable` parametrizado `png` (`png_bytes(8001, 100, mode="1")[:-12]`) y `jpeg` (`jpeg_bytes(8001, 100)[:-2]`): `prepare_photo` lanza `ValidationError` con `UNREADABLE_PHOTO_MESSAGE`, no `PHOTO_TOO_WIDE_MESSAGE`; rojo hasta T-079 — `backend/tests/test_services/test_meal_photo.py`
+
+### Fase B — Implementación de la iteración 3 de la review (F11, implementer)
+Sin migraciones ni `backend/Dockerfile`. Se cumple cuando pasa T-078 y siguen verdes los tests de dimensiones existentes.
+
+- [ ] T-079 [REQ-003, AC-003.3, AC-003.6] (impl) F11: en `prepare_photo`, mover la comprobación `width > MAX_PHOTO_SIDE or height > MAX_PHOTO_SIDE` (`PHOTO_TOO_WIDE_MESSAGE`) a justo después del bloque `try … finally: image.close()` de integridad y quitado de metadatos, antes del `return`; sin cambiar mensajes ni `_check_integrity` — `backend/services/meal_photo.py`
+
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |
 |---|---|---|---|
@@ -120,10 +135,10 @@ cubren sus mismos AC.
 | REQ-002 | AC-002.4 | T-026, T-067 | T-057 |
 | REQ-003 | AC-003.1 | T-017, T-027 | T-043, T-046 |
 | REQ-003 | AC-003.2 | T-017, T-027 | T-043 |
-| REQ-003 | AC-003.3 | T-017, T-027, T-062 | T-046, T-070, T-071 |
+| REQ-003 | AC-003.3 | T-017, T-027, T-062, T-078 | T-046, T-070, T-071, T-079 |
 | REQ-003 | AC-003.4 | T-018, T-027 | T-042, T-046, T-075 |
 | REQ-003 | AC-003.5 | T-027, T-067 | T-042, T-057 |
-| REQ-003 | AC-003.6 | T-018, T-027, T-060, T-061 | T-046, T-070 |
+| REQ-003 | AC-003.6 | T-018, T-027, T-060, T-061, T-078 | T-046, T-070, T-079 |
 | REQ-004 | AC-004.1 | T-028 | T-057 |
 | REQ-005 | AC-005.1 | T-022, T-028 | T-055 |
 | REQ-005 | AC-005.2 | T-022, T-028 | T-055 |
@@ -141,7 +156,7 @@ cubren sus mismos AC.
 | REQ-009 | AC-009.2 | T-020, T-029, T-066 | T-051, T-074 |
 | REQ-009 | AC-009.3 | T-023, T-029 | T-055 |
 | REQ-009 | AC-009.4 | T-020, T-029, T-064, T-065 | T-040, T-050, T-054, T-073 |
-| REQ-010 | AC-010.1 | T-019, T-030, T-060, T-063 | T-044, T-072 |
+| REQ-010 | AC-010.1 | T-019, T-030, T-060, T-063, T-076, T-077 | T-044, T-072 |
 | REQ-010 | AC-010.2 | T-019, T-030 | T-045 |
 | NFR-001 | AC-N001.1 | T-030, T-068 | T-053 |
 | NFR-001 | AC-N001.2 | T-021, T-023 | T-052, T-055 |
