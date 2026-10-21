@@ -180,7 +180,7 @@ Feature: [specs/020-metrics-followups-prod-config/](../specs/020-metrics-followu
 - [ ] Los 31 tests de caracterización de la excepción al Art. B5.2 (REQ-004 y REQ-007, entre otros) pasaron sin implementación por decisión del usuario; no hay nada que hacer salvo tenerlo en cuenta.
 - [ ] Definir si las ADR pasan a «Aceptada» en una rama `chore/…` o en una etapa del flujo (ya anotado en la 019).
 
-## Plan: registro de comidas con foto y datos de USDA (specs 021–024, numeración tentativa) (2026-10-19)
+## Plan: registro de comidas con foto y datos de USDA (specs 021–025, numeración tentativa; renumerada el 2026-10-21 al insertar la 023) (2026-10-19)
 
 Objetivo: que registrar macros sea simple. El usuario sube una foto, un modelo de visión (Amazon Bedrock) identifica los alimentos y estima las porciones, y los macros salen de los datos de USDA FoodData Central (el modelo no inventa números). El usuario confirma, corrige gramos, quita o añade alimentos y guarda la comida.
 
@@ -199,33 +199,37 @@ Objetivo: que registrar macros sea simple. El usuario sube una foto, un modelo d
 - Modelo de comida y de alimentos de la comida (alimento de USDA o personalizado, gramos, macros calculados **y guardados** para que el historial no cambie si se reimporta USDA). CRUD de comidas.
 - Frontend completo: añadir alimento buscando, editar gramos, quitar, totales del día frente al objetivo de Macros. Alimento personalizado con macros a mano para lo que USDA no tiene (por ejemplo, gallo pinto).
 - Reutilizar `backend/utils/clock.py` para el «día». Lleva migración.
-- Deja un producto útil sin IA y construye la edición que reutilizará la 024.
+- Deja un producto útil sin IA y construye la edición que reutilizará la 025.
 
-**023 · Análisis de imagen con Bedrock**
+**023 · Catálogo genérico de alimentos en español** (añadida el 2026-10-21)
+- Tabla propia de unos 300 alimentos simples (un solo ingrediente, cocidos salvo lo que se come crudo), con nombres en español y macros de USDA por 100 g, que sustituye a USDA en la búsqueda del diario. Carga desde un CSV revisado por el usuario. Lleva migración.
+- Sirve de lista cerrada para el análisis de imagen (024).
+
+**024 · Análisis de imagen con Bedrock**
 - `POST /api/meals/analyze` recibe una imagen y devuelve alimentos propuestos con el mismo formato que el diario: nombre, consulta canónica en inglés, gramos estimados, confianza, coincidencia de USDA y macros, o `sin_coincidencia` si no hay una buena.
 - Validación de tipo y tamaño, rate limit en Redis (como el coach), trazas en Langfuse.
 - ADR nuevo: modelo de Bedrock con visión y región (verificar en la consola), rol IAM de la instancia EC2, coste por imagen, umbral de coincidencia.
 - Riesgo principal: la estimación de gramos desde una foto es poco precisa. Medirla con fotos reales antes de darla por buena.
 
-**024 · Subir foto y confirmar**
-- Subir o tomar una foto (cámara directa en móvil) con redimensionado en el cliente; estados de carga y error; pantalla de confirmación con gramos editables, confianza visible, quitar, añadir un alimento que falte (reutiliza la búsqueda de la 022) y guardar. Alimentos sin coincidencia marcados.
+**025 · Subir foto y confirmar**
+- Subir o tomar una foto (cámara directa en móvil) con redimensionado en el cliente; estados de carga y error; pantalla de confirmación con gramos editables, confianza visible, quitar, añadir un alimento que falte (reutiliza la búsqueda del catálogo de la 023) y guardar. Alimentos sin coincidencia marcados.
 - Si el análisis falla o devuelve una lista vacía, volver al registro manual.
 
-**Dependencias:** 021 → 022 → 024, y 021 → 023 → 024. El contrato de salida de la 023 debe coincidir con los alimentos de la 022.
+**Dependencias:** 021 → 022 → 023 → 025, y 023 → 024 → 025. El contrato de salida de la 024 debe coincidir con los alimentos del catálogo de la 023.
 
 **Fuera de alcance:** Branded Foods y la API de USDA, guardar fotos, edición avanzada de comidas pasadas, estadísticas semanales, varios platos en una foto, etiquetas nutricionales.
 
 **Riesgos abiertos**
 - [ ] Calidad de la búsqueda con las descripciones de USDA (021).
-- [ ] Cobertura de comida local, que USDA no tiene (022, 023).
-- [ ] Disponibilidad y coste del modelo de visión en Bedrock (023).
+- [ ] Cobertura de comida local, que USDA no tiene (022, 023, 024).
+- [ ] Disponibilidad y coste del modelo de visión en Bedrock (024).
 - [ ] Límite de 500 MB de Supabase con los datos importados (021).
 
 ## 021-usda-food-database · Base de alimentos de USDA en Postgres con búsqueda híbrida (2026-10-20)
 
 Feature: [specs/021-usda-food-database/](../specs/021-usda-food-database/)
 
-- [ ] Decidir FNDDS en la 023 con el tamaño real medido tras esta importación.
+- [ ] Decidir FNDDS en la 024 con el tamaño real medido tras esta importación.
 - [ ] Dónde enlazar «Alimentos» en la navegación y añadir la atribución a la página legal (022).
 - [ ] Un parámetro para elegir el número de resultados, si la 022 lo necesita.
 - [ ] Calibrar `DEFAULT_MAX_DISTANCE`, y quizá pasar a lógica OR en el texto, según el resultado de la validación manual de las 20 consultas.
@@ -256,7 +260,7 @@ Feature: [specs/022-meal-diary/](../specs/022-meal-diary/)
 - [ ] Medidas caseras y onzas, y el diario en kJ.
 - [ ] Sacar a un componente compartido el bloque de estado de la búsqueda («Busca un alimento…», «Buscando…», sin resultados, error con «Reintentar»), que ahora se repite en FoodsPage y AddFoodDialog.
 - [ ] Valorar ON DELETE CASCADE de users hacia meals (y body_metrics) cuando exista el borrado de cuentas.
-- [ ] El diálogo de añadir guarda un alimento por petición aunque la API acepta varios; añadir varios de una vez puede llegar con la 024.
+- [ ] El diálogo de añadir guarda un alimento por petición aunque la API acepta varios; añadir varios de una vez puede llegar con la 025.
 - [ ] Test de la migración b3d5f7a9c1e4 contra una base real (ahora solo hay revisión manual).
 - [ ] Botón para borrar una comida entera desde la pantalla: la API ya tiene DELETE /api/meals/{id} y la pantalla no lo usa.
 - [ ] Posible duplicación entre los helpers de `AddFoodDialog.test.tsx` y `DiaryPage.test.tsx`. Se podrían compartir en `src/test/` si crece.
