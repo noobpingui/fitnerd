@@ -19,3 +19,9 @@
 - [ ] Decidir si se retiran la pantalla `FoodsPage` y su código cuando `/foods` ya redirija.
 - [ ] Decidir si se retira `GET /api/foods/search` cuando ninguna pantalla lo use.
 - [ ] Retirar los datos de USDA y sus menciones (Términos y demás) cuando el catálogo propio los sustituya (nota del usuario).
+
+## plan · planner
+- [ ] Pasar la coincidencia de la búsqueda a Postgres si el catálogo crece mucho más allá de 350 alimentos.
+- [ ] Retirar `FoodsPage`, `FoodResultList` y `useFoodSearch` cuando se confirme que no se usan (ya sin ruta).
+- [ ] Revisar en la review las filas `manual` del CSV y sus referencias.
+- [ ] Anotar en el runbook que, entre el CD y la carga del catálogo, la búsqueda del diario está vacía.
