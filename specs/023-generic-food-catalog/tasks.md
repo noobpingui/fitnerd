@@ -65,37 +65,37 @@ Frontend:
 
 ## Fase B — Implementación (implementer)
 Backend, de datos a interfaz:
-- [ ] T-100 [REQ-002, REQ-006, REQ-007, REQ-008] (migration) Migración `d4f6a8c0e2b5` (`down_revision = "b3d5f7a9c1e4"`): `catalog_foods` con sus `CHECK`, `meal_items.catalog_id`, las dos `CHECK` nuevas escritas a mano y `downgrade` que se niega con alimentos `catalog` — `backend/migrations/versions/d4f6a8c0e2b5_create_catalog_foods_and_catalog_meal_items.py`
-- [ ] T-101 [REQ-004, REQ-001, AC-004.3, AC-004.6, AC-004.12, AC-004.13, AC-004.14, AC-004.15] (impl) Funciones de `catalog_rules` — `backend/services/catalog_rules.py`
-- [ ] T-102 [REQ-002, REQ-004, REQ-006] (impl) `CatalogFoodRepository.list_all` y `get_by_ids` — `backend/repositories/catalog_food_repository.py`
-- [ ] T-103 [REQ-001, REQ-003, AC-001.3, AC-003.1, AC-003.2, AC-003.3, AC-003.4, AC-003.7, AC-003.8] (impl) `read_catalog_csv` con los mensajes del plan — `backend/services/catalog_csv_reader.py`
-- [ ] T-104 [REQ-002, REQ-003, REQ-007, AC-002.1, AC-002.2, AC-002.3, AC-003.5, AC-003.6] (impl) `CatalogLoadService.run` y `format_catalog_summary` — `backend/services/catalog_load_service.py`
-- [ ] T-105 [REQ-004, REQ-005, NFR-001, AC-004.1, AC-004.2, AC-004.4, AC-004.5, AC-004.7, AC-004.8, AC-004.9, AC-004.11, AC-004.16, AC-005.1, AC-005.2, AC-005.3, AC-N001.1] (impl) `query_forms`, `match_group`, `rank_catalog` y `CatalogSearchService.search` — `backend/services/catalog_search_service.py`
-- [ ] T-106 [REQ-004, REQ-005, NFR-001, AC-004.10, AC-005.4, AC-N001.2] (impl) `catalog_bp`, `catalog_food_to_json`, `_build_catalog_search_service`, y registro del blueprint — `backend/routes/catalog_routes.py`, `backend/routes/__init__.py`
-- [ ] T-107 [REQ-006, AC-006.4, AC-006.5] (impl) `ITEM_SOURCE_MESSAGE` nuevo y `parse_items` con `catalog_id` — `backend/services/meal_rules.py`
-- [ ] T-108 [REQ-006, REQ-007, AC-006.1, AC-006.2, AC-006.3, AC-006.6, AC-007.2] (impl) `MealService.add_items` con `_load_catalog_foods` y `catalog_id` en los alimentos nuevos — `backend/services/meal_service.py`
-- [ ] T-109 [REQ-006, REQ-008, AC-002.4, AC-007.1, AC-008.1, AC-008.2] (impl) `catalog_id` en `_serialize_item` y `catalog_repository` en `_build_meal_service` — `backend/routes/meal_routes.py`
-- [ ] T-110 [REQ-002, AC-002.5, AC-002.6] (impl) `is_local_host`, `confirm_remote_write` y que `import_usda_foods` los use como alias, con el mismo comportamiento — `backend/scripts/database_target.py`, `backend/scripts/import_usda_foods.py`
-- [ ] T-111 [REQ-002, AC-002.5, AC-002.6] (impl) Script `load_food_catalog.main` (argumentos, entorno y base sin contraseña, confirmación, resumen y códigos de salida) — `backend/scripts/load_food_catalog.py`
+- [x] T-100 [REQ-002, REQ-006, REQ-007, REQ-008] (migration) Migración `d4f6a8c0e2b5` (`down_revision = "b3d5f7a9c1e4"`): `catalog_foods` con sus `CHECK`, `meal_items.catalog_id`, las dos `CHECK` nuevas escritas a mano y `downgrade` que se niega con alimentos `catalog` — `backend/migrations/versions/d4f6a8c0e2b5_create_catalog_foods_and_catalog_meal_items.py`
+- [x] T-101 [REQ-004, REQ-001, AC-004.3, AC-004.6, AC-004.12, AC-004.13, AC-004.14, AC-004.15] (impl) Funciones de `catalog_rules` — `backend/services/catalog_rules.py`
+- [x] T-102 [REQ-002, REQ-004, REQ-006] (impl) `CatalogFoodRepository.list_all` y `get_by_ids` — `backend/repositories/catalog_food_repository.py`
+- [x] T-103 [REQ-001, REQ-003, AC-001.3, AC-003.1, AC-003.2, AC-003.3, AC-003.4, AC-003.7, AC-003.8] (impl) `read_catalog_csv` con los mensajes del plan — `backend/services/catalog_csv_reader.py`
+- [x] T-104 [REQ-002, REQ-003, REQ-007, AC-002.1, AC-002.2, AC-002.3, AC-003.5, AC-003.6] (impl) `CatalogLoadService.run` y `format_catalog_summary` — `backend/services/catalog_load_service.py`
+- [x] T-105 [REQ-004, REQ-005, NFR-001, AC-004.1, AC-004.2, AC-004.4, AC-004.5, AC-004.7, AC-004.8, AC-004.9, AC-004.11, AC-004.16, AC-005.1, AC-005.2, AC-005.3, AC-N001.1] (impl) `query_forms`, `match_group`, `rank_catalog` y `CatalogSearchService.search` — `backend/services/catalog_search_service.py`
+- [x] T-106 [REQ-004, REQ-005, NFR-001, AC-004.10, AC-005.4, AC-N001.2] (impl) `catalog_bp`, `catalog_food_to_json`, `_build_catalog_search_service`, y registro del blueprint — `backend/routes/catalog_routes.py`, `backend/routes/__init__.py`
+- [x] T-107 [REQ-006, AC-006.4, AC-006.5] (impl) `ITEM_SOURCE_MESSAGE` nuevo y `parse_items` con `catalog_id` — `backend/services/meal_rules.py`
+- [x] T-108 [REQ-006, REQ-007, AC-006.1, AC-006.2, AC-006.3, AC-006.6, AC-007.2] (impl) `MealService.add_items` con `_load_catalog_foods` y `catalog_id` en los alimentos nuevos — `backend/services/meal_service.py`
+- [x] T-109 [REQ-006, REQ-008, AC-002.4, AC-007.1, AC-008.1, AC-008.2] (impl) `catalog_id` en `_serialize_item` y `catalog_repository` en `_build_meal_service` — `backend/routes/meal_routes.py`
+- [x] T-110 [REQ-002, AC-002.5, AC-002.6] (impl) `is_local_host`, `confirm_remote_write` y que `import_usda_foods` los use como alias, con el mismo comportamiento — `backend/scripts/database_target.py`, `backend/scripts/import_usda_foods.py`
+- [x] T-111 [REQ-002, AC-002.5, AC-002.6] (impl) Script `load_food_catalog.main` (argumentos, entorno y base sin contraseña, confirmación, resumen y códigos de salida) — `backend/scripts/load_food_catalog.py`
 
 CSV del catálogo (valores `usda` copiados de `public.foods` de la base de desarrollo con `repr(float)`; filas `manual` solo con referencia verificable y sin inventar valores):
-- [ ] T-120 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (config) CSV parte 1: cabecera y granos, legumbres, tubérculos, panes y pastas, incluida la parte de la lista mínima que les corresponde — `backend/scripts/data/food_catalog.csv`
-- [ ] T-121 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (config) CSV parte 2: carnes, pescados, huevo, lácteos y la parte de la lista mínima que les corresponde — `backend/scripts/data/food_catalog.csv`
-- [ ] T-122 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (config) CSV parte 3: frutas, verduras, frutos secos, grasas y la parte de la lista mínima que les corresponde — `backend/scripts/data/food_catalog.csv`
-- [ ] T-123 [REQ-001, REQ-003, AC-001.1, AC-001.4] (config) CSV parte 4: completar hasta 250–350 filas, sinónimos regionales sin repeticiones y filas `manual` con su `reference`; listarlas en el informe para el gate de review — `backend/scripts/data/food_catalog.csv`
-- [ ] T-124 [REQ-001, REQ-003, AC-003.5, AC-003.6] (config) Aplicar la migración y ejecutar la carga del CSV contra la base de desarrollo con `FLASK_ENV=development`; corregir el CSV hasta que no haya errores — `backend/scripts/data/food_catalog.csv`
+- [x] T-120 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (config) CSV parte 1: cabecera y granos, legumbres, tubérculos, panes y pastas, incluida la parte de la lista mínima que les corresponde — `backend/scripts/data/food_catalog.csv`
+- [x] T-121 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (config) CSV parte 2: carnes, pescados, huevo, lácteos y la parte de la lista mínima que les corresponde — `backend/scripts/data/food_catalog.csv`
+- [x] T-122 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (config) CSV parte 3: frutas, verduras, frutos secos, grasas y la parte de la lista mínima que les corresponde — `backend/scripts/data/food_catalog.csv`
+- [x] T-123 [REQ-001, REQ-003, AC-001.1, AC-001.4] (config) CSV parte 4: completar hasta 250–350 filas, sinónimos regionales sin repeticiones y filas `manual` con su `reference`; listarlas en el informe para el gate de review — `backend/scripts/data/food_catalog.csv`
+- [x] T-124 [REQ-001, REQ-003, AC-003.5, AC-003.6] (config) Aplicar la migración y ejecutar la carga del CSV contra la base de desarrollo con `FLASK_ENV=development`; corregir el CSV hasta que no haya errores — `backend/scripts/data/food_catalog.csv`
 
 Frontend:
-- [ ] T-130 [REQ-009, AC-009.2] (impl) `catalogSearchResponseSchema` real — `frontend/src/features/catalog/schemas.ts`
-- [ ] T-131 [REQ-009, AC-009.2, AC-009.6] (impl) `searchCatalog` con `apiFetch` y `useCatalogSearch` sin reintentos — `frontend/src/features/catalog/api.ts`, `frontend/src/features/catalog/hooks.ts`
-- [ ] T-132 [REQ-009, NFR-002, AC-009.2, AC-N002.1] (impl) `CatalogResultList` — `frontend/src/features/catalog/components/CatalogResultList.tsx`
-- [ ] T-133 [REQ-008, REQ-010, AC-008.1] (impl) `catalog_id` y `"catalog"` en `mealResponseSchema` y el payload `CatalogItemPayload` en `AddMealItemsPayload` — `frontend/src/features/diary/schemas.ts`, `frontend/src/features/diary/types.ts`
-- [ ] T-134 [REQ-010, AC-010.1, AC-010.2] (impl) `sourceLabel` devuelve `null` en `catalog` y `MealItemRow` solo pinta la etiqueta si existe — `frontend/src/features/diary/format.ts`, `frontend/src/features/diary/components/MealItemRow.tsx`
-- [ ] T-135 [REQ-009, AC-009.1] (impl) Prop opcional `placeholder` en `FoodSearchForm` con el ejemplo anterior por defecto — `frontend/src/features/foods/components/FoodSearchForm.tsx`
-- [ ] T-136 [REQ-009, NFR-002, AC-009.1, AC-009.2, AC-009.3, AC-009.4, AC-009.5, AC-009.6, AC-009.7, AC-N002.2] (impl) `AddFoodDialog` con catálogo, nueva descripción, ejemplo y payload `catalog_id` — `frontend/src/features/diary/components/AddFoodDialog.tsx`
-- [ ] T-137 [REQ-011, AC-011.1, AC-011.2] (impl) `/foods` redirige a `/diary` con `Navigate replace` y se quita `FoodsPage` del router — `frontend/src/app/router.tsx`
-- [ ] T-138 [REQ-012, AC-012.1, AC-012.3] (impl) Frase de comida local y fecha «21 de octubre de 2026» en Términos de servicio — `frontend/src/features/legal/pages/TermsOfServicePage.tsx`
-- [ ] T-139 [REQ-012, AC-012.2, AC-012.3] (impl) Voyage AI solo con las preguntas al coach y fecha en Política de privacidad — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
+- [x] T-130 [REQ-009, AC-009.2] (impl) `catalogSearchResponseSchema` real — `frontend/src/features/catalog/schemas.ts`
+- [x] T-131 [REQ-009, AC-009.2, AC-009.6] (impl) `searchCatalog` con `apiFetch` y `useCatalogSearch` sin reintentos — `frontend/src/features/catalog/api.ts`, `frontend/src/features/catalog/hooks.ts`
+- [x] T-132 [REQ-009, NFR-002, AC-009.2, AC-N002.1] (impl) `CatalogResultList` — `frontend/src/features/catalog/components/CatalogResultList.tsx`
+- [x] T-133 [REQ-008, REQ-010, AC-008.1] (impl) `catalog_id` y `"catalog"` en `mealResponseSchema` y el payload `CatalogItemPayload` en `AddMealItemsPayload` — `frontend/src/features/diary/schemas.ts`, `frontend/src/features/diary/types.ts`
+- [x] T-134 [REQ-010, AC-010.1, AC-010.2] (impl) `sourceLabel` devuelve `null` en `catalog` y `MealItemRow` solo pinta la etiqueta si existe — `frontend/src/features/diary/format.ts`, `frontend/src/features/diary/components/MealItemRow.tsx`
+- [x] T-135 [REQ-009, AC-009.1] (impl) Prop opcional `placeholder` en `FoodSearchForm` con el ejemplo anterior por defecto — `frontend/src/features/foods/components/FoodSearchForm.tsx`
+- [x] T-136 [REQ-009, NFR-002, AC-009.1, AC-009.2, AC-009.3, AC-009.4, AC-009.5, AC-009.6, AC-009.7, AC-N002.2] (impl) `AddFoodDialog` con catálogo, nueva descripción, ejemplo y payload `catalog_id` — `frontend/src/features/diary/components/AddFoodDialog.tsx`
+- [x] T-137 [REQ-011, AC-011.1, AC-011.2] (impl) `/foods` redirige a `/diary` con `Navigate replace` y se quita `FoodsPage` del router — `frontend/src/app/router.tsx`
+- [x] T-138 [REQ-012, AC-012.1, AC-012.3] (impl) Frase de comida local y fecha «21 de octubre de 2026» en Términos de servicio — `frontend/src/features/legal/pages/TermsOfServicePage.tsx`
+- [x] T-139 [REQ-012, AC-012.2, AC-012.3] (impl) Voyage AI solo con las preguntas al coach y fecha en Política de privacidad — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

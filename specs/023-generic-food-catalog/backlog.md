@@ -52,3 +52,10 @@
 - [ ] Revisar el marcador de test_post_validation_message_and_nothing_saved: mezcla casos de la 022 con casos de la 023 bajo el mismo marcador.
 - [ ] Los 6 errores de setup de test_food_catalog_csv.py dejarán de ser errores cuando read_catalog_csv exista; en verify, comprobar que pasan a verde con el CSV real.
 - [ ] Algunos tests de comportamiento 023 sin marcador en la línea inmediata (marcador encima de decoradores) no aparecen en la trazabilidad automática; la cobertura por AC sí está completa.
+
+## implement · implementer
+- [ ] Q3: el ratchet de lint (`lint_ratchet` en `.sdd/config.json`) ejecuta ruff sobre cada archivo cambiado bajo los globs de producción del backend, incluido `backend/scripts/data/food_catalog.csv`. Informa de unas 1000 violaciones de sintaxis y E501, así que el ratchet sale con 1 solo por el CSV. Es una limitación del harness. Opciones: excluir los archivos de datos del ratchet, o mover el CSV fuera de los globs de producción.
+- [ ] 4 violaciones E501 en archivos de test congelados (test_catalog_csv_reader.py, test_catalog_load_service.py, test_meal_rules.py y otro) vienen del test-author; el implementer no las tocó.
+- [ ] Los sinónimos «dolfín» y «lampuga» de mahimahi, y algunos sinónimos regionales («zapote» para mamey, «tuna», «anona»), son suposiciones a partir del uso en Costa Rica y México. El reviewer debe revisarlos.
+- [ ] Retirar las búsquedas por `fdc_id` de USDA de `/api/meals` y retirar `public.foods` cuando el catálogo sea estable (Q2 de la spec), más una biblioteca «mis alimentos» y recientes.
+- [ ] Nota de migración para el doc-keeper: aplicar `d4f6a8c0e2b5` antes del merge y ejecutar `python -m scripts.load_food_catalog` de forma interactiva después del CD.

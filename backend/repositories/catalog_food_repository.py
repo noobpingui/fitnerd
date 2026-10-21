@@ -1,3 +1,5 @@
+from sqlalchemy import select
+
 from models import CatalogFood
 from repositories.base_repository import BaseRepository
 
@@ -8,7 +10,11 @@ class CatalogFoodRepository(BaseRepository):
         super().__init__(session, CatalogFood)
 
     def list_all(self) -> list[CatalogFood]:
-        raise NotImplementedError("not implemented")
+        stmt = select(CatalogFood).order_by(CatalogFood.id)
+        return list(self.session.scalars(stmt).all())
 
-    def get_by_ids(self, _ids: list[str]) -> list[CatalogFood]:
-        raise NotImplementedError("not implemented")
+    def get_by_ids(self, ids: list[str]) -> list[CatalogFood]:
+        if not ids:
+            return []
+        stmt = select(CatalogFood).where(CatalogFood.id.in_(ids))
+        return list(self.session.scalars(stmt).all())

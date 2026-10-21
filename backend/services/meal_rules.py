@@ -6,6 +6,7 @@ from decimal import ROUND_HALF_UP, Decimal
 from exceptions.custom_exceptions import ValidationError
 from models.meal import MEAL_TYPES
 from services.auth_input_rules import INVALID_REQUEST_MESSAGE  # noqa: F401
+from services.catalog_rules import is_catalog_id
 from services.number_validation import is_int, is_number
 
 INVALID_DATE_MESSAGE = "La fecha no es válida."
@@ -13,7 +14,7 @@ DATE_OUT_OF_WINDOW_MESSAGE = "Solo puedes registrar comidas de hoy."
 INVALID_MEAL_TYPE_MESSAGE = "El tipo de comida no es válido."
 ITEMS_REQUIRED_MESSAGE = "Añade al menos un alimento."
 TOO_MANY_ITEMS_MESSAGE = "Una comida no puede tener más de 50 alimentos."
-ITEM_SOURCE_MESSAGE = "Cada alimento debe ser de USDA o personalizado."
+ITEM_SOURCE_MESSAGE = "Cada alimento debe ser del catálogo, de USDA o personalizado."
 GRAMS_RANGE_MESSAGE = "Los gramos deben estar entre 1 y 2000."
 GRAMS_DECIMALS_MESSAGE = "Los gramos admiten como mucho un decimal."
 FOOD_NOT_FOUND_MESSAGE = "No encontramos ese alimento."
@@ -128,21 +129,29 @@ def _parse_custom_item(item: dict, grams: Decimal) -> CustomItemInput:
     )
 
 
-def parse_items(value: object) -> list[UsdaItemInput | CustomItemInput]:
+def _parse_catalog_item(item: dict, grams: Decimal) -> CatalogItemInput:
+    catalog_id = item.get("catalog_id")
+    if not is_catalog_id(catalog_id):
+        raise ValidationError(FOOD_NOT_FOUND_MESSAGE)
+    return CatalogItemInput(catalog_id=catalog_id, grams=grams)
+
+
+def parse_items(value: object) -> list[CatalogItemInput | UsdaItemInput | CustomItemInput]:
     if not isinstance(value, list) or not value:
         raise ValidationError(ITEMS_REQUIRED_MESSAGE)
     if len(value) > MAX_ITEMS_PER_MEAL:
         raise ValidationError(TOO_MANY_ITEMS_MESSAGE)
-    parsed: list[UsdaItemInput | CustomItemInput] = []
+    parsed: list[CatalogItemInput | UsdaItemInput | CustomItemInput] = []
     for item in value:
         if not isinstance(item, dict):
             raise ValidationError(ITEM_SOURCE_MESSAGE)
-        has_fdc_id = item.get("fdc_id") is not None
-        has_name = item.get("name") is not None
-        if has_fdc_id == has_name:
+        present = [key for key in ("catalog_id", "fdc_id", "name") if item.get(key) is not None]
+        if len(present) != 1:
             raise ValidationError(ITEM_SOURCE_MESSAGE)
         grams = validate_grams(item.get("grams"))
-        if has_fdc_id:
+        if present[0] == "catalog_id":
+            parsed.append(_parse_catalog_item(item, grams))
+        elif present[0] == "fdc_id":
             parsed.append(_parse_usda_item(item, grams))
         else:
             parsed.append(_parse_custom_item(item, grams))

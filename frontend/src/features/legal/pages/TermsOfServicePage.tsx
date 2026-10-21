@@ -2,7 +2,7 @@ import { LegalPageLayout } from "@/features/legal/components/LegalPageLayout"
 
 export function TermsOfServicePage() {
   return (
-    <LegalPageLayout title="Términos de servicio" updatedAt="20 de octubre de 2026">
+    <LegalPageLayout title="Términos de servicio" updatedAt="21 de octubre de 2026">
       <p>
         fitnerd es un proyecto personal, ofrecido de forma
         gratuita y "tal cual" (as-is), sin garantías formales. Al usar la
@@ -30,6 +30,8 @@ export function TermsOfServicePage() {
           Datos: U.S. Department of Agriculture, Agricultural Research
           Service. FoodData Central. Los valores nutricionales son
           aproximados y pueden variar según el alimento y su preparación.
+          Algunos alimentos de comida local se añadieron a mano a partir de
+          otras tablas de composición de alimentos.
         </p>
       </section>
 

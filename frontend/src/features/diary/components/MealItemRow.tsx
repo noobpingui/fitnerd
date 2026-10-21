@@ -14,12 +14,13 @@ export function MealItemRow({
   onRemove: () => void
   isRemoving: boolean
 }): ReactElement {
+  const origin = sourceLabel(item)
   return (
     <li className="flex flex-wrap items-center justify-between gap-2 border-t py-2 first:border-t-0">
       <div className="min-w-0 flex-1">
         <p className="font-medium">{item.name}</p>
         <p className="flex gap-2 text-xs text-muted-foreground">
-          <span>{sourceLabel(item)}</span>
+          {origin !== null && <span>{origin}</span>}
           <span>{formatLoggedGrams(item.grams)}</span>
           <span>{formatKcal(item.nutrients.calories_kcal)}</span>
         </p>

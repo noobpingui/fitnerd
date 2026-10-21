@@ -12,6 +12,7 @@ from services.meal_rules import (
     MEAL_NOT_FOUND_MESSAGE,
     NUTRIENT_KEYS,
     TOO_MANY_ITEMS_MESSAGE,
+    CatalogItemInput,
     CustomItemInput,
     check_add_window,
     is_db_id,
@@ -112,6 +113,7 @@ class MealService:
         try:
             self._lock_user(user_id)
             foods = self._load_foods(inputs)
+            catalog_foods = self._load_catalog_foods(inputs)
 
             meal = self.meal_repository.get_by_user_date_and_type(
                 user_id, meal_date, meal_type
@@ -134,8 +136,22 @@ class MealService:
                         entry.grams,
                         entry.per_100g,
                         source="custom",
+                        catalog_id=None,
                         fdc_id=None,
                         name=entry.name,
+                        data_type=None,
+                    )
+                elif isinstance(entry, CatalogItemInput):
+                    catalog_food = catalog_foods[entry.catalog_id]
+                    per_100g = {key: getattr(catalog_food, key) for key in NUTRIENT_KEYS}
+                    item = _new_item(
+                        position,
+                        entry.grams,
+                        per_100g,
+                        source="catalog",
+                        catalog_id=catalog_food.id,
+                        fdc_id=None,
+                        name=catalog_food.name,
                         data_type=None,
                     )
                 else:
@@ -146,6 +162,7 @@ class MealService:
                         entry.grams,
                         per_100g,
                         source="usda",
+                        catalog_id=None,
                         fdc_id=food.fdc_id,
                         name=food.description,
                         data_type=food.data_type,
@@ -210,13 +227,27 @@ class MealService:
 
     def _load_foods(self, inputs) -> dict:
         fdc_ids = [
-            entry.fdc_id for entry in inputs if not isinstance(entry, CustomItemInput)
+            entry.fdc_id
+            for entry in inputs
+            if not isinstance(entry, (CustomItemInput, CatalogItemInput))
         ]
         if not fdc_ids:
             return {}
         found = self.food_repository.get_by_fdc_ids(list(dict.fromkeys(fdc_ids)))
         foods = {food.fdc_id: food for food in found}
         if any(fdc_id not in foods for fdc_id in fdc_ids):
+            raise ValidationError(FOOD_NOT_FOUND_MESSAGE)
+        return foods
+
+    def _load_catalog_foods(self, inputs) -> dict:
+        catalog_ids = [entry.catalog_id for entry in inputs if isinstance(entry, CatalogItemInput)]
+        if not catalog_ids:
+            return {}
+        if self.catalog_repository is None:
+            raise ValidationError(FOOD_NOT_FOUND_MESSAGE)
+        found = self.catalog_repository.get_by_ids(list(dict.fromkeys(catalog_ids)))
+        foods = {food.id: food for food in found}
+        if any(catalog_id not in foods for catalog_id in catalog_ids):
             raise ValidationError(FOOD_NOT_FOUND_MESSAGE)
         return foods
 

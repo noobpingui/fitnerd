@@ -1,4 +1,16 @@
 import { z } from "zod"
 
-// Provisional: el esquema real llega en la implementación (T-130).
-export const catalogSearchResponseSchema = z.never()
+export const catalogSearchResponseSchema = z.object({
+  results: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      per_100g: z.object({
+        calories_kcal: z.number(),
+        protein_g: z.number(),
+        carbs_g: z.number(),
+        fat_g: z.number(),
+      }),
+    })
+  ),
+})

@@ -2,7 +2,7 @@ import { LegalPageLayout } from "@/features/legal/components/LegalPageLayout"
 
 export function PrivacyPolicyPage() {
   return (
-    <LegalPageLayout title="Política de privacidad" updatedAt="20 de octubre de 2026">
+    <LegalPageLayout title="Política de privacidad" updatedAt="21 de octubre de 2026">
       <p>
         fitnerd es un proyecto personal, desarrollado y
         mantenido por una sola persona - no una empresa con un equipo
@@ -83,8 +83,7 @@ export function PrivacyPolicyPage() {
           </li>
           <li>
             <strong>Voyage AI:</strong> recibe el texto de tus preguntas
-            y de tus búsquedas de alimentos para buscar el contenido
-            relacionado.
+            al coach para buscar el contenido relacionado.
           </li>
           <li>
             <strong>Google:</strong> si usas Google Sign-In, para

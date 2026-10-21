@@ -1,6 +1,7 @@
-import type { UseMutationResult } from "@tanstack/react-query"
-import type { CatalogSearchResponse } from "./types"
+import { useMutation } from "@tanstack/react-query"
+import { searchCatalog } from "./api"
 
-export function useCatalogSearch(): UseMutationResult<CatalogSearchResponse, Error, string> {
-  throw new Error("not implemented")
+// Cada búsqueda es una acción puntual: así «Reintentar» repite exactamente la última.
+export function useCatalogSearch() {
+  return useMutation({ mutationFn: (query: string) => searchCatalog(query), retry: false })
 }

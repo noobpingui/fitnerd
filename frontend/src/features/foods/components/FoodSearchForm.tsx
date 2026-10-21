@@ -21,10 +21,12 @@ export function FoodSearchForm({
   onSearch,
   isSearching,
   defaultQuery = "",
+  placeholder = "Ej.: chicken breast, arroz blanco",
 }: {
   onSearch: (query: string) => void
   isSearching: boolean
   defaultQuery?: string
+  placeholder?: string
 }): ReactElement {
   const form = useForm<FoodSearchFormValues>({
     resolver: zodResolver(foodSearchFormSchema),
@@ -47,7 +49,7 @@ export function FoodSearchForm({
               <FormControl>
                 <Input
                   type="search"
-                  placeholder="Ej.: chicken breast, arroz blanco"
+                  placeholder={placeholder}
                   maxLength={FOOD_QUERY_MAX_LENGTH}
                   {...field}
                 />

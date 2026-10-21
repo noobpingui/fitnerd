@@ -139,7 +139,8 @@ export const mealResponseSchema = z.object({
   items: z.array(
     z.object({
       id: z.number(),
-      source: z.enum(["usda", "custom"]),
+      source: z.enum(["catalog", "usda", "custom"]),
+      catalog_id: z.string().nullable().default(null),
       fdc_id: z.number().nullable(),
       name: z.string(),
       data_type: z.enum(["foundation", "sr_legacy"]).nullable(),
