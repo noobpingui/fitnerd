@@ -1,96 +1,103 @@
 # Review 023 — Catálogo genérico de alimentos en español que sustituye a USDA en la búsqueda del diario
 
-- **Iteración:** 1 de 4
-- **Diff revisado:** `git diff main...feat/023-generic-food-catalog` @ `e7792b5` (+ `state.json` y `verify-report.md` sin commitear, solo artefactos del flujo)
+- **Iteración:** 2 de 4
+- **Diff revisado:** `git diff main...feat/023-generic-food-catalog` @ `1f0ae95`; foco en `git diff e7792b5 1f0ae95` (CSV, `test_food_catalog_csv.py`, spec, plan y tareas). Sin commitear: `backlog.md`, `state.json` y `verify-report.md`, solo artefactos del flujo.
 - **Veredicto:** CHANGES_REQUESTED
 
 ## 1. Resumen
-El cambio añade la tabla `catalog_foods`, su carga desde `backend/scripts/data/food_catalog.csv` (265 alimentos), la
-búsqueda por texto `GET /api/catalog/search` y el origen `catalog` en `meal_items`. En el frontend, el diálogo del
-diario busca en el catálogo, `/foods` redirige a `/diary` y se actualizan los textos legales. El código está bien
-estructurado, respeta las capas y coincide con el plan, y la migración coincide con los modelos. Comprobé, con una
-consulta de solo lectura a la base de desarrollo, que los 264 FDC ID de las filas `usda` existen y que sus cuatro valores
-son exactamente los de `public.foods`. Lo que impide aprobar está en el contenido del CSV: la única fila `manual`
-(`yuca-cocida`) sale de FNDDS, que la spec deja fuera de alcance, y todo indica que lleva grasa añadida. Hay además
-varias desviaciones menores de las reglas de contenido que debe decidir el usuario.
+La segunda pasada corrige el CSV como pedía la iteración 1: no queda la fila `yuca-cocida` ni ninguna fila `manual`,
+quedan 261 alimentos y F2 a F6 están resueltos (detalle en §3). Repetí la consulta de solo lectura a la base de
+desarrollo: los 261 FDC ID existen, sus cuatro valores coinciden exactamente con `public.foods` (0 diferencias) y
+`catalog_foods` tiene 261 filas, sin la yuca. Además, revisé una por una las 261 filas con la descripción de USDA de cada
+FDC ID: no hay ningún alimento frito, ningún plato compuesto ni ninguno preparado con aceite. Lo que impide aprobar
+viene de quitar la yuca: «Términos de servicio» sigue diciendo que «algunos alimentos de comida local se añadieron a
+mano», y ya no hay ninguno (F13, que queda abierto desde la iteración 1, donde formaba parte de F1). También hay
+desajustes menores entre los artefactos y el CSV real, y dos tests que fijan el estado actual del CSV en lugar de la
+spec.
 
 ## 2. Cumplimiento de la spec
 | REQ / AC | ¿Implementado como se especificó? | Evidencia (archivo:línea o test) |
 |---|---|---|
-| REQ-001 (AC-001.1 a 001.4) | Parcial | Las reglas automáticas se cumplen: `services/catalog_csv_reader.py:186-258` y `tests/test_services/test_food_catalog_csv.py`. Las reglas de contenido 1 a 3 de la sección 6 no se cumplen del todo (F1 a F6). |
-| REQ-002 (AC-002.1 a 002.6) | Sí | `services/catalog_load_service.py:296-326` (una sola transacción y `rollback`); `scripts/load_food_catalog.py:59-62` (confirmación antes de construir el servicio); `scripts/database_target.py:6-16` |
-| REQ-003 (AC-003.1 a 003.8) | Sí | `catalog_csv_reader.py:188-201` (archivo y columnas), `:102-144` (valores y origen), `:147-183` (unicidad); `catalog_load_service.py:328-353` (igualdad con USDA, 3.57 frente a 3.6) |
-| REQ-004 (AC-004.1 a 004.16) | Sí | `services/catalog_rules.py:23-49` (`fold`, `words`, `word_forms`); `services/catalog_search_service.py:64-109` (coincidencia, grupos, orden y límite de 20) |
-| REQ-005 (AC-005.1 a 005.4) | Sí | `catalog_search_service.py:118` reutiliza `normalize_query`; `routes/catalog_routes.py:29-33` con `@require_auth` |
-| REQ-006 (AC-006.1 a 006.6) | Sí | `services/meal_rules.py:132-158` (una sola clave y mensaje nuevo); `services/meal_service.py:144-156` y `:242-252` (copia de nombre y valores; 400 sin guardar nada) |
-| REQ-007 (AC-007.1, 007.2) | Sí | `models/meal.py:73-74`: `catalog_id` sin FK; `update_item_grams` recalcula con los `per_100g_*` guardados |
-| REQ-008 (AC-008.1, 008.2) | Sí | `routes/meal_routes.py:41` (`catalog_id`); las `CHECK` nuevas admiten las filas existentes (migración, `:22-29`) |
-| REQ-009 (AC-009.1 a 009.7) | Sí | `frontend/src/features/diary/components/AddFoodDialog.tsx:105` (descripción), `:120` (ejemplo), `:170` (payload `catalog_id`); `features/catalog/components/CatalogResultList.tsx` |
-| REQ-010 (AC-010.1 a 010.3) | Sí | `features/diary/format.ts:49-52`; `components/MealItemRow.tsx:17-23` |
-| REQ-011 (AC-011.1, 011.2) | Sí | `frontend/src/app/router.tsx:172` (`<Navigate to="/diary" replace />` dentro de `AppLayout`) |
-| REQ-012 (AC-012.1 a 012.3) | Parcial | Los textos y las fechas están en `TermsOfServicePage.tsx:5,33-34` y `PrivacyPolicyPage.tsx:5,85-86`. Pero la frase «se añadieron a mano a partir de otras tablas de composición» no es cierta mientras la única fila `manual` venga de una base de USDA (FNDDS). Ver F1. |
-| NFR-001 (AC-N001.1, N001.2) | Sí | `CatalogSearchService` solo recibe el repositorio; sin Voyage, sin Redis y sin límite de uso |
-| NFR-002 (AC-N002.1, N002.2) | Sí | `CatalogResultList.tsx:14,29` (lista «Resultados» y botones «Elegir {nombre}»); `AddFoodDialog.tsx:123` (región `role="status"`) |
+| REQ-001 (AC-001.1 a 001.4) | Sí | 261 filas (`test_the_repository_csv_validates_without_errors_and_has_250_to_350_foods`); la lista mínima de 39 se cubre por nombre o sinónimo, cada alimento en una fila distinta (`test_food_catalog_csv.py:66-81`); «Zanahoria» se cubre con el sinónimo de `zanahoria-cocida` (`food_catalog.csv:165`). Los 16 tests del CSV pasan (los ejecuté). Las reglas de contenido 1 a 3: ver §5 (sin hallazgos mayores). |
+| REQ-002 / REQ-003 | Sí | Sin cambios de código desde la iteración 1. La recarga en desarrollo deja 261 filas y quita la yuca (consulta de solo lectura). |
+| REQ-004 a REQ-011, NFR-001, NFR-002 | Sí | Sin cambios desde la iteración 1 (evidencia en la revisión anterior). |
+| REQ-012 (AC-012.1 a 012.3) | **Parcial** | `TermsOfServicePage.tsx:33-34` dice «Algunos alimentos de comida local se añadieron a mano a partir de otras tablas de composición de alimentos.», como pide AC-012.1, pero el CSV ya no tiene ninguna fila `manual` (`test_no_row_has_the_manual_source`, `test_food_catalog_csv.py:161`). El texto legal describe un origen de datos que no existe. Ver F13. |
 
-## 3. Cumplimiento del plan
-- No hay desviaciones de diseño: los archivos, las firmas, los mensajes y la migración coinciden con `plan.md`.
-- `import_usda_foods.py` conserva `_LOCAL_HOSTS`, `_is_local` y `_confirm` como alias de `database_target`, como decía el plan.
-- El plan exigía que las filas `manual` tuvieran «una `reference` concreta y comprobable» y que no se inventaran valores. La
-  fila `yuca-cocida` tiene una referencia comprobable, pero es de FNDDS, una base fuera de alcance, y su propia
-  descripción dice «con o sin grasa» (F1).
-- Cambio en `.sdd/config.json`, decidido por el usuario: el CSV sale del ámbito `prod` del ratchet y `max_iterations`
-  pasa a 4. Está registrado en el `history`. Para el orquestador: `state.json` sigue mostrando `"max_iterations": 3`.
+## 3. Cumplimiento del plan y de la iteración anterior
+- **F1 (MAYOR), resuelto:** la fila `yuca-cocida` se quitó del CSV y de la base de desarrollo, y «Yuca cocida» salió de la
+  lista mínima de la spec (§6), de AC-001.4 (39 alimentos) y de `MINIMUM_LIST` en el test. El cambio de spec reabrió el
+  gate de spec, con aprobación explícita del usuario («Si», `history` 08:29:02). La parte de F1 sobre REQ-012 sigue
+  abierta (F13).
+- **F2, resuelto:** quedan una sola «Zanahoria cocida» (`:165`), con «zanahoria» como sinónimo, y un solo «Champiñones
+  cocidos» (`:190`). «Frijoles navy cocidos» se quitó.
+- **F3, resuelto:** ya no aparecen «pan bimbo» (`:15`) ni «queso filadelfia» (`:104`).
+- **F4, resuelto:** «contramuslo de pollo» pasó a «Muslo de pollo al horno» (`:44`), y «limonada sin azúcar» se quitó
+  (`:261`).
+- **F5, resuelto:** «Ejotes cocidos», con «vainicas cocidas» como sinónimo (`:181`), y «Calabaza moscada al horno» (`:184`).
+- **F6, resuelto:** «Abadejo de Alaska al horno» (`:76`), «Lubina rayada al horno» (`:74`) y «Sémola de maíz cocida»
+  (`:208`) ya corresponden a su alimento de USDA.
+- **F7 a F12 (NIT):** siguen sin tocar, como estaba previsto (en el backlog).
+- **Coherencia de artefactos:** la spec, `MINIMUM_LIST` y AC-001.4 coinciden en los 39 alimentos. `plan.md:472` y
+  `tasks.md:86,88` dicen que el CSV queda en **264** filas, pero tiene **261**, porque también se quitaron las tres
+  filas de F2 (F14).
+- **Edición del CSV por el orquestador:** según el `history` (08:38:09), el usuario lo autorizó de forma explícita
+  porque el role-guard no reconoce `backend/scripts/data/` desde el cambio de config. El diff (`1f0ae95`) se limita a
+  las correcciones de F1 a F6. No lo cuento como hallazgo, pero conviene arreglar el role-guard o el config (backlog).
+- **`state.json`** sigue con `"max_iterations": 3` y el config tiene 4 (ya avisado en la iteración 1).
 
 ## 4. Checklist de la constitución
 ### Parte I (base)
-- [x] B2: cada agente se mantuvo en su rol. `snapshot --check` da idéntico (26 archivos). El commit de implement (`d9459f3`) no toca tests. Los únicos cambios en tests después de `e0b0f5b` son los reflujos de línea de `e7792b5`, autorizados (`rework tests` y `snapshot` en `history`).
-- [x] B4: los marcadores `# SDD: 023 …` y `// SDD: 023 …` corresponden a los AC que prueban. Hay mezclas 022/023 en `test_post_validation_message_and_nothing_saved` (`test_meal_routes.py:498-503`), pero están justificadas porque el mensaje de AC-006.4 sustituye al de la 022.
-- [x] B5: no hay tests borrados, saltados ni debilitados. Ningún test llama a servicios externos. No quedan esqueletos `not implemented`.
-- [x] B5.7: el ratchet de ruff no da violaciones nuevas y `npm run lint` y `tsc -b` no dan errores (verify-report).
-- [x] B6.5: no hay secretos ni variables nuevas.
+- [x] B1.3: la spec cambió con el gate reabierto y aprobado por el usuario, y plan y tareas se ajustaron después.
+- [ ] B2.4: `backlog.md` («implement (corrección por review)») recoge que el implementer marcó T-120 a T-123 y T-125 en
+  `tasks.md` con `sed -i` desde la shell. Solo cambió casillas y el contenido es correcto (69/69 `[x]`), pero la
+  constitución lo prohíbe expresamente (F15).
+- [x] B2: `snapshot --check` da idéntico (26 archivos, snapshot de 08:34:24). El commit `1f0ae95` no toca tests; el único
+  cambio en tests desde `e7792b5` es `73274c3`, autorizado (`rework tests`, red PASS y `snapshot` en `history`).
+- [x] B4: los tests nuevos de `test_food_catalog_csv.py` llevan `# SDD: 023 …`. Tres de ellos (marcas, contramuslo y
+  limonada) están marcados como AC-001.3, que trata de las palabras prohibidas, y no de los sinónimos (F17).
+- [x] B5: no hay tests borrados, saltados ni debilitados; `test_the_minimum_list_has_40_foods` se sustituyó por una versión
+  más fuerte, que comprueba el CSV real.
+- [x] B5.7 / B6.5: sin cambios de código; sin secretos ni variables nuevas.
 
 ### Parte II (proyecto)
-- [x] P1.1/P1.2: marcadores con número de spec; nombres de test en inglés en el backend y en español en el frontend; docstrings en español.
-- [x] P1.3: dobles escritos a mano (`FakeCatalogFoodRepository`). El uso de `monkeypatch` en el test del script está justificado en `plan.md` §5.
-- [x] P2.1/P2.2: capas respetadas y dependencias por constructor (`_build_catalog_search_service`, `_build_meal_service`). Solo `UnitOfWork` hace commit o rollback (`catalog_load_service.py:322-324`).
-- [x] P2.3: los 400 salen por `ValidationError` y `error_handlers`. `CatalogFileError` queda fuera de `custom_exceptions` con la justificación del plan (§7).
-- [x] **P2.4, revisión manual de la migración `d4f6a8c0e2b5`:**
-  - `catalog_foods` coincide columna a columna con `models/catalog_food.py`: tipos, `ARRAY(Text)` con `server_default '{}'`, nulabilidad y las 6 `CHECK` con el mismo texto y nombre.
-  - `meal_items.catalog_id` es `VARCHAR(60) NULL`, sin FK.
-  - Las dos `CHECK` de `meal_items` se sustituyen a mano con el mismo texto que el modelo (`models/meal.py:96-111`), y los nombres originales existen en `b3d5f7a9c1e4`.
-  - `down_revision` apunta a la cabeza anterior y no hay ramas.
-  - El `downgrade` se niega sin tocar nada si hay filas `catalog` y no interpola valores.
-  - La base de desarrollo está en `d4f6a8c0e2b5`, con 265 filas cargadas.
-- [x] P2.5: reutiliza `normalize_query`, `FoodRepository.get_by_fdc_ids`, `validate_grams` y la confirmación extraída a `database_target.py`.
-- [x] P2 frontend: feature `catalog` con `api.ts`, `hooks.ts`, `types.ts`, `schemas.ts` y `components/`; HTTP solo por `apiFetch`; TanStack Query.
-- [ ] P2 General: los textos visibles van en español correcto, pero hay nombres del catálogo que no son español neutro (F5) y una palabra en portugués (F8).
-- [x] P3.1: `@require_auth` en la búsqueda; las comidas siguen filtrando por el usuario del token.
-- [x] P3.2: entradas validadas en el servicio y con zod.
-- [x] P3.3: no aplica, la búsqueda no llama a proveedores de IA.
-- [x] P3.4: ORM y SQL fijo en el `downgrade`.
-- [x] P3.5: sin variables nuevas.
-- [ ] P4: la migración está incluida y revisada. Los pasos de producción (migración antes del merge y carga tras el CD) quedan para el `doc-keeper` en `docs/deploy-runbook.md`.
+- [x] P1.1/P1.2: marcadores con número de spec, nombres de test en inglés y docstrings en español.
+- [x] P2 / P3: sin cambios de código desde la iteración 1 (ver revisión anterior).
+- [x] P2.4: sin cambios de modelo ni de migración en esta iteración.
+- [ ] P2 General: los nombres son ahora mayoritariamente neutros; queda «Lechuga repollada» (F16).
+- [ ] P4: los pasos de producción (migración antes del merge y carga tras el CD) siguen pendientes para el `doc-keeper`
+  en `docs/deploy-runbook.md`.
 
 ## 5. Hallazgos
 | # | Severidad | Archivo:línea | Hallazgo | Responsable |
 |---|---|---|---|---|
-| F1 | MAYOR | `backend/scripts/data/food_catalog.csv:37` | La única fila `manual`, `yuca-cocida`, toma sus valores de **FNDDS** («Cassava, cooked», FDC ID 2709564), que la spec deja fuera de alcance de forma explícita (§3 «Fuera de alcance: … FNDDS»). La propia `reference` dice «con o sin grasa», y los valores lo confirman: 3,03 g de grasa y 191 kcal por 100 g. La yuca cruda de SR Legacy («Cassava, raw», FDC ID 169985) tiene 0,28 g de grasa y 160 kcal, y hervida debería tener menos calorías, porque absorbe agua. Eso incumple la regla de contenido 3 («nada preparado con aceite»). Además, la frase nueva de Términos de servicio («a partir de otras tablas de composición», REQ-012) no describe esta fila, que sale de una base de USDA. Como «Yuca cocida» está en la lista mínima (AC-001.4), la fila no se puede quitar. Hay que sustituir los valores por los de una fuente verificable de yuca hervida sin grasa (por ejemplo, la tabla del INCAP con su código) y poner esa fuente en `reference`. Si no hay una fuente verificable, hay que consultarlo con el usuario (Art. B3.1, datos) en lugar de inventar valores. | implementer |
-| F2 | MENOR | `food_catalog.csv:166-167`, `:192-193`, `:24` y `:218` | Hay alimentos con dos versiones, contra la regla 3 («una sola versión por alimento»): «Zanahoria» y «Zanahoria cocida»; «Champiñones» y «Champiñones cocidos»; «Frijoles blancos cocidos» y «Frijoles navy cocidos» (navy es una variedad de frijol blanco). Hay que dejar una versión de cada uno o que el usuario apruebe la excepción de forma explícita. | implementer |
-| F3 | MENOR | `food_catalog.csv:15`, `:105` | Hay sinónimos con marcas comerciales, y las marcas están fuera de alcance (§3): «pan bimbo» (Bimbo) en «Pan blanco» y «queso filadelfia» (Philadelphia) en «Queso crema». Hay que quitarlos. | implementer |
-| F4 | MENOR | `food_catalog.csv:46`, `:265` | Hay sinónimos que corresponden a otro alimento. «contramuslo de pollo» es el muslo (thigh) y en el CSV está en «Pierna de pollo cocida», que es el drumstick (USDA 331897); debe ir en «Muslo de pollo al horno» (`:45`). «limonada sin azúcar» está en «Jugo de limón» (USDA 167747, «Lemon juice, raw»), pero la limonada es jugo diluido en agua (una combinación, regla 1) y quien la registre recibirá las calorías del jugo puro. Hay que quitarlo. | implementer |
-| F5 | MENOR | `food_catalog.csv:183`, `:218`, `:186` | Hay nombres principales que no son español neutro (regla 2). «Vainicas cocidas» es un regionalismo de Costa Rica que debería ser sinónimo de un nombre más general («Ejotes cocidos» o «Judías verdes cocidas»). «Frijoles navy cocidos» y «Calabaza butternut al horno» usan palabras en inglés; hay alternativas en español, como «Calabaza moscada al horno». | implementer |
-| F6 | MENOR | `food_catalog.csv:77`, `:75`, `:211` | Hay nombres que no corresponden al alimento de USDA del que salen los valores. «Merluza al horno» es «Fish, pollock, Alaska» (abadejo, no merluza). «Róbalo al horno» es «Fish, bass, striped» (lubina estriada, no róbalo). «Polenta cocida» es «corn grits, white» (sémola de maíz blanco). Los valores son parecidos, pero el nombre engaña. Hay que cambiar el nombre al del alimento real (y dejar el otro como sinónimo, si se acepta) o que lo apruebe el usuario. | implementer |
-| F7 | NIT | `food_catalog.csv:119-120` | En Costa Rica, México y Centroamérica, «limón» es la lima verde, y en Costa Rica «lima» es la lima dulce. Con el CSV actual, «limón» da primero el limón amarillo (lemon). La diferencia nutricional es mínima (29 frente a 30 kcal), pero conviene que el usuario lo revise. | implementer |
-| F8 | NIT | `food_catalog.csv:74`, `:154`, `:157`, `:158`, `:151` | Sinónimos dudosos, revisados como pedía el backlog. «lampuga» es correcto (Coryphaena en España). «dolfín» no lo puedo verificar y se confunde con «delfín»: conviene quitarlo o cambiarlo por «perico» (Perú). «pinha» es portugués. «tuna» es correcto en México, pero quien escriba «tuna» buscando atún (inglés) encontrará la fruta del nopal. «fruta del pan jaca» mezcla la jaca con la fruta del pan (otra fruta). «zapote» para mamey es correcto en Costa Rica (*Pouteria sapota*), aunque en México es ambiguo. «anona» coincide con el alimento de USDA (sugar-apple). | implementer |
-| F9 | NIT | `food_catalog.csv:195`, `:34` | Hay alimentos crudos que normalmente se comen cocidos (regla 3): «Puerro» (USDA crudo) y «Tempeh» (USDA 174272, sin cocinar). | implementer |
-| F10 | NIT | `frontend/src/features/diary/types.ts:34` | Falta un espacio: `export type UsdaItemPayload ={ … }`. | implementer |
-| F11 | NIT | `backend/migrations/versions/d4f6a8c0e2b5_create_catalog_foods_and_catalog_meal_items.py:95` | El mensaje no concuerda en singular: «Hay 1 alimentos del catálogo…». Si se cambia, hay que actualizar `DOWNGRADE_MESSAGE` en `test_catalog_migration.py`, que ahora espera ese texto. | implementer |
-| F12 | NIT | `frontend/src/app/diaryRoute.test.tsx:2` | El comentario de cabecera sigue diciendo que «`/foods` sigue mostrando "Alimentos"», ya falso tras REQ-011 (ya anotado en el backlog de tests). | test-author |
+| F13 | MAYOR | `specs/023-generic-food-catalog/spec.md:303-311` y `:441-442`; `frontend/src/features/legal/pages/TermsOfServicePage.tsx:33-34` | REQ-012 y AC-012.1 exigen que «Términos de servicio» diga que «Algunos alimentos de comida local se añadieron a mano a partir de otras tablas de composición de alimentos.», y la página lo dice. Pero, sin la yuca, el CSV no tiene ninguna fila `manual`, y un test lo exige (`test_food_catalog_csv.py:161`). El texto legal atribuye a los datos un origen que no tienen. Ya lo señalé en la iteración 1 (REQ-012 «Parcial», dentro de F1), pero el ajuste de la spec solo cambió la lista mínima. Hay que reformular REQ-012 y AC-012.1, por ejemplo quitando la frase hasta que exista una fila `manual`. Después, el test-author ajusta `TermsOfServicePage.test.tsx:60-65` y el implementer, la página. Otra opción es que el usuario acepte de forma explícita en el gate mantener la frase pensando en el futuro. | spec-writer |
+| F14 | MENOR | `specs/023-generic-food-catalog/plan.md:472`, `tasks.md:86`, `tasks.md:88` | Dicen que el CSV queda en 264 filas, pero tiene 261, porque también se quitaron `zanahoria`, `champinones` y `frijoles-navy-cocidos` (F2). La docstring de `test_food_catalog_csv.py:150` («264 filas o menos») sí es correcta. | planner |
+| F15 | MENOR | `specs/023-generic-food-catalog/tasks.md:83-88` | Según el backlog de la feature, el implementer marcó estas casillas con `sed -i` desde la shell, algo que prohíbe el Art. B2.4. El resultado es correcto, pero el usuario debe conocerlo en el gate y no debe repetirse. | implementer |
+| F16 | MENOR | `backend/scripts/data/food_catalog.csv:163` | «Lechuga repollada» es un regionalismo (sobre todo de Costa Rica y del Cono Sur) como nombre principal; es el mismo caso que «Vainicas» en F5 (regla 2). El alimento de USDA es «Lettuce, iceberg»: el nombre neutro sería «Lechuga iceberg» (o «Lechuga americana»), con «lechuga repollada» como sinónimo. | implementer |
+| F17 | MENOR | `backend/tests/test_services/test_food_catalog_csv.py:149-151`, `:161-163` | `test_the_csv_has_fewer_than_265_foods` (exige menos de 265 filas) y `test_no_row_has_the_manual_source` (exige que no haya filas `manual`) fijan el estado actual del CSV, no una regla de la spec. AC-001.1 admite de 250 a 350 filas y el formato admite filas `manual`, que el plan conserva «para el futuro» (`plan.md:473`). Añadir un alimento o la yuca con fuente verificable, como prevé la decisión del usuario, rompería estos tests sin incumplir la spec. Además, los tests de marcas, contramuslo y limonada (`:171-203`) llevan el marcador AC-001.3, que no habla de sinónimos. Conviene usar el rango de AC-001.1 y quitar o reformular el test de filas `manual` según se resuelva F13. | test-author |
+| F18 | NIT | `food_catalog.csv:34`, `:192`, `:171` | Hay alimentos crudos que se suelen comer cocidos (regla 3): «Tempeh» y «Puerro» (ya en F9) y, además, «Pak choi» («Cabbage, chinese (pak-choi), raw»). | implementer |
+| F19 | NIT | `food_catalog.csv:151`, `:153`, `:138`, `:106`, `:112`, `:203` | Hay sinónimos dudosos que no estaban en F8. «graviola» (guanábana) es portugués, como «pinha». «granadilla» en «Maracuyá» la usa USDA («Passion-fruit, (granadilla)»), pero en Costa Rica, Colombia y México es otra fruta (*Passiflora ligularis*). «queso gruyer» en «Queso suizo» es otro queso (USDA tiene «Cheese, gruyere», 413 kcal frente a 393). «natilla» en «Crema agria» es correcto en Costa Rica, pero en España y Colombia es un postre. «tomate verde» en «Tomatillo» es correcto en México, pero en otros países es el tomate sin madurar. | implementer |
+| F20 | NIT | `food_catalog.csv:169`, `:188`, `:202` | «berza» está en «Repollo», «berza rizada cocida» en «Col rizada cocida» y «berza cocida» en «Col verde cocida»: buscar «berza» devuelve tres coles distintas. | implementer |
+
+**Pasada completa de las 261 filas con las reglas 1 a 3 (sin hallazgos aparte de los de arriba):**
+- **Regla 1, alimentos compuestos:** ninguna fila es un plato o una combinación. Los procesados (panes, tortillas,
+  galletas saladas, jamones, tocino, quesos, bebidas vegetales, mantequillas de frutos secos y chocolate amargo) son de
+  un ingrediente base, como admite la regla.
+- **Regla 3, fritos o con aceite:** ninguna descripción de USDA dice *fried* ni *with oil*. Las tortillas son
+  «ready-to-bake or -fry» sin preparar, las palomitas son «air-popped», el maní es «dry-roasted» y el tocino es
+  «baked». Las galletas saladas llevan grasa en la receta, como el pan, y lo acepto como procesado.
+- **Regla 3, crudo o cocido:** los granos, las legumbres, los tubérculos, las carnes y los pescados son todos de cocción
+  sin grasa añadida (*boiled*, *roasted*, *broiled*, *dry heat*, *moist heat*, *braised*, *steamed*). Los crudos son
+  frutas, verduras de ensalada, frutos secos y semillas, salvo F18.
+- **Una sola versión:** las variantes que quedan son alimentos distintos (por ejemplo, leche entera, semidescremada y
+  descremada, que pide la lista mínima; arvejas verdes y secas; atún en agua y fresco; las lechugas de hoja, romana e
+  iceberg). Las acepto.
 
 ## 6. Decisión
-**CHANGES_REQUESTED.** El código de backend y de frontend, la migración y los tests están listos. Falta corregir el
-hallazgo MAYOR F1 (la fila `yuca-cocida` sale de FNDDS, fuera de alcance, y tiene grasa añadida) antes de aprobar. Los
-hallazgos MENORES F2 a F6 son de contenido del CSV, que la spec deja a la revisión del usuario (Q10): el `implementer`
-puede corregirlos en la misma pasada, o el usuario puede aceptarlos de forma explícita en el gate de `review`.
+**CHANGES_REQUESTED.** F1 a F6 están resueltos, y el CSV (261 filas, valores idénticos a USDA, sin fritos, compuestos
+ni filas `manual`) cumple las reglas de contenido salvo nits. Para aprobar falta resolver F13: la frase de «Términos
+de servicio» sobre los alimentos añadidos a mano ya no es cierta. Hay dos caminos: que el `spec-writer` reformule
+REQ-012 y AC-012.1 (con el ajuste posterior del test y de la página) o que el usuario acepte la frase de forma explícita
+en el gate de `review`. F14 a F17 son menores y se pueden corregir en la misma ronda.
 
 ## Comentarios del usuario

@@ -102,3 +102,22 @@
 
 ## implement (corrección por review) · implementer
 - [ ] El implementer marcó las casillas T-120 a T-123 y T-125 de tasks.md con `sed -i` desde la shell, aunque su definición prohíbe escribir así; solo cambió esas cinco casillas.
+
+## verify (3.ª pasada) · verifier
+- [ ] Revisión manual del contenido del CSV (reglas 1 a 3 de la sección 6 de la spec) en el gate de review.
+- [ ] Diseño visual del diálogo «Añadir a {sección}» y del listado de resultados, pendiente de prueba del usuario.
+- [ ] El CSV fue editado por el orquestador con autorización explícita (el role-guard no reconoce backend/scripts/data/); anotar en review.
+
+## review (2.ª pasada) · reviewer
+- [ ] F14 MENOR (planner): plan.md:472 y tasks.md:86,88 dicen 264 filas; el CSV tiene 261.
+- [ ] F15 MENOR (implementer): marcó T-120 a T-123 y T-125 en tasks.md con `sed -i` desde la shell, prohibido por el Art. B2.4 (está en el backlog de la feature).
+- [ ] F16 MENOR (implementer): «Lechuga repollada» (CSV:163) es un regionalismo como nombre principal; mejor «Lechuga iceberg», con «lechuga repollada» como sinónimo.
+- [ ] F17 MENOR (test-author): `test_the_csv_has_fewer_than_265_foods` y `test_no_row_has_the_manual_source` fijan el estado actual del CSV, no la spec (AC-001.1 admite de 250 a 350 filas y el formato admite filas `manual`). Además, los tests de marcas, contramuslo y limonada llevan el marcador AC-001.3, que trata de las palabras prohibidas, no de los sinónimos.
+- [ ] F18 NIT (implementer): crudos que se suelen comer cocidos: Tempeh, Puerro y Pak choi.
+- [ ] F19 NIT (implementer): sinónimos dudosos: «graviola» (portugués), «granadilla» en Maracuyá, «queso gruyer» en Queso suizo, «natilla» en Crema agria, «tomate verde» en Tomatillo.
+- [ ] F20 NIT (implementer): «berza» aparece en tres coles distintas (Repollo, Col rizada, Col verde).
+- [ ] Arreglar el role-guard o el config para que reconozca backend/scripts/data/ (el CSV lo editó el orquestador con autorización del usuario).
+- [ ] state.json sigue con max_iterations 3 y el config tiene 4.
+
+## spec (corrección por F13) · spec-writer
+- [ ] Si en el futuro se añaden filas `manual` al catálogo, hay que volver a poner en Términos de servicio una frase sobre su origen.

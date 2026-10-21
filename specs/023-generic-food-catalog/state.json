@@ -10,29 +10,17 @@
   "branch": "feat/023-generic-food-catalog",
   "base_branch": "main",
   "created_at": "2026-10-21T05:27:32.707Z",
-  "stage": "verify",
+  "stage": "plan",
   "status": "in_progress",
   "approvals": {
     "spec": {
-      "at": "2026-10-21T08:29:02.204Z",
+      "at": "2026-10-21T08:56:42.267Z",
       "note": "Si"
     },
-    "plan": {
-      "at": "2026-10-21T08:29:33.902Z",
-      "note": "auto (gate_mode=flow): ajuste acotado del plan"
-    },
-    "tasks": {
-      "at": "2026-10-21T08:30:26.825Z",
-      "note": "auto (gate_mode=flow): ajuste acotado de tareas"
-    },
-    "tests": {
-      "at": "2026-10-21T08:34:24.989Z",
-      "note": "auto (gate_mode=flow): red check PASS acotado, tests del CSV"
-    },
-    "implement": {
-      "at": "2026-10-21T08:40:43.090Z",
-      "note": "auto (gate_mode=flow): CSV corregido por la review (F1 a F6)"
-    },
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
     "verify": null,
     "review": null,
     "docs": null,
@@ -43,17 +31,17 @@
     "plan": "4d9a95d",
     "tasks": "4685b3e",
     "tests": "73274c3",
-    "implement": "d9459f3"
+    "implement": "1f0ae95"
   },
   "iterations": {
     "tests": 3,
     "implement": 0,
-    "review": 1
+    "review": 2
   },
   "max_iterations": 3,
   "red_check": {
-    "result": "PASS",
-    "at": "2026-10-21T08:34:15.736Z"
+    "result": null,
+    "at": null
   },
   "verify": {
     "result": null,
@@ -552,6 +540,66 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): CSV corregido por la review (F1 a F6)"
+    },
+    {
+      "at": "2026-10-21T08:40:43.378Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 1f0ae95"
+    },
+    {
+      "at": "2026-10-21T08:40:43.637Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verify full tras corregir el CSV"
+    },
+    {
+      "at": "2026-10-21T08:46:01.036Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify full iteración 3 (tras review): backend pytest 1817 passed, ratchet sin violaciones nuevas; frontend test 1048 passed, lint 0 errores, tsc -b OK, build OK (entrada 384,63 kB < 500 kB). Trazabilidad 67/67 AC, 14/14 REQ/NFR, 69/69 tareas [x]; sin skip nuevos; snapshot de tests coincide con HEAD. Manual: contenido del CSV y diseño del diálogo."
+    },
+    {
+      "at": "2026-10-21T08:46:11.568Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: 1817 backend, 1048 frontend, ratchet limpio, chunk 384,63 kB"
+    },
+    {
+      "at": "2026-10-21T08:46:11.702Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-21T08:46:11.887Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review 2.ª pasada tras corregir F1 a F6"
+    },
+    {
+      "at": "2026-10-21T08:53:35.607Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "CHANGES_REQUESTED"
+    },
+    {
+      "at": "2026-10-21T08:53:35.734Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Review F13: la frase de Términos sobre alimentos añadidos a mano ya no es cierta; usuario elige A (F13, F14, F16, F17) · review 2/3"
+    },
+    {
+      "at": "2026-10-21T08:54:39.417Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec ajustada (F13): fuera la frase de alimentos añadidos a mano; AC-012.1 pasa a exigir que no aparezca"
+    },
+    {
+      "at": "2026-10-21T08:56:42.267Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Si"
     }
   ]
 }

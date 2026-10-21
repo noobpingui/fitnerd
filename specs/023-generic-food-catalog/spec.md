@@ -57,8 +57,8 @@ Como **desarrollador de la spec 024**, quiero **un identificador estable para ca
   - En el diario, los alimentos del catálogo se muestran con su nombre y sin etiqueta de origen; los de USDA ya
     registrados siguen mostrando «Foundation» o «SR Legacy» y los personalizados, «Personalizado».
   - La ruta `/foods` deja de mostrar la pantalla «Alimentos» de la 021 y redirige a `/diary`.
-  - Actualización de las páginas legales: la atribución menciona el catálogo y la Política de privacidad deja de decir
-    que Voyage AI recibe las búsquedas de alimentos.
+  - Actualización de las páginas legales: «Datos nutricionales» conserva la atribución a USDA sin frases nuevas y la
+    Política de privacidad deja de decir que Voyage AI recibe las búsquedas de alimentos.
 
 **Fuera de alcance:**
 - Platos compuestos y combinaciones de alimentos, marcas, Branded Foods, FNDDS y la API de USDA.
@@ -301,14 +301,14 @@ WHEN un usuario abre la ruta `/foods` THE SYSTEM SHALL llevarlo a `/diary` sin m
 - **AC-011.2:** Given la aplicación, When se recorre la navegación, Then no hay ninguna entrada ni enlace a `/foods`.
 
 ### REQ-012 — Páginas legales
-THE SYSTEM SHALL decir en la sección «Datos nutricionales» de «Términos de servicio» que los valores del catálogo
-provienen de USDA FoodData Central salvo algunos alimentos de comida local añadidos a mano, y SHALL dejar de decir en la
-«Política de privacidad» que Voyage AI recibe el texto de las búsquedas de alimentos.
+THE SYSTEM SHALL conservar en la sección «Datos nutricionales» de «Términos de servicio» la atribución de los valores a
+USDA FoodData Central y el aviso de valores aproximados, sin mencionar alimentos añadidos a mano, y SHALL dejar de decir
+en la «Política de privacidad» que Voyage AI recibe el texto de las búsquedas de alimentos.
 
 - **AC-012.1:** Given la página «Términos de servicio», When se muestra, Then la sección «Datos nutricionales» conserva
-  la atribución «Datos: U.S. Department of Agriculture, Agricultural Research Service. FoodData Central.» y el aviso de
-  valores aproximados, y añade «Algunos alimentos de comida local se añadieron a mano a partir de otras tablas de
-  composición de alimentos.».
+  la atribución «Datos: U.S. Department of Agriculture, Agricultural Research Service. FoodData Central.» y el aviso
+  «Los valores nutricionales son aproximados y pueden variar según el alimento y su preparación.», y no contiene la
+  frase «Algunos alimentos de comida local se añadieron a mano a partir de otras tablas de composición de alimentos.».
 - **AC-012.2:** Given la página «Política de privacidad», When se muestra, Then el punto de Voyage AI ya no menciona las
   búsquedas de alimentos y sigue mencionando las preguntas al coach.
 - **AC-012.3:** Given las dos páginas, When se muestran, Then su fecha de actualización es la del cambio.
@@ -438,8 +438,9 @@ Los demás textos (estado inicial, «Buscando…», sin resultados, errores, 400
 
 **Rutas:** `/foods` redirige a `/diary`.
 
-**Páginas legales:** «Términos de servicio», sección «Datos nutricionales»: se añade «Algunos alimentos de comida local
-se añadieron a mano a partir de otras tablas de composición de alimentos.». «Política de privacidad»: el punto de
+**Páginas legales:** «Términos de servicio», sección «Datos nutricionales»: su texto no cambia respecto a la 022 (la
+atribución a USDA y el aviso de valores aproximados), porque el catálogo no tiene alimentos de origen `manual`; no se
+añade ninguna frase sobre alimentos añadidos a mano. «Política de privacidad»: el punto de
 Voyage AI vuelve a mencionar solo las preguntas al coach. La fecha de actualización de las dos pasa a la del cambio.
 
 ## 7. Preguntas abiertas
@@ -449,7 +450,7 @@ Voyage AI vuelve a mencionar solo las preguntas al coach. La fecha de actualizac
 | Q1 | ¿Qué pasa con `/foods`: se retira, se redirige o se mantiene como herramienta para curar el catálogo? | Redirige a `/diary` y la pantalla «Alimentos» deja de usarse. El endpoint `GET /api/foods/search` y la tabla de USDA se conservan sin cambios (son la fuente del catálogo); para buscar FDC ID durante la curación sirve el propio FoodData Central (REQ-011). | Aprobado |
 | Q2 | La API de `/api/meals`, ¿sigue aceptando alimentos de USDA por `fdc_id` aunque la pantalla ya no los use? | Sí: se siguen aceptando para no romper la API; solo cambia el mensaje de «Cada alimento debe ser…». Retirarlos pasa al backlog (REQ-006, AC-006.4). | Aprobado |
 | Q3 | ¿Cómo se garantiza que los macros salen de USDA «sin modificar»? | El CSV lleva los cuatro valores escritos (para que el usuario los vea al revisarlo) y el FDC ID de origen; la carga rechaza la fila si no coinciden exactamente con los de ese alimento en USDA (REQ-003, AC-003.5). | Aprobado |
-| Q4 | ¿Cómo se documentan los alimentos añadidos a mano (comida local que USDA no tiene)? | Origen `manual` con una columna `reference` obligatoria con la fuente de los valores (p. ej. la tabla de composición del INCAP o la etiqueta del producto), que no se muestra al usuario; Términos de servicio añade una frase genérica sobre ellos (REQ-012). | Aprobado |
+| Q4 | ¿Cómo se documentan los alimentos añadidos a mano (comida local que USDA no tiene)? | Origen `manual` con una columna `reference` obligatoria con la fuente de los valores (p. ej. la tabla de composición del INCAP o la etiqueta del producto), que no se muestra al usuario; Términos de servicio añade una frase genérica sobre ellos (REQ-012). | Aprobado. Revisado tras el review (F13): el catálogo no tiene filas `manual`, así que Términos de servicio no añade la frase; el formato `manual` sigue admitido por la carga. |
 | Q5 | Si un alimento desaparece del CSV, ¿la carga lo quita del catálogo? | Sí: el catálogo queda igual al archivo; lo ya registrado en comidas no cambia porque guarda su copia (REQ-002, AC-002.3 y AC-002.4). | Aprobado |
 | Q6 | ¿Cómo funciona la búsqueda: por texto, por similitud con Voyage o ambas? ¿Con límite de uso? | Solo texto, sin Voyage y sin límite de uso: cada palabra de la consulta debe coincidir con el inicio de una palabra del nombre o de un sinónimo, sin distinguir mayúsculas, tildes ni «ñ»/«n»; hasta 20 resultados (REQ-004, NFR-001). | Aprobado, con el cambio en Q6: una palabra de la consulta también coincide si, quitándole una «s» o «es» final, queda como inicio de palabra (así «huevos», «bananos» o «frijoles» funcionan). Las erratas siguen fuera. |
 | Q7 | ¿La búsqueda del diálogo se lanza al pulsar «Buscar» (como hoy) o mientras se escribe? | Al pulsar «Buscar» o Intro, como en la 022; la búsqueda mientras se escribe queda fuera de alcance (backlog). | Aprobado |
@@ -457,7 +458,7 @@ Voyage AI vuelve a mencionar solo las preguntas al coach. La fecha de actualizac
 | Q9 | ¿Cuántos alimentos y qué control automático del contenido? Las reglas de «simple», «cocido» y «una versión» no son comprobables del todo con un test. | Entre 250 y 350 alimentos; los tests comprueban formato, unicidad de nombres y sinónimos, límites, la lista mínima de la sección 6 y que ningún nombre contenga «con» ni «frito/a/os/as»; el resto lo revisa el usuario en el CSV. | Aprobado |
 | Q10 | ¿Cuándo revisa el usuario el CSV? | En el gate de `review`, junto con el resto de la feature; la carga en producción se hace después del merge, como paso manual del runbook. | Aprobado |
 | Q11 | ¿Cómo se ven los alimentos del catálogo en los resultados y en el diario? | Solo con su nombre, sin etiqueta de origen; los de USDA ya registrados siguen con «Foundation» o «SR Legacy» y los personalizados con «Personalizado» (REQ-009 y REQ-010). | Aprobado |
-| Q12 | Las páginas legales: ¿se ajustan a que el diario ya no envía búsquedas a Voyage y a que hay datos añadidos a mano? | Sí: la Política de privacidad deja de mencionar las búsquedas de alimentos en el punto de Voyage AI, y «Datos nutricionales» añade la frase sobre los alimentos añadidos a mano (REQ-012). | Aprobado |
+| Q12 | Las páginas legales: ¿se ajustan a que el diario ya no envía búsquedas a Voyage y a que hay datos añadidos a mano? | Sí: la Política de privacidad deja de mencionar las búsquedas de alimentos en el punto de Voyage AI, y «Datos nutricionales» añade la frase sobre los alimentos añadidos a mano (REQ-012). | Aprobado. Revisado tras el review (F13): se mantiene el cambio de la Política de privacidad y se quita la frase de «Datos nutricionales», porque no hay alimentos añadidos a mano. |
 
 Todas las preguntas están resueltas y sus respuestas incorporadas a los requisitos. Q6 se aprobó con un cambio, que
 recoge la regla de plurales de REQ-004 (AC-004.12 a AC-004.16).
@@ -479,3 +480,5 @@ recoge la regla de plurales de REQ-004 (AC-004.12 a AC-004.16).
 ## Comentarios del usuario
 
 - Review F1 (yuca-cocida): «1. La opcion dos. 2. Si». La opción 2 es quitar «Yuca cocida» de la lista mínima de la spec y del catálogo hasta tener una fuente verificable; la pregunta 2 era corregir también F2 a F6 (contenido del CSV) en la misma ronda.
+
+- Review F13 (frase de Términos de servicio sobre alimentos añadidos a mano): «A». La opción A es arreglar F13, F14, F16 y F17 en una sola ronda; para F13, quitar la frase.
