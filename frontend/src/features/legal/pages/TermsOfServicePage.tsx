@@ -30,8 +30,6 @@ export function TermsOfServicePage() {
           Datos: U.S. Department of Agriculture, Agricultural Research
           Service. FoodData Central. Los valores nutricionales son
           aproximados y pueden variar según el alimento y su preparación.
-          Algunos alimentos de comida local se añadieron a mano a partir de
-          otras tablas de composición de alimentos.
         </p>
       </section>
 

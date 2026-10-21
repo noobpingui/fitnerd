@@ -87,8 +87,8 @@ CSV del catálogo (valores `usda` copiados de `public.foods` de la base de desar
 - [x] T-123 [REQ-001, REQ-003, AC-001.1, AC-001.4] (config) CSV parte 4: completar hasta 250–350 filas (el CSV queda en 261), sinónimos regionales sin repeticiones y ninguna fila `manual` (el CSV no tiene filas `manual`; la yuca no entra en la lista mínima de 39). Verificar que los hallazgos F2 a F6 de `review.md` quedan corregidos en todo el archivo — `backend/scripts/data/food_catalog.csv`
 - [x] T-124 [REQ-001, REQ-003, AC-003.5, AC-003.6] (config) Aplicar la migración y ejecutar la carga del CSV contra la base de desarrollo con `FLASK_ENV=development`; corregir el CSV hasta que no haya errores — `backend/scripts/data/food_catalog.csv`
 - [x] T-125 [REQ-001, REQ-002, AC-002.1, AC-002.3] (config) Recargar el CSV corregido (261 filas, sin `yuca-cocida`) en la base de desarrollo con `FLASK_ENV=development` y comprobar que la carga quita la fila de la yuca y no da errores — `backend/scripts/data/food_catalog.csv`
-- [ ] T-126 [REQ-001, AC-001.2, AC-001.3] (config) Cambiar «Lechuga repollada» (línea 163 del CSV) por «Lechuga iceberg» con «lechuga repollada» como sinónimo, sin repetir términos (F16) — `backend/scripts/data/food_catalog.csv`
-- [ ] T-127 [REQ-001, REQ-002, AC-002.1, AC-002.3] (config) Recargar el CSV corregido (F16) en la base de desarrollo con `FLASK_ENV=development` y comprobar que la carga no da errores — `backend/scripts/data/food_catalog.csv`
+- [x] T-126 [REQ-001, AC-001.2, AC-001.3] (config) Cambiar «Lechuga repollada» (línea 163 del CSV) por «Lechuga iceberg» con «lechuga repollada» como sinónimo, sin repetir términos (F16) — `backend/scripts/data/food_catalog.csv`
+- [x] T-127 [REQ-001, REQ-002, AC-002.1, AC-002.3] (config) Recargar el CSV corregido (F16) en la base de desarrollo con `FLASK_ENV=development` y comprobar que la carga no da errores — `backend/scripts/data/food_catalog.csv`
 
 Frontend:
 - [x] T-130 [REQ-009, AC-009.2] (impl) `catalogSearchResponseSchema` real — `frontend/src/features/catalog/schemas.ts`
@@ -99,7 +99,7 @@ Frontend:
 - [x] T-135 [REQ-009, AC-009.1] (impl) Prop opcional `placeholder` en `FoodSearchForm` con el ejemplo anterior por defecto — `frontend/src/features/foods/components/FoodSearchForm.tsx`
 - [x] T-136 [REQ-009, NFR-002, AC-009.1, AC-009.2, AC-009.3, AC-009.4, AC-009.5, AC-009.6, AC-009.7, AC-N002.2] (impl) `AddFoodDialog` con catálogo, nueva descripción, ejemplo y payload `catalog_id` — `frontend/src/features/diary/components/AddFoodDialog.tsx`
 - [x] T-137 [REQ-011, AC-011.1, AC-011.2] (impl) `/foods` redirige a `/diary` con `Navigate replace` y se quita `FoodsPage` del router — `frontend/src/app/router.tsx`
-- [ ] T-138 [REQ-012, AC-012.1, AC-012.3] (impl) Quitar la frase de alimentos añadidos a mano de Términos de servicio (F13) y dejar la fecha «21 de octubre de 2026» — `frontend/src/features/legal/pages/TermsOfServicePage.tsx`
+- [x] T-138 [REQ-012, AC-012.1, AC-012.3] (impl) Quitar la frase de alimentos añadidos a mano de Términos de servicio (F13) y dejar la fecha «21 de octubre de 2026» — `frontend/src/features/legal/pages/TermsOfServicePage.tsx`
 - [x] T-139 [REQ-012, AC-012.2, AC-012.3] (impl) Voyage AI solo con las preguntas al coach y fecha en Política de privacidad — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
 
 ## Matriz de cobertura

@@ -121,3 +121,6 @@
 
 ## spec (corrección por F13) · spec-writer
 - [ ] Si en el futuro se añaden filas `manual` al catálogo, hay que volver a poner en Términos de servicio una frase sobre su origen.
+
+## implement (corrección F13) · implementer
+- [ ] Test intermitente del perfil, «B entra con el onboarding pendiente y sin ver la fecha de nacimiento» (NFR-002 AC-N002.1). Falló una vez de dos pasadas completas de `npm test`.
