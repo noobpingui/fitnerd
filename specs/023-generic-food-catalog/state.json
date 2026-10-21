@@ -1,0 +1,853 @@
+{
+  "schema_version": 1,
+  "feature": "023-generic-food-catalog",
+  "title": "Catálogo genérico de alimentos en español que sustituye a USDA en la búsqueda del diario",
+  "type": "feature",
+  "scope": [
+    "backend",
+    "frontend"
+  ],
+  "branch": "feat/023-generic-food-catalog",
+  "base_branch": "main",
+  "created_at": "2026-10-21T05:27:32.707Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-21T08:56:42.267Z",
+      "note": "Si"
+    },
+    "plan": {
+      "at": "2026-10-21T08:57:18.756Z",
+      "note": "auto (gate_mode=flow): ajuste acotado del plan"
+    },
+    "tasks": {
+      "at": "2026-10-21T08:58:02.752Z",
+      "note": "auto (gate_mode=flow): ajuste acotado de tareas"
+    },
+    "tests": {
+      "at": "2026-10-21T09:01:11.578Z",
+      "note": "auto (gate_mode=flow): red check PASS acotado"
+    },
+    "implement": {
+      "at": "2026-10-21T09:09:06.135Z",
+      "note": "auto (gate_mode=flow): correcciones F13 y F16"
+    },
+    "verify": {
+      "at": "2026-10-21T09:14:47.935Z",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    "review": {
+      "at": "2026-10-21T09:26:12.886Z",
+      "note": "Se ve bien. Review aprobado"
+    },
+    "docs": {
+      "at": "2026-10-21T09:27:37.519Z",
+      "note": "auto (gate_mode=flow): documentación de la 023"
+    },
+    "close": {
+      "at": "2026-10-21T09:30:58.329Z",
+      "note": "Apruebo cerrar la feature y vamos con la opcion 2"
+    }
+  },
+  "commits": {
+    "spec": "11311ba",
+    "plan": "654ee92",
+    "tasks": "a66dcf8",
+    "tests": "d96070a",
+    "implement": "ea24a16",
+    "review": "c15c180",
+    "docs": "b1ad490"
+  },
+  "iterations": {
+    "tests": 3,
+    "implement": 0,
+    "review": 2
+  },
+  "max_iterations": 3,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-10-21T09:01:00.734Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-10-21T09:14:37.139Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-10-21T09:16:58.356Z"
+  },
+  "tests_snapshot": {
+    "at": "2026-10-21T09:01:11.428Z",
+    "reason": "tests de Términos y CSV ajustados (F13, F16, F17)",
+    "sha256": {
+      "backend/tests/catalog_samples.py": "973c68eaf6b348e6c0e73a74047b96fb4bf16ff58ef80b824b700c98e93b159a",
+      "backend/tests/fakes.py": "af7507f0d411f45a0123a232faf644353fb13c6efd1ea18f127f8ad5ae9c9b30",
+      "backend/tests/test_routes/test_catalog_routes.py": "4f60cb19efc9f727e163e74f31c5d0c8cf687adca17a9e624f1d97c97d3cbd10",
+      "backend/tests/test_routes/test_meal_routes.py": "add344aa44cf82686066ef0c3e99845320297f328b0ec2967ea67dac6ae56695",
+      "backend/tests/test_scripts/test_load_food_catalog_script.py": "267bbd457e821bdb1a890179cb7279503e008e2cbcec3f656a656853f4c0f42f",
+      "backend/tests/test_services/test_catalog_csv_reader.py": "526133c9e6c74d0d5f618bcf47f3d3753cd1790fc646678a2eeba336a29a309f",
+      "backend/tests/test_services/test_catalog_load_service.py": "1be6a0518590ed719010bf68398eeb376ec94bcacd7e5a343d8ed5a4bc5e3dd7",
+      "backend/tests/test_services/test_catalog_migration.py": "4992d7b4d25ab0f94a1c3bb370b446f3cf1f84b7905534bd995cebd02dc224f5",
+      "backend/tests/test_services/test_catalog_rules.py": "104718cc8931a01232c1046791806ff1f2b4478ba23b0d14dbc3fa0cce1c0a03",
+      "backend/tests/test_services/test_catalog_search_service.py": "81bcc483f4569083de5d9c2c3cc270b16fea91233cfdcf6742867ed3577f9f6f",
+      "backend/tests/test_services/test_food_catalog_csv.py": "0234b6dca81b42765af14e4ead684f722c4eaf1208c5e8c256837139c375e85e",
+      "backend/tests/test_services/test_meal_rules.py": "4862f9dc81c63aa717d206df801c1b84a02c9158cb11373acacd1d6e8126d07d",
+      "backend/tests/test_services/test_meal_service.py": "81175d10012974fb68e08061f6f45323ad351f9614a25d2c2cf8a8fe9143a0aa",
+      "frontend/src/app/diaryRoute.test.tsx": "3a726b4bceda4e880979b53a970f0877818c49aeb0ad732d1d3db66763244630",
+      "frontend/src/app/foodsRoute.test.tsx": "4ed86959c8b496fe03c458f63722d5e7e80e312cae3197bb13b4373765852daa",
+      "frontend/src/components/layout/noFoodsLink.test.tsx": "8477c2371ec09acc7270618a4ccc048a7a031e5e33d7fb8178bba819a9ce32e3",
+      "frontend/src/features/catalog/components/CatalogResultList.test.tsx": "1d12b2fde60892977473cc499fcd134e5b545d029903b572b2a89d8fa696dcd6",
+      "frontend/src/features/catalog/schemas.test.ts": "0c0c1282af794d4893178b2bb6e884c1888f7115d656d388d71fa1578d635ebe",
+      "frontend/src/features/diary/components/AddFoodDialog.test.tsx": "dd3cc0ce3272e49696d451c610dc485371568db57eb29c1aba0b149857f9654f",
+      "frontend/src/features/diary/format.test.ts": "4bb1db7c59f9761ee3cb4917f76e35ccacdb13cb9d3711a1c61f20881ea88f7a",
+      "frontend/src/features/diary/pages/DiaryPage.test.tsx": "db0d75d241da58020e7ec81d87c36924ee53b6f8adbe388e9d7cf9c3488b1e5b",
+      "frontend/src/features/diary/schemas.test.ts": "06fb008297a5594c48fe09a9898ed19f7862dadee092a30092e58e9a3026b6eb",
+      "frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx": "ea70e17a023aa84a54b8b2023c44db4c0f30f16bffd2b3841324628052567b26",
+      "frontend/src/features/legal/pages/TermsOfServicePage.test.tsx": "2922699e479ca8c4ad6c9790931859b754fdbf6752a3b2d3a748027908e52fe5",
+      "frontend/src/test/catalogFixtures.ts": "b5424e5b99f17982fd465ade2fc8bf80f630c6ed8ac28c095e8c796a91fab1c9",
+      "frontend/src/test/diaryFixtures.ts": "17f2a7bf3f85b173aa876a05cacd3adc991a5ccb6ebb08bd56aed7eaded26bb0"
+    }
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-21T05:27:32.707Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama feat/023-generic-food-catalog desde main"
+    },
+    {
+      "at": "2026-10-21T05:33:12.081Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegar en spec-writer: spec del catálogo genérico de alimentos"
+    },
+    {
+      "at": "2026-10-21T05:37:35.817Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "12 preguntas abiertas del spec-writer (Q1-Q12) con respuesta propuesta"
+    },
+    {
+      "at": "2026-10-21T05:42:45.389Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Respuestas del usuario copiadas (12 aprobadas, Q6 con plurales); segunda pasada del spec-writer"
+    },
+    {
+      "at": "2026-10-21T05:43:50.981Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec 023: 12 REQ, 2 NFR, 67 AC; 12 preguntas respondidas"
+    },
+    {
+      "at": "2026-10-21T06:00:22.047Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Aprobado, avanza con el gate del spec"
+    },
+    {
+      "at": "2026-10-21T06:00:22.330Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 1f144d3"
+    },
+    {
+      "at": "2026-10-21T06:00:22.514Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegar en planner: plan del catálogo genérico"
+    },
+    {
+      "at": "2026-10-21T06:09:20.751Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md + ADR-0031; migración aditiva d4f6a8c0e2b5"
+    },
+    {
+      "at": "2026-10-21T06:09:20.829Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan y ADR-0031 del catálogo genérico"
+    },
+    {
+      "at": "2026-10-21T06:09:26.806Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 3fbd904"
+    },
+    {
+      "at": "2026-10-21T06:09:26.885Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Decisiones: catálogo filtrado en Python (<=350 filas), sin FK; tabla catalog_foods; migración aditiva d4f6a8c0e2b5 (downgrade se niega con meal_items catalog); MealService catalog_repository=None; sin Voyage"
+    },
+    {
+      "at": "2026-10-21T06:09:27.035Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegar en task-breaker"
+    },
+    {
+      "at": "2026-10-21T06:11:10.651Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "67 tareas: 14 scaffold, 26 test, 21 impl, 1 migration, 5 config"
+    },
+    {
+      "at": "2026-10-21T06:11:10.744Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 67 tareas con cobertura de los 67 AC"
+    },
+    {
+      "at": "2026-10-21T06:11:10.948Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: aeebe4e"
+    },
+    {
+      "at": "2026-10-21T06:11:11.143Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (implementer)"
+    },
+    {
+      "at": "2026-10-21T06:12:35.891Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-21T06:47:25.520Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier (red)"
+    },
+    {
+      "at": "2026-10-21T06:54:35.291Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Red 023: 29 tests con SDD 023 pasan sin implementación (12 backend, 17 frontend, incl. 12 de rechazo de z.never); resto rojo legítimo; guardas 021/022 excluidas. Backend 293 pass/316 fail/6 err; frontend 131 pass/56 fail. Migración d4f6a8c0e2b5 aún no existe (legítimo)."
+    },
+    {
+      "at": "2026-10-21T06:54:50.483Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL 1: 29 tests con SDD 023 pasan sin implementación (12 backend, 17 frontend) · tests 1/3"
+    },
+    {
+      "at": "2026-10-21T07:06:17.812Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Red 023 iter 2: los 29 tests de la iteración 1 ya fallan por rojo legítimo (12 backend, 3 constantes retirados; 17 frontend). Fallo nuevo: AddFoodDialog.test.tsx, mock searchFoods devuelve undefined y el componente crashea (TypeError AddFoodDialog.tsx:66), 17+ tests sin aserción alcanzada, 32 unhandled. Backend 281 pass/325 fail/6 err; frontend 114 pass/73 fail. Trazabilidad 67/67 ACs."
+    },
+    {
+      "at": "2026-10-21T07:06:42.455Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL 2: el mock searchFoods de AddFoodDialog.test.tsx devuelve undefined y rompe 17 tests por fixture, no por comportamiento · tests 2/3"
+    },
+    {
+      "at": "2026-10-21T07:18:51.744Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Red 023 iter 3: backend 281 pass/325 fail/6 err (sin cambios; rojo legítimo, guarda 022 excluida). Frontend 116 pass/71 fail; 0 Unhandled Errors y sin errores de montaje. Fallo: 2 tests marcados 023 de AddFoodDialog («sin resultados» AC-009.5 y AC-N002.2) pasan sin implementación porque el mensaje viene de la ruta USDA; responsable test-author. Trazabilidad 67/67."
+    },
+    {
+      "at": "2026-10-21T07:19:06.189Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL 3: 2 tests de AddFoodDialog (AC-009.5, AC-N002.2) pasan porque el texto sale de la ruta USDA · tests 3/3"
+    },
+    {
+      "at": "2026-10-21T07:26:41.134Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red 023 iter 3: todos los tests SDD 023 que no son guardas fallan por comportamiento ausente; 0 Unhandled Errors, 0 TypeError de fixture. Backend 281 pass/325 fail/6 err (6 setup = esqueleto read_catalog_csv). Frontend 114 pass/73 fail. Guardas excluidas: 20 casos de 022 en test_post_validation_message_and_nothing_saved, 2 de noFoodsLink y 1 de foodsRoute. Trazabilidad 67/67."
+    },
+    {
+      "at": "2026-10-21T07:26:54.167Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS tras 3 correcciones; 67/67 AC"
+    },
+    {
+      "at": "2026-10-21T07:26:54.269Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "26 archivo(s) de test: tests rojos 023 aprobados"
+    },
+    {
+      "at": "2026-10-21T07:26:54.432Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 67/67 AC con test"
+    },
+    {
+      "at": "2026-10-21T07:26:54.912Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: e0b0f5b"
+    },
+    {
+      "at": "2026-10-21T07:26:55.111Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegar en implementer"
+    },
+    {
+      "at": "2026-10-21T07:48:04.723Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "implementación completa; 1 fila manual (yuca-cocida); 265 alimentos"
+    },
+    {
+      "at": "2026-10-21T07:48:04.854Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): implementación completa, CSV de 265 alimentos"
+    },
+    {
+      "at": "2026-10-21T07:48:05.179Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: d9459f3"
+    },
+    {
+      "at": "2026-10-21T07:48:05.375Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegar en verifier (full)"
+    },
+    {
+      "at": "2026-10-21T07:53:29.801Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify FAIL: Iteración 1 de verify (full). Backend: pytest 1808 passed; lint-ratchet exit 1 con 1058 violaciones nuevas: 1051 del CSV food_catalog.csv (el ratchet lo trata como Python por backend/scripts/**, falso positivo de alcance) y 7 E501 en 5 tests congelados (responsable test-author). Frontend: test 1048 passed, lint sin errores, tsc -b OK, build OK (entrada 384,63 kB < 500). Trazabilidad 67/67 AC, 14/14 REQ/NFR, 67/67 tareas [x]; sin skip nuevos; snapshot de tests sin cambios."
+    },
+    {
+      "at": "2026-10-21T08:11:52.325Z",
+      "stage": "verify",
+      "event": "blocked",
+      "note": "límite de iteraciones alcanzado (tests: 3/3). Verify FAIL: 7 E501 en tests congelados (solo formato); max_iterations 4 aprobado por el usuario"
+    },
+    {
+      "at": "2026-10-21T08:13:00.784Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Reanudar tras bloqueo por límite de iteraciones; el usuario aprueba una corrección extra sin contador"
+    },
+    {
+      "at": "2026-10-21T08:13:00.875Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Verify FAIL: 7 E501 en tests congelados (solo formato). Usuario aprobó una pasada extra sin contador (opción 1)"
+    },
+    {
+      "at": "2026-10-21T08:14:16.134Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "7 E501 corregidos (solo formato)"
+    },
+    {
+      "at": "2026-10-21T08:14:16.235Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "26 archivo(s) de test: formato de 7 líneas largas en tests"
+    },
+    {
+      "at": "2026-10-21T08:14:16.384Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección de formato, tests sin cambios de lógica"
+    },
+    {
+      "at": "2026-10-21T08:14:16.731Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: e7792b5"
+    },
+    {
+      "at": "2026-10-21T08:14:16.833Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "sin cambios de código; solo formato de tests"
+    },
+    {
+      "at": "2026-10-21T08:14:16.935Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): sin cambios de producción"
+    },
+    {
+      "at": "2026-10-21T08:14:17.042Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verify full tras la corrección de formato"
+    },
+    {
+      "at": "2026-10-21T08:18:35.183Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Iteración 2 de verify (full) tras corrección de formato: backend pytest 1808 passed; ratchet backend exit 0 sin violaciones nuevas; frontend test 1048 passed, lint 0 errores, tsc -b OK, build OK (entrada 384,63 kB < 500 kB). Trazabilidad 67/67 AC, 14/14 REQ/NFR, 67/67 tareas [x]; sin skip nuevos; cambios en tests solo de formato. Manual: contenido del CSV y diseño del diálogo."
+    },
+    {
+      "at": "2026-10-21T08:18:47.267Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: 1808 backend, 1048 frontend, ratchet limpio, chunk 384,63 kB, 67/67 AC"
+    },
+    {
+      "at": "2026-10-21T08:18:47.369Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-21T08:18:47.550Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegar en reviewer"
+    },
+    {
+      "at": "2026-10-21T08:23:50.704Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "CHANGES_REQUESTED"
+    },
+    {
+      "at": "2026-10-21T08:27:59.810Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Review F1: yuca-cocida sin fuente válida; el usuario elige la opción 2 (quitarla de la lista mínima y del catálogo hasta tener fuente) · review 1/3"
+    },
+    {
+      "at": "2026-10-21T08:28:42.660Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec ajustada: lista mínima de 40 a 39 (sin yuca cocida)"
+    },
+    {
+      "at": "2026-10-21T08:29:02.204Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Si"
+    },
+    {
+      "at": "2026-10-21T08:29:02.452Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 84f397e"
+    },
+    {
+      "at": "2026-10-21T08:29:02.766Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Ajuste mínimo del plan: lista mínima de 39"
+    },
+    {
+      "at": "2026-10-21T08:29:33.796Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan ajustado: lista mínima de 39, CSV de 264 filas"
+    },
+    {
+      "at": "2026-10-21T08:29:33.902Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): ajuste acotado del plan"
+    },
+    {
+      "at": "2026-10-21T08:29:34.160Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 4d9a95d"
+    },
+    {
+      "at": "2026-10-21T08:29:34.362Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Ajuste mínimo de tareas: lista mínima 39"
+    },
+    {
+      "at": "2026-10-21T08:30:26.724Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks ajustadas: 69 tareas, 7 abiertas (T-028, T-035, T-120 a T-123, T-125)"
+    },
+    {
+      "at": "2026-10-21T08:30:26.825Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): ajuste acotado de tareas"
+    },
+    {
+      "at": "2026-10-21T08:30:27.083Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 4685b3e"
+    },
+    {
+      "at": "2026-10-21T08:30:27.293Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (sin scaffold nuevo); tareas T-028 y T-035"
+    },
+    {
+      "at": "2026-10-21T08:31:26.375Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier (red) sobre T-028 y T-035"
+    },
+    {
+      "at": "2026-10-21T08:32:37.030Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: T-028/T-035: 9 de 16 casos fallan por contenido del CSV (rojo legítimo). FAIL: test_the_minimum_list_has_39_foods pasa sin implementación (solo comprueba la constante del test; responsable test-author). Snapshot solo difiere en test_food_catalog_csv.py."
+    },
+    {
+      "at": "2026-10-21T08:32:48.557Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red FAIL (ronda de revisión de la spec): test_the_minimum_list_has_39_foods solo comprueba su propia constante y pasa sin implementación; corrección sin contador por cambio de spec"
+    },
+    {
+      "at": "2026-10-21T08:34:15.736Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red check acotado repetido: 10 tests nuevos de test_food_catalog_csv.py fallan por contenido del CSV (rojo legítimo); 6 guardas pasan; solo cambia el archivo de test entre los de código."
+    },
+    {
+      "at": "2026-10-21T08:34:24.736Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red PASS acotado: 10 tests del CSV fallan por contenido"
+    },
+    {
+      "at": "2026-10-21T08:34:24.848Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "26 archivo(s) de test: tests del CSV actualizados a lista de 39 y nuevo estado"
+    },
+    {
+      "at": "2026-10-21T08:34:24.989Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS acotado, tests del CSV"
+    },
+    {
+      "at": "2026-10-21T08:34:25.261Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 73274c3"
+    },
+    {
+      "at": "2026-10-21T08:34:25.480Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Reabrir CSV: T-120 a T-123 y T-125"
+    },
+    {
+      "at": "2026-10-21T08:38:09.311Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "CSV editado por el orquestador con autorización explícita del usuario (el role-guard no reconoce backend/scripts/data/): 261 filas, sin yuca ni filas manual, F2 a F6 aplicados"
+    },
+    {
+      "at": "2026-10-21T08:40:42.980Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "CSV corregido: 261 filas, 1817 tests backend en verde"
+    },
+    {
+      "at": "2026-10-21T08:40:43.090Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): CSV corregido por la review (F1 a F6)"
+    },
+    {
+      "at": "2026-10-21T08:40:43.378Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 1f0ae95"
+    },
+    {
+      "at": "2026-10-21T08:40:43.637Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verify full tras corregir el CSV"
+    },
+    {
+      "at": "2026-10-21T08:46:01.036Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify full iteración 3 (tras review): backend pytest 1817 passed, ratchet sin violaciones nuevas; frontend test 1048 passed, lint 0 errores, tsc -b OK, build OK (entrada 384,63 kB < 500 kB). Trazabilidad 67/67 AC, 14/14 REQ/NFR, 69/69 tareas [x]; sin skip nuevos; snapshot de tests coincide con HEAD. Manual: contenido del CSV y diseño del diálogo."
+    },
+    {
+      "at": "2026-10-21T08:46:11.568Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: 1817 backend, 1048 frontend, ratchet limpio, chunk 384,63 kB"
+    },
+    {
+      "at": "2026-10-21T08:46:11.702Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-21T08:46:11.887Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review 2.ª pasada tras corregir F1 a F6"
+    },
+    {
+      "at": "2026-10-21T08:53:35.607Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "CHANGES_REQUESTED"
+    },
+    {
+      "at": "2026-10-21T08:53:35.734Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Review F13: la frase de Términos sobre alimentos añadidos a mano ya no es cierta; usuario elige A (F13, F14, F16, F17) · review 2/3"
+    },
+    {
+      "at": "2026-10-21T08:54:39.417Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec ajustada (F13): fuera la frase de alimentos añadidos a mano; AC-012.1 pasa a exigir que no aparezca"
+    },
+    {
+      "at": "2026-10-21T08:56:42.267Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Si"
+    },
+    {
+      "at": "2026-10-21T08:56:42.576Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 11311ba"
+    },
+    {
+      "at": "2026-10-21T08:56:42.681Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Ajuste: 261 filas, sin la frase de Términos"
+    },
+    {
+      "at": "2026-10-21T08:57:18.650Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan ajustado: sin frase de Términos, 261 filas"
+    },
+    {
+      "at": "2026-10-21T08:57:18.756Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): ajuste acotado del plan"
+    },
+    {
+      "at": "2026-10-21T08:57:18.993Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 654ee92"
+    },
+    {
+      "at": "2026-10-21T08:57:19.097Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Ajuste: T-049, T-138, 261 filas; tareas F16 y F17"
+    },
+    {
+      "at": "2026-10-21T08:58:02.643Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks ajustadas: T-049 y T-138 reabiertas, T-036, T-126, T-127 nuevas"
+    },
+    {
+      "at": "2026-10-21T08:58:02.752Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): ajuste acotado de tareas"
+    },
+    {
+      "at": "2026-10-21T08:58:02.999Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: a66dcf8"
+    },
+    {
+      "at": "2026-10-21T08:58:03.110Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (T-036 y T-049)"
+    },
+    {
+      "at": "2026-10-21T09:01:00.734Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Ronda acotada (tests de T-049 y T-036): los 2 tests nuevos en rojo fallan por contenido ausente (lechuga iceberg pendiente T-126; frase de Términos pendiente T-138). Resto de los tests de esos archivos son guardas, relajaciones o reetiquetados. 67/67 AC con marcador. Resto de tests nuevos de la feature no reejecutados en esta ronda."
+    },
+    {
+      "at": "2026-10-21T09:01:11.334Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red PASS acotado: Términos (F13) y lechuga iceberg (F16) fallan por contenido"
+    },
+    {
+      "at": "2026-10-21T09:01:11.428Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "26 archivo(s) de test: tests de Términos y CSV ajustados (F13, F16, F17)"
+    },
+    {
+      "at": "2026-10-21T09:01:11.578Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS acotado"
+    },
+    {
+      "at": "2026-10-21T09:01:11.836Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: d96070a"
+    },
+    {
+      "at": "2026-10-21T09:01:11.937Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "T-126, T-127 y T-138"
+    },
+    {
+      "at": "2026-10-21T09:06:29.144Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "Fila de lechuga editada por el orquestador con autorización explícita del usuario (F16): lechuga-iceberg"
+    },
+    {
+      "at": "2026-10-21T09:09:05.951Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F13 (Términos), F16 (lechuga iceberg) y recarga en desarrollo; 261 filas"
+    },
+    {
+      "at": "2026-10-21T09:09:06.135Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): correcciones F13 y F16"
+    },
+    {
+      "at": "2026-10-21T09:09:06.429Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: ea24a16"
+    },
+    {
+      "at": "2026-10-21T09:09:06.530Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verify full tras F13, F16 y F17"
+    },
+    {
+      "at": "2026-10-21T09:14:37.139Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify full iteración 4 (tras F13, F16, F17): backend pytest 1817 passed; ratchet backend exit 0 sin violaciones nuevas; frontend test 1048 passed, lint 0 errores, tsc -b OK, build OK (entrada 384,63 kB < 500 kB). Trazabilidad 67/67 AC, 14/14 REQ/NFR, 72/72 tareas [x]; sin skip nuevos; snapshot de tests coincide con HEAD. Test intermitente accountSwitch no reproducido (fuera de los archivos de la 023). Manual: diseño del diálogo y contenido del CSV."
+    },
+    {
+      "at": "2026-10-21T09:14:47.839Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: 1817 backend, 1048 frontend, ratchet limpio, chunk 384,63 kB, 67/67 AC"
+    },
+    {
+      "at": "2026-10-21T09:14:47.935Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-21T09:14:48.043Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review 3.ª pasada tras F13 a F17"
+    },
+    {
+      "at": "2026-10-21T09:16:58.356Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-21T09:16:58.465Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED en la 3.ª pasada: 0 bloqueantes, 0 mayores"
+    },
+    {
+      "at": "2026-10-21T09:26:12.886Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Se ve bien. Review aprobado"
+    },
+    {
+      "at": "2026-10-21T09:26:13.252Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: c15c180"
+    },
+    {
+      "at": "2026-10-21T09:26:13.475Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegar en doc-keeper"
+    },
+    {
+      "at": "2026-10-21T09:27:37.421Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "docs: runbook, CLAUDE.md, README, ADR-0031 aceptada"
+    },
+    {
+      "at": "2026-10-21T09:27:37.519Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): documentación de la 023"
+    },
+    {
+      "at": "2026-10-21T09:27:43.128Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: b1ad490"
+    },
+    {
+      "at": "2026-10-21T09:27:43.376Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Checklist de hecho y backlog global"
+    },
+    {
+      "at": "2026-10-21T09:27:51.590Z",
+      "stage": "close",
+      "event": "done",
+      "note": "checklist de hecho y backlog global"
+    },
+    {
+      "at": "2026-10-21T09:30:58.329Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Apruebo cerrar la feature y vamos con la opcion 2"
+    },
+    {
+      "at": "2026-10-21T09:30:58.329Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
+    }
+  ]
+}

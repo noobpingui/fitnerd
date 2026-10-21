@@ -470,3 +470,57 @@ class FakeMealRepository:
             if meal.id == meal_id and str(meal.user_id) == str(user_id):
                 return meal
         return None
+
+
+# --- Spec 023: catálogo genérico de alimentos ----------------------------
+
+
+def make_catalog_food(
+    id,
+    name,
+    synonyms=(),
+    calories_kcal=0.0,
+    protein_g=0.0,
+    carbs_g=0.0,
+    fat_g=0.0,
+    source="usda",
+    fdc_id=1,
+    reference=None,
+):
+    """Alimento del catálogo de mentira con la forma de `CatalogFood`
+    (spec 023): `synonyms` es una lista y los cuatro valores son por 100 g."""
+    from types import SimpleNamespace
+
+    return SimpleNamespace(
+        id=id,
+        name=name,
+        synonyms=list(synonyms),
+        calories_kcal=calories_kcal,
+        protein_g=protein_g,
+        carbs_g=carbs_g,
+        fat_g=fat_g,
+        source=source,
+        fdc_id=fdc_id,
+        reference=reference,
+    )
+
+
+class FakeCatalogFoodRepository:
+    """Doble de `CatalogFoodRepository` en memoria (spec 023): `foods` son los
+    alimentos del catálogo. `list_all` devuelve todos (ordenados por id, como
+    el real) y registra la llamada en `list_calls`; `get_by_ids` devuelve los
+    que coinciden (orden libre) y guarda cada lista pedida en `get_calls`."""
+
+    def __init__(self, foods=None):
+        self.foods = list(foods or [])
+        self.list_calls = []
+        self.get_calls = []
+
+    def list_all(self):
+        self.list_calls.append(True)
+        return sorted(self.foods, key=lambda food: food.id)
+
+    def get_by_ids(self, ids):
+        self.get_calls.append(list(ids))
+        wanted = set(ids)
+        return [food for food in self.foods if food.id in wanted]

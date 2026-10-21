@@ -7,14 +7,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { FoodResultList } from "@/features/foods/components/FoodResultList"
+import { useCatalogSearch } from "@/features/catalog/hooks"
+import { CatalogResultList } from "@/features/catalog/components/CatalogResultList"
+import type { CatalogFood } from "@/features/catalog/types"
 import { FoodSearchForm } from "@/features/foods/components/FoodSearchForm"
-import { useFoodSearch } from "@/features/foods/hooks"
 import { searchErrorView } from "@/features/foods/searchError"
-import type { Food } from "@/features/foods/types"
 import { saveErrorMessage } from "../errors"
 import { useAddMealItems } from "../hooks"
-import type { CustomItemPayload, MealType, UsdaItemPayload } from "../types"
+import type { CatalogItemPayload, CustomItemPayload, MealType } from "../types"
 import { CustomFoodForm } from "./CustomFoodForm"
 import { PortionForm } from "./PortionForm"
 
@@ -32,9 +32,9 @@ export function AddFoodDialog({
   onClose: () => void
 }): ReactElement {
   const [step, setStep] = useState<Step>("search")
-  const [food, setFood] = useState<Food | null>(null)
+  const [food, setFood] = useState<CatalogFood | null>(null)
   // La búsqueda vive aquí para que «Volver a la búsqueda» conserve los resultados.
-  const search = useFoodSearch()
+  const search = useCatalogSearch()
   const add = useAddMealItems(date)
 
   function handleSearch(query: string) {
@@ -47,12 +47,12 @@ export function AddFoodDialog({
     setStep(next)
   }
 
-  function choose(selected: Food) {
+  function choose(selected: CatalogFood) {
     setFood(selected)
     goTo("portion")
   }
 
-  async function save(item: UsdaItemPayload | CustomItemPayload) {
+  async function save(item: CatalogItemPayload | CustomItemPayload) {
     if (add.isPending) return
     try {
       await add.mutateAsync({ date, meal_type: mealType, items: [item] })
@@ -102,7 +102,7 @@ export function AddFoodDialog({
       <DialogContent showCloseButton={false} className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{`Añadir a ${label}`}</DialogTitle>
-          <DialogDescription>Busca un alimento de USDA o crea uno propio.</DialogDescription>
+          <DialogDescription>Busca un alimento o crea uno propio.</DialogDescription>
         </DialogHeader>
 
         {add.isError && (
@@ -117,6 +117,7 @@ export function AddFoodDialog({
               onSearch={handleSearch}
               isSearching={search.isPending}
               defaultQuery={search.variables ?? ""}
+              placeholder="Ej.: arroz blanco cocido, banano"
             />
 
             <div role="status" aria-live="polite" className="my-4 text-sm text-muted-foreground">
@@ -147,7 +148,7 @@ export function AddFoodDialog({
             </div>
 
             {search.isSuccess && !noResults && (
-              <FoodResultList foods={search.data.results} onSelect={choose} />
+              <CatalogResultList foods={search.data.results} onSelect={choose} />
             )}
 
             <div className="mt-4 flex flex-wrap gap-2">
@@ -159,14 +160,14 @@ export function AddFoodDialog({
 
         {step === "portion" && food && (
           <div className="space-y-3">
-            <p className="font-medium">{food.description}</p>
+            <p className="font-medium">{food.name}</p>
             <PortionForm
-              key={food.fdc_id}
+              key={food.id}
               per100g={food.per_100g}
               defaultGrams="100"
               submitLabel="Añadir"
               isSaving={add.isPending}
-              onSubmit={(grams) => save({ fdc_id: food.fdc_id, grams })}
+              onSubmit={(grams) => save({ catalog_id: food.id, grams })}
             >
               {backButton}
               {cancelButton}

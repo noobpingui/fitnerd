@@ -7,6 +7,7 @@ from sqlalchemy.engine import make_url
 from app import create_app
 from extensions import db, embedding_client
 from repositories.food_repository import FoodRepository
+from scripts.database_target import LOCAL_HOSTS, confirm_remote_write, is_local_host
 from services.food_import_service import FoodImportService, UsdaSource, format_summary
 from services.usda_csv_reader import UsdaFileError
 from unit_of_work.unit_of_work import UnitOfWork
@@ -14,20 +15,9 @@ from unit_of_work.unit_of_work import UnitOfWork
 # Para ejecutarlo: python -m scripts.import_usda_foods --foundation <carpeta> --sr-legacy <carpeta>
 
 
-_LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1", "postgres"}
-
-
-def _is_local(host: str | None) -> bool:
-    # Ante la duda (sin host, host desconocido) se trata como no local.
-    return host is not None and host.lower() in _LOCAL_HOSTS
-
-
-def _confirm() -> bool:
-    try:
-        answer = input("La base de datos NO es local. ¿Escribir en ella? [s/N]: ")
-    except EOFError:
-        return False
-    return answer.strip().lower() in {"s", "si", "sí", "y", "yes"}
+_LOCAL_HOSTS = LOCAL_HOSTS
+_is_local = is_local_host
+_confirm = confirm_remote_write
 
 
 def main(argv: list[str] | None = None) -> int:

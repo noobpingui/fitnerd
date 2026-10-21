@@ -131,21 +131,15 @@ describe("AppRouter - rutas /diary y /foods", () => {
     expect(active.length).toBeGreaterThan(0)
   })
 
-  // SDD: 022 REQ-015 AC-015.4
-  it("/foods sigue mostrando la pantalla «Alimentos» de la 021", async () => {
+  // SDD: 023 REQ-011 AC-011.1
+  it("/foods ya no muestra «Alimentos»: termina en /diary con «Diario» activo", async () => {
     window.history.pushState({}, "", "/foods")
 
     renderRouter()
 
-    expect(await screen.findByRole("heading", { level: 1, name: "Alimentos" })).toBeInTheDocument()
-    expect(window.location.pathname).toBe("/foods")
-    // Comportamiento nuevo: la barra ya enlaza a «Diario» (AC-015.1) y no lo marca activo en /foods.
-    const diaryLinks = screen.getAllByRole("link", { name: "Diario" })
-    expect(diaryLinks.length).toBeGreaterThan(0)
-    for (const link of diaryLinks) {
-      expect(link).toHaveAttribute("href", "/diary")
-      expect(link).not.toHaveAttribute("aria-current", "page")
-    }
+    expect(await screen.findByRole("heading", { level: 1, name: "Diario" })).toBeInTheDocument()
+    expect(window.location.pathname).toBe("/diary")
+    expect(screen.queryByRole("heading", { level: 1, name: "Alimentos" })).not.toBeInTheDocument()
   })
 
   // SDD: 022 NFR-001 AC-N001.1

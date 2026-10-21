@@ -12,7 +12,9 @@ import {
   PER_100G_REQUIRED_MESSAGE,
   customFoodFormSchema,
   customItemPayload,
+  diaryResponseSchema,
   gramsFormSchema,
+  mealResponseSchema,
   parseDecimalText,
   type CustomFoodFormValues,
 } from "./schemas"
@@ -158,6 +160,86 @@ describe("customFoodFormSchema", () => {
   // SDD: 022 REQ-012 AC-012.4
   it("acepta una suma de macros de exactamente 100 g (33,3 + 33,3 + 33,4)", () => {
     expect(customIssues({ protein: "33,3", carbs: "33,3", fat: "33,4" })).toEqual({})
+  })
+})
+
+const NUTRIENTS = { calories_kcal: 195, protein_g: 4.05, carbs_g: 42.3, fat_g: 0.45 }
+
+function mealBody(items: unknown[]) {
+  return {
+    id: 12,
+    date: "2026-10-21",
+    meal_type: "lunch",
+    items,
+    totals: NUTRIENTS,
+    incomplete: [],
+  }
+}
+
+describe("mealResponseSchema", () => {
+  const catalogItem = {
+    id: 33,
+    source: "catalog",
+    catalog_id: "arroz-blanco-cocido",
+    fdc_id: null,
+    name: "Arroz blanco cocido",
+    data_type: null,
+    grams: 150,
+    per_100g: { calories_kcal: 130, protein_g: 2.7, carbs_g: 28.2, fat_g: 0.3 },
+    nutrients: NUTRIENTS,
+  }
+
+  // SDD: 023 REQ-008 AC-008.1
+  // SDD: 023 REQ-010 AC-010.1
+  it("acepta un alimento del catálogo con su `catalog_id`", () => {
+    const result = mealResponseSchema.safeParse(mealBody([catalogItem]))
+
+    expect(result.success).toBe(true)
+    expect(result.data?.items[0].source).toBe("catalog")
+    expect(result.data?.items[0].catalog_id).toBe("arroz-blanco-cocido")
+  })
+
+  // SDD: 023 REQ-008 AC-008.1
+  it("un alimento de USDA o personalizado con `catalog_id: null` lo conserva nulo", () => {
+    const usda = { ...catalogItem, id: 31, source: "usda", catalog_id: null, fdc_id: 171477,
+      data_type: "sr_legacy" }
+    const custom = { ...catalogItem, id: 32, source: "custom", catalog_id: null }
+
+    const result = mealResponseSchema.safeParse(mealBody([usda, custom]))
+
+    expect(result.success).toBe(true)
+    expect(result.data?.items.map((item) => item.catalog_id)).toEqual([null, null])
+  })
+
+  // SDD: 023 REQ-008 AC-008.1
+  it("un alimento sin el campo `catalog_id` (respuesta anterior a la 023) queda con `catalog_id: null`", () => {
+    const { catalog_id: _catalogId, ...withoutField } = catalogItem
+    const usda = { ...withoutField, source: "usda", fdc_id: 171477, data_type: "sr_legacy" }
+
+    const result = mealResponseSchema.safeParse(mealBody([usda]))
+
+    expect(result.success).toBe(true)
+    expect(result.data?.items[0].catalog_id).toBeNull()
+  })
+
+  // SDD: 023 REQ-008 AC-008.1
+  it("sigue rechazando un origen desconocido", () => {
+    expect(mealResponseSchema.safeParse(mealBody([catalogItem])).data?.items[0].source).toBe(
+      "catalog"
+    )
+    const result = mealResponseSchema.safeParse(mealBody([{ ...catalogItem, source: "otro" }]))
+
+    expect(result.success).toBe(false)
+  })
+
+  // SDD: 023 REQ-008 AC-008.1
+  it("el diario completo acepta alimentos de los tres orígenes", () => {
+    const usda = { ...catalogItem, id: 31, source: "usda", catalog_id: null, fdc_id: 171477,
+      data_type: "foundation" }
+    const body = { date: "2026-10-21", meals: [mealBody([catalogItem, usda])],
+      totals: NUTRIENTS, incomplete: [] }
+
+    expect(diaryResponseSchema.safeParse(body).success).toBe(true)
   })
 })
 

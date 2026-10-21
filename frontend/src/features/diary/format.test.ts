@@ -1,7 +1,7 @@
 // Formato de las cifras del diario (spec 022): es-ES, coma decimal, kcal sin
 // decimales y «—» cuando no hay dato.
 import { describe, expect, it } from "vitest"
-import { makeCustomItem, makeMealItem } from "@/test/diaryFixtures"
+import { makeCatalogItem, makeCustomItem, makeMealItem } from "@/test/diaryFixtures"
 import {
   formatDiaryDate,
   formatKcal,
@@ -126,5 +126,23 @@ describe("sourceLabel", () => {
   // SDD: 022 REQ-010 AC-010.6
   it("un alimento personalizado muestra «Personalizado»", () => {
     expect(sourceLabel(makeCustomItem())).toBe("Personalizado")
+  })
+
+  // SDD: 023 REQ-010 AC-010.1
+  it("un alimento del catálogo no tiene etiqueta de origen", () => {
+    expect(sourceLabel(makeCatalogItem())).toBeNull()
+  })
+
+  // SDD: 023 REQ-010 AC-010.1
+  it("el alimento del catálogo no toma la etiqueta de ningún tipo de dato", () => {
+    expect(sourceLabel(makeCatalogItem({ data_type: null, fdc_id: null }))).toBeNull()
+  })
+
+  // SDD: 023 REQ-010 AC-010.2
+  it("las etiquetas de la 022 siguen: USDA con su tipo y personalizado", () => {
+    expect(sourceLabel(makeMealItem({ data_type: "sr_legacy" }))).toBe("SR Legacy")
+    expect(sourceLabel(makeMealItem({ data_type: "foundation" }))).toBe("Foundation")
+    expect(sourceLabel(makeCustomItem())).toBe("Personalizado")
+    expect(sourceLabel(makeCatalogItem())).toBeNull()
   })
 })

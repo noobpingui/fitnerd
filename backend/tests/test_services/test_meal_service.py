@@ -14,11 +14,13 @@ from exceptions.custom_exceptions import ResourceNotFoundError, ValidationError
 from models.meal import Meal, MealItem
 from services.meal_service import MealService
 from tests.fakes import (
+    FakeCatalogFoodRepository,
     FakeClock,
     FakeFoodRepository,
     FakeLockingUserRepository,
     FakeMealRepository,
     FakeUnitOfWork,
+    make_catalog_food,
     make_food,
 )
 
@@ -839,3 +841,306 @@ def test_remove_item_and_delete_meal_lock_the_user_row():
     env.service.delete_meal(USER, 1)
 
     assert env.users.for_update_calls == [USER, USER]
+
+
+# --------------------------------------------------------------------------
+# Spec 023: alimentos del catálogo
+# --------------------------------------------------------------------------
+
+CATALOG_CHICKEN = make_catalog_food(
+    "pechuga-de-pollo-a-la-plancha",
+    "Pechuga de pollo a la plancha",
+    calories_kcal=165.0,
+    protein_g=31.0,
+    carbs_g=0.0,
+    fat_g=3.57,
+    fdc_id=171477,
+)
+CATALOG_BANANA = make_catalog_food(
+    "banano",
+    "Banano",
+    synonyms=["guineo"],
+    calories_kcal=89.0,
+    protein_g=1.09,
+    carbs_g=22.84,
+    fat_g=0.33,
+    fdc_id=173944,
+)
+
+
+class CatalogEnv:
+    """El servicio con un `FakeCatalogFoodRepository` inyectado por constructor."""
+
+    def __init__(self, catalog_foods=None, meals=None, with_catalog_repository=True):
+        self.meals = FakeMealRepository(meals)
+        self.foods = FakeFoodRepository([CHICKEN, RICE])
+        self.users = FakeLockingUserRepository()
+        self.uow = FakeUnitOfWork()
+        self.catalog = FakeCatalogFoodRepository(
+            catalog_foods if catalog_foods is not None else [CATALOG_CHICKEN, CATALOG_BANANA]
+        )
+        kwargs = {"catalog_repository": self.catalog} if with_catalog_repository else {}
+        self.service = MealService(
+            self.meals, self.foods, self.users, self.uow, FakeClock(NOW), **kwargs
+        )
+
+
+def make_catalog_item(item_id, position=0, meal_id=None, grams="150", **overrides):
+    """Alimento del catálogo precargado (la pechuga con los gramos dados)."""
+    fields = dict(
+        source="catalog",
+        catalog_id="pechuga-de-pollo-a-la-plancha",
+        fdc_id=None,
+        data_type=None,
+        name="Pechuga de pollo a la plancha",
+    )
+    fields.update(overrides)
+    return make_item(item_id, position, meal_id, grams, **fields)
+
+
+# SDD: 023 REQ-006 AC-006.1
+def test_add_items_saves_a_catalog_item_with_a_copy_of_its_name_and_values():
+    """La pechuga del catálogo con 150 g: `source` catalog, su identificador,
+    sin FDC ID ni tipo de dato, nombre del catálogo, valores por 100 g copiados
+    y nutrientes 247,5 / 46,5 / 0,0 / 5,36."""
+    env = CatalogEnv()
+
+    result = add(env, [{"catalog_id": "pechuga-de-pollo-a-la-plancha", "grams": 150}])
+
+    assert result.created is True
+    item = result.meal.meal.items[0]
+    assert (item.source, item.catalog_id) == ("catalog", "pechuga-de-pollo-a-la-plancha")
+    assert item.fdc_id is None
+    assert item.data_type is None
+    assert item.name == "Pechuga de pollo a la plancha"
+    assert item.grams == Decimal("150")
+    assert (
+        item.per_100g_calories_kcal,
+        item.per_100g_protein_g,
+        item.per_100g_carbs_g,
+        item.per_100g_fat_g,
+    ) == (165.0, 31.0, 0.0, 3.57)
+    assert item.calories_kcal == Decimal("247.50")
+    assert item.protein_g == Decimal("46.50")
+    assert item.carbs_g == Decimal("0.00")
+    assert item.fat_g == Decimal("5.36")
+    assert env.uow.committed is True
+
+
+# SDD: 023 REQ-006 AC-006.1
+def test_add_items_does_not_copy_the_synonyms_or_other_catalog_fields_into_the_item():
+    """El alimento guardado no depende del catálogo: el nombre es el del
+    catálogo, no un sinónimo."""
+    env = CatalogEnv()
+
+    result = add(env, [{"catalog_id": "banano", "grams": 100}])
+
+    item = result.meal.meal.items[0]
+    assert item.name == "Banano"
+    assert item.calories_kcal == Decimal("89.00")
+
+
+# SDD: 023 REQ-006 AC-006.2
+def test_add_items_accepts_catalog_usda_and_custom_in_that_order():
+    """Un alimento del catálogo, uno de USDA y uno personalizado: los tres, en
+    ese orden, cada uno con su `source` y `catalog_id` solo en el primero."""
+    env = CatalogEnv()
+
+    result = add(
+        env,
+        [
+            {"catalog_id": "pechuga-de-pollo-a-la-plancha", "grams": 150},
+            {"fdc_id": 168878, "grams": 100},
+            GALLO_PINTO,
+        ],
+    )
+
+    items = result.meal.meal.items
+    assert [item.source for item in items] == ["catalog", "usda", "custom"]
+    assert [item.position for item in items] == [0, 1, 2]
+    assert [item.catalog_id for item in items] == ["pechuga-de-pollo-a-la-plancha", None, None]
+
+
+# SDD: 023 REQ-006 AC-006.2
+def test_add_items_to_an_existing_meal_keeps_the_order_with_catalog_items():
+    """Con un alimento ya registrado, el del catálogo se añade al final."""
+    existing = make_meal(meal_id=5, items=[make_item(31)])
+    env = CatalogEnv(meals=[existing])
+
+    result = add(env, [{"catalog_id": "banano", "grams": 120}])
+
+    assert result.created is False
+    assert [item.source for item in existing.items] == ["usda", "catalog"]
+    assert existing.items[1].position == 1
+
+
+# SDD: 023 REQ-006 AC-006.2
+def test_add_items_asks_the_catalog_once_for_the_distinct_identifiers():
+    """Dos veces el mismo alimento: una sola consulta con identificadores sin repetir."""
+    env = CatalogEnv()
+
+    result = add(
+        env,
+        [
+            {"catalog_id": "banano", "grams": 100},
+            {"catalog_id": "banano", "grams": 50},
+            {"catalog_id": "pechuga-de-pollo-a-la-plancha", "grams": 100},
+        ],
+    )
+
+    assert len(result.meal.meal.items) == 3
+    assert len(env.catalog.get_calls) == 1
+    assert sorted(env.catalog.get_calls[0]) == ["banano", "pechuga-de-pollo-a-la-plancha"]
+
+
+# SDD: 023 REQ-006 AC-006.2
+def test_add_items_without_catalog_items_does_not_query_the_catalog():
+    """Una petición solo con USDA y personalizados no lee el catálogo."""
+    env = CatalogEnv()
+
+    add(env, [{"fdc_id": 171477, "grams": 100}, GALLO_PINTO])
+
+    assert env.catalog.get_calls == []
+
+    add(env, [{"catalog_id": "banano", "grams": 100}], meal_type="dinner")
+
+    assert env.catalog.get_calls == [["banano"]]
+
+
+# SDD: 023 REQ-008 AC-008.1
+def test_usda_and_custom_items_keep_a_null_catalog_id():
+    """Los alimentos de USDA y personalizados nuevos guardan `catalog_id` nulo."""
+    env = CatalogEnv()
+
+    result = add(
+        env, [{"fdc_id": 171477, "grams": 100}, GALLO_PINTO, {"catalog_id": "banano", "grams": 100}]
+    )
+
+    assert [item.catalog_id for item in result.meal.meal.items] == [None, None, "banano"]
+
+
+# SDD: 023 REQ-006 AC-006.3
+def test_add_items_rejects_an_unknown_catalog_id_and_rolls_back():
+    """Un `catalog_id` inexistente da 400 «No encontramos ese alimento.», no
+    confirma, deshace y no guarda nada."""
+    env = CatalogEnv()
+
+    message = expect_error(ValidationError, add, env, [{"catalog_id": "no-existe", "grams": 100}])
+
+    assert message == FOOD_NOT_FOUND
+    assert env.uow.committed is False
+    assert env.uow.rolled_back is True
+    assert env.meals.created == []
+
+
+# SDD: 023 REQ-006 AC-006.3
+def test_add_items_with_one_unknown_catalog_food_among_valid_ones_saves_nothing():
+    """Un alimento del catálogo válido, uno de USDA y uno inexistente: nada se guarda."""
+    existing = make_meal(meal_id=5, items=[make_item(31)])
+    env = CatalogEnv(meals=[existing])
+
+    expect_error(
+        ValidationError,
+        add,
+        env,
+        [
+            {"catalog_id": "banano", "grams": 100},
+            {"fdc_id": 171477, "grams": 100},
+            {"catalog_id": "no-existe", "grams": 100},
+        ],
+    )
+
+    assert len(existing.items) == 1
+    assert env.uow.committed is False
+    assert env.uow.rolled_back is True
+
+
+# SDD: 023 REQ-006 AC-006.3
+def test_add_items_with_catalog_ids_but_no_catalog_repository_is_not_found():
+    """Un servicio construido como en la 022 (sin repositorio del catálogo)
+    trata el identificador como inexistente en lugar de fallar."""
+    env = CatalogEnv(with_catalog_repository=False)
+
+    message = expect_error(ValidationError, add, env, [{"catalog_id": "banano", "grams": 100}])
+
+    assert message == FOOD_NOT_FOUND
+    assert env.uow.rolled_back is True
+
+
+def saved_catalog_item(env, item_id=31):
+    """Guarda la pechuga del catálogo de 150 g con `add_items` y devuelve
+    (id de la comida, alimento) con el identificador dado al alimento."""
+    result = add(env, [{"catalog_id": "pechuga-de-pollo-a-la-plancha", "grams": 150}])
+    item = result.meal.meal.items[0]
+    item.id = item_id
+    return result.meal.meal.id, item
+
+
+# SDD: 023 REQ-006 AC-006.6
+def test_update_item_grams_of_a_catalog_item_recalculates_with_the_stored_values():
+    """La pechuga del catálogo de 150 g pasa a 200 g: 330,0 / 62,0 / 0,0 / 7,14."""
+    env = CatalogEnv()
+    meal_id, item = saved_catalog_item(env)
+
+    env.service.update_item_grams(USER, meal_id, 31, {"grams": 200})
+
+    assert item.grams == Decimal("200")
+    assert item.calories_kcal == Decimal("330.00")
+    assert item.protein_g == Decimal("62.00")
+    assert item.carbs_g == Decimal("0.00")
+    assert item.fat_g == Decimal("7.14")
+    assert env.uow.committed is True
+
+
+# SDD: 023 REQ-007 AC-007.2
+def test_update_item_grams_ignores_a_catalog_that_changed_after_the_item_was_saved():
+    """Aunque el catálogo ahora diga otra cosa (o ya no tenga el alimento), el
+    recálculo usa los valores por 100 g guardados y no consulta el catálogo."""
+    env = CatalogEnv()
+    meal_id, item = saved_catalog_item(env)
+    changed = make_catalog_food(
+        "pechuga-de-pollo-a-la-plancha",
+        "Pechuga renombrada",
+        calories_kcal=999.0,
+        protein_g=99.0,
+        carbs_g=0.0,
+        fat_g=0.0,
+    )
+    env.catalog.foods = [changed]
+    env.catalog.get_calls.clear()
+
+    env.service.update_item_grams(USER, meal_id, 31, {"grams": 200})
+
+    assert item.calories_kcal == Decimal("330.00")
+    assert item.protein_g == Decimal("62.00")
+    assert item.name == "Pechuga de pollo a la plancha"
+    assert env.catalog.get_calls == []
+    assert env.catalog.list_calls == []
+
+
+# SDD: 023 REQ-007 AC-007.2
+def test_update_item_grams_works_when_the_food_was_removed_from_the_catalog():
+    """Con el catálogo vacío, cambiar los gramos de un alimento registrado funciona."""
+    env = CatalogEnv()
+    meal_id, item = saved_catalog_item(env)
+    env.catalog.foods = []
+
+    summary = env.service.update_item_grams(USER, meal_id, 31, {"grams": 100})
+
+    assert item.calories_kcal == Decimal("165.00")
+    assert summary.meal.id == meal_id
+
+
+# SDD: 023 REQ-007 AC-007.2
+def test_get_diary_returns_a_catalog_item_with_its_saved_values_even_if_the_catalog_is_empty():
+    """El diario no consulta el catálogo: el alimento se devuelve con lo guardado."""
+    env = CatalogEnv()
+    saved_catalog_item(env)
+    env.catalog.foods = []
+    env.catalog.get_calls.clear()
+
+    diary = env.service.get_diary(USER, TODAY)
+
+    assert diary.meals[0].meal.items[0].name == "Pechuga de pollo a la plancha"
+    assert diary.totals["calories_kcal"] == Decimal("247.50")
+    assert env.catalog.get_calls == [] and env.catalog.list_calls == []

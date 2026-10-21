@@ -2,7 +2,7 @@ import { LegalPageLayout } from "@/features/legal/components/LegalPageLayout"
 
 export function TermsOfServicePage() {
   return (
-    <LegalPageLayout title="Términos de servicio" updatedAt="20 de octubre de 2026">
+    <LegalPageLayout title="Términos de servicio" updatedAt="21 de octubre de 2026">
       <p>
         fitnerd es un proyecto personal, ofrecido de forma
         gratuita y "tal cual" (as-is), sin garantías formales. Al usar la

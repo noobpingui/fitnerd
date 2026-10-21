@@ -64,8 +64,8 @@ describe("PrivacyPolicyPage", () => {
     expect(text).toMatch(/cantidades/i)
   })
 
-  // SDD: 022 REQ-016 AC-016.2
-  it("el punto de Voyage AI menciona el texto de las búsquedas de alimentos", () => {
+  // SDD: 023 REQ-012 AC-012.2
+  it("el punto de Voyage AI ya no menciona las búsquedas de alimentos y sigue con las preguntas al coach", () => {
     renderPage()
     const section = sectionOf("Con quién se comparte")
 
@@ -74,15 +74,17 @@ describe("PrivacyPolicyPage", () => {
       .find((item) => /Voyage AI/.test(item.textContent ?? ""))
 
     expect(entry).toBeDefined()
-    expect(entry?.textContent).toMatch(/búsquedas de alimentos/i)
+    expect(entry?.textContent).not.toMatch(/búsquedas de alimentos/i)
+    expect(entry?.textContent).not.toMatch(/alimentos/i)
     expect(entry?.textContent).toMatch(/preguntas/i)
+    expect(entry?.textContent).toMatch(/coach/i)
   })
 
-  // SDD: 022 REQ-016 AC-016.2
-  it("la última actualización es la del 20 de octubre de 2026", () => {
+  // SDD: 023 REQ-012 AC-012.3
+  it("la última actualización es la del 21 de octubre de 2026", () => {
     renderPage()
 
-    expect(document.body.textContent ?? "").toContain("Última actualización: 20 de octubre de 2026")
+    expect(document.body.textContent ?? "").toContain("Última actualización: 21 de octubre de 2026")
   })
 
   // SDD: 005 REQ-012 AC-012.3

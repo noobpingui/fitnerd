@@ -4,10 +4,11 @@ export type MealType = "breakfast" | "lunch" | "dinner" | "snack"
 export type NutrientKey = "calories_kcal" | "protein_g" | "carbs_g" | "fat_g"
 export type Nutrients = Record<NutrientKey, number | null>
 export type NutrientTotals = Record<NutrientKey, number>
-export type MealItemSource = "usda" | "custom"
+export type MealItemSource = "catalog" | "usda" | "custom"
 export type MealItem = {
   id: number
   source: MealItemSource
+  catalog_id: string | null
   fdc_id: number | null
   name: string
   data_type: FoodDataType | null
@@ -29,7 +30,8 @@ export type Diary = {
   totals: NutrientTotals
   incomplete: NutrientKey[]
 }
-export type UsdaItemPayload = { fdc_id: number; grams: number }
+export type CatalogItemPayload = { catalog_id: string; grams: number }
+export type UsdaItemPayload ={ fdc_id: number; grams: number }
 export type CustomItemPayload = {
   name: string
   grams: number
@@ -38,5 +40,5 @@ export type CustomItemPayload = {
 export type AddMealItemsPayload = {
   date: string
   meal_type: MealType
-  items: (UsdaItemPayload | CustomItemPayload)[]
+  items: (CatalogItemPayload | UsdaItemPayload | CustomItemPayload)[]
 }

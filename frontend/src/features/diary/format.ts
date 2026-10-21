@@ -46,6 +46,7 @@ export function formatPortionPreview(nutrients: Nutrients): string {
   ].join(" · ")
 }
 
-export function sourceLabel(item: MealItem): string {
+export function sourceLabel(item: MealItem): string | null {
+  if (item.source === "catalog") return null
   return item.data_type === null ? "Personalizado" : DATA_TYPE_LABELS[item.data_type]
 }

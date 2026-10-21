@@ -2,6 +2,7 @@ from flask import Blueprint, g, jsonify, request
 
 from decorators import require_auth
 from extensions import db
+from repositories.catalog_food_repository import CatalogFoodRepository
 from repositories.food_repository import FoodRepository
 from repositories.meal_repository import MealRepository
 from repositories.user_repository import UserRepository
@@ -20,6 +21,7 @@ def _build_meal_service() -> MealService:
         UserRepository(db.session),
         UnitOfWork(db.session),
         clock=current_clock(),
+        catalog_repository=CatalogFoodRepository(db.session),
     )
 
 
@@ -36,6 +38,7 @@ def _serialize_item(item) -> dict:
         "id": item.id,
         "source": item.source,
         "fdc_id": item.fdc_id,
+        "catalog_id": item.catalog_id,
         "name": item.name,
         "data_type": item.data_type,
         "grams": float(item.grams),

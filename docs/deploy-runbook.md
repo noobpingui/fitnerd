@@ -198,6 +198,25 @@ Migración `b3d5f7a9c1e4` (ADR-0030): crea las tablas `meals` y `meal_items` (co
 4. **Comprobación manual:** con una cuenta real, abre `/diary` (enlace «Diario» en la navegación), añade un alimento de USDA a una comida y uno personalizado, cambia sus gramos y quítalo; comprueba que los totales del día se comparan con el objetivo de Macros. Recarga forzada de las pestañas abiertas.
 5. **Marcha atrás:** revertir el merge basta para el código. `flask db downgrade` a `c8e2a4f6b9d3` **borra las dos tablas con sus datos** (las comidas registradas se pierden); úsalo solo si la migración estorba de verdad y con el volcado a mano.
 
+### Caso B (aditiva) con carga de datos: 023, catálogo genérico de alimentos
+
+Migración `d4f6a8c0e2b5` (ADR-0031): crea `public.catalog_foods` y cambia las `CHECK` de `meal_items` (añade el origen `catalog` y la columna `catalog_id`). Es aditiva y no se aplica sola. El catálogo se llena después con un script manual que lee `backend/scripts/data/food_catalog.csv`. No hay variables nuevas ni llamadas a Voyage. Orden: backup, migración, merge y CD, carga.
+
+1. **Volcado completo** (paso 3) **verificado** en `C:/Users/alber/fitnerd-backups`.
+2. **Migración antes del merge** (caso B): `cd backend && FLASK_ENV=production .venv/Scripts/python.exe -m flask db upgrade`, con `FLASK_ENV` escrito a propósito (en local se usa `development`). Comprobación de solo lectura posterior: `alembic_version` = `d4f6a8c0e2b5` y existe `public.catalog_foods` (`to_regclass`), vacía.
+3. **Merge y CD** (paso 6). **Aviso:** entre el CD y la carga, la búsqueda del diario está vacía (responde 200 sin resultados). Haz la carga enseguida.
+4. **Carga del catálogo**, en la instancia y de forma **interactiva** (sin `-T`, con terminal):
+   ```bash
+   cd /home/ec2-user/fitnerd
+   docker compose -f docker-compose.prod.yml run --rm backend python -m scripts.load_food_catalog
+   ```
+   - El script imprime el entorno y la base de datos (sin la contraseña). Como la base de Supabase no es local, **pregunta `[s/N]`**: comprueba que el entorno es `production` y responde `s`. Cualquier otra respuesta cancela sin escribir nada (código 1).
+   - `--yes` omite la pregunta: úsalo **solo en ejecuciones no interactivas**.
+   - **Sin túnel SSH:** un túnel a `localhost` se tomaría por base local y no preguntaría. Mira siempre la línea «Base de datos».
+   - La carga sincroniza desde el CSV (añade, actualiza y borra) y se puede repetir. Resultado esperado en la primera carga: **261 añadidos**.
+5. **Comprobación manual:** con una cuenta real, abre `/diary`, pulsa para añadir un alimento y busca «huevos», «banano» y «guineo»; debe haber resultados. Añade uno a una comida y comprueba los totales. Recarga forzada de las pestañas abiertas. `/foods` ahora redirige a `/diary`.
+6. **Marcha atrás:** revertir el merge basta para el código. `flask db downgrade` a `b3d5f7a9c1e4` **se niega** (`RuntimeError`) si hay alimentos del catálogo registrados en comidas: quítalos antes. Si no los hay, borra `catalog_foods` y la columna `catalog_id`; el catálogo se recarga desde el CSV.
+
 ### Caso C (destructiva): migración después del CD
 
 1. Backup completo (paso 3) **verificado**, con el recuento de filas de lo que se va a borrar.

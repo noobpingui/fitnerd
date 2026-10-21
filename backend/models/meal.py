@@ -21,7 +21,7 @@ from models.base import Base
 
 # También es el orden del diario.
 MEAL_TYPES: tuple[str, ...] = ("breakfast", "lunch", "dinner", "snack")
-MEAL_ITEM_SOURCES: tuple[str, ...] = ("usda", "custom")
+MEAL_ITEM_SOURCES: tuple[str, ...] = ("catalog", "usda", "custom")
 
 
 class Meal(Base):
@@ -70,6 +70,8 @@ class MealItem(Base):
     source: Mapped[str] = mapped_column(String(10), nullable=False)
     # Sin FK a foods: el historial no depende de la tabla de alimentos (ADR-0030).
     fdc_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # Sin FK a catalog_foods (ADR-0031).
+    catalog_id: Mapped[str | None] = mapped_column(String(60), nullable=True)
     name: Mapped[str] = mapped_column(Text, nullable=False)
     data_type: Mapped[str | None] = mapped_column(String(20), nullable=True)
     grams: Mapped[Decimal] = mapped_column(Numeric(5, 1), nullable=False)
@@ -91,15 +93,21 @@ class MealItem(Base):
     meal: Mapped["Meal"] = relationship(back_populates="items")
 
     __table_args__ = (
-        CheckConstraint("source IN ('usda', 'custom')", name="ck_meal_items_source"),
+        CheckConstraint(
+            "source IN ('catalog', 'usda', 'custom')", name="ck_meal_items_source"
+        ),
         CheckConstraint(
             "data_type IS NULL OR data_type IN ('foundation', 'sr_legacy')",
             name="ck_meal_items_data_type",
         ),
         CheckConstraint("grams >= 1 AND grams <= 2000", name="ck_meal_items_grams"),
         CheckConstraint(
-            "(source = 'usda' AND fdc_id IS NOT NULL AND data_type IS NOT NULL) OR "
-            "(source = 'custom' AND fdc_id IS NULL AND data_type IS NULL)",
+            "(source = 'catalog' AND catalog_id IS NOT NULL AND fdc_id IS NULL "
+            "AND data_type IS NULL) OR "
+            "(source = 'usda' AND catalog_id IS NULL AND fdc_id IS NOT NULL "
+            "AND data_type IS NOT NULL) OR "
+            "(source = 'custom' AND catalog_id IS NULL AND fdc_id IS NULL "
+            "AND data_type IS NULL)",
             name="ck_meal_items_source_fields",
         ),
         Index("ix_meal_items_meal_id", "meal_id"),
