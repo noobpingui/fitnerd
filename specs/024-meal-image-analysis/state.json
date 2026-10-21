@@ -9,7 +9,7 @@
   "branch": "feat/024-meal-image-analysis",
   "base_branch": "main",
   "created_at": "2026-10-21T19:01:11.612Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -28,7 +28,10 @@
       "at": "2026-10-21T19:56:05.011Z",
       "note": "auto (gate_mode=flow): corrección de tests aprobada por el usuario, 165 pasan"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-21T19:58:22.783Z",
+      "note": "auto (gate_mode=flow): 1982 tests pasan, ratchet sin violaciones nuevas"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -38,7 +41,7 @@
     "spec": "e267a28",
     "plan": "6e67e2d",
     "tasks": "0a02cc0",
-    "tests": "cc3d5e8"
+    "tests": "5d99e15"
   },
   "iterations": {
     "tests": 1,
@@ -252,6 +255,30 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): corrección de tests aprobada por el usuario, 165 pasan"
+    },
+    {
+      "at": "2026-10-21T19:56:05.283Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 5d99e15"
+    },
+    {
+      "at": "2026-10-21T19:56:05.442Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Marcar T-041 (pillow ya declarada) y comprobar suite completa"
+    },
+    {
+      "at": "2026-10-21T19:58:22.694Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "Suite 1982 pasan, ratchet OK"
+    },
+    {
+      "at": "2026-10-21T19:58:22.783Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 1982 tests pasan, ratchet sin violaciones nuevas"
     }
   ]
 }

@@ -1,10 +1,13 @@
 """Petición de Flask que guarda los archivos subidos en memoria (spec 024)."""
 
+import io
+
 import flask
 
 
 class InMemoryUploadRequest(flask.Request):
+    # Werkzeug llama a esta fábrica con argumentos con nombre: los nombres deben ser estos.
     def _get_file_stream(
-        self, _total_content_length, _content_type, _filename=None, _content_length=None
+        self, total_content_length, content_type, filename=None, content_length=None
     ):
-        raise NotImplementedError("not implemented")
+        return io.BytesIO()

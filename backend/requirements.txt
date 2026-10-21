@@ -19,3 +19,4 @@ pytest-cov
 redis
 gunicorn
 langfuse>=4.17,<5
+pillow

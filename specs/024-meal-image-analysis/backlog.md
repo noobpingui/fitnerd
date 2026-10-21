@@ -30,3 +30,9 @@
 
 ## tests · verifier (red)
 - [ ] Dos tests de ruta (test_meal_analysis_routes.py líneas 219 y 545) leen `["items"]` del cuerpo antes de comprobar el estado. Hoy fallan por 404 y pasarán al existir la ruta; conviene que el test-author compruebe el status antes de leer el cuerpo, para que el fallo sea más claro.
+
+## implement · implementer
+- [ ] T-041: `pillow` añadida a `backend/requirements.txt` por el orquestador con autorización explícita del usuario (el role-guard no deja al implementer editar ese archivo). Falta marcar la casilla T-041 en tasks.md.
+- [ ] La orientación EXIF se pierde al quitar los metadatos; la 025 debe aplicarla al redimensionar en el cliente.
+- [ ] En `vision_client.py`, el import de `FOODS_TOOL_NAME` y `FOODS_TOOL_SCHEMA` es local, dentro de `recognize_foods`, para evitar un ciclo de importación entre `extensions.py` y los servicios.
+- [ ] Test incorrecto `test_analyses_write_nothing_to_the_database`: usa `user_id` "user-1" que no es UUID. Aprobado por el usuario devolverlo al test-author junto con 3 E501 (L73 y L213 de test_meal_analysis_routes.py, L225 de test_meal_image_rules.py).
