@@ -43,13 +43,13 @@
 - [ ] Actualizar la Política de privacidad al enviar fotos a AWS en la spec 025 (Q7).
 
 ## review · reviewer (iteración 1, CHANGES_REQUESTED)
-- [ ] F2 MENOR (planner): un WebP de 8000×8000 de solo 2,5 KB obliga a reservar unos 256 MB y 0,37 s de CPU por petición. La decodificación se hace antes del límite de uso, también en las peticiones que acaban en 429, así que el límite no acota este coste, al contrario de lo que dice la sección 6 del plan.
-- [ ] F3 MENOR (test-author): el test de AC-003.5 no prueba el límite de 4 MB del cuerpo, porque el archivo enviado ya supera los 3 MB. Debería enviar una imagen pequeña y un campo extra grande.
-- [ ] F4 MENOR (implementer): con BEDROCK_REGION vacía y el modelo configurado, create_app falla al arrancar en lugar de dejar el endpoint en 503.
-- [ ] F5 NIT (implementer): comentario nuevo en inglés en exceptions/custom_exceptions.py:42.
-- [ ] F6 NIT (implementer): si el bloque toolUse trae un input que no es un dict, salta un AttributeError en lugar de VisionProviderError. Acaba igualmente en 503.
-- [ ] F7 NIT (test-author): en AC-N001.1, el diario se consulta con un usuario distinto del que hizo los análisis.
-- [ ] F8 NIT (planner): se pierde el perfil ICC del JPEG; conviene comprobarlo en la revisión manual de Q9.
+- [x] F2 MENOR (planner): un WebP de 8000×8000 de solo 2,5 KB obliga a reservar unos 256 MB y 0,37 s de CPU por petición. La decodificación se hace antes del límite de uso, también en las peticiones que acaban en 429, así que el límite no acota este coste, al contrario de lo que dice la sección 6 del plan.
+- [x] F3 MENOR (test-author): el test de AC-003.5 no prueba el límite de 4 MB del cuerpo, porque el archivo enviado ya supera los 3 MB. Debería enviar una imagen pequeña y un campo extra grande.
+- [x] F4 MENOR (implementer): con BEDROCK_REGION vacía y el modelo configurado, create_app falla al arrancar en lugar de dejar el endpoint en 503.
+- [x] F5 NIT (implementer): comentario nuevo en inglés en exceptions/custom_exceptions.py:42.
+- [x] F6 NIT (implementer): si el bloque toolUse trae un input que no es un dict, salta un AttributeError en lugar de VisionProviderError. Acaba igualmente en 503.
+- [x] F7 NIT (test-author): en AC-N001.1, el diario se consulta con un usuario distinto del que hizo los análisis.
+- [x] F8 NIT (planner): se pierde el perfil ICC del JPEG; conviene comprobarlo en la revisión manual de Q9.
 
 ## plan · planner (corrección de review F1)
 - [ ] Pasar gunicorn a hilos o a más workers cuando la memoria de decodificación esté acotada (F2), para que un análisis o una pregunta al coach no bloqueen al resto de la API.
@@ -66,7 +66,7 @@
 - [ ] Las líneas de `backend/Dockerfile` (salvo FROM y CMD) van con sangría de dos espacios; es cosmético, sin efecto en el build.
 
 ## review · reviewer (iteración 2, APPROVED)
-- [ ] F9 NIT (test-author): el test de configuración T-058 está en `test_services/`, aunque no prueba ningún servicio.
+- [x] F9 NIT (test-author): el test de configuración T-058 está en `test_services/`, aunque no prueba ningún servicio.
 - [ ] Hacer un `chore/…` que añada `backend/Dockerfile` a los globs `prod` de `.sdd/config.json`.
 - [ ] Documentar el paso manual de producción (Art. P4), incluida la comprobación de `--timeout 90`, en la etapa docs.
 
@@ -83,6 +83,6 @@
 - [ ] doc-keeper/harness: permitir al test-author borrar o renombrar archivos de tests propios.
 
 ## review · reviewer (iteración 3, APPROVED)
-- [ ] F10 NIT (test-author): `test_icc_profile_is_stripped` no cubre PNG; el descarte de `iCCP` solo lo garantiza la lista blanca de `_strip_png`, sin un test que lo fije.
-- [ ] F11 NIT (planner): el código comprueba las dimensiones antes que la integridad, al revés que el orden «lectura, dimensiones» de la sección 6 de la spec. Un archivo truncado de más de 8000 px da el mensaje de las dimensiones; desde F2 la integridad se puede comprobar antes sin coste.
+- [x] F10 NIT (test-author): `test_icc_profile_is_stripped` no cubre PNG; el descarte de `iCCP` solo lo garantiza la lista blanca de `_strip_png`, sin un test que lo fije.
+- [x] F11 NIT (planner): el código comprueba las dimensiones antes que la integridad, al revés que el orden «lectura, dimensiones» de la sección 6 de la spec. Un archivo truncado de más de 8000 px da el mensaje de las dimensiones; desde F2 la integridad se puede comprobar antes sin coste.
 - [ ] Revisión manual de Q9 con unas 10 fotos reales, incluida alguna en Display P3, para confirmar que quitar el ICC no empeora el reconocimiento.

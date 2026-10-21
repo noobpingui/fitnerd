@@ -1,37 +1,53 @@
 # Verify report 024 — Análisis de la foto de una comida con alimentos propuestos del catálogo
 
-- **Modo:** red (tras la etapa tests, ronda T-076 a T-078 por las revisiones F10 y F11)
-- **Fecha:** 2026-10-21T21:28:19.849Z · **Rama:** `feat/024-meal-image-analysis` @ `7e5522a` (HEAD; cambios sin commit en `backend/tests/photo_samples.py` y `backend/tests/test_services/test_meal_photo.py`) · **Base:** `main`
+- **Modo:** full (etapa verify, tras las correcciones F10 y F11 de la review, iteración 3)
+- **Fecha:** 2026-10-21T21:33:24.186Z · **Rama:** `feat/024-meal-image-analysis` @ `2f579db` (HEAD, árbol de trabajo limpio salvo `state.json`) · **Base:** `main`
 - **Resultado:** PASS
 
 ## 1. Comandos ejecutados
-Ámbito tocado: `backend`. Modo red: solo los tests nuevos de esta ronda, con el archivo de test de `commands.test_files` del ámbito.
+Ámbito tocado: `backend`. Los comandos `typecheck` y `build` del ámbito son `null` y no se listan.
 
 | Ámbito | Comando (cwd) | Resultado | Resumen de la salida |
 |---|---|---|---|
-| backend | `".venv/Scripts/python.exe" -m pytest -q tests/test_services/test_meal_photo.py` (`backend`) | ✅ | 34 passed, 2 failed. Los 2 fallos son los dos casos de `test_truncated_photo_with_a_side_over_8000_pixels_is_unreadable` (`[png]`, `[jpeg]`), rojo legítimo esperado (T-078). Sin errores de colección ni de fixture. |
-| backend | Ejecución dirigida de los tests nuevos (`-k "icc or truncated_photo_with_a_side or png_icc"`) | ✅ | 3 passed (`test_icc_profile_is_stripped[jpeg]`, `[webp]` y `test_png_icc_profile_is_stripped`), 2 failed (los de T-078). |
+| backend | `".venv/Scripts/python.exe" -m pytest -q` (`backend`) | ✅ | 2000 passed, 0 failed, 0 skipped (188 s) |
+| backend | ratchet `node …/lint-ratchet.mjs backend` (raíz del repo) | ✅ | Sin violaciones nuevas respecto a `main` en los 18 archivos tocados (exit 0) |
 
-Detalle del rojo de T-078 (ambas variantes): `AssertionError` sobre `error.message`. Se obtiene «La imagen no puede superar los 8000 píxeles por lado.» donde el test espera «No se pudo leer la imagen.». Es decir, la comprobación de dimensiones se hace antes que la integridad, que es el comportamiento que T-079 corrige. No es un error de sintaxis, de fixture ni de import.
-
-Comandos no ejecutados en esta ronda (no aplican al modo red): lint (ratchet), `typecheck` (`null`) y `build` (`null`).
+Comprobaciones adicionales de la etapa, con lectura de código y Git:
+- F11 (`backend/services/meal_photo.py`, `prepare_photo`): el orden es lectura → integridad y quitado de metadatos (`try/finally`) → dimensiones (`PHOTO_TOO_WIDE_MESSAGE`) → `return`. Cumple el plan, sección 11.
+- F10 (`backend/tests/test_services/test_meal_photo.py`): existe `test_png_icc_profile_is_stripped` con `SDD: 024 REQ-010 AC-010.1`, y pasa.
+- Tests congelados: el contenido (sin contar CRLF) de los 8 archivos de test coincide con el `tests_snapshot` de `state.json`. Ningún test cambió durante implement. La diferencia de finales de línea que muestra el disco es de la copia de trabajo en Windows y no es un cambio de contenido.
+- Migraciones: ninguna nueva en el diff (la feature no cambia el modelo).
 
 ## 2. Trazabilidad
-Solo los tests nuevos de esta ronda.
+Marcadores `SDD: 024` en `backend/tests/` (6 archivos): 40 AC distintos, los mismos 40 que define `spec.md` (ninguno sin test, ninguno extra).
 
-| REQ / NFR | AC | Tareas | Tests con `SDD:` | Estado del test |
+| REQ / NFR | AC | Tareas `[x]` | Tests con `SDD:` | Estado del test |
 |---|---|---|---|---|
-| REQ-010 | AC-010.1 | T-076, T-077 | `backend/tests/test_services/test_meal_photo.py::test_png_icc_profile_is_stripped` | ✅ Verde por diseño: caracterización justificada en `plan.md` sección 11 (la lista blanca de `_strip_png` ya descarta `iCCP`). Comprobación previa `b"iCCP" in original` cumplida, así que el test no pasa en vacío. |
-| REQ-003 | AC-003.3, AC-003.6 | T-078 (implementación pendiente en T-079) | `backend/tests/test_services/test_meal_photo.py::test_truncated_photo_with_a_side_over_8000_pixels_is_unreadable[png]` y `[jpeg]` | ✅ Rojo legítimo (ver sección 1). |
+| REQ-001 | AC-001.1 … AC-001.12 | 14 | `test_routes/test_meal_analysis_routes.py`, `test_services/test_meal_image_analysis_service.py` | ✅ |
+| REQ-002 | AC-002.1 … AC-002.6 | 6 | `test_routes/test_meal_analysis_routes.py`, `test_services/test_meal_photo.py` | ✅ |
+| REQ-003 | AC-003.1 … AC-003.14 | 19 | `test_services/test_meal_photo.py`, `test_routes/test_meal_analysis_routes.py` | ✅ (incluye AC-003.3 y AC-003.6 de F11) |
+| REQ-004 | AC-004.1 … AC-004.16 | 2 | `test_services/test_meal_image_rules.py`, `test_services/test_meal_image_analysis_service.py` | ✅ |
+| REQ-005 | AC-005.1 … AC-005.9 | 4 | `test_services/test_vision_client.py`, `test_routes/test_meal_analysis_routes.py` | ✅ |
+| REQ-006 | AC-006.1 … AC-006.10 | 6 | `test_services/test_meal_image_analysis_service.py`, `test_routes/test_meal_analysis_routes.py` | ✅ |
+| REQ-007 | AC-007.1 … AC-007.8 | 3 | `test_routes/test_meal_analysis_routes.py` | ✅ |
+| REQ-008 | AC-008.1 … AC-008.4 | 3 | `test_services/test_meal_image_analysis_service.py` | ✅ |
+| REQ-009 | AC-009.1 … AC-009.6 | 23 | `test_services/test_gunicorn_config.py`, `test_routes/test_meal_analysis_routes.py` | ✅ |
+| REQ-010 | AC-010.1 … AC-010.4 | 12 | `test_services/test_meal_photo.py` (incl. `test_png_icc_profile_is_stripped`) | ✅ |
+| NFR-001 | AC-N001.1, AC-N001.2 | 8 | `test_services/test_meal_image_analysis_service.py`, `test_routes/test_meal_analysis_routes.py` | ✅ |
+| NFR-002 | AC-N002.1 … AC-N002.4 | 3 | `test_services/test_meal_image_rules.py`, `test_routes/test_meal_analysis_routes.py` | ✅ |
 
-- AC sin test: — (los AC de esta ronda, AC-010.1 y AC-003.3/AC-003.6, tienen test `SDD:`).
+Los recuentos de tareas son los `[x]` de `tasks.md` que citan cada REQ o NFR. Los AC de la tabla son los 40 de `spec.md`, que están en `SDD:` y en verde con la suite completa.
+
+- AC sin test: —
 - REQ sin tarea: —
-- Tareas sin marcar `[x]`: T-079 (esperado en esta etapa; la implementa la etapa implement).
-- `skip`, `xfail`, `.only`, `.skip` o equivalentes nuevos en el diff de esta ronda: ninguno.
-- Esqueletos (scaffold): no se comprueban en esta ronda, fuera de su alcance.
+- Tareas sin marcar `[x]`: — (68 de 68 tareas; la línea con `[ ]` de `tasks.md` es la plantilla dentro de un comentario HTML)
+- `skip`, `xfail`, `.only`, `.skip` o equivalentes nuevos en el diff (`main...HEAD`, `backend/`): ninguno.
 
 ## 3. Criterios de aceptación manuales
-- Ninguno nuevo en esta ronda. Se mantiene lo ya anotado en `verify-report` previo (Q9 de la spec: revisión manual de la estimación de gramos con fotos reales).
+- Ninguno de los 40 AC requiere revisión visual o de UX (la feature es solo backend).
+- Revisión manual de precisión (Q9 de la spec, no es un AC automatizado): unas 10 fotos reales contra el proveedor real en local, para comparar alimentos y gramos. Se hace en el gate de `review`, según lo acordado en la spec.
 
 ## 4. Fallos (si los hay)
-Ninguno. Los dos rojos de T-078 son el rojo esperado de esta ronda. El caso de T-077 pasa a propósito (caracterización, Art. B5.1 con la justificación de `plan.md` sección 11), y no cuenta como fallo.
+Ninguno.
+
+Los NIT F10 y F11 de la review quedan corregidos y comprobados: F10 con `test_png_icc_profile_is_stripped` (caracterización, justificada en `plan.md` sección 11) y F11 con el orden integridad → dimensiones y los tests `test_truncated_photo_with_a_side_over_8000_pixels_is_unreadable[png|jpeg]` en verde.
