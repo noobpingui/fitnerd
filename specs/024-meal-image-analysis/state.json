@@ -25,8 +25,8 @@
       "note": "auto (gate_mode=flow): 64 tareas, 16 nuevas para F2-F9"
     },
     "tests": {
-      "at": "2026-10-21T20:58:02.698Z",
-      "note": "auto (gate_mode=flow): 10 casos en rojo legítimo, red check PASS"
+      "at": "2026-10-21T21:02:30.679Z",
+      "note": "auto (gate_mode=flow): corrección de E501, tests pasan"
     },
     "implement": null,
     "verify": null,
@@ -38,11 +38,11 @@
     "spec": "e267a28",
     "plan": "7668f7f",
     "tasks": "97108e5",
-    "tests": "459110b",
+    "tests": "6544aed",
     "implement": "e83804b"
   },
   "iterations": {
-    "tests": 1,
+    "tests": 2,
     "implement": 0,
     "review": 2
   },
@@ -60,12 +60,12 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-21T20:58:02.546Z",
-    "reason": "Tests de la corrección F2-F9 (iteración 2); test_server_timeout.py movido a test_gunicorn_config.py",
+    "at": "2026-10-21T21:02:30.520Z",
+    "reason": "Línea 425 acortada (E501), iteración 3 de tests",
     "sha256": {
       "backend/tests/fakes.py": "3570d458a7e79f15cb93a59b612db44b36161a763cbaae1323130c919199c7ef",
       "backend/tests/photo_samples.py": "cafe3f16bce0ed90f7a0e39c3b2b46e79b680af117de63021ae395051fa0a31c",
-      "backend/tests/test_routes/test_meal_analysis_routes.py": "bb0feac8e1f3f8b9fe2fba7ed9b9e72b8b14100e9854433c029de251eddf832a",
+      "backend/tests/test_routes/test_meal_analysis_routes.py": "f70f0628394d90cdebed6bc1612aa22a58f118b8068c0ba9b7fc6907dd2cd831",
       "backend/tests/test_services/test_gunicorn_config.py": "7758a79c1d9182db517130b50825552f9dcba6965eb2212b001dd8480b500b1d",
       "backend/tests/test_services/test_meal_image_analysis_service.py": "299d5c6aa13c6038422dff0ff13218bc3bc39eddaad166709bc17df670da89c4",
       "backend/tests/test_services/test_meal_image_rules.py": "4e76878ec48a2e763426c24f7bdcbf2bd0e76f442933b251ad9dc1473f6e76cf",
@@ -572,6 +572,48 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): 10 casos en rojo legítimo, red check PASS"
+    },
+    {
+      "at": "2026-10-21T20:58:02.982Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 6544aed"
+    },
+    {
+      "at": "2026-10-21T20:58:03.136Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar T-070 a T-075 (F2, F4, F5, F6, F8)"
+    },
+    {
+      "at": "2026-10-21T21:01:56.927Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "E501 en test_meal_analysis_routes.py:425 (ratchet de lint) en test congelado · tests 2/4"
+    },
+    {
+      "at": "2026-10-21T21:01:57.039Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Corrección: test-author acorta la línea 425"
+    },
+    {
+      "at": "2026-10-21T21:02:30.422Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "E501 corregida; tests pasan"
+    },
+    {
+      "at": "2026-10-21T21:02:30.520Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "8 archivo(s) de test: Línea 425 acortada (E501), iteración 3 de tests"
+    },
+    {
+      "at": "2026-10-21T21:02:30.679Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección de E501, tests pasan"
     }
   ]
 }

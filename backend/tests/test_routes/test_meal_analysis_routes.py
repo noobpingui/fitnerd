@@ -421,9 +421,8 @@ def test_request_body_over_4_mb_returns_413_in_spanish(client, app, bedrock):
     supera los 4 MB y da 413 con el mensaje en español, sin llamar al proveedor."""
     seed(app)
 
-    response = analyze(
-        client, app, jpeg_bytes(), extra=upload(b"0" * (4 * MB), "extra.bin", "application/octet-stream")
-    )
+    extra = upload(b"0" * (4 * MB), "extra.bin", "application/octet-stream")
+    response = analyze(client, app, jpeg_bytes(), extra=extra)
 
     assert response.status_code == 413
     assert response.get_json() == {"error": TOO_LARGE}
