@@ -1,0 +1,21 @@
+# Backlog · 023-generic-food-catalog
+
+## spec · spec-writer
+- [ ] Retirar de `/api/meals` los alimentos de USDA por `fdc_id`, si se confirma que no se usan.
+- [ ] Buscar mientras se escribe en el diálogo del diario.
+- [ ] Categorías del catálogo y navegarlo sin escribir.
+- [ ] Tolerancia a erratas y equivalencia entre singular y plural en la búsqueda.
+- [ ] Decidir si se retiran la pantalla `FoodsPage` y su código cuando `/foods` ya redirija.
+- [ ] Decidir si se retira `GET /api/foods/search` cuando ninguna pantalla lo use.
+
+## spec (respuestas del usuario) · usuario
+- [ ] Eventualmente la data de USDA se retirará cuando ya tengamos nuestra propia data (csv), y también se eliminará de donde se menciona, ya sea en Términos y en cualquier otra parte.
+
+## spec (2.ª pasada) · spec-writer
+- [ ] Retirar de `/api/meals` los alimentos de USDA por `fdc_id`, si se confirma que no se usan.
+- [ ] Buscar mientras se escribe en el diálogo del diario.
+- [ ] Categorías del catálogo y navegarlo sin escribir.
+- [ ] Tolerancia a erratas en la búsqueda.
+- [ ] Decidir si se retiran la pantalla `FoodsPage` y su código cuando `/foods` ya redirija.
+- [ ] Decidir si se retira `GET /api/foods/search` cuando ninguna pantalla lo use.
+- [ ] Retirar los datos de USDA y sus menciones (Términos y demás) cuando el catálogo propio los sustituya (nota del usuario).
