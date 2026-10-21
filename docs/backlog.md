@@ -242,7 +242,7 @@ Feature: [specs/021-usda-food-database/](../specs/021-usda-food-database/)
 - [ ] F12 (NIT, spec-writer): AC-001.8 no enumera «y» ni «yes», aunque el test marcado con ese AC los prueba; añadirlos al AC.
 - [ ] F7 (NIT): dejar una sola cifra de AC (67) en las notas y en la documentación de la etapa docs.
 - [ ] Pasar ADR-0029 de «Propuesta» a «Aceptada» (rama `chore/…` tras el merge, como en la 019 y la 020).
-- [ ] Aplicar en producción lo que documenta el runbook: migración `c8e2a4f6b9d3`, importación de USDA y medición real de `public.foods`; añadir la fila de la 021 al historial de despliegues.
+- [x] Aplicar en producción lo que documenta el runbook: migración `c8e2a4f6b9d3`, importación de USDA y medición real de `public.foods`; añadir la fila de la 021 al historial de despliegues. (hecho el 2026-10-20: 50 MB)
 
 ## 022-meal-diary · Diario de comidas con totales del día frente al objetivo de Macros (2026-10-20)
 
