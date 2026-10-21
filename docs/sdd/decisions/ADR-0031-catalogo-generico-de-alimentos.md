@@ -1,7 +1,7 @@
 # ADR-0031: Catálogo genérico de alimentos en `catalog_foods`, con búsqueda por texto en memoria y carga que sincroniza desde un CSV
 
-- **Estado:** Propuesta · 2026-10-21 (plan de `023-generic-food-catalog`)
-- **Decidido por:** el `planner`; se revisa en el gate de `review`.
+- **Estado:** Aceptada · 2026-10-21 (plan de `023-generic-food-catalog`; aceptada por el usuario en la review)
+- **Decidido por:** el `planner`; revisada y aceptada por el usuario en el gate de `review`.
 
 ## Contexto
 La spec 023 sustituye la búsqueda de USDA del diario (ADR-0029) por un catálogo propio de unos 300 alimentos simples,

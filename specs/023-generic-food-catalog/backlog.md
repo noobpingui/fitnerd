@@ -132,3 +132,6 @@
 - [ ] F21 NIT (test-author): los marcadores AC-001.2 de los tests de marcas, contramuslo, limonada y lechuga iceberg (`test_food_catalog_csv.py:162,179,189,201`) no corresponden a la unicidad de nombres; encajan mejor con AC-001.1 (reglas de la sección 6).
 - [ ] F22 NIT (spec-writer): el texto de «Términos de servicio» no cambia respecto a la 022, pero su fecha pasa a «21 de octubre de 2026» (`TermsOfServicePage.tsx:5`). Lo pide AC-012.3; valorar si conviene en una revisión futura.
 - [ ] doc-keeper: en `docs/deploy-runbook.md`, la migración `d4f6a8c0e2b5` antes del merge y la carga del CSV tras el CD. En `CLAUDE.md`, que `/foods` redirige a `/diary` y que el diario busca en el catálogo.
+
+## docs · doc-keeper
+- [ ] Añadir la fila de la 023 al historial de despliegues (sección 8 del runbook) en el chore posterior al despliegue, con PR, sha, migración y backup reales; anotar el tamaño real de catalog_foods si se mide.

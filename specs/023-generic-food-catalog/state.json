@@ -10,7 +10,7 @@
   "branch": "feat/023-generic-food-catalog",
   "base_branch": "main",
   "created_at": "2026-10-21T05:27:32.707Z",
-  "stage": "docs",
+  "stage": "close",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -41,7 +41,10 @@
       "at": "2026-10-21T09:26:12.886Z",
       "note": "Se ve bien. Review aprobado"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-21T09:27:37.519Z",
+      "note": "auto (gate_mode=flow): documentación de la 023"
+    },
     "close": null
   },
   "commits": {
@@ -49,7 +52,8 @@
     "plan": "654ee92",
     "tasks": "a66dcf8",
     "tests": "d96070a",
-    "implement": "ea24a16"
+    "implement": "ea24a16",
+    "review": "c15c180"
   },
   "iterations": {
     "tests": 3,
@@ -786,6 +790,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Se ve bien. Review aprobado"
+    },
+    {
+      "at": "2026-10-21T09:26:13.252Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: c15c180"
+    },
+    {
+      "at": "2026-10-21T09:26:13.475Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegar en doc-keeper"
+    },
+    {
+      "at": "2026-10-21T09:27:37.421Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "docs: runbook, CLAUDE.md, README, ADR-0031 aceptada"
+    },
+    {
+      "at": "2026-10-21T09:27:37.519Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): documentación de la 023"
     }
   ]
 }
