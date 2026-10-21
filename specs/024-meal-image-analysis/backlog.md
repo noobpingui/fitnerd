@@ -86,3 +86,8 @@
 - [x] F10 NIT (test-author): `test_icc_profile_is_stripped` no cubre PNG; el descarte de `iCCP` solo lo garantiza la lista blanca de `_strip_png`, sin un test que lo fije.
 - [x] F11 NIT (planner): el código comprueba las dimensiones antes que la integridad, al revés que el orden «lectura, dimensiones» de la sección 6 de la spec. Un archivo truncado de más de 8000 px da el mensaje de las dimensiones; desde F2 la integridad se puede comprobar antes sin coste.
 - [ ] Revisión manual de Q9 con unas 10 fotos reales, incluida alguna en Display P3, para confirmar que quitar el ICC no empeora el reconocimiento.
+
+## docs · doc-keeper
+- [ ] Aceptar ADR-0032 (ADR e índice de `docs/sdd/decisions/README.md`) tras el «aprobado» del usuario en la review, en una rama `chore/…`.
+- [ ] Añadir la fila de la 024 al historial de despliegues (sección 8 del runbook) al desplegar.
+- [ ] Verificar en la instancia el límite de saltos de IMDS: el runbook y CLAUDE.md dicen que debe ser 2 o más con Docker (con 1 el contenedor no obtiene credenciales).

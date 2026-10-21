@@ -9,7 +9,7 @@
   "branch": "feat/024-meal-image-analysis",
   "base_branch": "main",
   "created_at": "2026-10-21T19:01:11.612Z",
-  "stage": "docs",
+  "stage": "close",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -40,7 +40,10 @@
       "at": "2026-10-21T21:43:11.979Z",
       "note": "Si"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-21T21:44:25.057Z",
+      "note": "auto (gate_mode=flow): runbook caso A de la 024, CLAUDE.md y README"
+    },
     "close": null
   },
   "commits": {
@@ -48,7 +51,8 @@
     "plan": "d19b24d",
     "tasks": "7e5522a",
     "tests": "239571f",
-    "implement": "2f579db"
+    "implement": "2f579db",
+    "review": "0a4bf5f"
   },
   "iterations": {
     "tests": 2,
@@ -863,6 +867,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Si"
+    },
+    {
+      "at": "2026-10-21T21:43:12.303Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: 0a4bf5f"
+    },
+    {
+      "at": "2026-10-21T21:43:12.502Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Documentar Bedrock en producción, variables y comprobación de --timeout 90"
+    },
+    {
+      "at": "2026-10-21T21:44:24.945Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "Runbook, CLAUDE.md y README actualizados"
+    },
+    {
+      "at": "2026-10-21T21:44:25.057Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): runbook caso A de la 024, CLAUDE.md y README"
     }
   ]
 }
