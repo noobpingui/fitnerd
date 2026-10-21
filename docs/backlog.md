@@ -242,7 +242,7 @@ Feature: [specs/021-usda-food-database/](../specs/021-usda-food-database/)
 - [ ] F12 (NIT, spec-writer): AC-001.8 no enumera «y» ni «yes», aunque el test marcado con ese AC los prueba; añadirlos al AC.
 - [ ] F7 (NIT): dejar una sola cifra de AC (67) en las notas y en la documentación de la etapa docs.
 - [ ] Pasar ADR-0029 de «Propuesta» a «Aceptada» (rama `chore/…` tras el merge, como en la 019 y la 020).
-- [ ] Aplicar en producción lo que documenta el runbook: migración `c8e2a4f6b9d3`, importación de USDA y medición real de `public.foods`; añadir la fila de la 021 al historial de despliegues.
+- [x] Aplicar en producción lo que documenta el runbook: migración `c8e2a4f6b9d3`, importación de USDA y medición real de `public.foods`; añadir la fila de la 021 al historial de despliegues. (hecho el 2026-10-20: 50 MB)
 
 ## 022-meal-diary · Diario de comidas con totales del día frente al objetivo de Macros (2026-10-20)
 
@@ -270,4 +270,5 @@ Feature: [specs/022-meal-diary/](../specs/022-meal-diary/)
 - [ ] AC manuales para el gate de review: AC-014.2 (barra de calorías llena al superar el objetivo), AC-015.2 (barra inferior con 6 entradas en pantalla estrecha), AC-015.3 (estado activo de «Diario» en /diary).
 - [ ] Revisar los fines de línea CRLF de 5 archivos de test (fakes.py, BottomTabBar.test.tsx, Navbar.test.tsx, PrivacyPolicyPage.test.tsx, TermsOfServicePage.test.tsx) antes del cierre; comprobar si el snapshot-check se hace por hash en disco.
 - [ ] F6 (NIT, test-author): falta un test de que meals.updated_at avanza al añadir, editar o quitar alimentos (backend/models/meal.py:45-48), y otro de «-0» en el formulario personalizado (frontend/src/features/diary/schemas.ts:38).
-- [ ] Añadir la fila de 022 en la sección 8 del runbook al desplegar, con la medición de las tablas nuevas si interesa.
+- [x] Añadir la fila de 022 en la sección 8 del runbook al desplegar (hecho en `chore/022-deploy-history`).
+- [ ] Aviso visual al superar un objetivo del diario (AC-014.2 hoy solo pide el texto «X por encima del objetivo» y la barra llena): cambiar la barra a ámbar, solo en calorías o en las cuatro. Sin alerta alarmista. Decidir con el usuario; cambia un comportamiento especificado, así que va por el flujo SDD.
