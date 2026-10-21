@@ -10,6 +10,7 @@ from utils.embeddings import EmbeddingClient
 from utils.rate_limiter import RateLimiter
 from utils.email_sender import EmailSender
 from utils.tracing import Tracer
+from utils.vision_client import BedrockVisionClient
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -19,3 +20,4 @@ embedding_client = EmbeddingClient()
 rate_limiter = RateLimiter()
 email_sender = EmailSender()
 tracer = Tracer()
+vision_client = BedrockVisionClient()

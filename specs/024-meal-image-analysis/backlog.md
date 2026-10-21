@@ -21,3 +21,12 @@
 ## tasks · task-breaker
 - [ ] La documentación del paso manual de producción (IAM `bedrock:InvokeModel`, acceso al modelo, variables, IMDS) y el ADR-0032 no llevan tarea. El plan los asigna al doc-keeper (`docs/deploy-runbook.md`) y al planner (ADR).
 - [ ] La revisión manual de Q9, con unas 10 fotos reales contra Bedrock, queda para el gate de review.
+
+## tests · test-author
+- [ ] Cuando se implemente el servicio, revisar que `InMemoryUploadRequest._get_file_stream` acepte la firma de llamada posicional `(total_content_length, content_type)` usada en el test.
+- [ ] Falta un test automatizado de que `config.py` y `create_app` leen `BEDROCK_VISION_MODEL_ID` y `BEDROCK_REGION`. Solo se cubren indirectamente (AC-009.4, vía `vision_client.client = None`).
+- [ ] Los tests de memoria con imágenes grandes (8000x8000 WebP) no están automatizados.
+- [ ] Proceso: el test-author editó una vez el archivo del servicio con un script de Python desde la shell (dos líneas de aserciones dentro de `backend/tests/**`), contra su límite de no escribir desde la shell.
+
+## tests · verifier (red)
+- [ ] Dos tests de ruta (test_meal_analysis_routes.py líneas 219 y 545) leen `["items"]` del cuerpo antes de comprobar el estado. Hoy fallan por 404 y pasarán al existir la ruta; conviene que el test-author compruebe el status antes de leer el cuerpo, para que el fallo sea más claro.
