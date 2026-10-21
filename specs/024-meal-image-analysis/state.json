@@ -25,8 +25,8 @@
       "note": "auto (gate_mode=flow): 46 tareas (7 scaffold, 21 test, 15 impl, 3 config), 40 AC cubiertos"
     },
     "tests": {
-      "at": "2026-10-21T19:30:00.906Z",
-      "note": "auto (gate_mode=flow): 165 tests en rojo legítimo, red check PASS"
+      "at": "2026-10-21T19:56:05.011Z",
+      "note": "auto (gate_mode=flow): corrección de tests aprobada por el usuario, 165 pasan"
     },
     "implement": null,
     "verify": null,
@@ -37,10 +37,11 @@
   "commits": {
     "spec": "e267a28",
     "plan": "6e67e2d",
-    "tasks": "0a02cc0"
+    "tasks": "0a02cc0",
+    "tests": "cc3d5e8"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 1,
     "implement": 0,
     "review": 0
   },
@@ -58,14 +59,14 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-21T19:30:00.785Z",
-    "reason": "Tests 024 congelados tras red check PASS",
+    "at": "2026-10-21T19:56:04.895Z",
+    "reason": "Tests corregidos (iteración 1): user_id UUID y E501",
     "sha256": {
       "backend/tests/fakes.py": "3570d458a7e79f15cb93a59b612db44b36161a763cbaae1323130c919199c7ef",
       "backend/tests/photo_samples.py": "2cf1c75a084e1a0668693a8220e57559afd389b19f9ccbe037ca63bb2f8af421",
-      "backend/tests/test_routes/test_meal_analysis_routes.py": "2b85df7af28c2d0665d536b2ee05ec7aafb8eb8b503f1309211ad6ea71641bd5",
+      "backend/tests/test_routes/test_meal_analysis_routes.py": "eb0a9310e34e8b5ea365018fa6333d94a3ee3b95d64723ade04327c01a9d557f",
       "backend/tests/test_services/test_meal_image_analysis_service.py": "299d5c6aa13c6038422dff0ff13218bc3bc39eddaad166709bc17df670da89c4",
-      "backend/tests/test_services/test_meal_image_rules.py": "4c33a2ad53c6b4957e2467aa2c0ca66309da8d5840daa0e1b2bc09cb41a150be",
+      "backend/tests/test_services/test_meal_image_rules.py": "4e76878ec48a2e763426c24f7bdcbf2bd0e76f442933b251ad9dc1473f6e76cf",
       "backend/tests/test_services/test_meal_photo.py": "6adb56bb82755068f5530946d9979c0bbf76539573af51b8562da069570c66c4",
       "backend/tests/test_services/test_vision_client.py": "2309dced8f3738d2d13e8f372dcc5c1151b8300fd22f99b1b6ab0081feeb4c71"
     }
@@ -209,6 +210,48 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): 165 tests en rojo legítimo, red check PASS"
+    },
+    {
+      "at": "2026-10-21T19:30:01.199Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: cc3d5e8"
+    },
+    {
+      "at": "2026-10-21T19:30:01.354Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar tareas impl/config"
+    },
+    {
+      "at": "2026-10-21T19:54:43.369Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Usuario aprueba: test con user_id no UUID y 3 E501 en tests congelados · tests 1/4"
+    },
+    {
+      "at": "2026-10-21T19:54:43.449Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Corrección: test-author (user_id UUID en test_analyses_write_nothing_to_the_database; acortar E501 L73, L213 de rutas y L225 de reglas)"
+    },
+    {
+      "at": "2026-10-21T19:56:04.799Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Corrección de tests: user_id UUID y E501; 165 pasan"
+    },
+    {
+      "at": "2026-10-21T19:56:04.895Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "7 archivo(s) de test: Tests corregidos (iteración 1): user_id UUID y E501"
+    },
+    {
+      "at": "2026-10-21T19:56:05.011Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección de tests aprobada por el usuario, 165 pasan"
     }
   ]
 }

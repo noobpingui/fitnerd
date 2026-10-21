@@ -70,7 +70,12 @@ BEANS = {
 
 
 def rice_150():
-    return {"catalog_id": "arroz-blanco-cocido", "name": "Arroz", "grams": 150, "confidence": "high"}
+    return {
+        "catalog_id": "arroz-blanco-cocido",
+        "name": "Arroz",
+        "grams": 150,
+        "confidence": "high",
+    }
 
 
 @pytest.fixture(autouse=True)
@@ -210,7 +215,12 @@ def test_items_keep_the_provider_order_and_totals_add_up(client, app, bedrock):
     """Dos alimentos: `items` en el orden del proveedor y `totals` es la suma."""
     seed(app)
     bedrock.foods = [
-        {"catalog_id": "pechuga-de-pollo-a-la-plancha", "name": "x", "grams": 100, "confidence": "high"},
+        {
+            "catalog_id": "pechuga-de-pollo-a-la-plancha",
+            "name": "x",
+            "grams": 100,
+            "confidence": "high",
+        },
         rice_150(),
     ]
 
@@ -639,7 +649,9 @@ def test_analyses_write_nothing_to_the_database(client, app, bedrock):
 
     assert row_counts(app) == before
     diary = client.get(
-        "/api/meals", query_string={"date": date.today().isoformat()}, headers=auth_headers(app)
+        "/api/meals",
+        query_string={"date": date.today().isoformat()},
+        headers=auth_headers(app, "5f0c2a52-3b1e-4a6d-9a47-0c1f2d3e4b5a"),
     )
     assert diary.status_code == 200
     assert diary.get_json()["meals"] == []

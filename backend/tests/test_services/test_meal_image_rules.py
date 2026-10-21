@@ -222,7 +222,14 @@ def test_foods_with_invalid_grams_do_not_appear_in_the_analysis():
 # SDD: 024 REQ-007 AC-007.3
 @pytest.mark.parametrize(
     "value, expected",
-    [("high", "high"), ("medium", "medium"), ("low", "low"), ("alta", "low"), (None, "low"), (5, "low")],
+    [
+        ("high", "high"),
+        ("medium", "medium"),
+        ("low", "low"),
+        ("alta", "low"),
+        (None, "low"),
+        (5, "low"),
+    ],
 )
 def test_parse_confidence_defaults_to_low(value, expected):
     """`high`, `medium` y `low` se respetan; cualquier otro valor o ninguno da `low`."""
