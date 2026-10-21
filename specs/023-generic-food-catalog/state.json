@@ -10,7 +10,7 @@
   "branch": "feat/023-generic-food-catalog",
   "base_branch": "main",
   "created_at": "2026-10-21T05:27:32.707Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -21,7 +21,10 @@
       "at": "2026-10-21T08:29:33.902Z",
       "note": "auto (gate_mode=flow): ajuste acotado del plan"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-21T08:30:26.825Z",
+      "note": "auto (gate_mode=flow): ajuste acotado de tareas"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -31,7 +34,7 @@
   },
   "commits": {
     "spec": "84f397e",
-    "plan": "3fbd904",
+    "plan": "4d9a95d",
     "tasks": "aeebe4e",
     "tests": "e7792b5",
     "implement": "d9459f3"
@@ -435,6 +438,30 @@
       "stage": "plan",
       "event": "approved",
       "note": "auto (gate_mode=flow): ajuste acotado del plan"
+    },
+    {
+      "at": "2026-10-21T08:29:34.160Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 4d9a95d"
+    },
+    {
+      "at": "2026-10-21T08:29:34.362Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Ajuste mínimo de tareas: lista mínima 39"
+    },
+    {
+      "at": "2026-10-21T08:30:26.724Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks ajustadas: 69 tareas, 7 abiertas (T-028, T-035, T-120 a T-123, T-125)"
+    },
+    {
+      "at": "2026-10-21T08:30:26.825Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): ajuste acotado de tareas"
     }
   ]
 }

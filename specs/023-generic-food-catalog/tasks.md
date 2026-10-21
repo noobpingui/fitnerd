@@ -42,13 +42,14 @@ Backend:
 - [x] T-025 [REQ-003, REQ-001, AC-003.1, AC-003.2, AC-003.3, AC-003.4, AC-003.7, AC-003.8, AC-001.3] (test) Lector del CSV: archivo, columnas, filas, unicidad, palabras prohibidas y todos los errores en un mensaje — `backend/tests/test_services/test_catalog_csv_reader.py`
 - [x] T-026 [REQ-002, AC-002.1, AC-002.2, AC-002.3] (test) Carga: añadir, repetir sin cambios, actualizar y quitar, con la búsqueda real tras quitar — `backend/tests/test_services/test_catalog_load_service.py`
 - [x] T-027 [REQ-003, AC-003.1, AC-003.2, AC-003.3, AC-003.4, AC-003.5, AC-003.6, AC-003.7, AC-003.8] (test) Carga: comparación con USDA (FDC ID 171477) y catálogo intacto ante cualquier error — `backend/tests/test_services/test_catalog_load_service.py`
-- [x] T-028 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (test) El CSV del repositorio: valida sin errores, 250–350 filas, sin términos repetidos, sin palabras prohibidas y con los 40 de la lista mínima — `backend/tests/test_services/test_food_catalog_csv.py`
+- [ ] T-028 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (test) El CSV del repositorio: valida sin errores, 250–350 filas, sin términos repetidos, sin palabras prohibidas y con los 39 de la lista mínima — `backend/tests/test_services/test_food_catalog_csv.py`
 - [x] T-029 [REQ-002, AC-002.5, AC-002.6] (test) Script de carga: confirmación `[s/N]`, `localhost`, `--yes`, ruta por defecto y `CatalogFileError` — `backend/tests/test_scripts/test_load_food_catalog_script.py`
 - [x] T-030 [REQ-006, AC-006.4, AC-006.5] (test) `parse_items` con `CatalogItemInput`, combinaciones de claves con el mensaje nuevo, gramos y `catalog_id` no válido; adaptar la aserción del mensaje de AC-003.7 de la 022 — `backend/tests/test_services/test_meal_rules.py`
 - [x] T-031 [REQ-006, REQ-007, AC-006.1, AC-006.2, AC-006.3, AC-006.6, AC-007.2] (test) `MealService` con alimentos del catálogo: copia, orden, rollback sin guardar, recálculo con valores guardados — `backend/tests/test_services/test_meal_service.py`
 - [x] T-032 [REQ-004, REQ-005, NFR-001, AC-004.1, AC-004.8, AC-004.9, AC-004.10, AC-004.11, AC-005.1, AC-005.2, AC-005.3, AC-005.4, AC-N001.1, AC-N001.2] (test) Ruta `GET /api/catalog/search` de extremo a extremo, sin Voyage ni Redis (dobles en los singletons) — `backend/tests/test_routes/test_catalog_routes.py`
 - [x] T-033 [REQ-006, REQ-007, REQ-008, AC-006.1, AC-006.2, AC-006.3, AC-006.4, AC-006.5, AC-006.6, AC-002.4, AC-007.1, AC-008.1, AC-008.2] (test) Rutas del diario con catálogo, carga real que quita o cambia el alimento y `catalog_id: null` en USDA y personalizados; adaptar mensaje y aserciones existentes — `backend/tests/test_routes/test_meal_routes.py`
 - [x] T-034 [REQ-008, AC-008.1] (test) Migración: el `downgrade` se niega con alimentos `catalog` en `meal_items` y, sin ellos, quita `catalog_id` y `catalog_foods` — `backend/tests/test_services/test_catalog_migration.py`
+- [ ] T-035 [REQ-001, AC-001.4] (test) Actualizar `test_food_catalog_csv.py`: la lista mínima pasa a 39 alimentos sin «Yuca cocida» y el test se llama `test_the_minimum_list_has_39_foods` — `backend/tests/test_services/test_food_catalog_csv.py`
 
 Frontend:
 - [x] T-040 [REQ-009, REQ-010] (test) Fábricas `makeCatalogFood` y `makeCatalogItem`, y `catalog_id: null` en `makeMealItem` — `frontend/src/test/catalogFixtures.ts`, `frontend/src/test/diaryFixtures.ts`
@@ -79,11 +80,12 @@ Backend, de datos a interfaz:
 - [x] T-111 [REQ-002, AC-002.5, AC-002.6] (impl) Script `load_food_catalog.main` (argumentos, entorno y base sin contraseña, confirmación, resumen y códigos de salida) — `backend/scripts/load_food_catalog.py`
 
 CSV del catálogo (valores `usda` copiados de `public.foods` de la base de desarrollo con `repr(float)`; filas `manual` solo con referencia verificable y sin inventar valores):
-- [x] T-120 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (config) CSV parte 1: cabecera y granos, legumbres, tubérculos, panes y pastas, incluida la parte de la lista mínima que les corresponde — `backend/scripts/data/food_catalog.csv`
-- [x] T-121 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (config) CSV parte 2: carnes, pescados, huevo, lácteos y la parte de la lista mínima que les corresponde — `backend/scripts/data/food_catalog.csv`
-- [x] T-122 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (config) CSV parte 3: frutas, verduras, frutos secos, grasas y la parte de la lista mínima que les corresponde — `backend/scripts/data/food_catalog.csv`
-- [x] T-123 [REQ-001, REQ-003, AC-001.1, AC-001.4] (config) CSV parte 4: completar hasta 250–350 filas, sinónimos regionales sin repeticiones y filas `manual` con su `reference`; listarlas en el informe para el gate de review — `backend/scripts/data/food_catalog.csv`
+- [ ] T-120 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (config) CSV parte 1: cabecera y granos, legumbres, tubérculos, panes y pastas, incluida la parte de la lista mínima que les corresponde (la yuca no entra: se quita la fila `yuca-cocida`). Corregir los hallazgos de `review.md` F2 (alimentos con dos versiones: zanahoria, frijoles blancos/navy), F3 (sinónimos con marca), F4 (sinónimos mal asignados), F5 (nombres no neutros) y F6 (nombres que no corresponden al alimento de USDA) en las filas de esta parte — `backend/scripts/data/food_catalog.csv`
+- [ ] T-121 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (config) CSV parte 2: carnes, pescados, huevo, lácteos y la parte de la lista mínima que les corresponde. Corregir los hallazgos de `review.md` F2 a F6 (dos versiones, sinónimos con marca, sinónimos mal asignados, nombres no neutros, nombres que no corresponden al alimento de USDA) en las filas de esta parte — `backend/scripts/data/food_catalog.csv`
+- [ ] T-122 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (config) CSV parte 3: frutas, verduras, frutos secos, grasas y la parte de la lista mínima que les corresponde. Corregir los hallazgos de `review.md` F2 (zanahoria, champiñones), F3, F4, F5 y F6 en las filas de esta parte — `backend/scripts/data/food_catalog.csv`
+- [ ] T-123 [REQ-001, REQ-003, AC-001.1, AC-001.4] (config) CSV parte 4: completar hasta 250–350 filas (el CSV queda en 264), sinónimos regionales sin repeticiones y ninguna fila `manual` (el CSV no tiene filas `manual`; la yuca no entra en la lista mínima de 39). Verificar que los hallazgos F2 a F6 de `review.md` quedan corregidos en todo el archivo — `backend/scripts/data/food_catalog.csv`
 - [x] T-124 [REQ-001, REQ-003, AC-003.5, AC-003.6] (config) Aplicar la migración y ejecutar la carga del CSV contra la base de desarrollo con `FLASK_ENV=development`; corregir el CSV hasta que no haya errores — `backend/scripts/data/food_catalog.csv`
+- [ ] T-125 [REQ-001, REQ-002, AC-002.1, AC-002.3] (config) Recargar el CSV corregido (264 filas, sin `yuca-cocida`) en la base de desarrollo con `FLASK_ENV=development` y comprobar que la carga quita la fila de la yuca y no da errores — `backend/scripts/data/food_catalog.csv`
 
 Frontend:
 - [x] T-130 [REQ-009, AC-009.2] (impl) `catalogSearchResponseSchema` real — `frontend/src/features/catalog/schemas.ts`
@@ -103,7 +105,7 @@ Frontend:
 | REQ-001 | AC-001.1 | T-028 | T-120, T-121, T-122, T-123 |
 | REQ-001 | AC-001.2 | T-028 | T-120, T-121, T-122, T-123 |
 | REQ-001 | AC-001.3 | T-025, T-028 | T-103, T-120, T-121, T-122 |
-| REQ-001 | AC-001.4 | T-028 | T-120, T-121, T-122, T-123 |
+| REQ-001 | AC-001.4 | T-028, T-035 | T-120, T-121, T-122, T-123, T-125 |
 | REQ-002 | AC-002.1 | T-026 | T-104, T-100 |
 | REQ-002 | AC-002.2 | T-026 | T-104 |
 | REQ-002 | AC-002.3 | T-026 | T-104 |
