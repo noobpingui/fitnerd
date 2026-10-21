@@ -25,7 +25,7 @@ _PNG_KEPT_CHUNKS = frozenset(
         b"sBIT", b"bKGD", b"pHYs", b"acTL", b"fcTL", b"fdAT",
     }
 )
-_WEBP_KEPT_CHUNKS = frozenset({b"VP8 ", b"VP8L", b"VP8X", b"ALPH", b"ANIM", b"ANMF", b"ICCP"})
+_WEBP_KEPT_CHUNKS = frozenset({b"VP8 ", b"VP8L", b"VP8X", b"ALPH", b"ANIM", b"ANMF"})
 _PILLOW_FORMATS = {"jpeg": "JPEG", "png": "PNG", "webp": "WEBP"}
 
 
@@ -55,6 +55,8 @@ def _strip_jpeg(data: bytes) -> bytes:
     total = len(data)
     out = bytearray(b"\xff\xd8")
     pos = 2
+    seen_sof = False
+    seen_sos = False
     while pos < total:
         if data[pos] != 0xFF:
             raise ValueError("marcador jpeg esperado")
@@ -65,8 +67,16 @@ def _strip_jpeg(data: bytes) -> bytes:
         marker = data[pos]
         pos += 1
         if marker == 0xD9:
+            if not (seen_sof and seen_sos):
+                raise ValueError("jpeg sin SOF o sin SOS")
             out += b"\xff\xd9"
             return bytes(out)
+        if 0xC0 <= marker <= 0xCF and marker not in (0xC4, 0xC8, 0xCC):
+            if marker > 0xC2:
+                raise ValueError("proceso jpeg no admitido")
+            seen_sof = True
+        if marker == 0xDA:
+            seen_sos = True
         if marker == 0x01 or 0xD0 <= marker <= 0xD8:
             out += bytes([0xFF, marker])
             continue
@@ -137,7 +147,7 @@ def _strip_webp(data: bytes) -> bytes:
             if chunk_type == b"VP8X":
                 if size < 1:
                     raise ValueError("VP8X vacío")
-                body[0] &= ~(0x08 | 0x04) & 0xFF
+                body[0] &= ~(0x20 | 0x08 | 0x04) & 0xFF
             chunks += chunk_type + data[pos + 4 : pos + 8] + body
         pos = end
     if not chunks:
@@ -160,13 +170,10 @@ def strip_photo_metadata(data: bytes, photo_format: str) -> bytes:
 
 
 def _check_integrity(image: Image.Image, photo_format: str) -> None:
-    if photo_format == "jpeg":
-        image.draft("RGB", (max(1, image.width // 8), max(1, image.height // 8)))
-        image.load()
-    elif photo_format == "png":
+    # Sin decodificar píxeles: JPEG y WebP se comprueban por su estructura
+    # (cabeceras al abrir y recorrido de strip_photo_metadata); PNG con verify().
+    if photo_format == "png":
         image.verify()
-    else:
-        image.load()
 
 
 def prepare_photo(images: list[bytes]) -> MealPhoto:

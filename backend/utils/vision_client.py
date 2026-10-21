@@ -1,10 +1,13 @@
 """Adaptador del proveedor de visión (Amazon Bedrock, spec 024)."""
 
+import logging
 from dataclasses import dataclass
 
 import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
+
+logger = logging.getLogger(__name__)
 
 VISION_TIMEOUT_SECONDS = 30
 VISION_CONNECT_TIMEOUT_SECONDS = 5
@@ -55,15 +58,24 @@ class BedrockVisionClient:
 
     def init_app(self, app) -> None:
         self.model_id = app.config.get("BEDROCK_VISION_MODEL_ID") or None
+        self.client = None
         if not self.model_id:
-            self.client = None
+            return
+        region = (app.config.get("BEDROCK_REGION") or "").strip()
+        if not region:
+            logger.warning("Falta BEDROCK_REGION: el análisis de fotos responderá 503.")
             return
         factory = self.client_factory or boto3.client
-        self.client = factory(
-            "bedrock-runtime",
-            region_name=app.config["BEDROCK_REGION"],
-            config=build_client_config(),
-        )
+        try:
+            self.client = factory(
+                "bedrock-runtime", region_name=region, config=build_client_config()
+            )
+        except Exception as exc:
+            logger.warning(
+                "No se pudo crear el cliente de Bedrock (%s): el análisis de fotos responderá 503.",
+                describe_vision_error(exc),
+            )
+            self.client = None
 
     @property
     def configured(self) -> bool:
@@ -109,7 +121,10 @@ class BedrockVisionClient:
         for block in content:
             tool_use = block.get("toolUse") if isinstance(block, dict) else None
             if isinstance(tool_use, dict) and tool_use.get("name") == FOODS_TOOL_NAME:
-                foods = (tool_use.get("input") or {}).get("foods")
+                tool_input = tool_use.get("input")
+                if not isinstance(tool_input, dict):
+                    raise VisionProviderError("unexpected vision response")
+                foods = tool_input.get("foods")
                 if not isinstance(foods, list):
                     break
                 usage = response.get("usage") or {}

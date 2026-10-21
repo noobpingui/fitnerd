@@ -99,12 +99,12 @@ servicio → ruta.
 Sin migraciones ni `backend/Dockerfile`. Cada tarea se cumple cuando pasan los tests de la fase A de la iteración 2 que
 cubren sus mismos AC.
 
-- [ ] T-070 [REQ-003, AC-003.3, AC-003.6] (impl) F2: `_check_integrity` deja de llamar a `image.draft` y `image.load` (solo `image.verify()` en PNG; sin decodificar píxeles en ningún formato; `LOAD_TRUNCATED_IMAGES` sigue en `False`) — `backend/services/meal_photo.py`
-- [ ] T-071 [REQ-003, AC-003.3] (impl) F2: `_strip_jpeg` lanza `ValueError` si aparece un `SOF` distinto de `FFC0`–`FFC2` (sin tocar `FFC4`, `FFC8` ni `FFCC`) o si llega al `EOI` sin haber visto un `SOF` y al menos un `SOS` — `backend/services/meal_photo.py`
-- [ ] T-072 [REQ-010, AC-010.1] (impl) F8: WebP descarta el chunk `ICCP` (`_WEBP_KEPT_CHUNKS` sin `ICCP`) y `VP8X` borra el bit `0x20` además de `0x08` y `0x04`, recalculando el tamaño RIFF — `backend/services/meal_photo.py`
-- [ ] T-073 [REQ-009, AC-009.4] (impl) F4: `BedrockVisionClient.init_app` nunca lanza: región saneada con `strip()`, sin región no llama a la fábrica y avisa, `try … except Exception` alrededor de la fábrica con `logging.getLogger(__name__)` y `describe_vision_error` (nunca `str(exc)`), cliente `None` ante cualquier fallo — `backend/utils/vision_client.py`
-- [ ] T-074 [REQ-009, AC-009.2] (impl) F6: `recognize_foods` comprueba `isinstance(tool_input, dict)` antes de leer `foods` y lanza `VisionProviderError("unexpected vision response")` si no lo es — `backend/utils/vision_client.py`
-- [ ] T-075 [REQ-003, AC-003.4] (impl) F5: comentario en español sobre `PayloadTooLargeError`, sin tocar los comentarios previos del archivo — `backend/exceptions/custom_exceptions.py`
+- [x] T-070 [REQ-003, AC-003.3, AC-003.6] (impl) F2: `_check_integrity` deja de llamar a `image.draft` y `image.load` (solo `image.verify()` en PNG; sin decodificar píxeles en ningún formato; `LOAD_TRUNCATED_IMAGES` sigue en `False`) — `backend/services/meal_photo.py`
+- [x] T-071 [REQ-003, AC-003.3] (impl) F2: `_strip_jpeg` lanza `ValueError` si aparece un `SOF` distinto de `FFC0`–`FFC2` (sin tocar `FFC4`, `FFC8` ni `FFCC`) o si llega al `EOI` sin haber visto un `SOF` y al menos un `SOS` — `backend/services/meal_photo.py`
+- [x] T-072 [REQ-010, AC-010.1] (impl) F8: WebP descarta el chunk `ICCP` (`_WEBP_KEPT_CHUNKS` sin `ICCP`) y `VP8X` borra el bit `0x20` además de `0x08` y `0x04`, recalculando el tamaño RIFF — `backend/services/meal_photo.py`
+- [x] T-073 [REQ-009, AC-009.4] (impl) F4: `BedrockVisionClient.init_app` nunca lanza: región saneada con `strip()`, sin región no llama a la fábrica y avisa, `try … except Exception` alrededor de la fábrica con `logging.getLogger(__name__)` y `describe_vision_error` (nunca `str(exc)`), cliente `None` ante cualquier fallo — `backend/utils/vision_client.py`
+- [x] T-074 [REQ-009, AC-009.2] (impl) F6: `recognize_foods` comprueba `isinstance(tool_input, dict)` antes de leer `foods` y lanza `VisionProviderError("unexpected vision response")` si no lo es — `backend/utils/vision_client.py`
+- [x] T-075 [REQ-003, AC-003.4] (impl) F5: comentario en español sobre `PayloadTooLargeError`, sin tocar los comentarios previos del archivo — `backend/exceptions/custom_exceptions.py`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |
