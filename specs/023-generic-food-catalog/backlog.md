@@ -25,3 +25,8 @@
 - [ ] Retirar `FoodsPage`, `FoodResultList` y `useFoodSearch` cuando se confirme que no se usan (ya sin ruta).
 - [ ] Revisar en la review las filas `manual` del CSV y sus referencias.
 - [ ] Anotar en el runbook que, entre el CD y la carga del catálogo, la búsqueda del diario está vacía.
+
+## tasks · task-breaker
+- [ ] Verificar en la verificación que el chunk de entrada de `npm run build` sigue por debajo de 500 kB (ADR-0026).
+- [ ] Revisión manual de la migración `d4f6a8c0e2b5` frente a los modelos (Art. P2.4), a cargo del reviewer.
+- [ ] Las filas `manual` del CSV las revisa el usuario en el gate de review.
