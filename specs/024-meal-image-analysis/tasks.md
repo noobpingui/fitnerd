@@ -112,9 +112,9 @@ Reabren la etapa de tests (plan sección 11); al terminar hay que regenerar el s
 T-077 son caracterización (verdes antes y después: la lista blanca de `_strip_png` ya descarta `iCCP`); T-078 es rojo
 legítimo hasta T-079.
 
-- [ ] T-076 [REQ-010, AC-010.1] (test) F10: añadir el parámetro `icc_profile: bytes | None = None` al final de `png_bytes` (se pasa a `image.save(..., icc_profile=...)` solo si no es `None`; los llamadores actuales no cambian) — `backend/tests/photo_samples.py`
-- [ ] T-077 [REQ-010, AC-010.1] (test) F10: `test_png_icc_profile_is_stripped` (`png_bytes(70, 50, icc_profile=b"fitnerd-icc-device-model")` contiene `iCCP`; tras `strip_photo_metadata(..., "png")` ya no, `info` sin `icc_profile`, `load()` funciona y el tamaño es `(70, 50)`); test aparte porque el perfil PNG va comprimido con zlib — `backend/tests/test_services/test_meal_photo.py`
-- [ ] T-078 [REQ-003, AC-003.3, AC-003.6] (test) F11: `test_truncated_photo_with_a_side_over_8000_pixels_is_unreadable` parametrizado `png` (`png_bytes(8001, 100, mode="1")[:-12]`) y `jpeg` (`jpeg_bytes(8001, 100)[:-2]`): `prepare_photo` lanza `ValidationError` con `UNREADABLE_PHOTO_MESSAGE`, no `PHOTO_TOO_WIDE_MESSAGE`; rojo hasta T-079 — `backend/tests/test_services/test_meal_photo.py`
+- [x] T-076 [REQ-010, AC-010.1] (test) F10: añadir el parámetro `icc_profile: bytes | None = None` al final de `png_bytes` (se pasa a `image.save(..., icc_profile=...)` solo si no es `None`; los llamadores actuales no cambian) — `backend/tests/photo_samples.py`
+- [x] T-077 [REQ-010, AC-010.1] (test) F10: `test_png_icc_profile_is_stripped` (`png_bytes(70, 50, icc_profile=b"fitnerd-icc-device-model")` contiene `iCCP`; tras `strip_photo_metadata(..., "png")` ya no, `info` sin `icc_profile`, `load()` funciona y el tamaño es `(70, 50)`); test aparte porque el perfil PNG va comprimido con zlib — `backend/tests/test_services/test_meal_photo.py`
+- [x] T-078 [REQ-003, AC-003.3, AC-003.6] (test) F11: `test_truncated_photo_with_a_side_over_8000_pixels_is_unreadable` parametrizado `png` (`png_bytes(8001, 100, mode="1")[:-12]`) y `jpeg` (`jpeg_bytes(8001, 100)[:-2]`): `prepare_photo` lanza `ValidationError` con `UNREADABLE_PHOTO_MESSAGE`, no `PHOTO_TOO_WIDE_MESSAGE`; rojo hasta T-079 — `backend/tests/test_services/test_meal_photo.py`
 
 ### Fase B — Implementación de la iteración 3 de la review (F11, implementer)
 Sin migraciones ni `backend/Dockerfile`. Se cumple cuando pasa T-078 y siguen verdes los tests de dimensiones existentes.

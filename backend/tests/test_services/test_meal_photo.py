@@ -358,6 +358,38 @@ def test_icc_profile_is_stripped(make_photo, image_format):
         assert image.size == (70, 50)
 
 
+# SDD: 024 REQ-010 AC-010.1
+def test_png_icc_profile_is_stripped():
+    """El perfil ICC del PNG (chunk `iCCP`, comprimido con zlib) se descarta y
+    la imagen sigue leyéndose con sus dimensiones."""
+    original = png_bytes(70, 50, icc_profile=b"fitnerd-icc-device-model")
+    assert b"iCCP" in original
+
+    stripped = strip_photo_metadata(original, "png")
+
+    assert b"iCCP" not in stripped
+    with Image.open(io.BytesIO(stripped)) as image:
+        assert "icc_profile" not in image.info
+        image.load()
+        assert image.size == (70, 50)
+
+
+# SDD: 024 REQ-003 AC-003.3 AC-003.6
+@pytest.mark.parametrize(
+    "truncated",
+    [png_bytes(8001, 100, mode="1")[:-12], jpeg_bytes(8001, 100)[:-2]],
+    ids=["png", "jpeg"],
+)
+def test_truncated_photo_with_a_side_over_8000_pixels_is_unreadable(truncated):
+    """La integridad va antes que las dimensiones: un archivo truncado de más
+    de 8000 px es ilegible, no «demasiado ancho»."""
+    error = reject([truncated])
+
+    assert isinstance(error, ValidationError)
+    assert error.message == UNREADABLE_PHOTO_MESSAGE
+    assert error.message != PHOTO_TOO_WIDE_MESSAGE
+
+
 # SDD: 024 REQ-003 AC-003.3
 def test_strip_photo_metadata_raises_value_error_when_the_structure_cannot_be_walked():
     """Un JPEG con un segmento que se sale del archivo no se puede recorrer."""

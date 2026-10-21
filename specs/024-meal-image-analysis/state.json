@@ -9,7 +9,7 @@
   "branch": "feat/024-meal-image-analysis",
   "base_branch": "main",
   "created_at": "2026-10-21T19:01:11.612Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -24,7 +24,10 @@
       "at": "2026-10-21T21:27:24.626Z",
       "note": "auto (gate_mode=flow): 68 tareas, 4 nuevas para F10 y F11"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-21T21:29:25.972Z",
+      "note": "auto (gate_mode=flow): T-078 en rojo legítimo, red check PASS"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -34,7 +37,7 @@
   "commits": {
     "spec": "e267a28",
     "plan": "d19b24d",
-    "tasks": "97108e5",
+    "tasks": "7e5522a",
     "tests": "d2e5273",
     "implement": "cba4a18"
   },
@@ -45,8 +48,8 @@
   },
   "max_iterations": 4,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-21T21:29:06.612Z"
   },
   "verify": {
     "result": null,
@@ -57,16 +60,16 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-21T21:02:30.520Z",
-    "reason": "Línea 425 acortada (E501), iteración 3 de tests",
+    "at": "2026-10-21T21:29:25.811Z",
+    "reason": "Tests de F10 y F11 (iteración 3)",
     "sha256": {
       "backend/tests/fakes.py": "3570d458a7e79f15cb93a59b612db44b36161a763cbaae1323130c919199c7ef",
-      "backend/tests/photo_samples.py": "cafe3f16bce0ed90f7a0e39c3b2b46e79b680af117de63021ae395051fa0a31c",
+      "backend/tests/photo_samples.py": "fc243e59932c82651230604b867ef8f117966b300158b70a1e4ef8172a54ec99",
       "backend/tests/test_routes/test_meal_analysis_routes.py": "f70f0628394d90cdebed6bc1612aa22a58f118b8068c0ba9b7fc6907dd2cd831",
       "backend/tests/test_services/test_gunicorn_config.py": "7758a79c1d9182db517130b50825552f9dcba6965eb2212b001dd8480b500b1d",
       "backend/tests/test_services/test_meal_image_analysis_service.py": "299d5c6aa13c6038422dff0ff13218bc3bc39eddaad166709bc17df670da89c4",
       "backend/tests/test_services/test_meal_image_rules.py": "4e76878ec48a2e763426c24f7bdcbf2bd0e76f442933b251ad9dc1473f6e76cf",
-      "backend/tests/test_services/test_meal_photo.py": "c28f35aa99151e362d998fe8a3ad770ba8bf532cbbb25712e165823450146548",
+      "backend/tests/test_services/test_meal_photo.py": "1b190b2bfaffb74c690a2ad180c431f775a0ca69979c4f6a3759d7a27d4a6b24",
       "backend/tests/test_services/test_vision_client.py": "bfec49a4338b0f9366af46a0ad2fca188fd6cd9eb69edecedf726d78927734d2"
     }
   },
@@ -725,6 +728,54 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): 68 tareas, 4 nuevas para F10 y F11"
+    },
+    {
+      "at": "2026-10-21T21:27:24.960Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 7e5522a"
+    },
+    {
+      "at": "2026-10-21T21:27:25.191Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests T-076 a T-078 (F10 y F11)"
+    },
+    {
+      "at": "2026-10-21T21:27:25.301Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (sin scaffold)"
+    },
+    {
+      "at": "2026-10-21T21:28:09.122Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red (T-078: 2 variantes en rojo)"
+    },
+    {
+      "at": "2026-10-21T21:29:06.612Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Ronda T-076 a T-078: T-078 en rojo legítimo (2 variantes png y jpeg, AssertionError de mensaje: dimensiones antes que integridad, esperado hasta T-079); T-077 (iCCP en PNG) pasa por caracterización justificada en plan.md sección 11; los 34 demás tests de test_meal_photo.py pasan; sin errores de colección ni fixture"
+    },
+    {
+      "at": "2026-10-21T21:29:25.706Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "T-078 en rojo legítimo (2 variantes), red check PASS"
+    },
+    {
+      "at": "2026-10-21T21:29:25.811Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "8 archivo(s) de test: Tests de F10 y F11 (iteración 3)"
+    },
+    {
+      "at": "2026-10-21T21:29:25.972Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): T-078 en rojo legítimo, red check PASS"
     }
   ]
 }

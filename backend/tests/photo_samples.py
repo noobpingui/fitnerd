@@ -43,7 +43,11 @@ def jpeg_bytes(
 
 
 def png_bytes(
-    width: int = 64, height: int = 48, text: dict[str, str] | None = None, mode: str = "RGB"
+    width: int = 64,
+    height: int = 48,
+    text: dict[str, str] | None = None,
+    mode: str = "RGB",
+    icc_profile: bytes | None = None,
 ) -> bytes:
     """PNG liso. Con `mode="1"` o `"L"` un 8000 x 6000 pesa pocos KB."""
     from PIL.PngImagePlugin import PngInfo
@@ -55,7 +59,10 @@ def png_bytes(
         for key, value in text.items():
             info.add_text(key, value)
     buffer = io.BytesIO()
-    image.save(buffer, format="PNG", pnginfo=info)
+    options = {}
+    if icc_profile is not None:
+        options["icc_profile"] = icc_profile
+    image.save(buffer, format="PNG", pnginfo=info, **options)
     return buffer.getvalue()
 
 
