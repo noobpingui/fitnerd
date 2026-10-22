@@ -10,7 +10,7 @@
   "branch": "feat/025-meal-photo-upload",
   "base_branch": "main",
   "created_at": "2026-10-22T09:18:53.381Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,7 +29,10 @@
       "at": "2026-10-22T19:08:38.829Z",
       "note": "auto (gate_mode=flow): red check PASS, correccion de review F1-F4"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-22T19:10:52.486Z",
+      "note": "auto (gate_mode=flow): F1-F5 corregidos, suite en verde"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -39,7 +42,7 @@
     "spec": "0ef6784",
     "plan": "15645f5",
     "tasks": "562e568",
-    "tests": "207687a",
+    "tests": "5bd5877",
     "implement": "fcf9f0a"
   },
   "iterations": {
@@ -409,6 +412,30 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS, correccion de review F1-F4"
+    },
+    {
+      "at": "2026-10-22T19:08:39.086Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 5bd5877"
+    },
+    {
+      "at": "2026-10-22T19:08:39.274Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Corregir F1-F5 de la review"
+    },
+    {
+      "at": "2026-10-22T19:10:52.388Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F1-F5 corregidos; 1241 tests en verde"
+    },
+    {
+      "at": "2026-10-22T19:10:52.486Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F1-F5 corregidos, suite en verde"
     }
   ]
 }

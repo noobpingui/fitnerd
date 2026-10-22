@@ -51,10 +51,13 @@ export function MealPhotoDialog({
   const add = useAddMealItems(date)
   const previewRef = useRef<string | null>(null)
   const changeInputRef = useRef<HTMLInputElement>(null)
+  const mountedRef = useRef(true)
 
   // La vista previa se libera al desmontar el diálogo.
   useEffect(() => {
+    mountedRef.current = true
     return () => {
+      mountedRef.current = false
       if (previewRef.current) photoProcessor.revokePreviewUrl(previewRef.current)
       previewRef.current = null
     }
@@ -87,9 +90,12 @@ export function MealPhotoDialog({
     try {
       await checkPhotoReadable(picked, photoProcessor)
     } catch {
+      if (!mountedRef.current) return
       setPhotoError(PHOTO_UNREADABLE_MESSAGE)
       return
     }
+    // Si el diálogo se cerró durante la comprobación, no se crea una URL que nadie liberaría.
+    if (!mountedRef.current) return
     setPhotoError(null)
     const url = photoProcessor.createPreviewUrl(picked)
     previewRef.current = url
@@ -106,12 +112,15 @@ export function MealPhotoDialog({
     try {
       image = await preparePhotoUpload(file, photoProcessor)
     } catch (error) {
+      if (!mountedRef.current) return
       setPreparing(false)
       if (error instanceof UploadTooLargeError) setUploadError(UPLOAD_TOO_LARGE_MESSAGE)
       else if (error instanceof PhotoReadError) setUploadError(PHOTO_UNREADABLE_MESSAGE)
       else setUploadError(PHOTO_UNREADABLE_MESSAGE)
       return
     }
+    // Si el diálogo se cerró mientras se preparaba la imagen, no se envía.
+    if (!mountedRef.current) return
     setPreparing(false)
     setUpload(image)
     analyze.mutate(image)
@@ -200,11 +209,9 @@ export function MealPhotoDialog({
                   onChange={handleChangeInput}
                 />
 
-                {busy && (
-                  <p role="status" aria-live="polite" className="text-sm text-muted-foreground">
-                    Analizando la foto…
-                  </p>
-                )}
+                <p role="status" aria-live="polite" className="text-sm text-muted-foreground">
+                  {busy ? "Analizando la foto…" : noFoods ? NO_FOODS_MESSAGE : ""}
+                </p>
                 {uploadError && (
                   <p role="alert" className="text-sm text-destructive">
                     {uploadError}
@@ -215,11 +222,6 @@ export function MealPhotoDialog({
                     {errorView.message}
                   </p>
                 )}
-                {noFoods && (
-                  <p role="status" aria-live="polite" className="text-sm text-muted-foreground">
-                    {NO_FOODS_MESSAGE}
-                  </p>
-                )}
 
                 <div className="flex flex-wrap gap-2">
                   {errorView?.canRetry ? (
@@ -228,20 +230,23 @@ export function MealPhotoDialog({
                     </Button>
                   ) : (
                     !noFoods &&
-                    !errorView && (
+                    !errorView &&
+                    !uploadError && (
                       <Button type="button" onClick={() => void handleAnalyze()} disabled={busy}>
                         Analizar foto
                       </Button>
                     )
                   )}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={busy}
-                    onClick={() => changeInputRef.current?.click()}
-                  >
-                    Cambiar foto
-                  </Button>
+                  {(!errorView || errorView.canChangePhoto) && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={busy}
+                      onClick={() => changeInputRef.current?.click()}
+                    >
+                      Cambiar foto
+                    </Button>
+                  )}
                   {(errorView?.canRegisterManually || noFoods) && (
                     <Button type="button" variant="outline" onClick={onRegisterManually}>
                       Registrar a mano

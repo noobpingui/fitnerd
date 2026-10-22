@@ -61,7 +61,21 @@ export async function preparePhotoUpload(file: File, processor: PhotoProcessor):
 
 // Decodifica con un HTMLImageElement desde una URL blob: que se revoca al terminar.
 // El navegador aplica la orientación EXIF al decodificar y al dibujar.
-async function decodeImage(file: Blob): Promise<HTMLImageElement> {
+// La foto se decodifica una sola vez: el resultado se comparte entre comprobación, medida y dibujo.
+const decodedImages = new WeakMap<Blob, Promise<HTMLImageElement>>()
+
+function decodeImage(file: Blob): Promise<HTMLImageElement> {
+  let decoded = decodedImages.get(file)
+  if (!decoded) {
+    decoded = decodeImageOnce(file)
+    decodedImages.set(file, decoded)
+    // Un fallo no se cachea: un nuevo intento vuelve a decodificar.
+    decoded.catch(() => decodedImages.delete(file))
+  }
+  return decoded
+}
+
+async function decodeImageOnce(file: Blob): Promise<HTMLImageElement> {
   const url = URL.createObjectURL(file)
   try {
     const image = new Image()
@@ -87,6 +101,9 @@ export const browserPhotoProcessor: PhotoProcessor = {
     canvas.height = size.height
     const context = canvas.getContext("2d")
     if (!context) throw new PhotoReadError(PHOTO_UNREADABLE_MESSAGE)
+    // Fondo blanco: el JPEG no tiene transparencia y saldría negro.
+    context.fillStyle = "#fff"
+    context.fillRect(0, 0, size.width, size.height)
     context.imageSmoothingQuality = "high"
     context.drawImage(image, 0, 0, size.width, size.height)
     const blob = await new Promise<Blob | null>((resolve) =>
