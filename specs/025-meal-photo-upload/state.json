@@ -10,7 +10,7 @@
   "branch": "feat/025-meal-photo-upload",
   "base_branch": "main",
   "created_at": "2026-10-22T09:18:53.381Z",
-  "stage": "verify",
+  "stage": "docs",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -33,8 +33,14 @@
       "at": "2026-10-22T19:26:34.456Z",
       "note": "auto (gate_mode=flow): N1 y N3 corregidos, suite en verde"
     },
-    "verify": null,
-    "review": null,
+    "verify": {
+      "at": "2026-10-22T19:32:51.692Z",
+      "note": "auto (gate_mode=flow): verify PASS tras N1-N3"
+    },
+    "review": {
+      "at": "2026-10-22T19:47:50.823Z",
+      "note": "Sí, apruebo la review y acepto el ADR-0033"
+    },
     "docs": null,
     "close": null
   },
@@ -43,7 +49,7 @@
     "plan": "15645f5",
     "tasks": "562e568",
     "tests": "d83a5d9",
-    "implement": "3e4a4a0"
+    "implement": "356157f"
   },
   "iterations": {
     "tests": 3,
@@ -56,12 +62,12 @@
     "at": "2026-10-22T19:23:54.777Z"
   },
   "verify": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-22T19:32:39.133Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-10-22T19:34:30.455Z"
   },
   "tests_snapshot": {
     "at": "2026-10-22T19:24:06.140Z",
@@ -544,6 +550,60 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): N1 y N3 corregidos, suite en verde"
+    },
+    {
+      "at": "2026-10-22T19:26:34.693Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 356157f"
+    },
+    {
+      "at": "2026-10-22T19:26:34.858Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "verify full tras N1-N3"
+    },
+    {
+      "at": "2026-10-22T19:32:39.133Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: verify full tras N1-N3: frontend npm test 1242/1242 (2.ª ejecución; 1.ª con 2 timeouts de 5 s en router/lazyRoutes que pasan solos); lint 0 errores (1 warning PhotoReview.tsx:57); tsc -b ok; build ok (index 384,63 kB); backend pytest 2000 passed; ratchet 0 violaciones nuevas (sin cambios backend); 61/61 AC con marcador SDD: 025 en verde; 14 REQ + 3 NFR en tareas; 40/40 tareas [x]; sin skip nuevos; 5 AC manuales"
+    },
+    {
+      "at": "2026-10-22T19:32:51.621Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: 1242 frontend, 2000 backend, 61/61 AC"
+    },
+    {
+      "at": "2026-10-22T19:32:51.692Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS tras N1-N3"
+    },
+    {
+      "at": "2026-10-22T19:32:51.778Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Tercera review tras N1-N3"
+    },
+    {
+      "at": "2026-10-22T19:34:30.455Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-22T19:34:30.544Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED (3.ª): 0 bloqueantes, mayores ni menores; 1 nit"
+    },
+    {
+      "at": "2026-10-22T19:47:50.823Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Sí, apruebo la review y acepto el ADR-0033"
     }
   ]
 }

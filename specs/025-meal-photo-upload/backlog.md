@@ -73,3 +73,10 @@
 
 ## tests (N1-N3) · test-author
 - [ ] N3 (liberar la caché de decodificación tras `toJpeg`) queda sin test automático: revisar a mano en un navegador.
+
+## verify (N1-N3) · verifier
+- [ ] Vigilar el timeout de 5 s en router.test.tsx y lazyRoutes.test.tsx (ruta /body-metrics) si vuelve a fallar con la suite completa; posible subida de testTimeout para esos archivos. En la primera ejecución fallaron 2 por timeout; pasaron solos y en la repetición.
+
+## review (3.ª) · reviewer
+- [ ] R1 (NIT, test-author): el test de N1 (MealPhotoDialog.test.tsx:1561-1562) no afirma que se cree una sola URL ni que la vista previa final sea la de la segunda foto.
+- [ ] Comprobar en un navegador real, además de los AC manuales y el PNG con transparencia: que analizar dos veces la misma foto funciona tras liberar la caché (N3).
