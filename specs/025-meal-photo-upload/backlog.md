@@ -12,3 +12,8 @@
 - [ ] Ofrecer «Crear alimento personalizado» también desde la búsqueda de «Añadir otro alimento».
 - [ ] Volver a codificar con menos calidad si el JPEG supera los 3 MB, en lugar de mostrar el error (muy improbable a 1600 px).
 - [ ] Extraer un componente de búsqueda del catálogo compartido entre `AddFoodDialog` y `ProposalSearchStep` para quitar la duplicación de JSX.
+
+## tasks · task-breaker
+- [ ] El orquestador debe quitar `backend` de los ámbitos en `state.json` con `sdd-state` (el plan ya lo indica).
+- [ ] AC-004.3 (orientación EXIF), AC-004.4 (HEIC) y AC-001.3 (pantalla completa a 375 px) solo se prueban en jsdom con el doble `FakePhotoProcessor`. Necesitan comprobación manual en un navegador real durante verify o review, y `npm run build` debe confirmar el chunk de entrada ≤ 500 kB (NFR-003).
+- [ ] Cerrar el diálogo durante el análisis no aborta la petición, que ya cuenta para el límite de 10 por hora (ya anotado en el plan).
