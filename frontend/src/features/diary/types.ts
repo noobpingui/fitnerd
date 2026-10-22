@@ -37,6 +37,35 @@ export type CustomItemPayload = {
   grams: number
   per_100g: Record<NutrientKey, number>
 }
+export type AnalysisConfidence = "high" | "medium" | "low"
+export type ProposedFood = {
+  catalog_id: string
+  name: string
+  grams: number
+  confidence: AnalysisConfidence
+  per_100g: Record<NutrientKey, number>
+  nutrients: Nutrients
+}
+export type UnmatchedFood = { name: string; grams: number; confidence: AnalysisConfidence }
+export type MealPhotoAnalysis = {
+  items: ProposedFood[]
+  unmatched: UnmatchedFood[]
+  totals: NutrientTotals
+}
+// Un alimento de la propuesta. `grams` es el texto del campo (coma o punto) en los que se guardan.
+export type ProposalEntry =
+  | {
+      kind: "catalog"
+      catalogId: string
+      name: string
+      per100g: Record<NutrientKey, number>
+      grams: string
+      tag: AnalysisConfidence | "user" // "user" = «Añadido por ti»
+    }
+  | { kind: "custom"; name: string; per100g: Record<NutrientKey, number>; grams: string }
+  | { kind: "unmatched"; name: string; grams: number; confidence: AnalysisConfidence }
+export type ProposalFormValues = { entries: ProposalEntry[] }
+export type SavableItemPayload = CatalogItemPayload | CustomItemPayload
 export type AddMealItemsPayload = {
   date: string
   meal_type: MealType

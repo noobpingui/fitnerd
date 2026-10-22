@@ -80,11 +80,45 @@ describe("PrivacyPolicyPage", () => {
     expect(entry?.textContent).toMatch(/coach/i)
   })
 
-  // SDD: 023 REQ-012 AC-012.3
-  it("la última actualización es la del 21 de octubre de 2026", () => {
+  // SDD: 025 REQ-014 AC-014.3
+  // (sustituye al de la 023, que fijaba el 21 de octubre: la 025 actualiza la política)
+  it("la última actualización es la del 22 de octubre de 2026", () => {
     renderPage()
 
-    expect(document.body.textContent ?? "").toContain("Última actualización: 21 de octubre de 2026")
+    const text = document.body.textContent ?? ""
+    expect(text).toContain("Última actualización: 22 de octubre de 2026")
+    expect(text).not.toContain("21 de octubre de 2026")
+  })
+
+  // SDD: 025 REQ-014 AC-014.1
+  it("'Con quién se comparte' incluye «Amazon Web Services (Amazon Bedrock):» con el texto de las fotos", () => {
+    renderPage()
+    const section = sectionOf("Con quién se comparte")
+
+    const entry = within(section)
+      .getAllByRole("listitem")
+      .find((item) => /Amazon Web Services \(Amazon Bedrock\):/.test(item.textContent ?? ""))
+
+    expect(entry).toBeDefined()
+    const text = (entry?.textContent ?? "").replace(/\s+/g, " ")
+    expect(text).toContain(
+      "Las fotos de comidas que envías para analizar se procesan con un modelo de IA de Amazon Bedrock para reconocer los alimentos. Se envían sin sus metadatos (ubicación, cámara y fecha) y fitnerd no las guarda."
+    )
+  })
+
+  // SDD: 025 REQ-014 AC-014.2
+  it("el punto de Langfuse añade que del análisis de fotos solo se envían formato, tamaño y número de alimentos, nunca la foto", () => {
+    renderPage()
+    const section = sectionOf("Con quién se comparte")
+
+    const entry = within(section)
+      .getAllByRole("listitem")
+      .find((item) => /Langfuse/.test(item.textContent ?? ""))
+
+    expect(entry).toBeDefined()
+    expect((entry?.textContent ?? "").replace(/\s+/g, " ")).toContain(
+      "Del análisis de fotos solo se envían el formato, el tamaño y el número de alimentos reconocidos, nunca la foto."
+    )
   })
 
   // SDD: 005 REQ-012 AC-012.3

@@ -17,3 +17,24 @@
 - [ ] El orquestador debe quitar `backend` de los ámbitos en `state.json` con `sdd-state` (el plan ya lo indica).
 - [ ] AC-004.3 (orientación EXIF), AC-004.4 (HEIC) y AC-001.3 (pantalla completa a 375 px) solo se prueban en jsdom con el doble `FakePhotoProcessor`. Necesitan comprobación manual en un navegador real durante verify o review, y `npm run build` debe confirmar el chunk de entrada ≤ 500 kB (NFR-003).
 - [ ] Cerrar el diálogo durante el análisis no aborta la petición, que ya cuenta para el límite de 10 por hora (ya anotado en el plan).
+
+## tests · test-author
+- [ ] Orientación EXIF, HEIC real en Safari/Chrome, pantalla completa a 375 px y chunk de entrada ≤ 500 kB (`npm run build`) quedan para `verify` y `review`, a mano, como dice el plan.
+- [ ] Cerrar el diálogo durante el análisis no aborta la petición (el plan lo deja en backlog). El test AC-005.2 solo comprueba que el resultado se descarta.
+- [ ] `state.json` sigue listando `backend` en los ámbitos y debe corregirlo el orquestador.
+
+## tests (red) · verifier
+- [ ] Quitar `backend` de `scope` en `state.json` (Q8): la CLI no lo permite; hay que decidirlo al cerrar.
+- [ ] Decidir si F4 y F5 son guardas de regresión declaradas; si lo son, el test-author las marca así y el modo red puede pasar.
+- [ ] Comprobación manual de los AC de navegador (AC-001.3, AC-002.1, AC-003.3, AC-004.3, AC-004.4) en verify o review.
+
+## tests (red, iteración 2) · verifier
+- [ ] Ámbito backend en state.json.scope sin archivos tocados: en full, o se ejecuta su suite o se corrige el alcance con la CLI.
+- [ ] Contadores inconsistentes: tasks.md dice «58+7 AC» y spec.md tiene 61 AC reales.
+
+## tests (iteración 3) · test-author
+- [ ] Que el verify confirme que AC-004.1 queda cubierto por los tests de FormData restantes de `apiClient.test.ts`.
+
+## tests (red PASS, iteración 3) · verifier
+- [ ] `state.json.scope` sigue listando `backend` (Q8 lo quita en la spec, pero `sdd-state` no permite quitarlo). Revisar en verify.
+- [ ] PrivacyPolicyPage.test.tsx sustituye un test existente de la 023 (AC-012.3, fecha del 21 de octubre) por el del 22 de octubre; es lo que exige AC-014.3, anotado para la revisión.

@@ -1,6 +1,6 @@
 import { apiFetch } from "@/lib/apiClient"
 import { diaryResponseSchema, mealResponseSchema } from "./schemas"
-import type { AddMealItemsPayload, Diary, Meal } from "./types"
+import type { AddMealItemsPayload, Diary, Meal, MealPhotoAnalysis } from "./types"
 
 export async function getDiary(date: string): Promise<Diary> {
   const params = new URLSearchParams({ date })
@@ -28,4 +28,8 @@ export async function updateMealItemGrams(
 
 export async function removeMealItem(mealId: number, itemId: number): Promise<void> {
   await apiFetch<void>(`/api/meals/${mealId}/items/${itemId}`, { method: "DELETE" })
+}
+
+export async function analyzeMealPhoto(_image: Blob): Promise<MealPhotoAnalysis> {
+  throw new Error("not implemented")
 }

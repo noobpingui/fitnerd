@@ -1,5 +1,5 @@
 import { z } from "zod"
-import type { CustomItemPayload } from "./types"
+import type { CustomItemPayload, MealPhotoAnalysis, ProposalFormValues } from "./types"
 
 export const GRAMS_RANGE_MESSAGE = "Los gramos deben estar entre 1 y 2000."
 export const GRAMS_DECIMALS_MESSAGE = "Los gramos admiten como mucho un decimal."
@@ -47,7 +47,7 @@ function hasTooManyDecimals(text: string): boolean {
 }
 
 // Devuelve el mensaje de error de unos gramos o null si son válidos.
-function gramsError(text: string): string | null {
+export function gramsError(text: string): string | null {
   const value = parseDecimalText(text)
   if (value === null || value < 1 || value > 2000) return GRAMS_RANGE_MESSAGE
   if (hasTooManyDecimals(text)) return GRAMS_DECIMALS_MESSAGE
@@ -158,4 +158,13 @@ export const diaryResponseSchema = z.object({
   meals: z.array(mealResponseSchema),
   totals,
   incomplete: z.array(nutrientKey),
+})
+
+// Esqueletos (025): se implementan en la etapa implement.
+export const mealPhotoAnalysisSchema = z.custom<MealPhotoAnalysis>(() => {
+  throw new Error("not implemented")
+})
+
+export const proposalFormSchema = z.custom<ProposalFormValues>(() => {
+  throw new Error("not implemented")
 })
