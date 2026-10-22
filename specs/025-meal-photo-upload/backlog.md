@@ -80,3 +80,6 @@
 ## review (3.ª) · reviewer
 - [ ] R1 (NIT, test-author): el test de N1 (MealPhotoDialog.test.tsx:1561-1562) no afirma que se cree una sola URL ni que la vista previa final sea la de la segunda foto.
 - [ ] Comprobar en un navegador real, además de los AC manuales y el PNG con transparencia: que analizar dos veces la misma foto funciona tras liberar la caché (N3).
+
+## docs · doc-keeper
+- [ ] docs/backlog.md: marcar como hechos «Actualizar la Política de privacidad (las fotos van a Amazon Web Services) en la 025», «Admitir HEIC si la 025 no lo convierte en el cliente» y «guardar varios alimentos de una vez» (lo hace el orquestador en close). El paso 7 del caso 024 del runbook (revisión manual de precisión con fotos reales) sigue pendiente.

@@ -237,6 +237,18 @@ Migración `d4f6a8c0e2b5` (ADR-0031): crea `public.catalog_foods` y cambia las `
 7. **Revisión manual de precisión (Q9 de la spec):** pendiente del gate de review; unas 10 fotos reales contra Bedrock, incluida alguna en Display P3, para confirmar que quitar el perfil ICC no empeora el reconocimiento.
 8. **Marcha atrás:** revertir el merge basta. No hay migración que deshacer. La foto no se guarda en ningún sitio.
 
+### Caso A (sin migraciones) solo frontend: 025, registro de una comida con foto
+
+El botón «Cargar imagen» del diario (ADR-0033) usa el `POST /api/meals/analyze` de la 024 y `POST /api/meals`, sin cambios en el backend: no hay migración, ni variables nuevas, ni pasos en AWS más allá de los de la 024 (que ya deben estar hechos). Basta el merge; Vercel despliega el frontend solo.
+
+1. **Comprobación manual en navegadores reales** (jsdom no decodifica imágenes ni usa `canvas`):
+   - Una foto vertical de móvil (orientación EXIF 6) se envía derecha y el análisis la reconoce.
+   - Una foto HEIC en Safari se analiza; en Chrome de Windows aparece «No se pudo leer la foto. Prueba con otra foto en JPEG, PNG o WebP.».
+   - A 375 px el diálogo ocupa toda la pantalla y a 1024 px se centra.
+2. **Flujo completo con una cuenta real:** «Cargar imagen» en una tarjeta, analizar, corregir gramos, guardar y comprobar que los alimentos se suman a los que ya tenía la comida. Cada análisis cuenta para el límite de 10 por hora.
+3. **Privacidad:** la Política de privacidad muestra el punto de Amazon Web Services (Amazon Bedrock) y la fecha del 22 de octubre de 2026.
+4. **Marcha atrás:** revertir el merge basta.
+
 ### Caso C (destructiva): migración después del CD
 
 1. Backup completo (paso 3) **verificado**, con el recuento de filas de lo que se va a borrar.

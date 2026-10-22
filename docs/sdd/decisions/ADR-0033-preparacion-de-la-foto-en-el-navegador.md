@@ -1,7 +1,7 @@
 # ADR-0033: Preparación de la foto de una comida en el navegador y envío `multipart` por `apiFetch`
 
-- **Estado:** Propuesta · 2026-10-22 (plan de `025-meal-photo-upload`)
-- **Decidido por:** el `planner`; pendiente de revisión por el usuario en el gate de `review`.
+- **Estado:** Aceptada · 2026-10-22 (plan de `025-meal-photo-upload`; aceptada por el usuario en el gate de review)
+- **Decidido por:** el `planner`; revisada y aceptada por el usuario en el gate de `review`.
 
 ## Contexto
 La spec 025 conecta el diario con `POST /api/meals/analyze` (spec 024, ADR-0032), que recibe un único archivo en el
