@@ -2,7 +2,7 @@ import { LegalPageLayout } from "@/features/legal/components/LegalPageLayout"
 
 export function PrivacyPolicyPage() {
   return (
-    <LegalPageLayout title="Política de privacidad" updatedAt="21 de octubre de 2026">
+    <LegalPageLayout title="Política de privacidad" updatedAt="22 de octubre de 2026">
       <p>
         fitnerd es un proyecto personal, desarrollado y
         mantenido por una sola persona - no una empresa con un equipo
@@ -75,11 +75,19 @@ export function PrivacyPolicyPage() {
             respuesta.
           </li>
           <li>
+            <strong>Amazon Web Services (Amazon Bedrock):</strong> Las
+            fotos de comidas que envías para analizar se procesan con un
+            modelo de IA de Amazon Bedrock para reconocer los alimentos. Se
+            envían sin sus metadatos (ubicación, cámara y fecha) y fitnerd
+            no las guarda.
+          </li>
+          <li>
             <strong>Langfuse:</strong> las preguntas, las respuestas, el
             contenido de los vídeos usado y las valoraciones 👍/👎 se
             envían para revisar la calidad del coach. Se identifican solo
             con un identificador interno de la cuenta, nunca con tu email
-            ni tu nombre.
+            ni tu nombre. Del análisis de fotos solo se envían el formato,
+            el tamaño y el número de alimentos reconocidos, nunca la foto.
           </li>
           <li>
             <strong>Voyage AI:</strong> recibe el texto de tus preguntas

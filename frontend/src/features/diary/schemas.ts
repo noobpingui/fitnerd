@@ -1,5 +1,5 @@
 import { z } from "zod"
-import type { CustomItemPayload, MealPhotoAnalysis, ProposalFormValues } from "./types"
+import type { CustomItemPayload } from "./types"
 
 export const GRAMS_RANGE_MESSAGE = "Los gramos deben estar entre 1 y 2000."
 export const GRAMS_DECIMALS_MESSAGE = "Los gramos admiten como mucho un decimal."
@@ -160,11 +160,59 @@ export const diaryResponseSchema = z.object({
   incomplete: z.array(nutrientKey),
 })
 
-// Esqueletos (025): se implementan en la etapa implement.
-export const mealPhotoAnalysisSchema = z.custom<MealPhotoAnalysis>(() => {
-  throw new Error("not implemented")
+const confidence = z.enum(["high", "medium", "low"])
+const per100g = z.object({
+  calories_kcal: z.number(),
+  protein_g: z.number(),
+  carbs_g: z.number(),
+  fat_g: z.number(),
 })
 
-export const proposalFormSchema = z.custom<ProposalFormValues>(() => {
-  throw new Error("not implemented")
+export const mealPhotoAnalysisSchema = z.object({
+  items: z.array(
+    z.object({
+      catalog_id: z.string(),
+      name: z.string(),
+      grams: z.number(),
+      confidence,
+      per_100g: per100g,
+      nutrients: nullableNutrients,
+    })
+  ),
+  unmatched: z.array(z.object({ name: z.string(), grams: z.number(), confidence })),
+  totals,
 })
+
+const proposalEntrySchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("catalog"),
+    catalogId: z.string(),
+    name: z.string(),
+    per100g,
+    grams: z.string(),
+    tag: z.enum(["high", "medium", "low", "user"]),
+  }),
+  z.object({
+    kind: z.literal("custom"),
+    name: z.string(),
+    per100g,
+    grams: z.string(),
+  }),
+  z.object({
+    kind: z.literal("unmatched"),
+    name: z.string(),
+    grams: z.number(),
+    confidence,
+  }),
+])
+
+// Valida los gramos de las entradas que se guardan; las «unmatched» no se validan.
+export const proposalFormSchema = z
+  .object({ entries: z.array(proposalEntrySchema) })
+  .superRefine((values, ctx) => {
+    values.entries.forEach((entry, index) => {
+      if (entry.kind === "unmatched") return
+      const message = gramsError(entry.grams)
+      if (message) ctx.addIssue({ code: "custom", path: ["entries", index, "grams"], message })
+    })
+  })

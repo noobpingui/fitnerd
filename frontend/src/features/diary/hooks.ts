@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query"
 import {
   addMealItems,
+  analyzeMealPhoto,
   getDiary,
   removeMealItem,
   updateMealItemGrams,
@@ -30,7 +31,10 @@ export function useAddMealItems(date: string) {
 
 // Sin reintentos: cada análisis cuenta para el límite de 10 por hora.
 export function useAnalyzeMealPhoto(): UseMutationResult<MealPhotoAnalysis, Error, Blob> {
-  throw new Error("not implemented")
+  return useMutation<MealPhotoAnalysis, Error, Blob>({
+    mutationFn: (image) => analyzeMealPhoto(image),
+    retry: false,
+  })
 }
 
 export function useUpdateMealItemGrams(date: string) {

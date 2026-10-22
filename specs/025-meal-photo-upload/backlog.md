@@ -38,3 +38,10 @@
 ## tests (red PASS, iteración 3) · verifier
 - [ ] `state.json.scope` sigue listando `backend` (Q8 lo quita en la spec, pero `sdd-state` no permite quitarlo). Revisar en verify.
 - [ ] PrivacyPolicyPage.test.tsx sustituye un test existente de la 023 (AC-012.3, fecha del 21 de octubre) por el del 22 de octubre; es lo que exige AC-014.3, anotado para la revisión.
+
+## implement · implementer
+- [ ] Cerrar el diálogo con el análisis pendiente no aborta la petición, pero el análisis ya cuenta para el límite de 10 por hora (ya anotado en el plan).
+- [ ] Comprobación manual en un navegador real: orientación EXIF (AC-004.3), HEIC en Safari y Chrome (AC-003.3 y AC-004.4), y pantalla completa a 375 px (AC-001.3).
+- [ ] `ProposalSearchStep` no ofrece «Crear alimento personalizado», porque REQ-009 no lo pide.
+- [ ] `state.json` aún lista `backend` en `scope`. Lo corrige el orquestador con `sdd-state`.
+- [ ] Warning de lint nuevo `react(incompatible-library)` por `form.watch` en `PhotoReview.tsx` (se usa `form.watch` porque `useWatch` devolvía valores obsoletos tras `update()`).

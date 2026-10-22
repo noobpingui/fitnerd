@@ -55,3 +55,9 @@ Ninguno en modo red. Las iteraciones anteriores tenían F1 a F6; F1, F2 y F3 se 
 | — | ninguno | — | — |
 
 Nota de estado: `state.json.scope` lista `backend` (Q8 lo quita en la spec, pero `sdd-state` no permite quitarlo); la feature no toca ningún archivo de backend ni tiene tests nuevos en él.
+
+## Comentarios del usuario
+
+Respuesta del usuario (literal): «Si, devuelvelos»
+
+Hallazgo del implementer (implement, iteración 1) que se devuelve al test-author: en `frontend/src/features/diary/components/MealPhotoDialog.test.tsx`, los tests «"Registrar a mano" avisa a quien abrió el diálogo» (línea ~658) y «usa el tipo de comida de la tarjeta» (línea ~1164) montan el diálogo con `renderDialog({ mealType: "dinner", label: "Cena" })`, pero los ayudantes `toPreview`, `reachProposal`, `button` y `save` buscan el diálogo con `dialog(label = "Almuerzo")` (línea ~114), es decir, el título «Añadir a Almuerzo con una foto». Con «Cena» el título correcto es «Añadir a Cena con una foto» (AC-001.2). Corrección esperada: que los ayudantes reciban el `label` (p. ej. `toPreview(user, file, "Cena")`) o que `renderDialog` fije el label que usan, sin cambiar el comportamiento que prueban ni debilitar ningún test.

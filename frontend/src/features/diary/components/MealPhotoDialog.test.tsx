@@ -81,6 +81,9 @@ function DiaryProbe() {
   return null
 }
 
+// Label de la tarjeta con la que se montó el último diálogo; los ayudantes lo usan por defecto.
+let currentLabel = "Almuerzo"
+
 function renderDialog({
   processor = new FakePhotoProcessor(),
   mealType = "lunch" as const,
@@ -90,6 +93,7 @@ function renderDialog({
   mealType?: "lunch" | "dinner"
   label?: string
 } = {}) {
+  currentLabel = label
   const onClose = vi.fn()
   const onRegisterManually = vi.fn()
   const queryClient = new QueryClient({
@@ -111,7 +115,7 @@ function renderDialog({
   return { onClose, onRegisterManually, processor, view }
 }
 
-function dialog(label = "Almuerzo") {
+function dialog(label = currentLabel) {
   return screen.getByRole("dialog", { name: `Añadir a ${label} con una foto` })
 }
 
@@ -180,7 +184,7 @@ async function chooseFood(user: User, name: string) {
   await user.click(await within(dialog()).findByRole("button", { name: `Elegir ${name}` }))
 }
 
-async function save(user: User, label = "Almuerzo") {
+async function save(user: User, label = currentLabel) {
   await user.click(button(`Guardar en ${label}`))
 }
 

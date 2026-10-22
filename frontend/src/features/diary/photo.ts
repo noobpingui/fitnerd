@@ -21,33 +21,84 @@ export interface PhotoProcessor {
 export class PhotoReadError extends Error {}
 export class UploadTooLargeError extends Error {}
 
-export function photoFileError(_file: File): string | null {
-  throw new Error("not implemented")
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"]
+const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"]
+
+// Tipo (MIME o, si viene vacío, extensión) y después tamaño. No lee el contenido.
+export function photoFileError(file: File): string | null {
+  const type = file.type.toLowerCase()
+  const name = file.name.toLowerCase()
+  const typeOk =
+    type === ""
+      ? ALLOWED_EXTENSIONS.some((extension) => name.endsWith(extension))
+      : ALLOWED_TYPES.includes(type)
+  if (!typeOk) return PHOTO_TYPE_MESSAGE
+  if (file.size > MAX_PHOTO_BYTES) return PHOTO_SIZE_MESSAGE
+  return null
 }
 
-export function scaledSize(_size: PhotoSize, _maxSide?: number): PhotoSize {
-  throw new Error("not implemented")
+// Lado mayor ≤ maxSide conservando la proporción; nunca agranda.
+export function scaledSize(size: PhotoSize, maxSide: number = MAX_UPLOAD_SIDE): PhotoSize {
+  const longest = Math.max(size.width, size.height)
+  if (longest <= maxSide) return { width: size.width, height: size.height }
+  const factor = maxSide / longest
+  return {
+    width: Math.max(1, Math.round(size.width * factor)),
+    height: Math.max(1, Math.round(size.height * factor)),
+  }
 }
 
-export async function checkPhotoReadable(_file: File, _processor: PhotoProcessor): Promise<void> {
-  throw new Error("not implemented")
+export async function checkPhotoReadable(file: File, processor: PhotoProcessor): Promise<void> {
+  await processor.readSize(file)
 }
 
-export async function preparePhotoUpload(_file: File, _processor: PhotoProcessor): Promise<Blob> {
-  throw new Error("not implemented")
+export async function preparePhotoUpload(file: File, processor: PhotoProcessor): Promise<Blob> {
+  const size = scaledSize(await processor.readSize(file))
+  const jpeg = await processor.toJpeg(file, size)
+  if (jpeg.size > MAX_UPLOAD_BYTES) throw new UploadTooLargeError(UPLOAD_TOO_LARGE_MESSAGE)
+  return jpeg
+}
+
+// Decodifica con un HTMLImageElement desde una URL blob: que se revoca al terminar.
+// El navegador aplica la orientación EXIF al decodificar y al dibujar.
+async function decodeImage(file: Blob): Promise<HTMLImageElement> {
+  const url = URL.createObjectURL(file)
+  try {
+    const image = new Image()
+    image.src = url
+    await image.decode()
+    return image
+  } catch {
+    throw new PhotoReadError(PHOTO_UNREADABLE_MESSAGE)
+  } finally {
+    URL.revokeObjectURL(url)
+  }
 }
 
 export const browserPhotoProcessor: PhotoProcessor = {
-  readSize(_file) {
-    throw new Error("not implemented")
+  async readSize(file) {
+    const image = await decodeImage(file)
+    return { width: image.naturalWidth, height: image.naturalHeight }
   },
-  toJpeg(_file, _size) {
-    throw new Error("not implemented")
+  async toJpeg(file, size) {
+    const image = await decodeImage(file)
+    const canvas = document.createElement("canvas")
+    canvas.width = size.width
+    canvas.height = size.height
+    const context = canvas.getContext("2d")
+    if (!context) throw new PhotoReadError(PHOTO_UNREADABLE_MESSAGE)
+    context.imageSmoothingQuality = "high"
+    context.drawImage(image, 0, 0, size.width, size.height)
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", JPEG_QUALITY)
+    )
+    if (!blob) throw new PhotoReadError(PHOTO_UNREADABLE_MESSAGE)
+    return blob
   },
-  createPreviewUrl(_file) {
-    throw new Error("not implemented")
+  createPreviewUrl(file) {
+    return URL.createObjectURL(file)
   },
-  revokePreviewUrl(_url) {
-    throw new Error("not implemented")
+  revokePreviewUrl(url) {
+    URL.revokeObjectURL(url)
   },
 }

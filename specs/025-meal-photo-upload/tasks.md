@@ -44,21 +44,21 @@ Marcadores `// SDD: 025 REQ-… AC-…` en la línea anterior a cada test; nombr
 ## Fase B — Implementación (implementer)
 Orden: HTTP y datos → reglas puras → piezas de UI → ensamblado → legal.
 
-- [ ] T-030 [REQ-004] (impl) `apiFetch` envía `FormData` tal cual y sin `Content-Type` JSON — `frontend/src/lib/apiClient.ts`
-- [ ] T-031 [REQ-006, REQ-007] (impl) Implementar `mealPhotoAnalysisSchema` y `proposalFormSchema` (gramos validados con `gramsError` en `entries.i.grams`, sin validar `unmatched`) — `frontend/src/features/diary/schemas.ts`
-- [ ] T-032 [REQ-012] (impl) Implementar `analysisErrorView` (400 y 413, 429, 503 y resto) — `frontend/src/features/diary/errors.ts`
-- [ ] T-033 [REQ-004, REQ-005] (impl) Implementar `analyzeMealPhoto` (FormData con `image`, nombre `comida.jpg`, respuesta validada) y `useAnalyzeMealPhoto` sin reintentos — `frontend/src/features/diary/api.ts`, `frontend/src/features/diary/hooks.ts`
-- [ ] T-034 [REQ-003, REQ-004] (impl) Implementar `photoFileError`, `scaledSize`, `checkPhotoReadable` y `preparePhotoUpload` — `frontend/src/features/diary/photo.ts`
-- [ ] T-035 [REQ-002, REQ-004, NFR-001] (impl) Implementar `browserPhotoProcessor` (`HTMLImageElement` y `decode()` desde URL `blob:` revocada, canvas con orientación aplicada, `toBlob` JPEG, vista previa y su revocación; ADR-0033) — `frontend/src/features/diary/photo.ts`
-- [ ] T-036 [REQ-006, REQ-007, REQ-008, REQ-009, REQ-010, REQ-011] (impl) Implementar las funciones de `proposal.ts` — `frontend/src/features/diary/proposal.ts`
-- [ ] T-037 [REQ-010] (impl) `CustomFoodForm` admite `defaultGrams` y `submitLabel` sin cambiar su comportamiento actual — `frontend/src/features/diary/components/CustomFoodForm.tsx`
-- [ ] T-038 [REQ-009, REQ-010] (impl) Crear `ProposalSearchStep` (búsqueda del catálogo con texto inicial, mismos estados que `AddFoodDialog`, «Volver a la propuesta») — `frontend/src/features/diary/components/ProposalSearchStep.tsx`
-- [ ] T-039 [REQ-002, NFR-002] (impl) Crear `PhotoPicker` («Hacer una foto» con `capture="environment"` y «Elegir una foto», inputs sin `multiple` con `data-testid`) — `frontend/src/features/diary/components/PhotoPicker.tsx`
-- [ ] T-040 [REQ-006, REQ-007, REQ-008, REQ-010, NFR-002] (impl) Crear `ProposalEntryRow` (nombre, etiqueta, gramos, vista previa, sin coincidencia y botones con nombre accesible) — `frontend/src/features/diary/components/ProposalEntryRow.tsx`
-- [ ] T-041 [REQ-006, REQ-007, REQ-008, REQ-009, REQ-010, REQ-011] (impl) Crear `PhotoReview` (formulario con `useFieldArray`, total, avisos, vistas de búsqueda y personalizado, guardar) — `frontend/src/features/diary/components/PhotoReview.tsx`
-- [ ] T-042 [REQ-001, REQ-002, REQ-003, REQ-004, REQ-005, REQ-011, REQ-012, REQ-013, NFR-001, NFR-002] (impl) Implementar `MealPhotoDialog`: fases foto, análisis y revisión, validación, vista previa y su liberación, errores, guardado con `useAddMealItems` y cierre — `frontend/src/features/diary/components/MealPhotoDialog.tsx`
-- [ ] T-043 [REQ-001, REQ-012, REQ-013, NFR-003] (impl) Botón «Cargar imagen en {sección}», estado `photoOpen` y paso a «Añadir a {sección}» — `frontend/src/features/diary/components/MealSection.tsx`
-- [ ] T-044 [REQ-014] (impl) Punto de Amazon Bedrock, frase de Langfuse y fecha «22 de octubre de 2026» — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
+- [x] T-030 [REQ-004] (impl) `apiFetch` envía `FormData` tal cual y sin `Content-Type` JSON — `frontend/src/lib/apiClient.ts`
+- [x] T-031 [REQ-006, REQ-007] (impl) Implementar `mealPhotoAnalysisSchema` y `proposalFormSchema` (gramos validados con `gramsError` en `entries.i.grams`, sin validar `unmatched`) — `frontend/src/features/diary/schemas.ts`
+- [x] T-032 [REQ-012] (impl) Implementar `analysisErrorView` (400 y 413, 429, 503 y resto) — `frontend/src/features/diary/errors.ts`
+- [x] T-033 [REQ-004, REQ-005] (impl) Implementar `analyzeMealPhoto` (FormData con `image`, nombre `comida.jpg`, respuesta validada) y `useAnalyzeMealPhoto` sin reintentos — `frontend/src/features/diary/api.ts`, `frontend/src/features/diary/hooks.ts`
+- [x] T-034 [REQ-003, REQ-004] (impl) Implementar `photoFileError`, `scaledSize`, `checkPhotoReadable` y `preparePhotoUpload` — `frontend/src/features/diary/photo.ts`
+- [x] T-035 [REQ-002, REQ-004, NFR-001] (impl) Implementar `browserPhotoProcessor` (`HTMLImageElement` y `decode()` desde URL `blob:` revocada, canvas con orientación aplicada, `toBlob` JPEG, vista previa y su revocación; ADR-0033) — `frontend/src/features/diary/photo.ts`
+- [x] T-036 [REQ-006, REQ-007, REQ-008, REQ-009, REQ-010, REQ-011] (impl) Implementar las funciones de `proposal.ts` — `frontend/src/features/diary/proposal.ts`
+- [x] T-037 [REQ-010] (impl) `CustomFoodForm` admite `defaultGrams` y `submitLabel` sin cambiar su comportamiento actual — `frontend/src/features/diary/components/CustomFoodForm.tsx`
+- [x] T-038 [REQ-009, REQ-010] (impl) Crear `ProposalSearchStep` (búsqueda del catálogo con texto inicial, mismos estados que `AddFoodDialog`, «Volver a la propuesta») — `frontend/src/features/diary/components/ProposalSearchStep.tsx`
+- [x] T-039 [REQ-002, NFR-002] (impl) Crear `PhotoPicker` («Hacer una foto» con `capture="environment"` y «Elegir una foto», inputs sin `multiple` con `data-testid`) — `frontend/src/features/diary/components/PhotoPicker.tsx`
+- [x] T-040 [REQ-006, REQ-007, REQ-008, REQ-010, NFR-002] (impl) Crear `ProposalEntryRow` (nombre, etiqueta, gramos, vista previa, sin coincidencia y botones con nombre accesible) — `frontend/src/features/diary/components/ProposalEntryRow.tsx`
+- [x] T-041 [REQ-006, REQ-007, REQ-008, REQ-009, REQ-010, REQ-011] (impl) Crear `PhotoReview` (formulario con `useFieldArray`, total, avisos, vistas de búsqueda y personalizado, guardar) — `frontend/src/features/diary/components/PhotoReview.tsx`
+- [x] T-042 [REQ-001, REQ-002, REQ-003, REQ-004, REQ-005, REQ-011, REQ-012, REQ-013, NFR-001, NFR-002] (impl) Implementar `MealPhotoDialog`: fases foto, análisis y revisión, validación, vista previa y su liberación, errores, guardado con `useAddMealItems` y cierre — `frontend/src/features/diary/components/MealPhotoDialog.tsx`
+- [x] T-043 [REQ-001, REQ-012, REQ-013, NFR-003] (impl) Botón «Cargar imagen en {sección}», estado `photoOpen` y paso a «Añadir a {sección}» — `frontend/src/features/diary/components/MealSection.tsx`
+- [x] T-044 [REQ-014] (impl) Punto de Amazon Bedrock, frase de Langfuse y fecha «22 de octubre de 2026» — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

@@ -26,8 +26,8 @@
       "note": "auto (gate_mode=flow): 40 tareas, cobertura de 58+7 AC"
     },
     "tests": {
-      "at": "2026-10-22T18:28:51.955Z",
-      "note": "auto (gate_mode=flow): red check PASS, 61 AC trazados"
+      "at": "2026-10-22T18:53:45.120Z",
+      "note": "auto (gate_mode=flow): correccion de tests autorizada por el usuario"
     },
     "implement": null,
     "verify": null,
@@ -38,10 +38,11 @@
   "commits": {
     "spec": "0ef6784",
     "plan": "15645f5",
-    "tasks": "562e568"
+    "tasks": "562e568",
+    "tests": "4a57b2f"
   },
   "iterations": {
-    "tests": 2,
+    "tests": 3,
     "implement": 0,
     "review": 0
   },
@@ -59,12 +60,12 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-22T18:28:51.816Z",
-    "reason": "tests aprobados tras red PASS",
+    "at": "2026-10-22T18:53:44.970Z",
+    "reason": "correccion autorizada de 2 tests de MealPhotoDialog (label Cena)",
     "sha256": {
       "frontend/src/app/mealPhotoRoute.test.tsx": "0950ad604c3af91b62e791ad6b7ebbe9aaf4967e9eb70441522effc86fb3de63",
       "frontend/src/features/diary/api.test.ts": "11643ca9075f023ed02f2070056967f636062c5eafd5677037663c2acb9a720f",
-      "frontend/src/features/diary/components/MealPhotoDialog.test.tsx": "c7699cc89373a384075820e71ba257e949562a380d691bf254a2bb06abfbd560",
+      "frontend/src/features/diary/components/MealPhotoDialog.test.tsx": "dfc59c2b557c58f0f59a3ed96c0a76a2ef40be350db7a502eb32388c40f280f2",
       "frontend/src/features/diary/errors.test.ts": "a728b39ecc3c6d9727e7780ed2b02e974023b0430b76fd6ba4fff39306039c2e",
       "frontend/src/features/diary/pages/DiaryPage.test.tsx": "ee462d78b4a25267bdc33166b53295485fb85eefb126063a2f712b7271fd32f6",
       "frontend/src/features/diary/photo.test.ts": "b006e9bf19e8eaceabff0e21f94b51d67d6080ca153c39b77827dcb954ae77b1",
@@ -257,6 +258,48 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS, 61 AC trazados"
+    },
+    {
+      "at": "2026-10-22T18:28:58.651Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 4a57b2f"
+    },
+    {
+      "at": "2026-10-22T18:28:58.833Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegar en implementer"
+    },
+    {
+      "at": "2026-10-22T18:37:09.827Z",
+      "stage": "implement",
+      "event": "needs_input",
+      "note": "implementer: 2 tests de MealPhotoDialog.test.tsx (~657 y ~1165) usan helpers con label 'Almuerzo' fijo pero montan 'Cena'; piden volver a tests"
+    },
+    {
+      "at": "2026-10-22T18:52:36.111Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Usuario: Si, devuelvelos. 2 tests de MealPhotoDialog (lineas 658 y 1164) usan helpers con label Almuerzo fijo pero montan Cena · tests 3/4"
+    },
+    {
+      "at": "2026-10-22T18:53:44.880Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "helpers del dialogo usan el label montado; 83/83 en MealPhotoDialog.test.tsx"
+    },
+    {
+      "at": "2026-10-22T18:53:44.970Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "12 archivo(s) de test: correccion autorizada de 2 tests de MealPhotoDialog (label Cena)"
+    },
+    {
+      "at": "2026-10-22T18:53:45.120Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): correccion de tests autorizada por el usuario"
     }
   ]
 }

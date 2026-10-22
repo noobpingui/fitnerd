@@ -27,14 +27,18 @@ export async function apiFetch<T>(
   const { body, headers, ...rest } = options
   const token = getToken()
 
+  // Con FormData el navegador fija multipart/form-data con su boundary:
+  // no se añade Content-Type y el cuerpo se envía tal cual.
+  const isForm = body instanceof FormData
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...rest,
     headers: {
-      "Content-Type": "application/json",
+      ...(isForm ? {} : { "Content-Type": "application/json" }),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...headers,
     },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: isForm ? body : body !== undefined ? JSON.stringify(body) : undefined,
   })
 
   // Algunos endpoints devuelven body vacio (ej: "", 201 o "", 204) - leemos

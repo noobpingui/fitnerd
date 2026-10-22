@@ -17,6 +17,37 @@ export type AnalysisErrorView = {
   canRegisterManually: boolean
 }
 
-export function analysisErrorView(_error: unknown): AnalysisErrorView {
-  throw new Error("not implemented")
+export function analysisErrorView(error: unknown): AnalysisErrorView {
+  if (error instanceof ApiError) {
+    if (error.status === 400 || error.status === 413) {
+      return {
+        message: error.message,
+        canRetry: false,
+        canChangePhoto: true,
+        canRegisterManually: false,
+      }
+    }
+    if (error.status === 429) {
+      return {
+        message: error.message,
+        canRetry: false,
+        canChangePhoto: false,
+        canRegisterManually: true,
+      }
+    }
+    if (error.status === 503) {
+      return {
+        message: error.message,
+        canRetry: true,
+        canChangePhoto: false,
+        canRegisterManually: true,
+      }
+    }
+  }
+  return {
+    message: ANALYSIS_FAILED_MESSAGE,
+    canRetry: true,
+    canChangePhoto: false,
+    canRegisterManually: true,
+  }
 }
