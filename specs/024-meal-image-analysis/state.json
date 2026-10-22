@@ -9,8 +9,8 @@
   "branch": "feat/024-meal-image-analysis",
   "base_branch": "main",
   "created_at": "2026-10-21T19:01:11.612Z",
-  "stage": "close",
-  "status": "in_progress",
+  "stage": "done",
+  "status": "done",
   "approvals": {
     "spec": {
       "at": "2026-10-21T19:12:43.859Z",
@@ -44,7 +44,10 @@
       "at": "2026-10-21T21:44:25.057Z",
       "note": "auto (gate_mode=flow): runbook caso A de la 024, CLAUDE.md y README"
     },
-    "close": null
+    "close": {
+      "at": "2026-10-22T08:32:39.122Z",
+      "note": "Aprobado, ejecutar los 5 pasos"
+    }
   },
   "commits": {
     "spec": "e267a28",
@@ -52,7 +55,8 @@
     "tasks": "7e5522a",
     "tests": "239571f",
     "implement": "2f579db",
-    "review": "0a4bf5f"
+    "review": "0a4bf5f",
+    "docs": "d7ae50a"
   },
   "iterations": {
     "tests": 2,
@@ -891,6 +895,36 @@
       "stage": "docs",
       "event": "approved",
       "note": "auto (gate_mode=flow): runbook caso A de la 024, CLAUDE.md y README"
+    },
+    {
+      "at": "2026-10-21T21:44:25.377Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: d7ae50a"
+    },
+    {
+      "at": "2026-10-21T21:44:25.572Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Checklist de hecho y backlog global"
+    },
+    {
+      "at": "2026-10-21T21:44:49.825Z",
+      "stage": "close",
+      "event": "done",
+      "note": "Checklist de hecho completa; backlog global actualizado"
+    },
+    {
+      "at": "2026-10-22T08:32:39.122Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Aprobado, ejecutar los 5 pasos"
+    },
+    {
+      "at": "2026-10-22T08:32:39.122Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
     }
   ]
 }

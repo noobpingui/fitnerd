@@ -362,3 +362,37 @@ Feature: [specs/023-generic-food-catalog/](../specs/023-generic-food-catalog/)
 - [ ] F22 NIT (spec-writer): el texto de «Términos de servicio» no cambia respecto a la 022, pero su fecha pasa a «21 de octubre de 2026» (`TermsOfServicePage.tsx:5`). Lo pide AC-012.3; valorar si conviene en una revisión futura.
 - [ ] doc-keeper: en `docs/deploy-runbook.md`, la migración `d4f6a8c0e2b5` antes del merge y la carga del CSV tras el CD. En `CLAUDE.md`, que `/foods` redirige a `/diary` y que el diario busca en el catálogo.
 - [x] Añadir la fila de la 023 al historial de despliegues (sección 8 del runbook) en el chore posterior al despliegue, con PR, sha, migración y backup reales; anotar el tamaño real de catalog_foods si se mide. (hecho en `chore/023-deploy-history`; sin medir el tamaño de catalog_foods)
+
+## 024-meal-image-analysis · Análisis de imagen de una comida con Amazon Bedrock (2026-10-21)
+
+Feature: [specs/024-meal-image-analysis/](../specs/024-meal-image-analysis/)
+
+- [ ] Tope de gasto global con el proveedor y medición del coste real por imagen.
+- [ ] Actualizar la Política de privacidad (las fotos van a Amazon Web Services) en la 025.
+- [ ] Un texto del usuario que acompañe a la foto.
+- [ ] Admitir HEIC si la 025 no lo convierte en el cliente.
+- [ ] Revisión manual de la precisión con unas 10 fotos reales en el gate de review (Q9).
+- [ ] Caché de prompt de Bedrock para el bloque del catálogo y medición del coste real por análisis.
+- [ ] Enviar los sinónimos del catálogo en el prompt si mejora el reconocimiento.
+- [ ] Límite global de memoria o concurrencia al decodificar fotos grandes (WebP de 8000 × 8000).
+- [ ] Falta un test automatizado de que `config.py` y `create_app` leen `BEDROCK_VISION_MODEL_ID` y `BEDROCK_REGION`. Solo se cubren indirectamente (AC-009.4, vía `vision_client.client = None`).
+- [ ] Los tests de memoria con imágenes grandes (8000x8000 WebP) no están automatizados.
+- [ ] Proceso: el test-author editó una vez el archivo del servicio con un script de Python desde la shell (dos líneas de aserciones dentro de `backend/tests/**`), contra su límite de no escribir desde la shell.
+- [ ] Dos tests de ruta (test_meal_analysis_routes.py líneas 219 y 545) leen `["items"]` del cuerpo antes de comprobar el estado. Hoy fallan por 404 y pasarán al existir la ruta; conviene que el test-author compruebe el status antes de leer el cuerpo, para que el fallo sea más claro.
+- [ ] La orientación EXIF se pierde al quitar los metadatos; la 025 debe aplicarla al redimensionar en el cliente.
+- [ ] En `vision_client.py`, el import de `FOODS_TOOL_NAME` y `FOODS_TOOL_SCHEMA` es local, dentro de `recognize_foods`, para evitar un ciclo de importación entre `extensions.py` y los servicios.
+- [ ] Pasar gunicorn a hilos o a más workers cuando la memoria de decodificación esté acotada (F2), para que un análisis o una pregunta al coach no bloqueen al resto de la API.
+- [ ] Fijar un tiempo límite (y los reintentos) en el cliente de Anthropic del coach (`utils/llm_client.py`, hoy con el valor por defecto del SDK); con `--timeout 90`, gunicorn lo corta a los 90 s en lugar de a los 30 s.
+- [ ] Valorar un plazo absoluto para la llamada a Bedrock si en el futuro se usa streaming (`converse_stream`), donde `read_timeout` ya no equivale al tiempo total.
+- [ ] Comprobar en producción que un análisis lento devuelve 503 con JSON y no 502 del proxy (el test T-058 solo verifica la configuración del CMD, no el comportamiento real).
+- [ ] Las líneas de `backend/Dockerfile` (salvo FROM y CMD) van con sangría de dos espacios; es cosmético, sin efecto en el build.
+- [ ] Hacer un `chore/…` que añada `backend/Dockerfile` a los globs `prod` de `.sdd/config.json`.
+- [ ] Si la revisión de Q9 muestra que quitar el ICC empeora el reconocimiento, valorar conservar un perfil saneado o convertir a sRGB.
+- [ ] Valorar un test de memoria de la validación de un JPEG progresivo grande (las reservas de libjpeg no se ven con tracemalloc).
+- [ ] Un test de que un WebP truncado da 400 (hoy ya lo rechaza el demuxer al abrir; no se añade para no meter otro test que ya pasa).
+- [ ] Riesgo F2: un archivo con la estructura correcta pero píxeles corruptos ya no da 400; llega al proveedor y acaba en 503, que cuenta para el límite (mismo criterio que el PNG).
+- [ ] Riesgo F2: el plan se apoya en que libwebp reserva con calloc sin ocupar memoria residente con glibc mientras no se decodifique.
+- [ ] doc-keeper/harness: permitir al test-author borrar o renombrar archivos de tests propios.
+- [ ] Aceptar ADR-0032 (ADR e índice de `docs/sdd/decisions/README.md`) tras el «aprobado» del usuario en la review, en una rama `chore/…`.
+- [ ] Añadir la fila de la 024 al historial de despliegues (sección 8 del runbook) al desplegar.
+- [ ] Verificar en la instancia el límite de saltos de IMDS: el runbook y CLAUDE.md dicen que debe ser 2 o más con Docker (con 1 el contenedor no obtiene credenciales).
