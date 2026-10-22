@@ -1,0 +1,930 @@
+{
+  "schema_version": 1,
+  "feature": "024-meal-image-analysis",
+  "title": "Análisis de imagen de una comida con Amazon Bedrock",
+  "type": "feature",
+  "scope": [
+    "backend"
+  ],
+  "branch": "feat/024-meal-image-analysis",
+  "base_branch": "main",
+  "created_at": "2026-10-21T19:01:11.612Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-21T19:12:43.859Z",
+      "note": "Aprobado, sigue con el plan"
+    },
+    "plan": {
+      "at": "2026-10-21T21:26:50.117Z",
+      "note": "auto (gate_mode=flow): F10 y F11 pedidos por el usuario"
+    },
+    "tasks": {
+      "at": "2026-10-21T21:27:24.626Z",
+      "note": "auto (gate_mode=flow): 68 tareas, 4 nuevas para F10 y F11"
+    },
+    "tests": {
+      "at": "2026-10-21T21:29:25.972Z",
+      "note": "auto (gate_mode=flow): T-078 en rojo legítimo, red check PASS"
+    },
+    "implement": {
+      "at": "2026-10-21T21:33:14.007Z",
+      "note": "auto (gate_mode=flow): 2000 tests pasan, ratchet sin violaciones nuevas"
+    },
+    "verify": {
+      "at": "2026-10-21T21:38:19.420Z",
+      "note": "auto (gate_mode=flow): verify PASS, 2000 tests"
+    },
+    "review": {
+      "at": "2026-10-21T21:43:11.979Z",
+      "note": "Si"
+    },
+    "docs": {
+      "at": "2026-10-21T21:44:25.057Z",
+      "note": "auto (gate_mode=flow): runbook caso A de la 024, CLAUDE.md y README"
+    },
+    "close": {
+      "at": "2026-10-22T08:32:39.122Z",
+      "note": "Aprobado, ejecutar los 5 pasos"
+    }
+  },
+  "commits": {
+    "spec": "e267a28",
+    "plan": "d19b24d",
+    "tasks": "7e5522a",
+    "tests": "239571f",
+    "implement": "2f579db",
+    "review": "0a4bf5f",
+    "docs": "d7ae50a"
+  },
+  "iterations": {
+    "tests": 2,
+    "implement": 0,
+    "review": 3
+  },
+  "max_iterations": 4,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-10-21T21:29:06.612Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-10-21T21:38:11.107Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-10-21T21:39:55.719Z"
+  },
+  "tests_snapshot": {
+    "at": "2026-10-21T21:29:25.811Z",
+    "reason": "Tests de F10 y F11 (iteración 3)",
+    "sha256": {
+      "backend/tests/fakes.py": "3570d458a7e79f15cb93a59b612db44b36161a763cbaae1323130c919199c7ef",
+      "backend/tests/photo_samples.py": "fc243e59932c82651230604b867ef8f117966b300158b70a1e4ef8172a54ec99",
+      "backend/tests/test_routes/test_meal_analysis_routes.py": "f70f0628394d90cdebed6bc1612aa22a58f118b8068c0ba9b7fc6907dd2cd831",
+      "backend/tests/test_services/test_gunicorn_config.py": "7758a79c1d9182db517130b50825552f9dcba6965eb2212b001dd8480b500b1d",
+      "backend/tests/test_services/test_meal_image_analysis_service.py": "299d5c6aa13c6038422dff0ff13218bc3bc39eddaad166709bc17df670da89c4",
+      "backend/tests/test_services/test_meal_image_rules.py": "4e76878ec48a2e763426c24f7bdcbf2bd0e76f442933b251ad9dc1473f6e76cf",
+      "backend/tests/test_services/test_meal_photo.py": "1b190b2bfaffb74c690a2ad180c431f775a0ca69979c4f6a3759d7a27d4a6b24",
+      "backend/tests/test_services/test_vision_client.py": "bfec49a4338b0f9366af46a0ad2fca188fd6cd9eb69edecedf726d78927734d2"
+    }
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-21T19:01:11.612Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama feat/024-meal-image-analysis desde main"
+    },
+    {
+      "at": "2026-10-21T19:01:35.033Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Redactar spec.md desde idea.md"
+    },
+    {
+      "at": "2026-10-21T19:05:06.992Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "11 preguntas abiertas (Q1-Q11) con respuesta propuesta"
+    },
+    {
+      "at": "2026-10-21T19:11:27.811Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "Spec con 10 REQ, 2 NFR y 11 preguntas resueltas"
+    },
+    {
+      "at": "2026-10-21T19:12:43.859Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Aprobado, sigue con el plan"
+    },
+    {
+      "at": "2026-10-21T19:12:44.180Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: e267a28"
+    },
+    {
+      "at": "2026-10-21T19:12:44.368Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Diseñar plan.md desde la spec aprobada"
+    },
+    {
+      "at": "2026-10-21T19:20:22.236Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md + ADR-0032; boto3 converse, pillow declarada, sin migración"
+    },
+    {
+      "at": "2026-10-21T19:20:22.339Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan con ADR-0032, sin migración"
+    },
+    {
+      "at": "2026-10-21T19:20:22.635Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 6e67e2d"
+    },
+    {
+      "at": "2026-10-21T19:20:22.734Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "pillow declarada en requirements (ya instalada por voyageai, Q6 aceptada); request_class global InMemoryUploadRequest; boto3 converse con tool use forzado"
+    },
+    {
+      "at": "2026-10-21T19:20:22.905Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Descomponer plan.md en tasks.md"
+    },
+    {
+      "at": "2026-10-21T19:21:51.242Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "46 tareas, 40 AC cubiertos"
+    },
+    {
+      "at": "2026-10-21T19:21:51.335Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 46 tareas (7 scaffold, 21 test, 15 impl, 3 config), 40 AC cubiertos"
+    },
+    {
+      "at": "2026-10-21T19:21:51.631Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 0a02cc0"
+    },
+    {
+      "at": "2026-10-21T19:21:51.803Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Iniciar etapa tests"
+    },
+    {
+      "at": "2026-10-21T19:21:51.899Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (7 tareas scaffold)"
+    },
+    {
+      "at": "2026-10-21T19:22:38.890Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-21T19:28:28.960Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red"
+    },
+    {
+      "at": "2026-10-21T19:29:48.653Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: 165 tests nuevos fallan por comportamiento ausente (not implemented 124, 404 de la ruta 36 y asserts derivados, KeyError de cuerpo 404 en 2, request_class ausente 1); 0 pasan; sin errores de colección ni fixture"
+    },
+    {
+      "at": "2026-10-21T19:30:00.691Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "165 tests rojos, 40 AC, red check PASS"
+    },
+    {
+      "at": "2026-10-21T19:30:00.785Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "7 archivo(s) de test: Tests 024 congelados tras red check PASS"
+    },
+    {
+      "at": "2026-10-21T19:30:00.906Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 165 tests en rojo legítimo, red check PASS"
+    },
+    {
+      "at": "2026-10-21T19:30:01.199Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: cc3d5e8"
+    },
+    {
+      "at": "2026-10-21T19:30:01.354Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar tareas impl/config"
+    },
+    {
+      "at": "2026-10-21T19:54:43.369Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Usuario aprueba: test con user_id no UUID y 3 E501 en tests congelados · tests 1/4"
+    },
+    {
+      "at": "2026-10-21T19:54:43.449Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Corrección: test-author (user_id UUID en test_analyses_write_nothing_to_the_database; acortar E501 L73, L213 de rutas y L225 de reglas)"
+    },
+    {
+      "at": "2026-10-21T19:56:04.799Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Corrección de tests: user_id UUID y E501; 165 pasan"
+    },
+    {
+      "at": "2026-10-21T19:56:04.895Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "7 archivo(s) de test: Tests corregidos (iteración 1): user_id UUID y E501"
+    },
+    {
+      "at": "2026-10-21T19:56:05.011Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección de tests aprobada por el usuario, 165 pasan"
+    },
+    {
+      "at": "2026-10-21T19:56:05.283Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 5d99e15"
+    },
+    {
+      "at": "2026-10-21T19:56:05.442Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Marcar T-041 (pillow ya declarada) y comprobar suite completa"
+    },
+    {
+      "at": "2026-10-21T19:58:22.694Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "Suite 1982 pasan, ratchet OK"
+    },
+    {
+      "at": "2026-10-21T19:58:22.783Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 1982 tests pasan, ratchet sin violaciones nuevas"
+    },
+    {
+      "at": "2026-10-21T19:58:23.143Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 79810e4"
+    },
+    {
+      "at": "2026-10-21T19:58:23.291Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa"
+    },
+    {
+      "at": "2026-10-21T20:01:14.223Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: backend: 1982 passed; ratchet sin violaciones nuevas; 40/40 AC con test SDD en verde; 46/46 tareas [x]; sin skip nuevos; typecheck y build no aplican"
+    },
+    {
+      "at": "2026-10-21T20:01:24.934Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: 1982 tests, 40 AC, ratchet OK"
+    },
+    {
+      "at": "2026-10-21T20:01:25.014Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS, 1982 tests, 40 AC trazados"
+    },
+    {
+      "at": "2026-10-21T20:01:25.163Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Revisión independiente del diff"
+    },
+    {
+      "at": "2026-10-21T20:05:41.952Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "CHANGES_REQUESTED"
+    },
+    {
+      "at": "2026-10-21T20:05:46.747Z",
+      "stage": "plan",
+      "event": "rework",
+      "note": "Review F1 MAYOR: timeout de gunicorn (30 s) frente a la espera de Bedrock (5+30 s) da 502 en vez de 503 · review 1/4"
+    },
+    {
+      "at": "2026-10-21T20:08:46.331Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "Plan corregido F1: gunicorn --timeout 90, test de configuración nuevo"
+    },
+    {
+      "at": "2026-10-21T20:08:46.411Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección de review F1, gunicorn --timeout 90"
+    },
+    {
+      "at": "2026-10-21T20:08:46.611Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 7834e22"
+    },
+    {
+      "at": "2026-10-21T20:08:46.768Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Añadir tareas del plan corregido (test de timeout y Dockerfile)"
+    },
+    {
+      "at": "2026-10-21T20:09:12.626Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "48 tareas (T-058, T-059 nuevas)"
+    },
+    {
+      "at": "2026-10-21T20:09:12.707Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 48 tareas, T-058 y T-059 nuevas"
+    },
+    {
+      "at": "2026-10-21T20:09:12.949Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 67cc92a"
+    },
+    {
+      "at": "2026-10-21T20:09:13.111Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Corrección de review F1: test T-058"
+    },
+    {
+      "at": "2026-10-21T20:09:13.196Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (T-058); sin scaffold"
+    },
+    {
+      "at": "2026-10-21T20:09:36.623Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red (T-058)"
+    },
+    {
+      "at": "2026-10-21T20:10:09.957Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: T-058 rojo legítimo: test_gunicorn_timeout_exceeds_the_vision_provider_budget falla con AssertionError por --timeout ausente en el CMD de backend/Dockerfile; import y constantes correctos, sin error de colección ni fixture"
+    },
+    {
+      "at": "2026-10-21T20:10:20.844Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "T-058 en rojo legítimo, red check PASS"
+    },
+    {
+      "at": "2026-10-21T20:10:20.928Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "8 archivo(s) de test: Test T-058 añadido (review F1)"
+    },
+    {
+      "at": "2026-10-21T20:10:21.041Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): T-058 en rojo legítimo, red check PASS"
+    },
+    {
+      "at": "2026-10-21T20:10:21.293Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 459110b"
+    },
+    {
+      "at": "2026-10-21T20:10:21.444Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "T-059: --timeout 90 en backend/Dockerfile"
+    },
+    {
+      "at": "2026-10-21T20:14:10.052Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-059 aplicada; 1983 tests, ratchet OK"
+    },
+    {
+      "at": "2026-10-21T20:14:10.132Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 1983 tests pasan, ratchet sin violaciones nuevas"
+    },
+    {
+      "at": "2026-10-21T20:14:10.383Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: e83804b"
+    },
+    {
+      "at": "2026-10-21T20:14:10.535Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa tras corrección de review"
+    },
+    {
+      "at": "2026-10-21T20:17:01.659Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: verify PASS (iteración 2): backend 1983 passed; ratchet sin violaciones nuevas; 40/40 AC con test SDD en verde; 48/48 tareas [x]; sin skip nuevos; F1 corregido (--timeout 90, T-058 en verde); typecheck y build no aplican"
+    },
+    {
+      "at": "2026-10-21T20:17:13.627Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: 1983 tests, 40 AC, 48 tareas"
+    },
+    {
+      "at": "2026-10-21T20:17:13.705Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS, 1983 tests"
+    },
+    {
+      "at": "2026-10-21T20:17:13.884Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Segunda review tras corrección F1"
+    },
+    {
+      "at": "2026-10-21T20:18:26.356Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-21T20:18:26.451Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED en iteración 2; F1 corregido, 0 BLOQUEANTE, 0 MAYOR"
+    },
+    {
+      "at": "2026-10-21T20:42:22.758Z",
+      "stage": "plan",
+      "event": "rework",
+      "note": "Usuario pide corregir F2 a F9 antes de aprobar la review · review 2/4"
+    },
+    {
+      "at": "2026-10-21T20:52:01.848Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "Plan corregido F2-F9 sin tocar la spec"
+    },
+    {
+      "at": "2026-10-21T20:52:01.933Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): correcciones F2-F9 pedidas por el usuario"
+    },
+    {
+      "at": "2026-10-21T20:52:02.215Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 7668f7f"
+    },
+    {
+      "at": "2026-10-21T20:52:02.371Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Tareas de las correcciones F2-F9"
+    },
+    {
+      "at": "2026-10-21T20:52:53.956Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "64 tareas (T-060 a T-075 nuevas)"
+    },
+    {
+      "at": "2026-10-21T20:52:54.048Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 64 tareas, 16 nuevas para F2-F9"
+    },
+    {
+      "at": "2026-10-21T20:52:54.297Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 97108e5"
+    },
+    {
+      "at": "2026-10-21T20:52:54.468Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Corrección de review F2-F9: tests T-060 a T-069"
+    },
+    {
+      "at": "2026-10-21T20:52:54.557Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (sin scaffold)"
+    },
+    {
+      "at": "2026-10-21T20:56:37.536Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red (T-061, T-063 webp, T-064, T-065, T-066)"
+    },
+    {
+      "at": "2026-10-21T20:57:46.953Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Ronda F2-F9: 10 casos en rojo legítimo (T-061, T-063 webp, T-064 x4, T-065, T-066 x3); T-062, T-067, T-068, T-069 y T-063 jpeg pasan; sin errores de colección ni fixture; sin skip nuevos"
+    },
+    {
+      "at": "2026-10-21T20:58:02.458Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "10 casos en rojo legítimo, red check PASS"
+    },
+    {
+      "at": "2026-10-21T20:58:02.546Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "8 archivo(s) de test: Tests de la corrección F2-F9 (iteración 2); test_server_timeout.py movido a test_gunicorn_config.py"
+    },
+    {
+      "at": "2026-10-21T20:58:02.698Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 10 casos en rojo legítimo, red check PASS"
+    },
+    {
+      "at": "2026-10-21T20:58:02.982Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 6544aed"
+    },
+    {
+      "at": "2026-10-21T20:58:03.136Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar T-070 a T-075 (F2, F4, F5, F6, F8)"
+    },
+    {
+      "at": "2026-10-21T21:01:56.927Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "E501 en test_meal_analysis_routes.py:425 (ratchet de lint) en test congelado · tests 2/4"
+    },
+    {
+      "at": "2026-10-21T21:01:57.039Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Corrección: test-author acorta la línea 425"
+    },
+    {
+      "at": "2026-10-21T21:02:30.422Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "E501 corregida; tests pasan"
+    },
+    {
+      "at": "2026-10-21T21:02:30.520Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "8 archivo(s) de test: Línea 425 acortada (E501), iteración 3 de tests"
+    },
+    {
+      "at": "2026-10-21T21:02:30.679Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección de E501, tests pasan"
+    },
+    {
+      "at": "2026-10-21T21:02:31.020Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: d2e5273"
+    },
+    {
+      "at": "2026-10-21T21:02:31.239Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Cierre de implement F2-F8 con tests corregidos"
+    },
+    {
+      "at": "2026-10-21T21:06:18.308Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F2, F4, F5, F6, F8: 1997 tests, ratchet OK"
+    },
+    {
+      "at": "2026-10-21T21:06:18.482Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 1997 tests pasan, ratchet sin violaciones nuevas"
+    },
+    {
+      "at": "2026-10-21T21:06:19.870Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: cba4a18"
+    },
+    {
+      "at": "2026-10-21T21:06:20.097Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa tras correcciones F2-F9"
+    },
+    {
+      "at": "2026-10-21T21:10:50.556Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: verify PASS (iteración 3, tras F2-F9): backend 1997 passed; ratchet sin violaciones nuevas; 40/40 AC con test SDD en verde; 12/12 REQ-NFR en tareas; 64/64 tareas [x]; sin skip nuevos; typecheck y build no aplican; test_server_timeout sustituido por test_gunicorn_config"
+    },
+    {
+      "at": "2026-10-21T21:10:58.257Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: 1997 tests, 40 AC, 64 tareas"
+    },
+    {
+      "at": "2026-10-21T21:10:58.366Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS, 1997 tests"
+    },
+    {
+      "at": "2026-10-21T21:10:58.565Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Tercera review tras correcciones F2-F9"
+    },
+    {
+      "at": "2026-10-21T21:14:05.602Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-21T21:14:05.723Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED en iteración 3; F2-F9 corregidos, 0 BLOQUEANTE/MAYOR/MENOR"
+    },
+    {
+      "at": "2026-10-21T21:24:55.174Z",
+      "stage": "plan",
+      "event": "rework",
+      "note": "Usuario pide corregir F10 y F11 antes de aprobar la review · review 3/4"
+    },
+    {
+      "at": "2026-10-21T21:26:50.014Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "Plan corregido F10 y F11 (sección 11)"
+    },
+    {
+      "at": "2026-10-21T21:26:50.117Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F10 y F11 pedidos por el usuario"
+    },
+    {
+      "at": "2026-10-21T21:26:50.438Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: d19b24d"
+    },
+    {
+      "at": "2026-10-21T21:26:50.635Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Tareas de F10 y F11"
+    },
+    {
+      "at": "2026-10-21T21:27:24.504Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "68 tareas (T-076 a T-079 nuevas)"
+    },
+    {
+      "at": "2026-10-21T21:27:24.626Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 68 tareas, 4 nuevas para F10 y F11"
+    },
+    {
+      "at": "2026-10-21T21:27:24.960Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 7e5522a"
+    },
+    {
+      "at": "2026-10-21T21:27:25.191Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests T-076 a T-078 (F10 y F11)"
+    },
+    {
+      "at": "2026-10-21T21:27:25.301Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (sin scaffold)"
+    },
+    {
+      "at": "2026-10-21T21:28:09.122Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red (T-078: 2 variantes en rojo)"
+    },
+    {
+      "at": "2026-10-21T21:29:06.612Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Ronda T-076 a T-078: T-078 en rojo legítimo (2 variantes png y jpeg, AssertionError de mensaje: dimensiones antes que integridad, esperado hasta T-079); T-077 (iCCP en PNG) pasa por caracterización justificada en plan.md sección 11; los 34 demás tests de test_meal_photo.py pasan; sin errores de colección ni fixture"
+    },
+    {
+      "at": "2026-10-21T21:29:25.706Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "T-078 en rojo legítimo (2 variantes), red check PASS"
+    },
+    {
+      "at": "2026-10-21T21:29:25.811Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "8 archivo(s) de test: Tests de F10 y F11 (iteración 3)"
+    },
+    {
+      "at": "2026-10-21T21:29:25.972Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): T-078 en rojo legítimo, red check PASS"
+    },
+    {
+      "at": "2026-10-21T21:29:26.301Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 239571f"
+    },
+    {
+      "at": "2026-10-21T21:29:26.513Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "T-079: reordenar dimensiones tras integridad (F11)"
+    },
+    {
+      "at": "2026-10-21T21:33:13.909Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F11: 2000 tests, ratchet OK"
+    },
+    {
+      "at": "2026-10-21T21:33:14.007Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 2000 tests pasan, ratchet sin violaciones nuevas"
+    },
+    {
+      "at": "2026-10-21T21:33:14.295Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 2f579db"
+    },
+    {
+      "at": "2026-10-21T21:33:14.484Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa tras F10 y F11"
+    },
+    {
+      "at": "2026-10-21T21:38:11.107Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: verify PASS (iteración 4, tras F10 y F11): backend 2000 passed, 0 skipped; ratchet sin violaciones nuevas; 40/40 AC con test SDD en verde; 68/68 tareas [x]; sin skip nuevos; F11 orden integridad→dimensiones; F10 test PNG iCCP; typecheck y build no aplican"
+    },
+    {
+      "at": "2026-10-21T21:38:19.324Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: 2000 tests, 40 AC, 68 tareas"
+    },
+    {
+      "at": "2026-10-21T21:38:19.420Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS, 2000 tests"
+    },
+    {
+      "at": "2026-10-21T21:38:19.605Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review final tras F10 y F11"
+    },
+    {
+      "at": "2026-10-21T21:39:55.719Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-21T21:39:55.848Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED en iteración 4; F1-F11 corregidos, 0 hallazgos abiertos"
+    },
+    {
+      "at": "2026-10-21T21:43:11.979Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Si"
+    },
+    {
+      "at": "2026-10-21T21:43:12.303Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: 0a4bf5f"
+    },
+    {
+      "at": "2026-10-21T21:43:12.502Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Documentar Bedrock en producción, variables y comprobación de --timeout 90"
+    },
+    {
+      "at": "2026-10-21T21:44:24.945Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "Runbook, CLAUDE.md y README actualizados"
+    },
+    {
+      "at": "2026-10-21T21:44:25.057Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): runbook caso A de la 024, CLAUDE.md y README"
+    },
+    {
+      "at": "2026-10-21T21:44:25.377Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: d7ae50a"
+    },
+    {
+      "at": "2026-10-21T21:44:25.572Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Checklist de hecho y backlog global"
+    },
+    {
+      "at": "2026-10-21T21:44:49.825Z",
+      "stage": "close",
+      "event": "done",
+      "note": "Checklist de hecho completa; backlog global actualizado"
+    },
+    {
+      "at": "2026-10-22T08:32:39.122Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Aprobado, ejecutar los 5 pasos"
+    },
+    {
+      "at": "2026-10-22T08:32:39.122Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
+    }
+  ]
+}

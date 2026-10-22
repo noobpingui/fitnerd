@@ -219,6 +219,24 @@ Migración `d4f6a8c0e2b5` (ADR-0031): crea `public.catalog_foods` y cambia las `
 5. **Comprobación manual:** con una cuenta real, abre `/diary`, pulsa para añadir un alimento y busca «huevos», «banano» y «guineo»; debe haber resultados. Añade uno a una comida y comprueba los totales. Recarga forzada de las pestañas abiertas. `/foods` ahora redirige a `/diary`.
 6. **Marcha atrás:** revertir el merge basta para el código. `flask db downgrade` a `b3d5f7a9c1e4` **se niega** (`RuntimeError`) si hay alimentos del catálogo registrados en comidas: quítalos antes. Si no los hay, borra `catalog_foods` y la columna `catalog_id`; el catálogo se recarga desde el CSV.
 
+### Caso A (sin migraciones) con configuración de AWS: 024, análisis de foto con Bedrock
+
+`POST /api/meals/analyze` (ADR-0032) llama a Amazon Bedrock (`converse`) con la foto de una comida. No hay migración, ni datos que cargar, ni cambios en Caddy. Lo que sí hay es configuración manual en AWS y en la instancia, que debe estar **antes del merge**; sin ella el endpoint responde 503 (el resto de la app no se ve afectado).
+
+1. **Acceso al modelo:** en la consola de Bedrock de la región elegida, activa el acceso al modelo de visión que vayas a usar.
+2. **Permisos IAM:** añade al rol de la instancia EC2 el permiso `bedrock:InvokeModel` sobre ese modelo. Las credenciales no son variables de la app: boto3 las toma del rol por IMDS.
+3. **IMDS y Docker:** el backend corre en un contenedor, así que el límite de saltos de IMDS de la instancia debe permitir llegar desde él (2 o más; con 1 el contenedor no obtiene credenciales). Compruébalo desde el contenedor tras el CD, o antes con `aws ec2 describe-instances` (`MetadataOptions.HttpPutResponseHopLimit`).
+4. **Variables en el `backend/.env` de EC2:**
+   - `BEDROCK_VISION_MODEL_ID`: **sin valor por defecto**. Si falta, el endpoint responde 503.
+   - `BEDROCK_REGION`: por defecto `us-east-1`; solo hace falta si el modelo está en otra región.
+5. **Merge y CD** (paso 6). El CD reconstruye la imagen, y con ella el cambio de `backend/Dockerfile`.
+6. **Comprobaciones tras el CD:**
+   - `docker compose -f docker-compose.prod.yml logs backend --tail 50` (o `ps`) debe mostrar que gunicorn arrancó con `--timeout 90` (un análisis puede tardar más de los 30 s por defecto).
+   - Con una cuenta real, sube una foto de una comida a `POST /api/meals/analyze` (JPEG, PNG o WebP de hasta 3 MB) y comprueba que devuelve alimentos del catálogo. Si da 503, revisa el modelo, el permiso IAM, el acceso al modelo y las credenciales por IMDS en el log del backend.
+   - Un Bedrock lento debe dar **503 con JSON**, no un 502 del proxy. Es una comprobación manual: el test solo verifica la configuración de gunicorn.
+7. **Revisión manual de precisión (Q9 de la spec):** pendiente del gate de review; unas 10 fotos reales contra Bedrock, incluida alguna en Display P3, para confirmar que quitar el perfil ICC no empeora el reconocimiento.
+8. **Marcha atrás:** revertir el merge basta. No hay migración que deshacer. La foto no se guarda en ningún sitio.
+
 ### Caso C (destructiva): migración después del CD
 
 1. Backup completo (paso 3) **verificado**, con el recuento de filas de lo que se va a borrar.

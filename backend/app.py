@@ -7,7 +7,9 @@ from config import config_by_name, resolve_frontend_base_url
 from utils.clock import install_clock
 from extensions import (
     db, migrate, cors, jwt_manager, embedding_client, rate_limiter, email_sender, tracer,
+    vision_client,
 )
+from utils.in_memory_request import InMemoryUploadRequest
 from exceptions import error_handlers
 from routes import register_blueprints
 
@@ -15,6 +17,9 @@ def create_app(config_name=None, config_overrides=None):
 
     #To initialize the Flask application
     app = Flask(__name__)
+
+    #Los archivos subidos se guardan en memoria, nunca en un temporal en disco (spec 024)
+    app.request_class = InMemoryUploadRequest
 
     #To fallback to FLASK_ENV or 'default
     if not config_name:
@@ -46,6 +51,7 @@ def create_app(config_name=None, config_overrides=None):
     embedding_client.init_app(app)
     email_sender.init_app(app)
     tracer.init_app(app)
+    vision_client.init_app(app)
     error_handlers.register_error_handlers(app)
     register_blueprints(app)
 

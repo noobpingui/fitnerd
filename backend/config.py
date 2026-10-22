@@ -87,6 +87,12 @@ class Config:
     LANGFUSE_BASE_URL = resolve_langfuse_base_url(os.getenv("LANGFUSE_BASE_URL"))
     OBSERVABILITY_ENVIRONMENT = "development"
 
+    #Análisis de la foto de una comida (spec 024, ADR-0032): sin modelo, el proveedor
+    #queda sin configurar.
+    #Las credenciales de AWS no son variables de la app: boto3 usa su cadena por defecto.
+    BEDROCK_VISION_MODEL_ID = os.getenv("BEDROCK_VISION_MODEL_ID") or None
+    BEDROCK_REGION = os.getenv("BEDROCK_REGION", "us-east-1")
+
 class DevelopmentConfig(Config):
     """Configuración exclusiva para mi pc (Desarrollo)"""
     DEBUG = True
@@ -115,6 +121,7 @@ class TestingConfig(Config):
     PROXY_FIX_X_FOR = 1
     LANGFUSE_PUBLIC_KEY = None
     LANGFUSE_SECRET_KEY = None
+    BEDROCK_VISION_MODEL_ID = None
     OBSERVABILITY_ENVIRONMENT = "testing"
 
 

@@ -38,3 +38,8 @@ class RateLimitError(AppError):
 class ServiceUnavailableError(AppError):
     def __init__(self, message: str = "Service temporarily unavailable"):
         super().__init__(message, status_code=503)
+
+#Excepción para cuando el cuerpo de la petición o un archivo subido es demasiado grande (413)
+class PayloadTooLargeError(AppError):
+    def __init__(self, message: str = "Payload too large"):
+        super().__init__(message, status_code=413)

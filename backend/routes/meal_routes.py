@@ -1,17 +1,54 @@
 from flask import Blueprint, g, jsonify, request
+from werkzeug.exceptions import RequestEntityTooLarge
 
 from decorators import require_auth
-from extensions import db
+from exceptions.custom_exceptions import PayloadTooLargeError
+from extensions import db, rate_limiter, tracer, vision_client
 from repositories.catalog_food_repository import CatalogFoodRepository
 from repositories.food_repository import FoodRepository
 from repositories.meal_repository import MealRepository
 from repositories.user_repository import UserRepository
+from services.meal_image_analysis_service import MealImageAnalysisService
+from services.meal_image_rules import MealImageAnalysis
+from services.meal_photo import PHOTO_TOO_LARGE_MESSAGE
 from services.meal_rules import NUTRIENT_KEYS
 from services.meal_service import MealService, MealSummary
 from unit_of_work.unit_of_work import UnitOfWork
 from utils.clock import current_clock
 
 meal_bp = Blueprint("meals", __name__, url_prefix="/api/meals")
+
+MAX_ANALYZE_REQUEST_BYTES = 4 * 1024 * 1024
+
+
+def _build_meal_image_analysis_service() -> MealImageAnalysisService:
+    return MealImageAnalysisService(
+        CatalogFoodRepository(db.session),
+        vision_client,
+        rate_limiter,
+        tracer=tracer,
+    )
+
+
+def _serialize_analysis(analysis: MealImageAnalysis) -> dict:
+    return {
+        "items": [
+            {
+                "catalog_id": item.catalog_id,
+                "name": item.name,
+                "grams": item.grams,
+                "confidence": item.confidence,
+                "per_100g": {key: float(value) for key, value in item.per_100g.items()},
+                "nutrients": _serialize_numbers(item.nutrients),
+            }
+            for item in analysis.items
+        ],
+        "unmatched": [
+            {"name": food.name, "grams": food.grams, "confidence": food.confidence}
+            for food in analysis.unmatched
+        ],
+        "totals": _serialize_numbers(analysis.totals),
+    }
 
 
 def _build_meal_service() -> MealService:
@@ -77,6 +114,18 @@ def add_items():
     data = request.get_json(silent=True)
     result = _build_meal_service().add_items(g.decoded_token["id"], data)
     return jsonify(_serialize_meal(result.meal)), (201 if result.created else 200)
+
+
+@meal_bp.route("/analyze", methods=["POST"])
+@require_auth
+def analyze_photo():
+    request.max_content_length = MAX_ANALYZE_REQUEST_BYTES
+    try:
+        images = [upload.read() for upload in request.files.getlist("image")]
+    except RequestEntityTooLarge:
+        raise PayloadTooLargeError(PHOTO_TOO_LARGE_MESSAGE) from None
+    analysis = _build_meal_image_analysis_service().analyze(g.decoded_token["id"], images)
+    return jsonify(_serialize_analysis(analysis)), 200
 
 
 @meal_bp.route("/<int:meal_id>/items/<int:item_id>", methods=["PATCH"])

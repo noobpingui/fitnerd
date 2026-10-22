@@ -524,3 +524,111 @@ class FakeCatalogFoodRepository:
         self.get_calls.append(list(ids))
         wanted = set(ids)
         return [food for food in self.foods if food.id in wanted]
+
+
+class FakeVisionClient:
+    """Doble de `BedrockVisionClient` (spec 024): `recognize_foods` guarda cada
+    llamada en `calls` (claves `image`, `image_format`, `system_prompt` y
+    `prompt`), lanza `raise_error` si lo hay y, si no, devuelve `foods` (la
+    lista sin sanear que daría el modelo) con los tokens configurados."""
+
+    def __init__(
+        self,
+        foods=None,
+        raise_error=None,
+        input_tokens=100,
+        output_tokens=20,
+        model_id="fake-vision-model",
+    ):
+        self.foods = foods
+        self.raise_error = raise_error
+        self.input_tokens = input_tokens
+        self.output_tokens = output_tokens
+        self.model_id = model_id
+        self.calls = []
+
+    @property
+    def configured(self):
+        return True
+
+    def recognize_foods(self, image, image_format, system_prompt, prompt):
+        from utils.vision_client import VisionFoodsResult
+
+        self.calls.append(
+            {
+                "image": image,
+                "image_format": image_format,
+                "system_prompt": system_prompt,
+                "prompt": prompt,
+            }
+        )
+        if self.raise_error is not None:
+            raise self.raise_error
+        return VisionFoodsResult(list(self.foods or []), self.input_tokens, self.output_tokens)
+
+
+class FakeBedrockRuntimeClient:
+    """Doble del cliente `bedrock-runtime` de boto3 (spec 024): `converse`
+    guarda sus kwargs en `calls`, lanza `raise_error` si lo hay y devuelve un
+    mensaje con un bloque `toolUse` llamado `report_foods` con `{"foods":
+    foods}` o, si se da `text`, un mensaje con solo un bloque de texto (una
+    respuesta que no se puede interpretar). Nunca toca la red."""
+
+    def __init__(
+        self,
+        foods=None,
+        text=None,
+        raise_error=None,
+        stop_reason="tool_use",
+        input_tokens=100,
+        output_tokens=20,
+    ):
+        self.foods = foods
+        self.text = text
+        self.raise_error = raise_error
+        self.stop_reason = stop_reason
+        self.input_tokens = input_tokens
+        self.output_tokens = output_tokens
+        self.calls = []
+
+    def converse(self, **kwargs):
+        self.calls.append(kwargs)
+        if self.raise_error is not None:
+            raise self.raise_error
+        if self.text is not None:
+            content = [{"text": self.text}]
+        else:
+            content = [
+                {
+                    "toolUse": {
+                        "toolUseId": "tool-1",
+                        "name": "report_foods",
+                        "input": {"foods": list(self.foods or [])},
+                    }
+                }
+            ]
+        return {
+            "output": {"message": {"role": "assistant", "content": content}},
+            "stopReason": self.stop_reason,
+            "usage": {
+                "inputTokens": self.input_tokens,
+                "outputTokens": self.output_tokens,
+            },
+        }
+
+    def _last_user_content(self):
+        return self.calls[-1]["messages"][0]["content"]
+
+    def last_image(self):
+        """(bytes, formato) de la imagen de la última llamada."""
+        for block in self._last_user_content():
+            if "image" in block:
+                return block["image"]["source"]["bytes"], block["image"]["format"]
+        raise AssertionError("la última llamada no llevaba imagen")
+
+    def last_prompt(self):
+        """Texto del bloque `text` del mensaje de la última llamada."""
+        for block in self._last_user_content():
+            if "text" in block:
+                return block["text"]
+        raise AssertionError("la última llamada no llevaba texto")
