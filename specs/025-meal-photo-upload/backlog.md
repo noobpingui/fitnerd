@@ -6,3 +6,9 @@
 - [ ] Mostrar cuántos análisis quedan en la hora.
 - [ ] Confirmar antes de descartar una propuesta, si el usuario lo pide más adelante.
 - [ ] Cerrar en el backlog del proyecto los puntos de la 022 («añadir varios de una vez») y de la 024 (privacidad, HEIC y EXIF) al cerrar esta feature.
+
+## plan · planner
+- [ ] Abortar la petición de análisis al cerrar el diálogo (con `AbortController` en `apiFetch`).
+- [ ] Ofrecer «Crear alimento personalizado» también desde la búsqueda de «Añadir otro alimento».
+- [ ] Volver a codificar con menos calidad si el JPEG supera los 3 MB, en lugar de mostrar el error (muy improbable a 1600 px).
+- [ ] Extraer un componente de búsqueda del catálogo compartido entre `AddFoodDialog` y `ProposalSearchStep` para quitar la duplicación de JSX.

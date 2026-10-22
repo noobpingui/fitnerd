@@ -10,14 +10,17 @@
   "branch": "feat/025-meal-photo-upload",
   "base_branch": "main",
   "created_at": "2026-10-22T09:18:53.381Z",
-  "stage": "plan",
+  "stage": "tasks",
   "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-10-22T17:57:21.304Z",
       "note": "Si"
     },
-    "plan": null,
+    "plan": {
+      "at": "2026-10-22T18:04:19.617Z",
+      "note": "auto (gate_mode=flow): plan solo frontend, ADR-0033"
+    },
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -26,7 +29,9 @@
     "docs": null,
     "close": null
   },
-  "commits": {},
+  "commits": {
+    "spec": "0ef6784"
+  },
   "iterations": {
     "tests": 0,
     "implement": 0,
@@ -83,6 +88,36 @@
       "stage": "spec",
       "event": "approved",
       "note": "Si"
+    },
+    {
+      "at": "2026-10-22T17:57:21.531Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 0ef6784"
+    },
+    {
+      "at": "2026-10-22T17:57:21.706Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegar en planner"
+    },
+    {
+      "at": "2026-10-22T18:04:19.422Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md + ADR-0033; solo frontend"
+    },
+    {
+      "at": "2026-10-22T18:04:19.516Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "ADR-0033: foto decodificada con HTMLImageElement y canvas, sin dependencias; apiFetch acepta FormData; solo frontend (sdd-state no permite quitar backend de los ambitos)"
+    },
+    {
+      "at": "2026-10-22T18:04:19.617Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan solo frontend, ADR-0033"
     }
   ]
 }
