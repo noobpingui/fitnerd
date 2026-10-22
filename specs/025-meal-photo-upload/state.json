@@ -10,7 +10,7 @@
   "branch": "feat/025-meal-photo-upload",
   "base_branch": "main",
   "created_at": "2026-10-22T09:18:53.381Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,7 +29,10 @@
       "at": "2026-10-22T19:24:06.265Z",
       "note": "auto (gate_mode=flow): red check PASS, correccion N1-N2"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-22T19:26:34.456Z",
+      "note": "auto (gate_mode=flow): N1 y N3 corregidos, suite en verde"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -39,7 +42,7 @@
     "spec": "0ef6784",
     "plan": "15645f5",
     "tasks": "562e568",
-    "tests": "5bd5877",
+    "tests": "d83a5d9",
     "implement": "3e4a4a0"
   },
   "iterations": {
@@ -517,6 +520,30 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS, correccion N1-N2"
+    },
+    {
+      "at": "2026-10-22T19:24:06.477Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: d83a5d9"
+    },
+    {
+      "at": "2026-10-22T19:24:06.628Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Corregir N1 y N3 de la review"
+    },
+    {
+      "at": "2026-10-22T19:26:34.372Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "N1 y N3 corregidos; 1242 tests en verde"
+    },
+    {
+      "at": "2026-10-22T19:26:34.456Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): N1 y N3 corregidos, suite en verde"
     }
   ]
 }

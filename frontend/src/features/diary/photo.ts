@@ -96,6 +96,8 @@ export const browserPhotoProcessor: PhotoProcessor = {
   },
   async toJpeg(file, size) {
     const image = await decodeImage(file)
+    // Tras dibujar ya no hace falta conservar el mapa de bits decodificado.
+    decodedImages.delete(file)
     const canvas = document.createElement("canvas")
     canvas.width = size.width
     canvas.height = size.height

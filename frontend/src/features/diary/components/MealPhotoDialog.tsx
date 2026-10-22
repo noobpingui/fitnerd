@@ -52,6 +52,7 @@ export function MealPhotoDialog({
   const previewRef = useRef<string | null>(null)
   const changeInputRef = useRef<HTMLInputElement>(null)
   const mountedRef = useRef(true)
+  const pickCounterRef = useRef(0)
 
   // La vista previa se libera al desmontar el diálogo.
   useEffect(() => {
@@ -82,6 +83,7 @@ export function MealPhotoDialog({
 
   async function handlePick(picked: File) {
     discardPhoto()
+    const pickId = ++pickCounterRef.current
     const invalid = photoFileError(picked)
     if (invalid) {
       setPhotoError(invalid)
@@ -90,12 +92,13 @@ export function MealPhotoDialog({
     try {
       await checkPhotoReadable(picked, photoProcessor)
     } catch {
-      if (!mountedRef.current) return
+      if (!mountedRef.current || pickId !== pickCounterRef.current) return
       setPhotoError(PHOTO_UNREADABLE_MESSAGE)
       return
     }
-    // Si el diálogo se cerró durante la comprobación, no se crea una URL que nadie liberaría.
-    if (!mountedRef.current) return
+    // Si el diálogo se cerró o se eligió otra foto durante la comprobación, esta ya no cuenta
+    // y no se crea una URL que nadie liberaría.
+    if (!mountedRef.current || pickId !== pickCounterRef.current) return
     setPhotoError(null)
     const url = photoProcessor.createPreviewUrl(picked)
     previewRef.current = url
