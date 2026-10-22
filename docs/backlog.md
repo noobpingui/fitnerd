@@ -260,7 +260,7 @@ Feature: [specs/022-meal-diary/](../specs/022-meal-diary/)
 - [ ] Medidas caseras y onzas, y el diario en kJ.
 - [ ] Sacar a un componente compartido el bloque de estado de la búsqueda («Busca un alimento…», «Buscando…», sin resultados, error con «Reintentar»), que ahora se repite en FoodsPage y AddFoodDialog.
 - [ ] Valorar ON DELETE CASCADE de users hacia meals (y body_metrics) cuando exista el borrado de cuentas.
-- [ ] El diálogo de añadir guarda un alimento por petición aunque la API acepta varios; añadir varios de una vez puede llegar con la 025.
+- [x] El diálogo de añadir guarda un alimento por petición aunque la API acepta varios; añadir varios de una vez puede llegar con la 025. (hecho en la 025: la propuesta de la foto se guarda en una sola petición a `POST /api/meals`; el diálogo manual «Añadir alimento» sigue guardando de uno en uno)
 - [ ] Test de la migración b3d5f7a9c1e4 contra una base real (ahora solo hay revisión manual).
 - [ ] Botón para borrar una comida entera desde la pantalla: la API ya tiene DELETE /api/meals/{id} y la pantalla no lo usa.
 - [ ] Posible duplicación entre los helpers de `AddFoodDialog.test.tsx` y `DiaryPage.test.tsx`. Se podrían compartir en `src/test/` si crece.
@@ -368,9 +368,9 @@ Feature: [specs/023-generic-food-catalog/](../specs/023-generic-food-catalog/)
 Feature: [specs/024-meal-image-analysis/](../specs/024-meal-image-analysis/)
 
 - [ ] Tope de gasto global con el proveedor y medición del coste real por imagen.
-- [ ] Actualizar la Política de privacidad (las fotos van a Amazon Web Services) en la 025.
+- [x] Actualizar la Política de privacidad (las fotos van a Amazon Web Services) en la 025. (hecho en la 025)
 - [ ] Un texto del usuario que acompañe a la foto.
-- [ ] Admitir HEIC si la 025 no lo convierte en el cliente.
+- [x] Admitir HEIC si la 025 no lo convierte en el cliente. (hecho en la 025: se convierte en el navegador si este lo lee; si no, se rechaza con un mensaje)
 - [ ] Revisión manual de la precisión con unas 10 fotos reales en el gate de review (Q9).
 - [ ] Caché de prompt de Bedrock para el bloque del catálogo y medición del coste real por análisis.
 - [ ] Enviar los sinónimos del catálogo en el prompt si mejora el reconocimiento.
@@ -379,7 +379,7 @@ Feature: [specs/024-meal-image-analysis/](../specs/024-meal-image-analysis/)
 - [ ] Los tests de memoria con imágenes grandes (8000x8000 WebP) no están automatizados.
 - [ ] Proceso: el test-author editó una vez el archivo del servicio con un script de Python desde la shell (dos líneas de aserciones dentro de `backend/tests/**`), contra su límite de no escribir desde la shell.
 - [ ] Dos tests de ruta (test_meal_analysis_routes.py líneas 219 y 545) leen `["items"]` del cuerpo antes de comprobar el estado. Hoy fallan por 404 y pasarán al existir la ruta; conviene que el test-author compruebe el status antes de leer el cuerpo, para que el fallo sea más claro.
-- [ ] La orientación EXIF se pierde al quitar los metadatos; la 025 debe aplicarla al redimensionar en el cliente.
+- [x] La orientación EXIF se pierde al quitar los metadatos; la 025 debe aplicarla al redimensionar en el cliente. (hecho en la 025)
 - [ ] En `vision_client.py`, el import de `FOODS_TOOL_NAME` y `FOODS_TOOL_SCHEMA` es local, dentro de `recognize_foods`, para evitar un ciclo de importación entre `extensions.py` y los servicios.
 - [ ] Pasar gunicorn a hilos o a más workers cuando la memoria de decodificación esté acotada (F2), para que un análisis o una pregunta al coach no bloqueen al resto de la API.
 - [ ] Fijar un tiempo límite (y los reintentos) en el cliente de Anthropic del coach (`utils/llm_client.py`, hoy con el valor por defecto del SDK); con `--timeout 90`, gunicorn lo corta a los 90 s en lugar de a los 30 s.
@@ -396,3 +396,21 @@ Feature: [specs/024-meal-image-analysis/](../specs/024-meal-image-analysis/)
 - [x] Aceptar ADR-0032 (ADR e índice de `docs/sdd/decisions/README.md`) tras el «aprobado» del usuario en la review, en una rama `chore/…`. (hecho en `chore/024-followups`)
 - [x] Añadir la fila de la 024 al historial de despliegues (sección 8 del runbook) al desplegar. (hecho en `chore/024-followups`)
 - [ ] Verificar en la instancia el límite de saltos de IMDS: el runbook y CLAUDE.md dicen que debe ser 2 o más con Docker (con 1 el contenedor no obtiene credenciales).
+
+## 025-meal-photo-upload · Registro de una comida con foto desde el diario (2026-10-22)
+
+Detalle en [`specs/025-meal-photo-upload/`](../specs/025-meal-photo-upload/). Solo los puntos que siguen abiertos; F1 a F5 y N1 a N3 de la review se corrigieron en la propia feature.
+
+- [ ] Prueba manual en navegador real, en iPhone y en Chrome Android: pantalla completa a 375 px y diálogo normal a 1024 px (AC-001.3), «Hacer una foto» abre la cámara (AC-002.1), HEIC no legible (AC-003.3), orientación EXIF 6 (AC-004.3), HEIC legible convertida a JPEG (AC-004.4), PNG con transparencia con fondo blanco y analizar dos veces la misma foto tras liberar la caché.
+- [ ] Mostrar cuántos análisis quedan en la hora.
+- [ ] Confirmar antes de descartar una propuesta, si el usuario lo pide más adelante.
+- [ ] Abortar la petición de análisis al cerrar el diálogo (con `AbortController` en `apiFetch`); hoy el análisis ya cuenta para el límite de 10 por hora.
+- [ ] Ofrecer «Crear alimento personalizado» también desde la búsqueda de «Añadir otro alimento» de la propuesta.
+- [ ] Volver a codificar con menos calidad si el JPEG supera los 3 MB, en lugar de mostrar el error (muy improbable a 1600 px).
+- [ ] Extraer un componente de búsqueda del catálogo compartido entre `AddFoodDialog` y `ProposalSearchStep` para quitar la duplicación de JSX.
+- [ ] Cambiar `form.watch` por `useWatch` en `PhotoReview.tsx` para quitar el aviso `react(incompatible-library)`; `useWatch` devolvía valores obsoletos tras `update()`, así que hace falta un arreglo que lo evite.
+- [ ] R1 (NIT): el test de N1 de `MealPhotoDialog.test.tsx` no afirma que se cree una sola URL ni que la vista previa final sea la de la segunda foto.
+- [ ] Cuatro tests (`errors`, `schemas`, `DiaryPage`, `PrivacyPolicyPage`) tienen CRLF en el disco y LF en el repo; normalizar finales de línea.
+- [ ] Añadir `node_modules/` de la raíz del repo a `.gitignore`.
+- [ ] Vigilar el timeout de 5 s en `router.test.tsx` y `lazyRoutes.test.tsx` (ruta `/body-metrics`) si vuelve a fallar con la suite completa; posible subida de `testTimeout`.
+- [ ] harness: `sdd-state` no permite quitar un ámbito de `state.json` (la 025 es solo frontend pero lista `backend`).
