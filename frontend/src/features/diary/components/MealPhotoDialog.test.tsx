@@ -1538,6 +1538,27 @@ describe("MealPhotoDialog - cierre durante operaciones asíncronas (F1)", () => 
       await new Promise((resolve) => setTimeout(resolve, 20))
     })
 
+    expect.hasAssertions()
+    expect(processor.revoked.length).toBe(processor.created.length)
+    for (const url of processor.created) expect(processor.revoked).toContain(url)
+  })
+
+  // SDD: 025 NFR-001 AC-N001.2
+  it("si se eligen dos fotos seguidas mientras se comprueba la primera, la URL de vista previa de la primera se libera", async () => {
+    const user = userEvent.setup()
+    const processor = new GatedPhotoProcessor()
+    processor.gateRead = true
+    const { view } = renderDialog({ processor })
+
+    await pick(user, makePhotoFile({ name: "primera.jpg" }))
+    await pick(user, makePhotoFile({ name: "segunda.jpg" }))
+    await act(async () => {
+      processor.releaseAll()
+      await new Promise((resolve) => setTimeout(resolve, 20))
+    })
+    view.unmount()
+
+    expect(processor.created.length).toBeGreaterThan(0)
     for (const url of processor.created) expect(processor.revoked).toContain(url)
   })
 })

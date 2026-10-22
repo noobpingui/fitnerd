@@ -64,3 +64,12 @@
 - [ ] Comprobación manual en navegador real de AC-001.3, AC-002.1, AC-003.3, AC-004.3 y AC-004.4 (iPhone real y Chrome Android).
 - [ ] ADR-0033 sigue en estado «Propuesta»: confirmarlo (Aceptada) en el gate.
 - [ ] Commits: la implementación está en `207687a` y no en `fcf9f0a`; tenerlo en cuenta en el historial del PR.
+
+## review (2.ª) · reviewer
+- [ ] N1 (NIT, implementer): MealPhotoDialog.tsx:83-104. Si el usuario elige dos fotos seguidas mientras se comprueba la primera, la URL blob: de la primera vista previa no se libera nunca. Se corrige con un contador de selección.
+- [ ] N2 (NIT, test-author): en el test «… la URL de vista previa no queda sin liberar», el bucle de aserciones queda vacío una vez aplicada la corrección. Añadir expect.hasAssertions() o una aserción explícita sobre processor.created.
+- [ ] N3 (NIT, implementer): photo.ts:65-76. La caché WeakMap mantiene la imagen decodificada en memoria mientras el File siga vivo (unos 48 MB en una foto de 12 MP). Valorar liberar la entrada después de toJpeg.
+- [ ] Comprobación manual en navegador real, además de los 5 AC: el fondo blanco de un PNG con transparencia (F5).
+
+## tests (N1-N3) · test-author
+- [ ] N3 (liberar la caché de decodificación tras `toJpeg`) queda sin test automático: revisar a mano en un navegador.

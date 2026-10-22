@@ -1,50 +1,48 @@
 # Verify report 025 — Registro de una comida con foto desde el diario
 
-- **Modo:** red (tras la etapa tests, vuelta de corrección de la review, F1 a F4)
-- **Fecha:** 2026-10-22T19:06:20.915Z · **Rama:** `feat/025-meal-photo-upload` @ `fcf9f0a` (con cambios de tests sin commit en `MealPhotoDialog.test.tsx`) · **Base:** `main`
+- **Modo:** red (tras la etapa tests, corrección N1 a N3 de la 2.ª review)
+- **Fecha:** 2026-10-22T19:21:43.478Z · **Rama:** `feat/025-meal-photo-upload` @ `3e4a4a0` (con cambios sin commitear en `MealPhotoDialog.test.tsx`) · **Base:** `main`
 - **Resultado:** PASS
 
 ## 1. Comandos ejecutados
-Modo red: se ejecutan los 7 tests nuevos de la corrección (marcadores `SDD: 025` de F1 a F4, en `frontend/src/features/diary/components/MealPhotoDialog.test.tsx`) con `commands.test_files` del ámbito `frontend`. Además, como comprobación de regresión, se ejecuta la suite completa del ámbito (`commands.test`) para confirmar que los tests existentes siguen en verde. Ámbito `backend`: sin archivos tocados en esta vuelta; no se ejecuta en red.
-
 | Ámbito | Comando (cwd) | Resultado | Resumen de la salida |
 |---|---|---|---|
-| frontend | `npx vitest run src/features/diary/components/MealPhotoDialog.test.tsx` (`frontend`) | ✅ en cuanto a rojo | 90 tests: 7 fallidos (los 7 nuevos), 83 pasados (existentes) |
-| frontend | `npm test` (`frontend`), regresión | ✅ en cuanto a verde de los existentes | 1241 tests: 1234 pasados, 7 fallidos (exactamente los 7 nuevos). Ningún test existente falla |
-| frontend | `npm run lint`, `npx tsc -b`, `npm run build` | — | No se ejecutan en modo red |
-| backend | — | — | Sin archivos tocados en esta vuelta; no se ejecuta en red |
+| frontend | `npx vitest run src/features/diary/components/MealPhotoDialog.test.tsx` (`frontend`) | ❌ solo en el test nuevo de N1 (rojo esperado) | 91 tests: 90 pasan, 1 falla. El fallo es `AssertionError: expected [ 'blob:preview-2' ] to include 'blob:preview-1'` (aserción; la primera vista previa no se libera) |
+| frontend | `npm test` (`frontend`) | ❌ solo el test nuevo de N1 | 81 archivos; 1241 tests pasan y 1 falla (el de N1). Los 1241 existentes siguen en verde |
 
-Clasificación de los 7 fallos (todos legítimos, comportamiento ausente, ninguno de sintaxis, configuración, fixture o import):
-- F1 «si se cierra el diálogo mientras se prepara el JPEG, la foto no se envía al analizar»: `AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times` (la foto sí se envía tras cerrar).
-- F1 «si se cierra el diálogo mientras se comprueba la foto, la URL de vista previa no queda sin liberar»: `AssertionError: expected [] to include 'blob:preview-1'` (la URL no se revoca).
-- F2 «ante un 429 no se ofrece «Cambiar foto»» y «ante un 503 no se ofrece «Cambiar foto»» (`it.each`): `expected document not to contain element`, el botón «Cambiar foto» sí aparece.
-- F2 «ante un fallo de red no se ofrece «Cambiar foto»»: mismo fallo, el botón aparece.
-- F3 «con el error de 3 MB no se muestra «Analizar foto» y sí «Cambiar foto»»: el botón «Analizar foto» sigue visible con el error de 3 MB.
-- F4 «la región de estado ya existe antes de analizar y es la misma que anuncia «Analizando la foto…»»: `TestingLibraryElementError: Unable to find an accessible element with the role "status"` (no hay región persistente antes de analizar).
-
-Los 83 tests del archivo que pasan son existentes y siguen en verde. En la suite completa, los 1234 tests existentes pasan. No hay `skip`, `xfail`, `.only`, `.skip` ni `it.todo` nuevos en el diff de `frontend/src`.
+Comprobaciones de tests nuevos (modo red):
+- Tests nuevos en el diff de esta corrección: 1 (`si se eligen dos fotos seguidas…`, `// SDD: 025 NFR-001 AC-N001.2`, en `MealPhotoDialog.test.tsx`). Falla por aserción sobre la URL de vista previa, que es comportamiento ausente, rojo legítimo.
+- El test de N2 (`si se cierra el diálogo mientras se comprueba la foto…`) ya existía en el commit `5bd5877`. Su cambio solo añade `expect.hasAssertions()` y dos aserciones (`revoked.length` igual a `created.length`); no quita ninguna línea del original. No cuenta como test nuevo. Pasa, y no se ha debilitado.
+- Esqueletos `(scaffold)`: sin cambios en esta corrección; no se han revisado de nuevo.
+- `skip`, `xfail`, `.only`, `.skip` o `it.todo` nuevos: ninguno en el diff.
 
 ## 2. Trazabilidad
-Solo se comprueban los AC que llevan los 7 tests nuevos de la corrección. La trazabilidad completa de la feature (61 AC) ya se comprobó en la etapa de tests y en `verify`.
+Alcance de esta comprobación: solo el AC que cubre el test nuevo. El resto de la trazabilidad de la 025 no cambia, porque esta corrección no añade ni quita otros tests ni tareas.
 
-| REQ / NFR | AC | Tareas | Tests con `SDD:` | Estado del test |
+| REQ / NFR | AC | Tareas | Tests con `SDD:` (archivo) | Estado del test |
 |---|---|---|---|---|
-| REQ-005 | AC-005.2 | T-042 (impl) | `MealPhotoDialog.test.tsx::si se cierra el diálogo mientras se prepara el JPEG, la foto no se envía al analizar` | ❌ rojo legítimo |
-| NFR-001 | AC-N001.2 | T-042 (impl) | `MealPhotoDialog.test.tsx::si se cierra el diálogo mientras se comprueba la foto, la URL de vista previa no queda sin liberar` | ❌ rojo legítimo |
-| REQ-012 | AC-012.3 | T-032, T-042 | `MealPhotoDialog.test.tsx::ante un 429 no se ofrece «Cambiar foto»` y `::ante un 503 no se ofrece «Cambiar foto»` | ❌ rojo legítimo |
-| REQ-012 | AC-012.4 | T-032, T-042 | `MealPhotoDialog.test.tsx::ante un fallo de red no se ofrece «Cambiar foto»` | ❌ rojo legítimo |
-| REQ-004 | AC-004.5 | T-034, T-042 | `MealPhotoDialog.test.tsx::con el error de 3 MB no se muestra «Analizar foto» y sí «Cambiar foto»` | ❌ rojo legítimo |
-| NFR-002 | AC-N002.2 | T-042 | `MealPhotoDialog.test.tsx::la región de estado ya existe antes de analizar y es la misma que anuncia «Analizando la foto…»` | ❌ rojo legítimo |
+| NFR-001 | AC-N001.2 | T-025 | `MealPhotoDialog.test.tsx` (test «si se eligen dos fotos seguidas…») | ❌ rojo legítimo (aserción) |
 
-- AC sin test: —
+- AC sin test: — (en esta comprobación no se ha reverificado la cobertura de los 61 AC; el verify full se repetirá)
 - REQ sin tarea: —
-- Tareas sin marcar `[x]`: —
+- Tareas sin marcar `[x]`: — (no se ha revisado en esta etapa)
 - `skip`, `xfail`, `.only` o equivalentes nuevos en el diff: —
 
-Nota: el snapshot de `state.json.tests_snapshot` (18:53) no recoge la edición de `MealPhotoDialog.test.tsx` de esta vuelta; el orquestador debe registrarla antes de la etapa de implementación.
+Nota sobre el snapshot de tests: `MealPhotoDialog.test.tsx` cambió en esta corrección (N1 y N2), así que su hash ya no coincide con el registrado en `tests_snapshot` de `state.json`. Hay que refrescar el snapshot tras el commit de tests. Los demás archivos de test de la feature coinciden con su snapshot en el blob de `HEAD`.
 
 ## 3. Criterios de aceptación manuales
-Sin cambios respecto a la verificación completa: AC-001.3, AC-002.1, AC-003.3, AC-004.3 y AC-004.4 requieren comprobación manual en navegador real.
+Sin cambios respecto al verify full anterior. Estos AC dependen del navegador real y los prueba el usuario antes del cierre:
+- **AC-001.3:** en una pantalla de 375 px, el diálogo ocupa todo el ancho y alto; en 1024 px, es un diálogo centrado.
+- **AC-002.1:** los dos selectores no admiten varios archivos, aceptan JPEG, PNG, WebP, HEIC y HEIF, y «Hacer una foto» pide la cámara trasera en un móvil.
+- **AC-003.3:** una foto HEIC real, en un navegador que no la lee, muestra «No se pudo leer la foto. Prueba con otra foto en JPEG, PNG o WebP.».
+- **AC-004.3:** una foto JPEG con orientación EXIF 6 se envía derecha (1200 × 1600 px), como en la vista previa.
+- **AC-004.4:** una foto HEIC que el navegador sabe leer (Safari) se envía como JPEG.
+- **N3 (memoria, manual):** liberar la caché de decodificación tras `toJpeg` depende de la memoria del navegador; no se prueba en jsdom.
 
 ## 4. Fallos (si los hay)
-Ninguno. Los 7 fallos de los tests nuevos son rojo legítimo (comportamiento ausente).
+| # | Qué falló | Salida relevante (recortada) | Responsable probable (test-author · implementer · entorno) |
+|---|---|---|---|
+| — | Ninguno bloqueante. El único test nuevo (N1) falla por aserción, que es el rojo esperado antes de la corrección del implementer | `expected [ 'blob:preview-2' ] to include 'blob:preview-1'` | — (rojo esperado; la corrección la hace el implementer) |
+
+Observaciones no bloqueantes:
+- Las comprobaciones de lint, tipos, build y backend no se ejecutan en modo red y se repetirán en el verify full.
