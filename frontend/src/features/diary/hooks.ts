@@ -1,6 +1,17 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { addMealItems, getDiary, removeMealItem, updateMealItemGrams } from "./api"
-import type { AddMealItemsPayload, Meal } from "./types"
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseMutationResult,
+} from "@tanstack/react-query"
+import {
+  addMealItems,
+  analyzeMealPhoto,
+  getDiary,
+  removeMealItem,
+  updateMealItemGrams,
+} from "./api"
+import type { AddMealItemsPayload, Meal, MealPhotoAnalysis } from "./types"
 
 export const diaryKeys = { day: (date: string) => ["diary", date] as const }
 
@@ -15,6 +26,14 @@ export function useAddMealItems(date: string) {
   return useMutation<Meal, Error, AddMealItemsPayload>({
     mutationFn: (payload) => addMealItems(payload),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: diaryKeys.day(date) }),
+  })
+}
+
+// Sin reintentos: cada análisis cuenta para el límite de 10 por hora.
+export function useAnalyzeMealPhoto(): UseMutationResult<MealPhotoAnalysis, Error, Blob> {
+  return useMutation<MealPhotoAnalysis, Error, Blob>({
+    mutationFn: (image) => analyzeMealPhoto(image),
+    retry: false,
   })
 }
 

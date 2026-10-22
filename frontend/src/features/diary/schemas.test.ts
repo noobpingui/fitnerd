@@ -14,10 +14,13 @@ import {
   customItemPayload,
   diaryResponseSchema,
   gramsFormSchema,
+  mealPhotoAnalysisSchema,
   mealResponseSchema,
   parseDecimalText,
+  proposalFormSchema,
   type CustomFoodFormValues,
 } from "./schemas"
+import type { ProposalEntry } from "./types"
 
 const VALID_CUSTOM: CustomFoodFormValues = {
   name: "Gallo pinto",
@@ -240,6 +243,146 @@ describe("mealResponseSchema", () => {
       totals: NUTRIENTS, incomplete: [] }
 
     expect(diaryResponseSchema.safeParse(body).success).toBe(true)
+  })
+})
+
+const ANALYSIS_BODY = {
+  items: [
+    {
+      catalog_id: "arroz-blanco-cocido",
+      name: "Arroz blanco cocido",
+      grams: 150,
+      confidence: "high",
+      per_100g: { calories_kcal: 130, protein_g: 2.69, carbs_g: 28.17, fat_g: 0.28 },
+      nutrients: { calories_kcal: 195, protein_g: 4.04, carbs_g: 42.26, fat_g: 0.42 },
+    },
+  ],
+  unmatched: [{ name: "Salsa de tomate", grams: 30, confidence: "low" }],
+  totals: { calories_kcal: 195, protein_g: 4.04, carbs_g: 42.26, fat_g: 0.42 },
+}
+
+describe("mealPhotoAnalysisSchema", () => {
+  // SDD: 025 REQ-006 AC-006.1
+  it("acepta la respuesta de POST /api/meals/analyze de la spec 024", () => {
+    const result = mealPhotoAnalysisSchema.safeParse(ANALYSIS_BODY)
+
+    expect(result.success).toBe(true)
+    expect(result.data?.items[0].name).toBe("Arroz blanco cocido")
+    expect(result.data?.unmatched[0].name).toBe("Salsa de tomate")
+  })
+
+  // SDD: 025 REQ-006 AC-006.1
+  it("acepta una respuesta sin ningún alimento", () => {
+    const empty = { ...ANALYSIS_BODY, items: [], unmatched: [] }
+
+    expect(mealPhotoAnalysisSchema.safeParse(empty).success).toBe(true)
+  })
+
+  // SDD: 025 REQ-006 AC-006.2
+  it("rechaza una confianza desconocida en un alimento del catálogo", () => {
+    const body = {
+      ...ANALYSIS_BODY,
+      items: [{ ...ANALYSIS_BODY.items[0], confidence: "certain" }],
+    }
+
+    expect(mealPhotoAnalysisSchema.safeParse(body).success).toBe(false)
+  })
+
+  // SDD: 025 REQ-006 AC-006.2
+  it("rechaza una confianza desconocida en un alimento sin coincidencia", () => {
+    const body = {
+      ...ANALYSIS_BODY,
+      unmatched: [{ name: "Salsa de tomate", grams: 30, confidence: "muy alta" }],
+    }
+
+    expect(mealPhotoAnalysisSchema.safeParse(body).success).toBe(false)
+  })
+
+  // SDD: 025 REQ-006 AC-006.1
+  it("rechaza una respuesta sin la lista items", () => {
+    const { items: _items, ...withoutItems } = ANALYSIS_BODY
+
+    expect(mealPhotoAnalysisSchema.safeParse(withoutItems).success).toBe(false)
+  })
+})
+
+const RICE_ENTRY: ProposalEntry = {
+  kind: "catalog",
+  catalogId: "arroz-blanco-cocido",
+  name: "Arroz blanco cocido",
+  per100g: { calories_kcal: 130, protein_g: 2.69, carbs_g: 28.17, fat_g: 0.28 },
+  grams: "150",
+  tag: "high",
+}
+const SAUCE_ENTRY: ProposalEntry = {
+  kind: "unmatched",
+  name: "Salsa de tomate",
+  grams: 30,
+  confidence: "low",
+}
+
+// Mensajes de la propuesta por posición de la entrada (path entries.i.grams).
+function proposalIssues(entries: ProposalEntry[]): Record<number, string> {
+  const result = proposalFormSchema.safeParse({ entries })
+  const messages: Record<number, string> = {}
+  if (result.success) return messages
+  for (const issue of result.error.issues) {
+    const [root, index, field] = issue.path
+    if (root === "entries" && field === "grams" && typeof index === "number") {
+      if (!(index in messages)) messages[index] = issue.message
+    }
+  }
+  return messages
+}
+
+describe("proposalFormSchema", () => {
+  // SDD: 025 REQ-007 AC-007.3
+  it.each([
+    ["", GRAMS_RANGE_MESSAGE],
+    ["0", GRAMS_RANGE_MESSAGE],
+    ["2001", GRAMS_RANGE_MESSAGE],
+    ["150,25", GRAMS_DECIMALS_MESSAGE],
+  ])("rechaza los gramos %j con «%s» en entries.0.grams", (grams, message) => {
+    expect(proposalIssues([{ ...RICE_ENTRY, grams } as ProposalEntry])).toEqual({ 0: message })
+  })
+
+  // SDD: 025 REQ-007 AC-007.2
+  it.each(["1", "2000", "150", "150,5", "150.5"])("acepta los gramos %j", (grams) => {
+    const result = proposalFormSchema.safeParse({
+      entries: [{ ...RICE_ENTRY, grams }],
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  // SDD: 025 REQ-007 AC-007.3
+  it("valida también los gramos de un alimento personalizado", () => {
+    const custom: ProposalEntry = {
+      kind: "custom",
+      name: "Gallo pinto",
+      per100g: { calories_kcal: 160, protein_g: 5.5, carbs_g: 27, fat_g: 3.2 },
+      grams: "0",
+    }
+
+    expect(proposalIssues([RICE_ENTRY, custom])).toEqual({ 1: GRAMS_RANGE_MESSAGE })
+  })
+
+  // SDD: 025 REQ-007 AC-007.3
+  it("no valida los gramos de los alimentos sin coincidencia", () => {
+    const result = proposalFormSchema.safeParse({ entries: [RICE_ENTRY, SAUCE_ENTRY] })
+
+    expect(result.success).toBe(true)
+  })
+
+  // SDD: 025 REQ-007 AC-007.3
+  it("señala solo la posición del alimento con gramos no válidos", () => {
+    const issues = proposalIssues([
+      RICE_ENTRY,
+      SAUCE_ENTRY,
+      { ...RICE_ENTRY, grams: "" } as ProposalEntry,
+    ])
+
+    expect(Object.keys(issues)).toEqual(["2"])
   })
 })
 

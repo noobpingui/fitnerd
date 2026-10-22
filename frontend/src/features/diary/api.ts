@@ -1,6 +1,6 @@
 import { apiFetch } from "@/lib/apiClient"
-import { diaryResponseSchema, mealResponseSchema } from "./schemas"
-import type { AddMealItemsPayload, Diary, Meal } from "./types"
+import { diaryResponseSchema, mealPhotoAnalysisSchema, mealResponseSchema } from "./schemas"
+import type { AddMealItemsPayload, Diary, Meal, MealPhotoAnalysis } from "./types"
 
 export async function getDiary(date: string): Promise<Diary> {
   const params = new URLSearchParams({ date })
@@ -28,4 +28,13 @@ export async function updateMealItemGrams(
 
 export async function removeMealItem(mealId: number, itemId: number): Promise<void> {
   await apiFetch<void>(`/api/meals/${mealId}/items/${itemId}`, { method: "DELETE" })
+}
+
+// Envía un único archivo en `image` y valida la respuesta.
+export async function analyzeMealPhoto(image: Blob): Promise<MealPhotoAnalysis> {
+  const form = new FormData()
+  form.append("image", image, "comida.jpg")
+  return mealPhotoAnalysisSchema.parse(
+    await apiFetch<unknown>("/api/meals/analyze", { method: "POST", body: form })
+  )
 }

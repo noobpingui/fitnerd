@@ -47,7 +47,7 @@ function hasTooManyDecimals(text: string): boolean {
 }
 
 // Devuelve el mensaje de error de unos gramos o null si son válidos.
-function gramsError(text: string): string | null {
+export function gramsError(text: string): string | null {
   const value = parseDecimalText(text)
   if (value === null || value < 1 || value > 2000) return GRAMS_RANGE_MESSAGE
   if (hasTooManyDecimals(text)) return GRAMS_DECIMALS_MESSAGE
@@ -159,3 +159,60 @@ export const diaryResponseSchema = z.object({
   totals,
   incomplete: z.array(nutrientKey),
 })
+
+const confidence = z.enum(["high", "medium", "low"])
+const per100g = z.object({
+  calories_kcal: z.number(),
+  protein_g: z.number(),
+  carbs_g: z.number(),
+  fat_g: z.number(),
+})
+
+export const mealPhotoAnalysisSchema = z.object({
+  items: z.array(
+    z.object({
+      catalog_id: z.string(),
+      name: z.string(),
+      grams: z.number(),
+      confidence,
+      per_100g: per100g,
+      nutrients: nullableNutrients,
+    })
+  ),
+  unmatched: z.array(z.object({ name: z.string(), grams: z.number(), confidence })),
+  totals,
+})
+
+const proposalEntrySchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("catalog"),
+    catalogId: z.string(),
+    name: z.string(),
+    per100g,
+    grams: z.string(),
+    tag: z.enum(["high", "medium", "low", "user"]),
+  }),
+  z.object({
+    kind: z.literal("custom"),
+    name: z.string(),
+    per100g,
+    grams: z.string(),
+  }),
+  z.object({
+    kind: z.literal("unmatched"),
+    name: z.string(),
+    grams: z.number(),
+    confidence,
+  }),
+])
+
+// Valida los gramos de las entradas que se guardan; las «unmatched» no se validan.
+export const proposalFormSchema = z
+  .object({ entries: z.array(proposalEntrySchema) })
+  .superRefine((values, ctx) => {
+    values.entries.forEach((entry, index) => {
+      if (entry.kind === "unmatched") return
+      const message = gramsError(entry.grams)
+      if (message) ctx.addIssue({ code: "custom", path: ["entries", index, "grams"], message })
+    })
+  })

@@ -32,11 +32,15 @@ const NUMBER_FIELDS: { name: FieldPath<CustomFoodFormValues>; label: string }[] 
 
 export function CustomFoodForm({
   defaultName,
+  defaultGrams = "",
+  submitLabel = "Añadir",
   isSaving,
   onSubmit,
   children,
 }: {
   defaultName: string
+  defaultGrams?: string
+  submitLabel?: string
   isSaving: boolean
   onSubmit: (payload: CustomItemPayload) => void
   children?: ReactNode
@@ -45,7 +49,7 @@ export function CustomFoodForm({
     resolver: zodResolver(customFoodFormSchema),
     defaultValues: {
       name: defaultName,
-      grams: "",
+      grams: defaultGrams,
       calories: "",
       protein: "",
       carbs: "",
@@ -118,7 +122,7 @@ export function CustomFoodForm({
         {preview && <p className="text-sm text-muted-foreground">{preview}</p>}
         <div className="flex flex-wrap gap-2">
           <Button type="submit" disabled={isSaving}>
-            {isSaving ? "Guardando…" : "Añadir"}
+            {isSaving ? "Guardando…" : submitLabel}
           </Button>
           {children}
         </div>

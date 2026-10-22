@@ -8,6 +8,7 @@ import type { Meal, MealItem, MealType } from "../types"
 import { AddFoodDialog } from "./AddFoodDialog"
 import { EditGramsDialog } from "./EditGramsDialog"
 import { MealItemRow } from "./MealItemRow"
+import { MealPhotoDialog } from "./MealPhotoDialog"
 
 export function MealSection({
   type,
@@ -21,6 +22,7 @@ export function MealSection({
   date: string
 }): ReactElement {
   const [adding, setAdding] = useState(false)
+  const [photoOpen, setPhotoOpen] = useState(false)
   const [editing, setEditing] = useState<MealItem | null>(null)
   const remove = useRemoveMealItem(date)
   const items = meal?.items ?? []
@@ -62,15 +64,20 @@ export function MealSection({
           </p>
         )}
 
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="mt-3"
-          onClick={() => setAdding(true)}
-        >
-          Añadir alimento
-        </Button>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={() => setAdding(true)}>
+            Añadir alimento
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            aria-label={`Cargar imagen en ${label}`}
+            onClick={() => setPhotoOpen(true)}
+          >
+            Cargar imagen
+          </Button>
+        </div>
       </CardContent>
 
       {adding && (
@@ -79,6 +86,18 @@ export function MealSection({
           label={label}
           date={date}
           onClose={() => setAdding(false)}
+        />
+      )}
+      {photoOpen && (
+        <MealPhotoDialog
+          mealType={type}
+          label={label}
+          date={date}
+          onClose={() => setPhotoOpen(false)}
+          onRegisterManually={() => {
+            setPhotoOpen(false)
+            setAdding(true)
+          }}
         />
       )}
       {editing && meal && (

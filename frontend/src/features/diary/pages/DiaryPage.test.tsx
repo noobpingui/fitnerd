@@ -2,17 +2,26 @@
 // diario, de los alimentos y del perfil; la fecha de hoy se fija con
 // `vi.useFakeTimers({ toFake: ["Date"] })` (martes 20 de octubre de 2026).
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { render, screen, waitFor, within } from "@testing-library/react"
+import { act, render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { MemoryRouter } from "react-router"
 import { ApiError } from "@/lib/apiClient"
-import { addMealItems, getDiary, removeMealItem, updateMealItemGrams } from "@/features/diary/api"
+import {
+  addMealItems,
+  analyzeMealPhoto,
+  getDiary,
+  removeMealItem,
+  updateMealItemGrams,
+} from "@/features/diary/api"
+import type { PhotoProcessor } from "@/features/diary/photo"
 import { searchCatalog } from "@/features/catalog/api"
 import { getProfile } from "@/features/profile/api"
 import { answersFromProfile } from "@/features/profile/mappers"
 import { calculateMacros, type MacroKey } from "@/features/macros/calculations"
+import { RICE, TOMATO_SAUCE, makeAnalysis } from "@/test/analysisFixtures"
 import { makeCatalogFood } from "@/test/catalogFixtures"
+import { FakePhotoProcessor, makePhotoFile } from "@/test/photoFixtures"
 import {
   makeCatalogItem,
   makeCustomItem,
@@ -30,7 +39,26 @@ vi.mock("@/features/diary/api", () => ({
   addMealItems: vi.fn(),
   updateMealItemGrams: vi.fn(),
   removeMealItem: vi.fn(),
+  analyzeMealPhoto: vi.fn(),
 }))
+// El procesador del navegador (decodificar, canvas y URLs blob:) no se puede
+// ejecutar en jsdom: la pantalla usa `browserPhotoProcessor`, que aquí delega en
+// un doble escrito a mano que cada test fija en `photoHolder`.
+const photoHolder = vi.hoisted(() => ({ processor: null as PhotoProcessor | null }))
+vi.mock("@/features/diary/photo", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@/features/diary/photo")>()
+  const current = () => photoHolder.processor as PhotoProcessor
+  return {
+    ...original,
+    browserPhotoProcessor: {
+      readSize: (file: Blob) => current().readSize(file),
+      toJpeg: (file: Blob, size: { width: number; height: number }) =>
+        current().toJpeg(file, size),
+      createPreviewUrl: (file: Blob) => current().createPreviewUrl(file),
+      revokePreviewUrl: (url: string) => current().revokePreviewUrl(url),
+    },
+  }
+})
 vi.mock("@/features/catalog/api", () => ({
   searchCatalog: vi.fn(),
 }))
@@ -44,6 +72,7 @@ const addMock = vi.mocked(addMealItems)
 const updateMock = vi.mocked(updateMealItemGrams)
 const removeMock = vi.mocked(removeMealItem)
 const searchMock = vi.mocked(searchCatalog)
+const analyzeMock = vi.mocked(analyzeMealPhoto)
 const getProfileMock = vi.mocked(getProfile)
 
 const CHICKEN_NAME = "Chicken, broilers or fryers, breast, meat only, cooked, roasted"
@@ -578,5 +607,176 @@ describe("DiaryPage", () => {
     expect(screen.getByRole("button", { name: `Quitar ${CHICKEN_NAME}` })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Editar Gallo pinto" })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Quitar Gallo pinto" })).toBeInTheDocument()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Spec 025: registro de una comida con foto desde las tarjetas del diario
+// ---------------------------------------------------------------------------
+
+function deferred<T>() {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>((res) => {
+    resolve = res
+  })
+  return { promise, resolve }
+}
+
+type User = ReturnType<typeof userEvent.setup>
+
+async function openPhotoDialog(user: User, label: string) {
+  await user.click(await screen.findByRole("button", { name: `Cargar imagen en ${label}` }))
+  return screen.findByRole("dialog", { name: `Añadir a ${label} con una foto` })
+}
+
+async function chooseAndAnalyze(user: User, dialog: HTMLElement) {
+  const input = dialog.querySelector('input[type="file"]') as HTMLInputElement
+  await user.upload(input, makePhotoFile())
+  await within(dialog).findByAltText("Vista previa de la foto")
+  await user.click(within(dialog).getByRole("button", { name: "Analizar foto" }))
+}
+
+describe("DiaryPage - registro con foto", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] })
+    vi.setSystemTime(new Date(2026, 9, 20, 12, 0))
+    getDiaryMock.mockReset()
+    addMock.mockReset()
+    searchMock.mockReset()
+    analyzeMock.mockReset()
+    getProfileMock.mockReset()
+    getProfileMock.mockResolvedValue(makeProfileResponse())
+    photoHolder.processor = new FakePhotoProcessor()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  // SDD: 025 REQ-001 AC-001.1
+  it("cada una de las cuatro tarjetas tiene «Cargar imagen» además de «Añadir alimento», con su nombre accesible", async () => {
+    getDiaryMock.mockResolvedValue(makeDiary())
+    renderPage()
+
+    await screen.findByRole("heading", { level: 1, name: "Diario" })
+
+    for (const label of ["Desayuno", "Almuerzo", "Cena", "Meriendas"]) {
+      expect(screen.getByRole("button", { name: `Cargar imagen en ${label}` })).toBeInTheDocument()
+    }
+    expect(screen.getAllByRole("button", { name: /^Cargar imagen en / })).toHaveLength(4)
+    expect(screen.getAllByRole("button", { name: "Añadir alimento" })).toHaveLength(4)
+    for (const button of screen.getAllByRole("button", { name: /^Cargar imagen en / })) {
+      expect(button).toHaveTextContent("Cargar imagen")
+    }
+  })
+
+  // SDD: 025 REQ-001 AC-001.2
+  it("«Cargar imagen en Cena» abre el diálogo de la foto de esa tarjeta", async () => {
+    const user = userEvent.setup()
+    getDiaryMock.mockResolvedValue(makeDiary())
+    renderPage()
+
+    const dialog = await openPhotoDialog(user, "Cena")
+
+    expect(within(dialog).getByText("Añadir a Cena con una foto")).toBeInTheDocument()
+    expect(within(dialog).getByText("Puedes analizar hasta 10 fotos por hora.")).toBeInTheDocument()
+  })
+
+  // SDD: 025 REQ-005 AC-005.2
+  it("si se cierra con el análisis pendiente y la respuesta llega después, el diálogo sigue cerrado y no se guarda nada", async () => {
+    const user = userEvent.setup()
+    getDiaryMock.mockResolvedValue(makeDiary())
+    const pending = deferred<ReturnType<typeof makeAnalysis>>()
+    analyzeMock.mockReturnValue(pending.promise)
+    renderPage()
+    const dialog = await openPhotoDialog(user, "Cena")
+    await chooseAndAnalyze(user, dialog)
+    await within(dialog).findByText("Analizando la foto…")
+
+    await user.click(within(dialog).getByRole("button", { name: "Cancelar" }))
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+    await act(async () => pending.resolve(makeAnalysis({ items: [RICE] })))
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+    expect(addMock).not.toHaveBeenCalled()
+    expect(getDiaryMock).toHaveBeenCalledTimes(1)
+    expect(screen.getAllByText("Sin alimentos.")).toHaveLength(4)
+  })
+
+  // SDD: 025 REQ-011 AC-011.3
+  it("tras guardar la propuesta, Almuerzo muestra los dos alimentos que ya tenía y el nuevo", async () => {
+    const user = userEvent.setup()
+    const before = makeMeal({ items: [makeMealItem(), makeCustomItem()] })
+    const after = makeMeal({ items: [makeMealItem(), makeCustomItem(), makeCatalogItem()] })
+    getDiaryMock.mockResolvedValueOnce(makeDiary([before]))
+    getDiaryMock.mockResolvedValue(makeDiary([after]))
+    addMock.mockResolvedValue(after)
+    analyzeMock.mockResolvedValue(makeAnalysis({ items: [RICE] }))
+    renderPage()
+    await screen.findByText(CHICKEN_NAME)
+    const list = () => screen.getByRole("list", { name: "Alimentos de Almuerzo" })
+    expect(within(list()).getAllByRole("listitem")).toHaveLength(2)
+    const dialog = await openPhotoDialog(user, "Almuerzo")
+    await chooseAndAnalyze(user, dialog)
+    await within(dialog).findByRole("list", { name: "Alimentos de la propuesta" })
+
+    await user.click(within(dialog).getByRole("button", { name: "Guardar en Almuerzo" }))
+
+    await waitFor(() =>
+      expect(addMock).toHaveBeenCalledWith({
+        date: "2026-10-20",
+        meal_type: "lunch",
+        items: [{ catalog_id: "arroz-blanco-cocido", grams: 150 }],
+      })
+    )
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument())
+    await waitFor(() => expect(within(list()).getAllByRole("listitem")).toHaveLength(3))
+    expect(within(list()).getByText("Arroz blanco cocido")).toBeInTheDocument()
+    expect(getDiaryMock).toHaveBeenCalledTimes(2)
+  })
+
+  // SDD: 025 REQ-012 AC-012.7
+  it.each([
+    ["503", () => Promise.reject(new ApiError(503, "No se pudo analizar la imagen en este momento. Vuelve a intentarlo en unos minutos."))],
+    ["429", () => Promise.reject(new ApiError(429, "Alcanzaste el límite de 10 análisis por hora. Vuelve a intentarlo en un rato."))],
+    ["una respuesta sin alimentos", () => Promise.resolve(makeAnalysis({ items: [], unmatched: [] }))],
+  ])("con %s, «Registrar a mano» cierra el diálogo de la foto y abre «Añadir a Cena»", async (_name, respond) => {
+    const user = userEvent.setup()
+    getDiaryMock.mockResolvedValue(makeDiary())
+    analyzeMock.mockImplementation(respond)
+    renderPage()
+    const dialog = await openPhotoDialog(user, "Cena")
+    await chooseAndAnalyze(user, dialog)
+
+    await user.click(await within(dialog).findByRole("button", { name: "Registrar a mano" }))
+
+    expect(
+      screen.queryByRole("dialog", { name: "Añadir a Cena con una foto" })
+    ).not.toBeInTheDocument()
+    expect(await screen.findByRole("dialog", { name: "Añadir a Cena" })).toBeInTheDocument()
+    expect(addMock).not.toHaveBeenCalled()
+  })
+
+  // SDD: 025 REQ-013 AC-013.2
+  it("tras cerrar el diálogo con una propuesta, al volver a abrirlo empieza sin foto", async () => {
+    const user = userEvent.setup()
+    getDiaryMock.mockResolvedValue(makeDiary())
+    analyzeMock.mockResolvedValue(makeAnalysis({ items: [RICE], unmatched: [TOMATO_SAUCE] }))
+    renderPage()
+    const first = await openPhotoDialog(user, "Cena")
+    await chooseAndAnalyze(user, first)
+    await within(first).findByRole("list", { name: "Alimentos de la propuesta" })
+    await user.click(within(first).getByRole("button", { name: "Cancelar" }))
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+
+    const second = await openPhotoDialog(user, "Cena")
+
+    expect(within(second).queryByAltText("Vista previa de la foto")).not.toBeInTheDocument()
+    expect(
+      within(second).queryByRole("list", { name: "Alimentos de la propuesta" })
+    ).not.toBeInTheDocument()
+    expect(within(second).getByRole("button", { name: "Hacer una foto" })).toBeInTheDocument()
+    expect(within(second).getByRole("button", { name: "Elegir una foto" })).toBeInTheDocument()
+    expect(addMock).not.toHaveBeenCalled()
   })
 })
