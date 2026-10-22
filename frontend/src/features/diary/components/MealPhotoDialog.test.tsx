@@ -1469,3 +1469,139 @@ describe("MealPhotoDialog - privacidad de la foto y accesibilidad", () => {
     expect(alert).toHaveTextContent(SAVE_FAILED)
   })
 })
+
+// ---------------------------------------------------------------------------
+// Review 025, hallazgos F1 a F4
+// ---------------------------------------------------------------------------
+
+// Procesador cuyas operaciones asíncronas esperan a que el test las libere.
+class GatedPhotoProcessor extends FakePhotoProcessor {
+  gateRead = false
+  gateJpeg = false
+  private readRelease: (() => void) | null = null
+  private jpegRelease: (() => void) | null = null
+  private readGate = new Promise<void>((resolve) => {
+    this.readRelease = resolve
+  })
+  private jpegGate = new Promise<void>((resolve) => {
+    this.jpegRelease = resolve
+  })
+
+  releaseAll() {
+    this.readRelease?.()
+    this.jpegRelease?.()
+  }
+
+  async readSize(file: Blob) {
+    if (this.gateRead) await this.readGate
+    return super.readSize(file)
+  }
+
+  async toJpeg(file: Blob, size: { width: number; height: number }) {
+    if (this.gateJpeg) await this.jpegGate
+    return super.toJpeg(file, size)
+  }
+}
+
+describe("MealPhotoDialog - cierre durante operaciones asíncronas (F1)", () => {
+  beforeEach(resetMocks)
+
+  // SDD: 025 REQ-005 AC-005.2
+  it("si se cierra el diálogo mientras se prepara el JPEG, la foto no se envía al analizar", async () => {
+    const user = userEvent.setup()
+    const processor = new GatedPhotoProcessor()
+    const { view } = renderDialog({ processor })
+    await toPreview(user)
+    processor.gateJpeg = true
+
+    await clickAnalyze(user)
+    view.unmount()
+    await act(async () => {
+      processor.releaseAll()
+      await new Promise((resolve) => setTimeout(resolve, 20))
+    })
+
+    expect(analyzeMock).not.toHaveBeenCalled()
+  })
+
+  // SDD: 025 NFR-001 AC-N001.2
+  it("si se cierra el diálogo mientras se comprueba la foto, la URL de vista previa no queda sin liberar", async () => {
+    const user = userEvent.setup()
+    const processor = new GatedPhotoProcessor()
+    processor.gateRead = true
+    const { view } = renderDialog({ processor })
+
+    await pick(user, makePhotoFile())
+    view.unmount()
+    await act(async () => {
+      processor.releaseAll()
+      await new Promise((resolve) => setTimeout(resolve, 20))
+    })
+
+    for (const url of processor.created) expect(processor.revoked).toContain(url)
+  })
+})
+
+describe("MealPhotoDialog - acciones según el error (F2, F3, F4)", () => {
+  beforeEach(resetMocks)
+
+  // SDD: 025 REQ-012 AC-012.3
+  it.each([
+    [429, LIMIT_429],
+    [503, BUSY_503],
+  ])("ante un %i no se ofrece «Cambiar foto»", async (status, message) => {
+    const user = userEvent.setup()
+    renderDialog()
+    analyzeMock.mockRejectedValue(new ApiError(status, message))
+    await toPreview(user)
+
+    await clickAnalyze(user)
+
+    await within(dialog()).findByText(message)
+    expect(within(dialog()).queryByRole("button", { name: "Cambiar foto" })).not.toBeInTheDocument()
+    expect(button("Registrar a mano")).toBeInTheDocument()
+  })
+
+  // SDD: 025 REQ-012 AC-012.4
+  it("ante un fallo de red no se ofrece «Cambiar foto»", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    analyzeMock.mockRejectedValue(new TypeError("Failed to fetch"))
+    await toPreview(user)
+
+    await clickAnalyze(user)
+
+    await within(dialog()).findByText("No se pudo analizar la foto. Vuelve a intentarlo.")
+    expect(within(dialog()).queryByRole("button", { name: "Cambiar foto" })).not.toBeInTheDocument()
+  })
+
+  // SDD: 025 REQ-004 AC-004.5
+  it("con el error de 3 MB no se muestra «Analizar foto» y sí «Cambiar foto»", async () => {
+    const user = userEvent.setup()
+    renderDialog({ processor: new FakePhotoProcessor({ jpegBytes: 3 * MB + 1 }) })
+    await toPreview(user)
+
+    await clickAnalyze(user)
+
+    await within(dialog()).findByText("La imagen no puede superar los 3 MB.")
+    expect(within(dialog()).queryByRole("button", { name: "Analizar foto" })).not.toBeInTheDocument()
+    expect(button("Cambiar foto")).toBeEnabled()
+  })
+
+  // SDD: 025 NFR-002 AC-N002.2
+  it("la región de estado ya existe antes de analizar y es la misma que anuncia «Analizando la foto…»", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    analyzeMock.mockReturnValue(new Promise(() => {}))
+    await toPreview(user)
+
+    const region = within(dialog()).getByRole("status")
+    expect(region).not.toHaveTextContent("Analizando la foto…")
+
+    await clickAnalyze(user)
+
+    await within(dialog()).findByText("Analizando la foto…")
+    expect(within(dialog()).getByRole("status")).toBe(region)
+    expect(region).toHaveTextContent("Analizando la foto…")
+  })
+})

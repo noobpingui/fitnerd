@@ -45,3 +45,22 @@
 - [ ] `ProposalSearchStep` no ofrece «Crear alimento personalizado», porque REQ-009 no lo pide.
 - [ ] `state.json` aún lista `backend` en `scope`. Lo corrige el orquestador con `sdd-state`.
 - [ ] Warning de lint nuevo `react(incompatible-library)` por `form.watch` en `PhotoReview.tsx` (se usa `form.watch` porque `useWatch` devolvía valores obsoletos tras `update()`).
+
+## implement (confirmación) · implementer
+- [ ] El aviso de oxlint `react(incompatible-library)` en PhotoReview.tsx:57 viene de usar `watch` de react-hook-form. Se puede cambiar por `useWatch` más adelante.
+
+## verify · verifier
+- [ ] Corregir state.json.scope para quitar backend cuando la CLI lo permita (Q8).
+- [ ] Warning de React Compiler (incompatible-library) en PhotoReview.tsx:57; revisar en review si conviene silenciarlo o cambiar la API usada.
+- [ ] Cuatro tests (errors, schemas, DiaryPage, PrivacyPolicyPage) tienen CRLF en el disco y LF en el repo; el verifier reporta que el hash de tests_snapshot no coincide por ese motivo. Normalizar finales de línea antes de cerrar (el `snapshot --check` del orquestador dio idéntico).
+- [ ] node_modules/ sin seguimiento en git status: añadirlo a .gitignore o ignorarlo al hacer commit.
+
+## review · reviewer
+- [ ] F1 (MENOR): comprobar que el diálogo sigue montado (o usar `AbortController`) después de cada `await` en `MealPhotoDialog`, antes de llamar a `analyze.mutate` y a `createPreviewUrl`. Si se cierra mientras se prepara el JPEG, la foto se envía igualmente a Bedrock y gasta un análisis; si se cierra mientras se comprueba si se puede leer, la URL de la vista previa no se libera (`MealPhotoDialog.tsx:87-118`).
+- [ ] F2 (MENOR): usar `canChangePhoto` para mostrar «Cambiar foto» o quitar el campo de `AnalysisErrorView`; hoy aparece también con los errores 429 y 503.
+- [ ] F3 (NIT): ocultar «Analizar foto» cuando aparece el error de 3 MB.
+- [ ] F4 (NIT): dejar fija la región `role="status"` de «Analizando la foto…», como hace `ProposalSearchStep`.
+- [ ] F5 (NIT): decodificar la foto una sola vez y rellenar el fondo del canvas para los PNG con transparencia.
+- [ ] Comprobación manual en navegador real de AC-001.3, AC-002.1, AC-003.3, AC-004.3 y AC-004.4 (iPhone real y Chrome Android).
+- [ ] ADR-0033 sigue en estado «Propuesta»: confirmarlo (Aceptada) en el gate.
+- [ ] Commits: la implementación está en `207687a` y no en `fcf9f0a`; tenerlo en cuenta en el historial del PR.

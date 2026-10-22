@@ -1,63 +1,50 @@
 # Verify report 025 — Registro de una comida con foto desde el diario
 
-- **Modo:** red (tras la etapa tests)
-- **Fecha:** 2026-10-22T18:25:46.701Z · **Rama:** `feat/025-meal-photo-upload` @ `562e568` (con cambios de tests sin commit) · **Base:** `main`
+- **Modo:** red (tras la etapa tests, vuelta de corrección de la review, F1 a F4)
+- **Fecha:** 2026-10-22T19:06:20.915Z · **Rama:** `feat/025-meal-photo-upload` @ `fcf9f0a` (con cambios de tests sin commit en `MealPhotoDialog.test.tsx`) · **Base:** `main`
 - **Resultado:** PASS
 
 ## 1. Comandos ejecutados
-Modo red: solo los tests nuevos de la feature (10 archivos con marcador `SDD: 025`), con `commands.test_files` del ámbito `frontend`. Ámbito `backend` (en `state.json.scope`, sin archivos de la feature en `changed`): sin archivos de test nuevos y sin código tocado; no se ejecuta en red.
+Modo red: se ejecutan los 7 tests nuevos de la corrección (marcadores `SDD: 025` de F1 a F4, en `frontend/src/features/diary/components/MealPhotoDialog.test.tsx`) con `commands.test_files` del ámbito `frontend`. Además, como comprobación de regresión, se ejecuta la suite completa del ámbito (`commands.test`) para confirmar que los tests existentes siguen en verde. Ámbito `backend`: sin archivos tocados en esta vuelta; no se ejecuta en red.
 
 | Ámbito | Comando (cwd) | Resultado | Resumen de la salida |
 |---|---|---|---|
-| frontend | `npx vitest run <10 archivos de test nuevos>` (`frontend`) | ✅ en cuanto a rojo | 279 tests: 187 fallidos, 92 pasados. Los 92 pasados son tests existentes (comprobados contra `HEAD`); ningún test nuevo pasa. |
-| frontend | `npm run lint`, `npx tsc -b`, `npm run build` | — | No se ejecutan en modo red. |
-| backend | — | — | Sin tests nuevos ni archivos tocados; no se ejecuta en red. |
+| frontend | `npx vitest run src/features/diary/components/MealPhotoDialog.test.tsx` (`frontend`) | ✅ en cuanto a rojo | 90 tests: 7 fallidos (los 7 nuevos), 83 pasados (existentes) |
+| frontend | `npm test` (`frontend`), regresión | ✅ en cuanto a verde de los existentes | 1241 tests: 1234 pasados, 7 fallidos (exactamente los 7 nuevos). Ningún test existente falla |
+| frontend | `npm run lint`, `npx tsc -b`, `npm run build` | — | No se ejecutan en modo red |
+| backend | — | — | Sin archivos tocados en esta vuelta; no se ejecuta en red |
 
-Archivos de test nuevos ejecutados: `src/app/mealPhotoRoute.test.tsx`, `src/lib/apiClient.test.ts`, `src/features/diary/schemas.test.ts`, `src/features/legal/pages/PrivacyPolicyPage.test.tsx`, `src/features/diary/api.test.ts`, `src/features/diary/pages/DiaryPage.test.tsx`, `src/features/diary/proposal.test.ts`, `src/features/diary/errors.test.ts`, `src/features/diary/photo.test.ts`, `src/features/diary/components/MealPhotoDialog.test.tsx`.
+Clasificación de los 7 fallos (todos legítimos, comportamiento ausente, ninguno de sintaxis, configuración, fixture o import):
+- F1 «si se cierra el diálogo mientras se prepara el JPEG, la foto no se envía al analizar»: `AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times` (la foto sí se envía tras cerrar).
+- F1 «si se cierra el diálogo mientras se comprueba la foto, la URL de vista previa no queda sin liberar»: `AssertionError: expected [] to include 'blob:preview-1'` (la URL no se revoca).
+- F2 «ante un 429 no se ofrece «Cambiar foto»» y «ante un 503 no se ofrece «Cambiar foto»» (`it.each`): `expected document not to contain element`, el botón «Cambiar foto» sí aparece.
+- F2 «ante un fallo de red no se ofrece «Cambiar foto»»: mismo fallo, el botón aparece.
+- F3 «con el error de 3 MB no se muestra «Analizar foto» y sí «Cambiar foto»»: el botón «Analizar foto» sigue visible con el error de 3 MB.
+- F4 «la región de estado ya existe antes de analizar y es la misma que anuncia «Analizando la foto…»»: `TestingLibraryElementError: Unable to find an accessible element with the role "status"` (no hay región persistente antes de analizar).
 
-Clasificación de los 187 fallos (todos legítimos):
-- Esqueletos de la fase A0 que lanzan `not implemented`: 300 apariciones en la salida, de los tests de `photo.ts`, `proposal.ts`, `errors.ts`, `schemas.ts`, `api.ts`, `hooks.ts` y `MealPhotoDialog.tsx`.
-- Elementos de UI inexistentes (`Unable to find role="button"`, «Cargar imagen en Cena», etc.).
-- Aserciones sobre comportamiento ausente (`AssertionError`).
-- Ningún error de import, sintaxis, configuración, fixture ni tipos (`Cannot find module`, `SyntaxError`, `TypeError`, `is not a function`: 0 apariciones).
-
-Verificación de los esqueletos (Art. B5.6): `photo.ts`, `proposal.ts`, `errors.ts` (`analysisErrorView`), `api.ts` (`analyzeMealPhoto`), `hooks.ts` (`useAnalyzeMealPhoto`), `schemas.ts` (`mealPhotoAnalysisSchema`, `proposalFormSchema`) y `MealPhotoDialog.tsx` solo lanzan `not implemented`, sin lógica ni valores de retorno. Las constantes, los tipos y las clases de error vacías son los del plan.
-
-Comprobación de los tests que pasaban (F4, F5 y F6 de la iteración 2): los tres se han quitado. Ahora la suite nueva tiene 279 tests frente a 282 y, de los 92 que pasan, cada título figura en la versión de `HEAD` del mismo archivo (o es un `it.each` existente), así que son tests previos.
+Los 83 tests del archivo que pasan son existentes y siguen en verde. En la suite completa, los 1234 tests existentes pasan. No hay `skip`, `xfail`, `.only`, `.skip` ni `it.todo` nuevos en el diff de `frontend/src`.
 
 ## 2. Trazabilidad
+Solo se comprueban los AC que llevan los 7 tests nuevos de la corrección. La trazabilidad completa de la feature (61 AC) ya se comprobó en la etapa de tests y en `verify`.
+
 | REQ / NFR | AC | Tareas | Tests con `SDD:` | Estado del test |
 |---|---|---|---|---|
-| todos | 61 AC de la spec (REQ-001 a REQ-014, NFR-001 a NFR-003) | — | 61 de 61 con marcador `SDD: 025` | ✅ Cada AC tiene al menos un test nuevo y ninguno pasa |
-| REQ-004 | AC-004.1 | T-010, T-018 | `frontend/src/lib/apiClient.test.ts` (3 tests de FormData), `frontend/src/features/diary/api.test.ts` | ✅ en rojo (3 de `apiClient`, 2 de `api`) |
-| REQ-014 | AC-014.3 | T-027 | `frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx::la última actualización es la del 22 de octubre de 2026` | ✅ en rojo |
-| NFR-003 | AC-N003.1 | T-028 | `frontend/src/app/mealPhotoRoute.test.tsx::el código del diálogo viaja con la pantalla «Diario»` | ✅ en rojo |
+| REQ-005 | AC-005.2 | T-042 (impl) | `MealPhotoDialog.test.tsx::si se cierra el diálogo mientras se prepara el JPEG, la foto no se envía al analizar` | ❌ rojo legítimo |
+| NFR-001 | AC-N001.2 | T-042 (impl) | `MealPhotoDialog.test.tsx::si se cierra el diálogo mientras se comprueba la foto, la URL de vista previa no queda sin liberar` | ❌ rojo legítimo |
+| REQ-012 | AC-012.3 | T-032, T-042 | `MealPhotoDialog.test.tsx::ante un 429 no se ofrece «Cambiar foto»` y `::ante un 503 no se ofrece «Cambiar foto»` | ❌ rojo legítimo |
+| REQ-012 | AC-012.4 | T-032, T-042 | `MealPhotoDialog.test.tsx::ante un fallo de red no se ofrece «Cambiar foto»` | ❌ rojo legítimo |
+| REQ-004 | AC-004.5 | T-034, T-042 | `MealPhotoDialog.test.tsx::con el error de 3 MB no se muestra «Analizar foto» y sí «Cambiar foto»` | ❌ rojo legítimo |
+| NFR-002 | AC-N002.2 | T-042 | `MealPhotoDialog.test.tsx::la región de estado ya existe antes de analizar y es la misma que anuncia «Analizando la foto…»` | ❌ rojo legítimo |
 
-- AC sin test: — (comprobado: los 61 AC de `spec.md` aparecen en al menos un marcador `SDD: 025`)
-- REQ sin tarea: no se comprueba en modo red (es de `full`).
-- Tareas sin marcar `[x]`: no se comprueba en modo red (es de `full`). Las tareas T-001 a T-028 están marcadas.
-- `skip`, `xfail`, `.only`, `.skip` o equivalentes nuevos en el diff: ninguno.
-- Tests existentes modificados: `PrivacyPolicyPage.test.tsx` sustituye «la última actualización es la del 21 de octubre de 2026» por la del 22 de octubre (exigido por AC-014.3, actualiza el test de la 023 AC-012.3). `errors.test.ts` quita la importación de `SAVE_FAILED_MESSAGE` sin borrar ningún test existente. `schemas.test.ts` solo añade líneas. Ningún otro test existente se borra ni se debilita.
+- AC sin test: —
+- REQ sin tarea: —
+- Tareas sin marcar `[x]`: —
+- `skip`, `xfail`, `.only` o equivalentes nuevos en el diff: —
+
+Nota: el snapshot de `state.json.tests_snapshot` (18:53) no recoge la edición de `MealPhotoDialog.test.tsx` de esta vuelta; el orquestador debe registrarla antes de la etapa de implementación.
 
 ## 3. Criterios de aceptación manuales
-Los AC que dependen del navegador real se prueban en jsdom con el doble `FakePhotoProcessor`. Hay que comprobarlos a mano en `verify` o `review`:
-- AC-001.3: diálogo a pantalla completa a 375 px y centrado a 1024 px.
-- AC-002.1: el selector de «Hacer una foto» pide la cámara trasera (`capture="environment"`); en escritorio abre el selector de archivos.
-- AC-003.3: una foto HEIC en un navegador que no la lee muestra el mensaje de no leer la foto.
-- AC-004.3: la orientación EXIF 6 sale derecha en la imagen enviada, como en la vista previa.
-- AC-004.4: una foto HEIC que el navegador sí lee se envía como JPEG.
+Sin cambios respecto a la verificación completa: AC-001.3, AC-002.1, AC-003.3, AC-004.3 y AC-004.4 requieren comprobación manual en navegador real.
 
 ## 4. Fallos (si los hay)
-Ninguno en modo red. Las iteraciones anteriores tenían F1 a F6; F1, F2 y F3 se resolvieron en la iteración 2 y F4, F5 y F6 se resolvieron en la iteración 3 al quitar los tests que pasaban sin implementación.
-
-| # | Qué falló | Salida relevante (recortada) | Responsable probable (test-author · implementer · entorno) |
-|---|---|---|---|
-| — | ninguno | — | — |
-
-Nota de estado: `state.json.scope` lista `backend` (Q8 lo quita en la spec, pero `sdd-state` no permite quitarlo); la feature no toca ningún archivo de backend ni tiene tests nuevos en él.
-
-## Comentarios del usuario
-
-Respuesta del usuario (literal): «Si, devuelvelos»
-
-Hallazgo del implementer (implement, iteración 1) que se devuelve al test-author: en `frontend/src/features/diary/components/MealPhotoDialog.test.tsx`, los tests «"Registrar a mano" avisa a quien abrió el diálogo» (línea ~658) y «usa el tipo de comida de la tarjeta» (línea ~1164) montan el diálogo con `renderDialog({ mealType: "dinner", label: "Cena" })`, pero los ayudantes `toPreview`, `reachProposal`, `button` y `save` buscan el diálogo con `dialog(label = "Almuerzo")` (línea ~114), es decir, el título «Añadir a Almuerzo con una foto». Con «Cena» el título correcto es «Añadir a Cena con una foto» (AC-001.2). Corrección esperada: que los ayudantes reciban el `label` (p. ej. `toPreview(user, file, "Cena")`) o que `renderDialog` fije el label que usan, sin cambiar el comportamiento que prueban ni debilitar ningún test.
+Ninguno. Los 7 fallos de los tests nuevos son rojo legítimo (comportamiento ausente).

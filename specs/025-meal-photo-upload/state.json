@@ -10,7 +10,7 @@
   "branch": "feat/025-meal-photo-upload",
   "base_branch": "main",
   "created_at": "2026-10-22T09:18:53.381Z",
-  "stage": "verify",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -26,13 +26,10 @@
       "note": "auto (gate_mode=flow): 40 tareas, cobertura de 58+7 AC"
     },
     "tests": {
-      "at": "2026-10-22T18:53:45.120Z",
-      "note": "auto (gate_mode=flow): correccion de tests autorizada por el usuario"
+      "at": "2026-10-22T19:08:38.829Z",
+      "note": "auto (gate_mode=flow): red check PASS, correccion de review F1-F4"
     },
-    "implement": {
-      "at": "2026-10-22T18:55:20.330Z",
-      "note": "auto (gate_mode=flow): suite frontend en verde"
-    },
+    "implement": null,
     "verify": null,
     "review": null,
     "docs": null,
@@ -42,17 +39,18 @@
     "spec": "0ef6784",
     "plan": "15645f5",
     "tasks": "562e568",
-    "tests": "207687a"
+    "tests": "207687a",
+    "implement": "fcf9f0a"
   },
   "iterations": {
     "tests": 3,
     "implement": 0,
-    "review": 0
+    "review": 1
   },
   "max_iterations": 4,
   "red_check": {
     "result": "PASS",
-    "at": "2026-10-22T18:28:38.341Z"
+    "at": "2026-10-22T19:08:24.418Z"
   },
   "verify": {
     "result": null,
@@ -63,12 +61,12 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-22T18:53:44.970Z",
-    "reason": "correccion autorizada de 2 tests de MealPhotoDialog (label Cena)",
+    "at": "2026-10-22T19:08:38.687Z",
+    "reason": "tests de correccion de review F1-F4",
     "sha256": {
       "frontend/src/app/mealPhotoRoute.test.tsx": "0950ad604c3af91b62e791ad6b7ebbe9aaf4967e9eb70441522effc86fb3de63",
       "frontend/src/features/diary/api.test.ts": "11643ca9075f023ed02f2070056967f636062c5eafd5677037663c2acb9a720f",
-      "frontend/src/features/diary/components/MealPhotoDialog.test.tsx": "dfc59c2b557c58f0f59a3ed96c0a76a2ef40be350db7a502eb32388c40f280f2",
+      "frontend/src/features/diary/components/MealPhotoDialog.test.tsx": "050abf54f03ed4bc10d3b10d07aa2ef7c1aafc210addc54394a031a8f05954ad",
       "frontend/src/features/diary/errors.test.ts": "a728b39ecc3c6d9727e7780ed2b02e974023b0430b76fd6ba4fff39306039c2e",
       "frontend/src/features/diary/pages/DiaryPage.test.tsx": "ee462d78b4a25267bdc33166b53295485fb85eefb126063a2f712b7271fd32f6",
       "frontend/src/features/diary/photo.test.ts": "b006e9bf19e8eaceabff0e21f94b51d67d6080ca153c39b77827dcb954ae77b1",
@@ -327,6 +325,90 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): suite frontend en verde"
+    },
+    {
+      "at": "2026-10-22T18:55:20.633Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: fcf9f0a"
+    },
+    {
+      "at": "2026-10-22T18:55:20.834Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegar en verifier (full)"
+    },
+    {
+      "at": "2026-10-22T18:58:09.618Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: full: npm test 1234/1234 (81 archivos); lint 0 errores (1 warning PhotoReview.tsx:57); tsc -b ok; build ok (index 384,63 kB); 61/61 AC con marcador SDD y en verde; 17 REQ/NFR en tareas; 40/40 tareas [x]; sin skip nuevos; 5 AC manuales (AC-001.3, AC-002.1, AC-003.3, AC-004.3, AC-004.4); backend sin cambios (limitacion Q8)"
+    },
+    {
+      "at": "2026-10-22T18:58:20.211Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: 1234 tests, tsc, lint 0 errores, build 384 kB, 61/61 AC"
+    },
+    {
+      "at": "2026-10-22T18:58:20.326Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-22T18:58:20.496Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegar en reviewer"
+    },
+    {
+      "at": "2026-10-22T19:00:58.132Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-22T19:00:58.232Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED: 0 bloqueantes, 0 mayores, 2 menores, 3 nits"
+    },
+    {
+      "at": "2026-10-22T19:04:08.326Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Usuario: Vamos a resolver F1 a F5 (hallazgos MENOR/NIT de la review) · review 1/4"
+    },
+    {
+      "at": "2026-10-22T19:06:13.416Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3 (correccion de review): verifier red"
+    },
+    {
+      "at": "2026-10-22T19:08:24.418Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red PASS correccion review F1-F4: 7 tests nuevos en MealPhotoDialog.test.tsx fallan por comportamiento ausente (asercion); suite frontend 1234 existentes en verde; 0 skip nuevos"
+    },
+    {
+      "at": "2026-10-22T19:08:38.580Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red PASS: 7 tests nuevos de F1-F4 en rojo"
+    },
+    {
+      "at": "2026-10-22T19:08:38.687Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "12 archivo(s) de test: tests de correccion de review F1-F4"
+    },
+    {
+      "at": "2026-10-22T19:08:38.829Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, correccion de review F1-F4"
     }
   ]
 }
