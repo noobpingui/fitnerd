@@ -386,13 +386,13 @@ Feature: [specs/024-meal-image-analysis/](../specs/024-meal-image-analysis/)
 - [ ] Valorar un plazo absoluto para la llamada a Bedrock si en el futuro se usa streaming (`converse_stream`), donde `read_timeout` ya no equivale al tiempo total.
 - [ ] Comprobar en producción que un análisis lento devuelve 503 con JSON y no 502 del proxy (el test T-058 solo verifica la configuración del CMD, no el comportamiento real).
 - [ ] Las líneas de `backend/Dockerfile` (salvo FROM y CMD) van con sangría de dos espacios; es cosmético, sin efecto en el build.
-- [ ] Hacer un `chore/…` que añada `backend/Dockerfile` a los globs `prod` de `.sdd/config.json`.
+- [x] Hacer un `chore/…` que añada `backend/Dockerfile` a los globs `prod` de `.sdd/config.json`. (hecho en `chore/024-followups`)
 - [ ] Si la revisión de Q9 muestra que quitar el ICC empeora el reconocimiento, valorar conservar un perfil saneado o convertir a sRGB.
 - [ ] Valorar un test de memoria de la validación de un JPEG progresivo grande (las reservas de libjpeg no se ven con tracemalloc).
 - [ ] Un test de que un WebP truncado da 400 (hoy ya lo rechaza el demuxer al abrir; no se añade para no meter otro test que ya pasa).
 - [ ] Riesgo F2: un archivo con la estructura correcta pero píxeles corruptos ya no da 400; llega al proveedor y acaba en 503, que cuenta para el límite (mismo criterio que el PNG).
 - [ ] Riesgo F2: el plan se apoya en que libwebp reserva con calloc sin ocupar memoria residente con glibc mientras no se decodifique.
 - [ ] doc-keeper/harness: permitir al test-author borrar o renombrar archivos de tests propios.
-- [ ] Aceptar ADR-0032 (ADR e índice de `docs/sdd/decisions/README.md`) tras el «aprobado» del usuario en la review, en una rama `chore/…`.
-- [ ] Añadir la fila de la 024 al historial de despliegues (sección 8 del runbook) al desplegar.
+- [x] Aceptar ADR-0032 (ADR e índice de `docs/sdd/decisions/README.md`) tras el «aprobado» del usuario en la review, en una rama `chore/…`. (hecho en `chore/024-followups`)
+- [x] Añadir la fila de la 024 al historial de despliegues (sección 8 del runbook) al desplegar. (hecho en `chore/024-followups`)
 - [ ] Verificar en la instancia el límite de saltos de IMDS: el runbook y CLAUDE.md dicen que debe ser 2 o más con Docker (con 1 el contenedor no obtiene credenciales).

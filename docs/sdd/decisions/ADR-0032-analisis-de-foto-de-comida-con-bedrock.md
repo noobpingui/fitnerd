@@ -1,6 +1,6 @@
 # ADR-0032: Análisis de la foto de una comida con Bedrock `converse` y salida estructurada, saneado en el servidor y metadatos quitados a nivel de bytes
 
-- **Estado:** Propuesta · 2026-10-21 (plan de `024-meal-image-analysis`; ampliada en las iteraciones 1 y 2 de la review)
+- **Estado:** Aceptada · 2026-10-22 (plan de `024-meal-image-analysis`; ampliada en las iteraciones 1 y 2 de la review; aceptada por el usuario en la review)
 - **Decidido por:** el `planner`; pendiente de revisión por el usuario en el gate de `review`.
 
 ## Contexto

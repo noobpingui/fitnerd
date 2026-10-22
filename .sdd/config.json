@@ -31,6 +31,7 @@
       "root": "backend",
       "prod": [
         "backend/{app,config,extensions,wsgi}.py",
+        "backend/Dockerfile",
         "backend/{routes,services,repositories,models,utils,decorators,exceptions,unit_of_work,migrations}/**",
         "backend/scripts/*.py",
         "backend/scripts/**/*.py"
