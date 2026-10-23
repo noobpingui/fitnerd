@@ -1,0 +1,19 @@
+# Finales de línea: LF en el repositorio y en la copia de trabajo (ADR-0034).
+# Con core.autocrlf=true en Windows, los archivos de texto quedaban en CRLF en disco y en LF en el repositorio,
+# y los hashes de tests_snapshot y los diffs de cada review discrepaban sin que el contenido cambiara.
+* text=auto eol=lf
+
+# Los scripts de shell se ejecutan en Linux (EC2 por SSM y contenedores): nunca CRLF.
+*.sh text eol=lf
+
+# Binarios: sin conversión.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.pem binary

@@ -111,6 +111,7 @@ Este proyecto usa el plugin `sdd-beto` (Spec-Driven Development). Todo cambio fu
 - Modo de gates: `flow` (ADR-0029 del plugin). El flujo se detiene en tres gates: `spec`, `review` y `close`.
 - Entre gates, el flujo solo se detiene por una decisión mayor: cambiar el alcance de la spec; incumplir la constitución; una dependencia nueva, una migración destructiva o romper una API; algo que afecte a la seguridad o a los datos; una ambigüedad con resultados distintos; o el límite de iteraciones. Lo menor se decide y se anota en el backlog de la feature.
 - Los commits de cada etapa se hacen sin pedir aprobación, solo en local y en la rama de la feature. Nada se sube antes del gate de `close`.
+- Una ADR pasa a «Aceptada» solo con la aprobación explícita del usuario y la edita la sesión principal, no un subagente (Art. P5, ADR-0034). Los archivos de datos (`backend/scripts/data/**`) también los edita la sesión principal, con autorización del usuario.
 - El gate de `close` aprueba de una vez el último commit, el push, el PR y su merge.
 - Los subagentes nunca hacen commit, push ni cambian de rama.
 <!-- sdd-beto:aprobacion:end -->
