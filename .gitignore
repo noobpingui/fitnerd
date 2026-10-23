@@ -4,3 +4,4 @@ personal_notes.md
 backend/keys/*.pem
 .claude/settings.local.json
 .claudecodeignore
+node_modules/

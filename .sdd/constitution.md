@@ -91,3 +91,13 @@
 - [ ] Si hubo cambios de modelo, la migración Alembic está incluida y revisada.
 - [ ] Si la feature necesita un paso manual en producción (migración, variable nueva en EC2, configuración
       externa), está documentado en `docs/deploy-runbook.md` o en el `docs-report.md`.
+
+## Art. P5 — Harness (ADR-0034)
+
+1. Los archivos de texto del repositorio van en **LF**; `.gitattributes` lo impone. **NO DEBE** versionarse un archivo
+   de texto con CRLF.
+2. Una ADR pasa a «Aceptada» solo con la aprobación explícita del usuario. La edita la **sesión principal**, en el
+   archivo de la ADR y en el índice, en el gate de `review` y antes del commit de la etapa `docs`. Ningún subagente la
+   acepta.
+3. Los archivos de datos que no son código (hoy `backend/scripts/data/**`) solo los edita la sesión principal, con
+   autorización explícita del usuario en el chat, y la review lo anota.

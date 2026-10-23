@@ -100,9 +100,9 @@ Feature: [specs/015-onboarding-profile-rhf/](../specs/015-onboarding-profile-rhf
 
 Feature: [specs/016-past-date-measurements/](../specs/016-past-date-measurements/)
 
-- [ ] Inyectar un reloj configurable en la app para los tests de rutas, si hacen falta fechas absolutas (hoy usan fechas relativas).
-- [ ] Mostrar un error o reintento si falla la relectura de mediciones o del perfil tras registrar (hoy no se vería el aviso de REQ-009).
-- [ ] Desplegar el Historial ("Mostrar más") hasta la medición recién registrada (fuera de alcance de la spec).
+- [x] Inyectar un reloj configurable en la app para los tests de rutas, si hacen falta fechas absolutas (hoy usan fechas relativas). (hecho en la 020: `backend/utils/clock.py`)
+- [x] Mostrar un error o reintento si falla la relectura de mediciones o del perfil tras registrar (hoy no se vería el aviso de REQ-009). (hecho en la 020: `RefreshFailedNotice`)
+- [x] Desplegar el Historial ("Mostrar más") hasta la medición recién registrada (fuera de alcance de la spec). (hecho en la 020)
 - [ ] Test de extremo a extremo de la sincronización del peso del perfil: los tests de la página comprueban el valor que devuelve `getProfile` mockeado.
 - [ ] Revisar los tests de orden de AC-003.4 si las filas de mediciones superan el tamaño de página del Historial (hoy usan 3 filas).
 - [x] (spec 017, ADR-0026) Chunk de frontend de 1,087 kB (>500 kB) en el build; no bloquea.
@@ -134,7 +134,7 @@ Feature: [specs/018-auth-robustness/](../specs/018-auth-robustness/)
 - [ ] MENOR: el mensaje por defecto de `ConflictError` en `backend/exceptions/custom_exceptions.py:8` sigue en inglés («Email already registered»), y el de `AuthenticationError` también; traducirlos o quitar el valor por defecto.
 - [ ] NIT: `utc_now` está duplicado en `profile_service.py` y `password_reset_service.py` (y `auth_service.py:22` lo importa del primero); dejar una sola en un módulo de reloj.
 - [ ] NIT: en `backend/tests/test_services/test_auth_service.py` hay dos marcadores `SDD:` que apuntan a AC poco relacionados (:573 y :528), y `timedelta` se importa dentro de la función en :134.
-- [ ] `tests/fakes.py` y los archivos de test existentes tienen finales de línea CRLF (en `fakes.py`, mezclados con LF). Conviene normalizarlos.
+- [x] `tests/fakes.py` y los archivos de test existentes tienen finales de línea CRLF (en `fakes.py`, mezclados con LF). Conviene normalizarlos. (resuelto con `.gitattributes` (ADR-0034))
 - [ ] AC-005.4 y AC-005.5 en integración dependen del día UTC real y podrían fallar justo al cruzar la medianoche UTC; las fronteras exactas ya están cubiertas en unitarios con reloj fijo.
 - [ ] El `state.json` y `tasks.md` dicen 45 AC, pero `spec.md` tiene 44 IDs únicos; revisar el recuento (sin impacto).
 
@@ -150,9 +150,9 @@ Feature: [specs/019-auth-email-integrity/](../specs/019-auth-email-integrity/)
 - [ ] NIT: `op.get_bind()` impide el modo offline (`--sql`), igual que en la 014.
 - [ ] NIT: no hay test de que se recorten tabuladores ni saltos de línea con `[[:space:]]`.
 - [ ] NIT: «INTEGRACION» sin tilde en `test_canonical_email_routes.py:1`; el plan y `state.json` dicen «23 AC» y la spec tiene 21.
-- [ ] Definir qué rol pasa las ADR a «Aceptada» en la etapa close (el hook role-guard bloquea al planner fuera de plan).
+- [x] Definir qué rol pasa las ADR a «Aceptada» en la etapa close (el hook role-guard bloquea al planner fuera de plan). (decidido en ADR-0034 / Art. P5: la sesión principal)
 - [x] (chore/019-post-deploy-docs) Completar la fila «pendiente» del historial del runbook (PR, fecha, backup) tras el despliegue.
-- [ ] `tests/fakes.py` y otros tests con CRLF mezclado: ya anotado en la 018.
+- [x] `tests/fakes.py` y otros tests con CRLF mezclado: ya anotado en la 018. (resuelto con `.gitattributes` (ADR-0034))
 
 ## 020-metrics-followups-prod-config · Seguimiento de métricas corporales y configuración de producción (2026-10-19)
 
@@ -169,16 +169,16 @@ Feature: [specs/020-metrics-followups-prod-config/](../specs/020-metrics-followu
 - [ ] F4 (NIT, test-author): el marcador de `BodyMetricsPage.sync.test.tsx:209` dice `NFR-002 AC-004.1` y debería decir `REQ-004 AC-004.1`.
 - [ ] F5 (NIT, test-author): `round1` de `fakeMetricsServer.ts` redondea en binario, mientras el servidor usa `Decimal` half-up; pueden divergir en valores frontera.
 - [ ] F6 (NIT, test-author): `app_clock` no es autouse, y `make_app` solo repone `email_sender`, no los demás singletons.
-- [ ] F7 (NIT, planner): pasar la ADR-0028 a «Aceptada» en la ADR y en el índice de `docs/sdd/decisions/README.md` (pendiente: rama `chore/…` tras el merge).
+- [x] F7 (NIT, planner): pasar la ADR-0028 a «Aceptada» en la ADR y en el índice de `docs/sdd/decisions/README.md` (pendiente: rama `chore/…` tras el merge). (aceptada por el usuario en `chore/harness-friction`)
 - [ ] F8 (NIT, implementer): `auth_service`, `body_metric_service` y `progress_analysis_service` deberían importar `utc_now` de `utils.clock`, no del reexporte de `profile_service`.
 - [ ] F9 (MENOR, test-author): ningún test comprueba que, tras guardar solo la meta con el aviso visible, un «Reintentar» correcto conserva la meta nueva (`PhysicalDataForm.refresh-edge.test.tsx:128-146`).
 - [ ] F10 (NIT, implementer): con `keepDraft` se ve «Cambios guardados» mientras el formulario tiene ediciones sin guardar (`PhysicalDataForm.tsx:221,230`).
 - [ ] F11 (NIT, implementer): `retryRefresh` usa un `dirty` obsoleto del render en que se pulsó; si el usuario edita mientras la relectura está en curso, esa edición se descarta (`PhysicalDataForm.tsx:226-230`).
 - [ ] Alinear los marcadores SDD de los tests de F1 y F2 (`AC-002.5` y `AC-002.6`, aproximados) con un AC propio o dejarlos como casos fuera de spec.
-- [ ] Normalizar a LF tres archivos de test que están en CRLF en la copia de trabajo (`test_auth_routes.py`, `test_body_metric_routes.py`, `MetricsHistory.test.tsx`).
+- [x] Normalizar a LF tres archivos de test que están en CRLF en la copia de trabajo (`test_auth_routes.py`, `test_body_metric_routes.py`, `MetricsHistory.test.tsx`). (resuelto con `.gitattributes` (ADR-0034))
 - [ ] `test_fixed_clock_routes.py` usa `X-Forwarded-For` fijo (203.0.113.50) en `forgot`; con más tests de restablecimiento ahí, usar una IP por test para evitar el límite de 3 por IP.
 - [ ] Los 31 tests de caracterización de la excepción al Art. B5.2 (REQ-004 y REQ-007, entre otros) pasaron sin implementación por decisión del usuario; no hay nada que hacer salvo tenerlo en cuenta.
-- [ ] Definir si las ADR pasan a «Aceptada» en una rama `chore/…` o en una etapa del flujo (ya anotado en la 019).
+- [x] Definir si las ADR pasan a «Aceptada» en una rama `chore/…` o en una etapa del flujo (ya anotado en la 019). (decidido en ADR-0034 / Art. P5: la sesión principal, en el gate de review)
 
 ## Plan: registro de comidas con foto y datos de USDA (specs 021–025, numeración tentativa; renumerada el 2026-10-21 al insertar la 023) (2026-10-19)
 
@@ -245,7 +245,7 @@ Feature: [specs/021-usda-food-database/](../specs/021-usda-food-database/)
 - [ ] Con `--yes` no se pide confirmación si se copia el comando a otro entorno.
 - [ ] F12 (NIT, spec-writer): AC-001.8 no enumera «y» ni «yes», aunque el test marcado con ese AC los prueba; añadirlos al AC.
 - [ ] F7 (NIT): dejar una sola cifra de AC (67) en las notas y en la documentación de la etapa docs.
-- [ ] Pasar ADR-0029 de «Propuesta» a «Aceptada» (rama `chore/…` tras el merge, como en la 019 y la 020).
+- [x] Pasar ADR-0029 de «Propuesta» a «Aceptada» (rama `chore/…` tras el merge, como en la 019 y la 020). (aceptada por el usuario en `chore/harness-friction`)
 - [x] Aplicar en producción lo que documenta el runbook: migración `c8e2a4f6b9d3`, importación de USDA y medición real de `public.foods`; añadir la fila de la 021 al historial de despliegues. (hecho el 2026-10-20: 50 MB)
 
 ## 022-meal-diary · Diario de comidas con totales del día frente al objetivo de Macros (2026-10-20)
@@ -272,7 +272,7 @@ Feature: [specs/022-meal-diary/](../specs/022-meal-diary/)
 - [ ] Opcional: enlace a `/foods` desde el diálogo del diario, o retirar `/foods` más adelante (REQ-015 lo mantiene funcionando pero sin enlace).
 - [ ] Corregir el número de AC de spec.md («86» frente a los 96 definidos) en la próxima edición de la spec o en el cierre.
 - [ ] AC manuales para el gate de review: AC-014.2 (barra de calorías llena al superar el objetivo), AC-015.2 (barra inferior con 6 entradas en pantalla estrecha), AC-015.3 (estado activo de «Diario» en /diary).
-- [ ] Revisar los fines de línea CRLF de 5 archivos de test (fakes.py, BottomTabBar.test.tsx, Navbar.test.tsx, PrivacyPolicyPage.test.tsx, TermsOfServicePage.test.tsx) antes del cierre; comprobar si el snapshot-check se hace por hash en disco.
+- [x] Revisar los fines de línea CRLF de 5 archivos de test (fakes.py, BottomTabBar.test.tsx, Navbar.test.tsx, PrivacyPolicyPage.test.tsx, TermsOfServicePage.test.tsx) antes del cierre; comprobar si el snapshot-check se hace por hash en disco. (resuelto con `.gitattributes` (ADR-0034))
 - [ ] F6 (NIT, test-author): falta un test de que meals.updated_at avanza al añadir, editar o quitar alimentos (backend/models/meal.py:45-48), y otro de «-0» en el formulario personalizado (frontend/src/features/diary/schemas.ts:38).
 - [x] Añadir la fila de 022 en la sección 8 del runbook al desplegar (hecho en `chore/022-deploy-history`).
 - [ ] Aviso visual al superar un objetivo del diario (AC-014.2 hoy solo pide el texto «X por encima del objetivo» y la barra llena): cambiar la barra a ámbar, solo en calorías o en las cuatro. Sin alerta alarmista. Decidir con el usuario; cambia un comportamiento especificado, así que va por el flujo SDD.
@@ -292,11 +292,11 @@ Feature: [specs/023-generic-food-catalog/](../specs/023-generic-food-catalog/)
 - [ ] Retirar los datos de USDA y sus menciones (Términos y demás) cuando el catálogo propio los sustituya (nota del usuario).
 - [ ] Pasar la coincidencia de la búsqueda a Postgres si el catálogo crece mucho más allá de 350 alimentos.
 - [ ] Retirar `FoodsPage`, `FoodResultList` y `useFoodSearch` cuando se confirme que no se usan (ya sin ruta).
-- [ ] Revisar en la review las filas `manual` del CSV y sus referencias.
-- [ ] Anotar en el runbook que, entre el CD y la carga del catálogo, la búsqueda del diario está vacía.
-- [ ] Verificar en la verificación que el chunk de entrada de `npm run build` sigue por debajo de 500 kB (ADR-0026).
-- [ ] Revisión manual de la migración `d4f6a8c0e2b5` frente a los modelos (Art. P2.4), a cargo del reviewer.
-- [ ] Las filas `manual` del CSV las revisa el usuario en el gate de review.
+- [x] Revisar en la review las filas `manual` del CSV y sus referencias. (hecho en la review de la 023; ya no queda ninguna fila `manual`)
+- [x] Anotar en el runbook que, entre el CD y la carga del catálogo, la búsqueda del diario está vacía. (hecho: `docs/deploy-runbook.md`, caso 023)
+- [x] Verificar en la verificación que el chunk de entrada de `npm run build` sigue por debajo de 500 kB (ADR-0026). (comprobado en cada verify; 384,63 kB en la 025)
+- [x] Revisión manual de la migración `d4f6a8c0e2b5` frente a los modelos (Art. P2.4), a cargo del reviewer. (hecho en la review de la 023 (APPROVED))
+- [x] Las filas `manual` del CSV las revisa el usuario en el gate de review. (hecho en la review de la 023; ya no queda ninguna fila `manual`)
 - [ ] `diaryRoute.test.tsx` conserva en su cabecera la frase «`/foods` sigue mostrando "Alimentos"»; hay que limpiarla cuando se implemente T-137.
 - [ ] La suite de la 021 (`features/foods`) y el endpoint `GET /api/foods/search` se conservan sin cambios, como indica la spec.
 - [ ] Cambiar pytest.raises(RuntimeError) por una excepción concreta en test_an_error_while_writing_rolls_back_and_is_raised_again.
@@ -309,58 +309,58 @@ Feature: [specs/023-generic-food-catalog/](../specs/023-generic-food-catalog/)
 - [ ] Revisar el marcador de test_post_validation_message_and_nothing_saved: mezcla casos de la 022 con casos de la 023 bajo el mismo marcador.
 - [ ] Los 6 errores de setup de test_food_catalog_csv.py dejarán de ser errores cuando read_catalog_csv exista; en verify, comprobar que pasan a verde con el CSV real.
 - [ ] Algunos tests de comportamiento 023 sin marcador en la línea inmediata (marcador encima de decoradores) no aparecen en la trazabilidad automática; la cobertura por AC sí está completa.
-- [ ] Q3: el ratchet de lint (`lint_ratchet` en `.sdd/config.json`) ejecuta ruff sobre cada archivo cambiado bajo los globs de producción del backend, incluido `backend/scripts/data/food_catalog.csv`. Informa de unas 1000 violaciones de sintaxis y E501, así que el ratchet sale con 1 solo por el CSV. Es una limitación del harness. Opciones: excluir los archivos de datos del ratchet, o mover el CSV fuera de los globs de producción.
-- [ ] 4 violaciones E501 en archivos de test congelados (test_catalog_csv_reader.py, test_catalog_load_service.py, test_meal_rules.py y otro) vienen del test-author; el implementer no las tocó.
+- [x] Q3: el ratchet de lint (`lint_ratchet` en `.sdd/config.json`) ejecuta ruff sobre cada archivo cambiado bajo los globs de producción del backend, incluido `backend/scripts/data/food_catalog.csv`. Informa de unas 1000 violaciones de sintaxis y E501, así que el ratchet sale con 1 solo por el CSV. Es una limitación del harness. Opciones: excluir los archivos de datos del ratchet, o mover el CSV fuera de los globs de producción. (resuelto en `e7792b5`: el ratchet solo mira archivos `.py`)
+- [x] 4 violaciones E501 en archivos de test congelados (test_catalog_csv_reader.py, test_catalog_load_service.py, test_meal_rules.py y otro) vienen del test-author; el implementer no las tocó. (hecho en `e7792b5`)
 - [ ] Los sinónimos «dolfín» y «lampuga» de mahimahi, y algunos sinónimos regionales («zapote» para mamey, «tuna», «anona»), son suposiciones a partir del uso en Costa Rica y México. El reviewer debe revisarlos.
 - [ ] Retirar las búsquedas por `fdc_id` de USDA de `/api/meals` y retirar `public.foods` cuando el catálogo sea estable (Q2 de la spec), más una biblioteca «mis alimentos» y recientes.
-- [ ] Nota de migración para el doc-keeper: aplicar `d4f6a8c0e2b5` antes del merge y ejecutar `python -m scripts.load_food_catalog` de forma interactiva después del CD.
-- [ ] Excluir backend/scripts/data/** (no Python) del ámbito prod y del ratchet de .sdd/config.json.
-- [ ] Corregir las 7 E501 de los tests de 023 (o aceptarlas de forma explícita) antes del cierre; el implementer no puede tocarlas.
-- [ ] Revisión manual del CSV del catálogo en el gate de review (reglas de contenido de la spec y 1 fila manual sin verificar).
-- [ ] Los pasos de producción (migración d4f6a8c0e2b5 antes del merge y carga del CSV tras el CD) deben quedar en docs/deploy-runbook.md en la etapa docs (Art. P4).
-- [ ] F2 MENOR: hay alimentos con dos versiones: zanahoria cruda y cocida, champiñones crudos y cocidos, y frijoles blancos y navy (CSV:166-167, 192-193, 24, 218).
-- [ ] F3 MENOR: hay sinónimos con marca: «pan bimbo» (CSV:15) y «queso filadelfia» (CSV:105).
-- [ ] F4 MENOR: «contramuslo de pollo» está en Pierna y debería ir en Muslo (CSV:46); «limonada sin azúcar» en Jugo de limón es otro alimento (CSV:265).
+- [x] Nota de migración para el doc-keeper: aplicar `d4f6a8c0e2b5` antes del merge y ejecutar `python -m scripts.load_food_catalog` de forma interactiva después del CD. (hecho: `docs/deploy-runbook.md`)
+- [x] Excluir backend/scripts/data/** (no Python) del ámbito prod y del ratchet de .sdd/config.json. (hecho en `e7792b5`)
+- [x] Corregir las 7 E501 de los tests de 023 (o aceptarlas de forma explícita) antes del cierre; el implementer no puede tocarlas. (hecho en `e7792b5`)
+- [x] Revisión manual del CSV del catálogo en el gate de review (reglas de contenido de la spec y 1 fila manual sin verificar). (hecho en la review de la 023)
+- [x] Los pasos de producción (migración d4f6a8c0e2b5 antes del merge y carga del CSV tras el CD) deben quedar en docs/deploy-runbook.md en la etapa docs (Art. P4). (hecho: `docs/deploy-runbook.md`)
+- [x] F2 MENOR: hay alimentos con dos versiones: zanahoria cruda y cocida, champiñones crudos y cocidos, y frijoles blancos y navy (CSV:166-167, 192-193, 24, 218). (hecho: el CSV tiene una sola versión de cada uno)
+- [x] F3 MENOR: hay sinónimos con marca: «pan bimbo» (CSV:15) y «queso filadelfia» (CSV:105). (hecho: ya no están «pan bimbo» ni «queso filadelfia»)
+- [x] F4 MENOR: «contramuslo de pollo» está en Pierna y debería ir en Muslo (CSV:46); «limonada sin azúcar» en Jugo de limón es otro alimento (CSV:265). (hecho: está en «Muslo de pollo al horno»)
 - [ ] F5 MENOR: hay nombres principales que no son español neutro: «Vainicas cocidas», «Frijoles navy cocidos» y «Calabaza butternut al horno».
-- [ ] F6 MENOR: hay nombres que no corresponden al alimento de USDA: «Merluza» es pollock, «Róbalo» es striped bass y «Polenta» son grits blancos.
+- [x] F6 MENOR: hay nombres que no corresponden al alimento de USDA: «Merluza» es pollock, «Róbalo» es striped bass y «Polenta» son grits blancos. (hecho: ya no están «Merluza», «Róbalo» ni «Polenta»)
 - [ ] F7 NIT: en Costa Rica y México, «limón» es la lima verde, y el catálogo da primero el limón amarillo (diferencia nutricional mínima).
 - [ ] F8 NIT: sinónimos dudosos: «dolfín» no lo puedo verificar, «pinha» es portugués, «tuna» se confunde con atún en inglés y «fruta del pan jaca» mezcla dos frutas. «zapote», «anona» y «lampuga» son correctos.
 - [ ] F9 NIT: «Puerro» y «Tempeh» están crudos, aunque normalmente se comen cocidos.
 - [ ] F10 NIT: falta un espacio en `UsdaItemPayload ={` (frontend/src/features/diary/types.ts:34).
 - [ ] F11 NIT: el mensaje del downgrade dice «Hay 1 alimentos…» (migración:95); si se corrige, hay que cambiar también `DOWNGRADE_MESSAGE` en `test_catalog_migration.py`.
 - [ ] F12 NIT (test-author): el comentario de frontend/src/app/diaryRoute.test.tsx:2 sigue diciendo que `/foods` muestra «Alimentos».
-- [ ] `state.json` muestra `max_iterations: 3`, pero la config vale 4.
+- [x] `state.json` muestra `max_iterations: 3`, pero la config vale 4. (la config vale 4; el 3 es solo el `state.json` de la 023, ya cerrada)
 - [ ] Retirar FoodsPage, FoodResultList y useFoodSearch, que ya no tienen ruta (ya está en el backlog).
-- [ ] Runbook (P4): migración antes del merge y carga del catálogo tras el CD, en la etapa docs.
+- [x] Runbook (P4): migración antes del merge y carga del catálogo tras el CD, en la etapa docs. (hecho: `docs/deploy-runbook.md`)
 - [ ] Estos archivos siguen con la lista de 40 y la yuca, y hay que corregirlos (no los edité):
-- [ ] backend/tests/test_services/test_food_catalog_csv.py: línea 15 (comentario «40 alimentos»), línea 26 («Yuca cocida» en MINIMUM_LIST), líneas 67-70 (`test_the_minimum_list_has_40_foods`, que comprueba == 40 dos veces; debe pasar a 39) y línea 115 (docstring «40 alimentos»).
-- [ ] backend/scripts/data/food_catalog.csv: línea 37 (fila `yuca-cocida`, origen manual con fuente FNDDS). Según la decisión del usuario debe salir también del catálogo. Al quitarla quedan 264 filas, dentro del rango de 250 a 350, y ya no queda ninguna fila `manual`.
-- [ ] specs/023-generic-food-catalog/plan.md: línea 530 («los 40 de la lista mínima» debe decir 39).
-- [ ] specs/023-generic-food-catalog/tasks.md: línea 45, T-028 («con los 40 de la lista mínima» debe decir 39).
+- [x] backend/tests/test_services/test_food_catalog_csv.py: línea 15 (comentario «40 alimentos»), línea 26 («Yuca cocida» en MINIMUM_LIST), líneas 67-70 (`test_the_minimum_list_has_40_foods`, que comprueba == 40 dos veces; debe pasar a 39) y línea 115 (docstring «40 alimentos»). (hecho: la lista mínima tiene 39 alimentos, sin yuca)
+- [x] backend/scripts/data/food_catalog.csv: línea 37 (fila `yuca-cocida`, origen manual con fuente FNDDS). Según la decisión del usuario debe salir también del catálogo. Al quitarla quedan 264 filas, dentro del rango de 250 a 350, y ya no queda ninguna fila `manual`. (hecho: el CSV ya no tiene la fila `yuca-cocida`)
+- [x] specs/023-generic-food-catalog/plan.md: línea 530 («los 40 de la lista mínima» debe decir 39). (hecho)
+- [x] specs/023-generic-food-catalog/tasks.md: línea 45, T-028 («con los 40 de la lista mínima» debe decir 39). (hecho)
 - [ ] specs/023-generic-food-catalog/verify-report.md: línea 49, que menciona la fila `yuca-cocida`. Se queda desactualizada cuando se vuelva a pasar la verificación.
 - [ ] F5 (nombres que no son español neutro) y F6 quedan sin test automatizado; los comprueba la review.
 - [ ] «contramuslo» debería ir en «Muslo de pollo al horno»; el test solo comprueba que no sea sinónimo de Pierna.
 - [ ] Antes de la siguiente ronda, el test-author podría revisar el resto de tests del archivo para asegurar que cada uno falla sin el CSV corregido.
-- [ ] Decidir cómo trata el harness los archivos de datos: al sacar `backend/scripts/data/` de los globs `prod` para que el ratchet de lint no analice el CSV, el role-guard tampoco deja escribirlo al implementer. El CSV lo editó el orquestador con autorización explícita del usuario.
+- [x] Decidir cómo trata el harness los archivos de datos: al sacar `backend/scripts/data/` de los globs `prod` para que el ratchet de lint no analice el CSV, el role-guard tampoco deja escribirlo al implementer. El CSV lo editó el orquestador con autorización explícita del usuario. (decidido en ADR-0034 / Art. P5)
 - [ ] El implementer marcó las casillas T-120 a T-123 y T-125 de tasks.md con `sed -i` desde la shell, aunque su definición prohíbe escribir así; solo cambió esas cinco casillas.
-- [ ] Revisión manual del contenido del CSV (reglas 1 a 3 de la sección 6 de la spec) en el gate de review.
+- [x] Revisión manual del contenido del CSV (reglas 1 a 3 de la sección 6 de la spec) en el gate de review. (hecho en la review de la 023)
 - [ ] Diseño visual del diálogo «Añadir a {sección}» y del listado de resultados, pendiente de prueba del usuario.
-- [ ] El CSV fue editado por el orquestador con autorización explícita (el role-guard no reconoce backend/scripts/data/); anotar en review.
-- [ ] F14 MENOR (planner): plan.md:472 y tasks.md:86,88 dicen 264 filas; el CSV tiene 261.
+- [x] El CSV fue editado por el orquestador con autorización explícita (el role-guard no reconoce backend/scripts/data/); anotar en review. (anotado en la review de la 023; regla en ADR-0034 / Art. P5)
+- [x] F14 MENOR (planner): plan.md:472 y tasks.md:86,88 dicen 264 filas; el CSV tiene 261. (hecho)
 - [ ] F15 MENOR (implementer): marcó T-120 a T-123 y T-125 en tasks.md con `sed -i` desde la shell, prohibido por el Art. B2.4 (está en el backlog de la feature).
-- [ ] F16 MENOR (implementer): «Lechuga repollada» (CSV:163) es un regionalismo como nombre principal; mejor «Lechuga iceberg», con «lechuga repollada» como sinónimo.
+- [x] F16 MENOR (implementer): «Lechuga repollada» (CSV:163) es un regionalismo como nombre principal; mejor «Lechuga iceberg», con «lechuga repollada» como sinónimo. (hecho: es «Lechuga iceberg» con «lechuga repollada» como sinónimo)
 - [ ] F17 MENOR (test-author): `test_the_csv_has_fewer_than_265_foods` y `test_no_row_has_the_manual_source` fijan el estado actual del CSV, no la spec (AC-001.1 admite de 250 a 350 filas y el formato admite filas `manual`). Además, los tests de marcas, contramuslo y limonada llevan el marcador AC-001.3, que trata de las palabras prohibidas, no de los sinónimos.
 - [ ] F18 NIT (implementer): crudos que se suelen comer cocidos: Tempeh, Puerro y Pak choi.
 - [ ] F19 NIT (implementer): sinónimos dudosos: «graviola» (portugués), «granadilla» en Maracuyá, «queso gruyer» en Queso suizo, «natilla» en Crema agria, «tomate verde» en Tomatillo.
 - [ ] F20 NIT (implementer): «berza» aparece en tres coles distintas (Repollo, Col rizada, Col verde).
-- [ ] Arreglar el role-guard o el config para que reconozca backend/scripts/data/ (el CSV lo editó el orquestador con autorización del usuario).
-- [ ] state.json sigue con max_iterations 3 y el config tiene 4.
+- [ ] Arreglar el role-guard o el config para que reconozca backend/scripts/data/ (el CSV lo editó el orquestador con autorización del usuario). (la regla está en ADR-0034; el cambio del guard es del plugin `sdd-beto` y sigue pendiente allí)
+- [x] state.json sigue con max_iterations 3 y el config tiene 4. (la config vale 4; el 3 es solo el `state.json` de la 023, ya cerrada)
 - [ ] Si en el futuro se añaden filas `manual` al catálogo, hay que volver a poner en Términos de servicio una frase sobre su origen.
 - [ ] Test intermitente del perfil, «B entra con el onboarding pendiente y sin ver la fecha de nacimiento» (NFR-002 AC-N002.1). Falló una vez de dos pasadas completas de `npm test`.
 - [ ] El test «B entra con el onboarding pendiente y sin ver la fecha de nacimiento de A» (frontend/src/app/accountSwitch.test.tsx:68), que el implementer vio fallar una vez, pasó en la suite completa de esta ronda y en una repetición aislada. No está en los archivos de la 023 (no aparece en git diff main...HEAD), así que no se atribuye a esta feature; no se ha reproducido, y no se puede afirmar que sea intermitente con dos pasadas.
 - [ ] F21 NIT (test-author): los marcadores AC-001.2 de los tests de marcas, contramuslo, limonada y lechuga iceberg (`test_food_catalog_csv.py:162,179,189,201`) no corresponden a la unicidad de nombres; encajan mejor con AC-001.1 (reglas de la sección 6).
 - [ ] F22 NIT (spec-writer): el texto de «Términos de servicio» no cambia respecto a la 022, pero su fecha pasa a «21 de octubre de 2026» (`TermsOfServicePage.tsx:5`). Lo pide AC-012.3; valorar si conviene en una revisión futura.
-- [ ] doc-keeper: en `docs/deploy-runbook.md`, la migración `d4f6a8c0e2b5` antes del merge y la carga del CSV tras el CD. En `CLAUDE.md`, que `/foods` redirige a `/diary` y que el diario busca en el catálogo.
+- [x] doc-keeper: en `docs/deploy-runbook.md`, la migración `d4f6a8c0e2b5` antes del merge y la carga del CSV tras el CD. En `CLAUDE.md`, que `/foods` redirige a `/diary` y que el diario busca en el catálogo. (hecho: runbook y `CLAUDE.md`)
 - [x] Añadir la fila de la 023 al historial de despliegues (sección 8 del runbook) en el chore posterior al despliegue, con PR, sha, migración y backup reales; anotar el tamaño real de catalog_foods si se mide. (hecho en `chore/023-deploy-history`; sin medir el tamaño de catalog_foods)
 
 ## 024-meal-image-analysis · Análisis de imagen de una comida con Amazon Bedrock (2026-10-21)
@@ -392,7 +392,7 @@ Feature: [specs/024-meal-image-analysis/](../specs/024-meal-image-analysis/)
 - [ ] Un test de que un WebP truncado da 400 (hoy ya lo rechaza el demuxer al abrir; no se añade para no meter otro test que ya pasa).
 - [ ] Riesgo F2: un archivo con la estructura correcta pero píxeles corruptos ya no da 400; llega al proveedor y acaba en 503, que cuenta para el límite (mismo criterio que el PNG).
 - [ ] Riesgo F2: el plan se apoya en que libwebp reserva con calloc sin ocupar memoria residente con glibc mientras no se decodifique.
-- [ ] doc-keeper/harness: permitir al test-author borrar o renombrar archivos de tests propios.
+- [ ] doc-keeper/harness: permitir al test-author borrar o renombrar archivos de tests propios. (es del plugin `sdd-beto`, no de este repo (ver ADR-0034))
 - [x] Aceptar ADR-0032 (ADR e índice de `docs/sdd/decisions/README.md`) tras el «aprobado» del usuario en la review, en una rama `chore/…`. (hecho en `chore/024-followups`)
 - [x] Añadir la fila de la 024 al historial de despliegues (sección 8 del runbook) al desplegar. (hecho en `chore/024-followups`)
 - [ ] Verificar en la instancia el límite de saltos de IMDS: el runbook y CLAUDE.md dicen que debe ser 2 o más con Docker (con 1 el contenedor no obtiene credenciales).
@@ -410,7 +410,7 @@ Detalle en [`specs/025-meal-photo-upload/`](../specs/025-meal-photo-upload/). So
 - [ ] Extraer un componente de búsqueda del catálogo compartido entre `AddFoodDialog` y `ProposalSearchStep` para quitar la duplicación de JSX.
 - [ ] Cambiar `form.watch` por `useWatch` en `PhotoReview.tsx` para quitar el aviso `react(incompatible-library)`; `useWatch` devolvía valores obsoletos tras `update()`, así que hace falta un arreglo que lo evite.
 - [ ] R1 (NIT): el test de N1 de `MealPhotoDialog.test.tsx` no afirma que se cree una sola URL ni que la vista previa final sea la de la segunda foto.
-- [ ] Cuatro tests (`errors`, `schemas`, `DiaryPage`, `PrivacyPolicyPage`) tienen CRLF en el disco y LF en el repo; normalizar finales de línea.
-- [ ] Añadir `node_modules/` de la raíz del repo a `.gitignore`.
+- [x] Cuatro tests (`errors`, `schemas`, `DiaryPage`, `PrivacyPolicyPage`) tienen CRLF en el disco y LF en el repo; normalizar finales de línea. (resuelto con `.gitattributes` (ADR-0034))
+- [x] Añadir `node_modules/` de la raíz del repo a `.gitignore`. (hecho en `chore/harness-friction`)
 - [ ] Vigilar el timeout de 5 s en `router.test.tsx` y `lazyRoutes.test.tsx` (ruta `/body-metrics`) si vuelve a fallar con la suite completa; posible subida de `testTimeout`.
-- [ ] harness: `sdd-state` no permite quitar un ámbito de `state.json` (la 025 es solo frontend pero lista `backend`).
+- [ ] harness: `sdd-state` no permite quitar un ámbito de `state.json` (la 025 es solo frontend pero lista `backend`). (es del plugin `sdd-beto`, no de este repo)
