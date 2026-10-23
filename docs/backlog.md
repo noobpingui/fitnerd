@@ -169,7 +169,7 @@ Feature: [specs/020-metrics-followups-prod-config/](../specs/020-metrics-followu
 - [ ] F4 (NIT, test-author): el marcador de `BodyMetricsPage.sync.test.tsx:209` dice `NFR-002 AC-004.1` y debería decir `REQ-004 AC-004.1`.
 - [ ] F5 (NIT, test-author): `round1` de `fakeMetricsServer.ts` redondea en binario, mientras el servidor usa `Decimal` half-up; pueden divergir en valores frontera.
 - [ ] F6 (NIT, test-author): `app_clock` no es autouse, y `make_app` solo repone `email_sender`, no los demás singletons.
-- [ ] F7 (NIT, planner): pasar la ADR-0028 a «Aceptada» en la ADR y en el índice de `docs/sdd/decisions/README.md` (pendiente: rama `chore/…` tras el merge). (pendiente de tu aprobación explícita: sigue en «Propuesta»)
+- [x] F7 (NIT, planner): pasar la ADR-0028 a «Aceptada» en la ADR y en el índice de `docs/sdd/decisions/README.md` (pendiente: rama `chore/…` tras el merge). (aceptada por el usuario en `chore/harness-friction`)
 - [ ] F8 (NIT, implementer): `auth_service`, `body_metric_service` y `progress_analysis_service` deberían importar `utc_now` de `utils.clock`, no del reexporte de `profile_service`.
 - [ ] F9 (MENOR, test-author): ningún test comprueba que, tras guardar solo la meta con el aviso visible, un «Reintentar» correcto conserva la meta nueva (`PhysicalDataForm.refresh-edge.test.tsx:128-146`).
 - [ ] F10 (NIT, implementer): con `keepDraft` se ve «Cambios guardados» mientras el formulario tiene ediciones sin guardar (`PhysicalDataForm.tsx:221,230`).
@@ -245,7 +245,7 @@ Feature: [specs/021-usda-food-database/](../specs/021-usda-food-database/)
 - [ ] Con `--yes` no se pide confirmación si se copia el comando a otro entorno.
 - [ ] F12 (NIT, spec-writer): AC-001.8 no enumera «y» ni «yes», aunque el test marcado con ese AC los prueba; añadirlos al AC.
 - [ ] F7 (NIT): dejar una sola cifra de AC (67) en las notas y en la documentación de la etapa docs.
-- [ ] Pasar ADR-0029 de «Propuesta» a «Aceptada» (rama `chore/…` tras el merge, como en la 019 y la 020). (pendiente de tu aprobación explícita: sigue en «Propuesta»)
+- [x] Pasar ADR-0029 de «Propuesta» a «Aceptada» (rama `chore/…` tras el merge, como en la 019 y la 020). (aceptada por el usuario en `chore/harness-friction`)
 - [x] Aplicar en producción lo que documenta el runbook: migración `c8e2a4f6b9d3`, importación de USDA y medición real de `public.foods`; añadir la fila de la 021 al historial de despliegues. (hecho el 2026-10-20: 50 MB)
 
 ## 022-meal-diary · Diario de comidas con totales del día frente al objetivo de Macros (2026-10-20)

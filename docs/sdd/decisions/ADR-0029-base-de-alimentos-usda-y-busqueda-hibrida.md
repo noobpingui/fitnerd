@@ -1,7 +1,7 @@
 # ADR-0029: Base de alimentos de USDA en Postgres con búsqueda híbrida por fusión de rankings
 
-- **Estado:** Propuesta · 2026-10-20 (plan de `021-usda-food-database`)
-- **Decidido por:** el `planner`; pendiente de revisión por el usuario en el gate de `review`.
+- **Estado:** Aceptada · 2026-10-20 (plan de `021-usda-food-database`; aceptada por el usuario el 2026-10-22 en `chore/harness-friction`)
+- **Decidido por:** el `planner`; revisada y aceptada por el usuario.
 
 ## Contexto
 La spec 021 carga Foundation Foods y SR Legacy de USDA FoodData Central (unos 8 200 alimentos) en la base de la app y

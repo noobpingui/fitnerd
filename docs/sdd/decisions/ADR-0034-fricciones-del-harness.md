@@ -1,7 +1,7 @@
 # ADR-0034: Finales de línea LF, aceptación de ADR por la sesión principal y edición de archivos de datos
 
-- **Estado:** Propuesta · 2026-10-22 (rama `chore/harness-friction`)
-- **Decidido por:** el orquestador, a petición del usuario; pendiente de su aprobación en el gate de cierre.
+- **Estado:** Aceptada · 2026-10-22 (rama `chore/harness-friction`; aceptada por el usuario)
+- **Decidido por:** el orquestador, a petición del usuario; aprobada por el usuario.
 
 ## Contexto
 Tras las specs 019 a 025 se repiten tres fricciones del flujo SDD que no son de ninguna feature:

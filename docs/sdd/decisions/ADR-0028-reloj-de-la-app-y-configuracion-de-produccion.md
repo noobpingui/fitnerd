@@ -1,7 +1,7 @@
 # ADR-0028: Reloj de la app fijable solo en pruebas y configuración de producción validada al arrancar
 
-- **Estado:** Propuesta · 2026-10-18 (plan de `020-metrics-followups-prod-config`)
-- **Decidido por:** el `planner`; pendiente de revisión por el usuario en el gate de `review`.
+- **Estado:** Aceptada · 2026-10-18 (plan de `020-metrics-followups-prod-config`; aceptada por el usuario el 2026-10-22 en `chore/harness-friction`)
+- **Decidido por:** el `planner`; revisada y aceptada por el usuario.
 
 ## Contexto
 Los servicios del backend ya reciben un reloj por constructor (`clock=utc_now`) y los tests unitarios inyectan
