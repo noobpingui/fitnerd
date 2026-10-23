@@ -36,8 +36,8 @@ export function deleteBodyMetric(id: string) {
   return apiFetch<void>(`/api/body-metrics/${id}`, { method: "DELETE" })
 }
 
-// POST porque dispara una accion real (llama a Claude del lado del
-// backend) - no es un simple GET idempotente/cacheable. El cuerpo lleva el
+// POST porque dispara una acción real (llama a Claude del lado del
+// backend): no es un simple GET idempotente o cacheable. El cuerpo lleva el
 // contexto que ya calcula la pantalla; sin perfil se envía sin cuerpo y el
 // servidor responde 409.
 export async function analyzeBodyMetrics(

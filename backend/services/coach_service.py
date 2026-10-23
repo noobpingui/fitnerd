@@ -57,13 +57,13 @@ class CoachService:
         #Sin tracer inyectado se usa uno inactivo: no se envía nada a ningún lado.
         self.tracer = tracer if tracer is not None else Tracer()
 
-    #history: turnos anteriores de ESTA conversacion, en formato [{"role": "user"|"assistant",
-    #"content": str}, ...] - tal cual los muestra el frontend, sin la "muleta" de contexto
-    #que le agregamos a la pregunta actual mas abajo (esa solo se inyecta en el turno nuevo,
-    #no se reinyecta contexto viejo en cada mensaje historico). None/vacio = primera pregunta
-    #de la conversacion, se comporta identico a como funcionaba antes de esto.
+    #history: turnos anteriores de ESTA conversación, en formato [{"role": "user"|"assistant",
+    #"content": str}, ...], tal cual los muestra el frontend, sin la "muleta" de contexto
+    #que se agrega a la pregunta actual más abajo (esa solo se inyecta en el turno nuevo,
+    #no se reinyecta contexto viejo en cada mensaje histórico). None o vacío = primera pregunta
+    #de la conversación, se comporta idéntico a como funcionaba antes de esto.
     #
-    #user_id se usa para el rate limit (de quien es cada contador en Redis), para la traza
+    #user_id se usa para el rate limit (de quién es cada contador en Redis), para la traza
     #y para firmar el feedback_id, que queda ligado a este usuario.
     def ask(self, question: str, user_id: str, history: list[dict] | None = None) -> str:
         return self.ask_with_feedback(question, user_id, history).answer
@@ -169,10 +169,10 @@ Pregunta: {question}"""
                     outcome = "answered"
         except Exception:
             #Cualquier falla de un proveedor externo (Voyage al buscar contexto, Anthropic
-            #al generar) - rate limit, timeout, caida del servicio, etc. Se traduce a un
-            #error de negocio prolijo (503) en vez de dejar que la excepcion cruda suba
-            #hasta el handler generico de Flask, que devolveria un 500 pelado sin mensaje
-            #util. El error real SI queda registrado en el log del servidor, solo que el
+            #al generar): rate limit, timeout, caída del servicio, etc. Se traduce a un
+            #error de negocio claro (503) en vez de dejar que la excepción cruda suba
+            #hasta el handler genérico de Flask, que devolvería un 500 sin mensaje
+            #útil. El error real SÍ queda registrado en el log del servidor, solo que el
             #usuario ve un mensaje limpio.
             logger.exception("Fallo un proveedor externo al responder una pregunta del coach")
             trace.add_score("outcome", "error", "CATEGORICAL")

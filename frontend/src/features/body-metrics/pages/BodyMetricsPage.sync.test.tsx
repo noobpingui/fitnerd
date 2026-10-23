@@ -206,7 +206,7 @@ describe("Sincronización del peso del perfil con el servidor de prueba con esta
     )
   })
 
-  // SDD: 020 NFR-002 AC-004.1
+  // SDD: 020 REQ-004 AC-004.1
   it("el peso mostrado sale de las mediciones guardadas: otro valor registrado da otro peso", async () => {
     const user = userEvent.setup()
     connectServer({

@@ -14,7 +14,7 @@ from services.date_of_birth_rules import (  # noqa: F401  (se reexportan: otros 
     parse_date_of_birth,
 )
 from services.number_validation import is_int, is_number
-from utils.clock import utc_now  # noqa: F401  (se reexporta: otros módulos la importan desde aquí)
+from utils.clock import utc_now
 
 INVALID_BODY_MESSAGE = "Los datos del perfil no son válidos"
 INVALID_GENDER_MESSAGE = "El género debe ser masculino o femenino"

@@ -1,5 +1,5 @@
 // Rutas /diary y /foods (spec 022, NFR-001 y REQ-015): la pantalla «Diario» se
-// carga bajo demanda y `/foods` sigue mostrando «Alimentos». La red se
+// carga bajo demanda y `/foods` redirige a `/diary` desde la 023. La red se
 // simula en los api.ts.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { render, screen } from "@testing-library/react"

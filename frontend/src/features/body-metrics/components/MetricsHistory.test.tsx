@@ -737,7 +737,7 @@ describe("MetricsHistory - aviso de borrado fallido (spec 013)", () => {
     expect(screen.getByText(DELETE_FAILED)).toBeInTheDocument()
   })
 
-  // SDD: 013 NFR-001
+  // SDD: 013 REQ-005 AC-005.2
   it("si la lista cambia mientras el borrado está en curso y falla, el aviso se ve", async () => {
     const user = userEvent.setup()
     const { rerenderWith } = renderStatic([OLDER, NEWER])

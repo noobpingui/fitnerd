@@ -23,7 +23,8 @@ from services.meal_rules import (
     sum_nutrients,
     validate_grams,
 )
-from services.profile_service import USER_NOT_FOUND_MESSAGE, utc_now
+from services.profile_service import USER_NOT_FOUND_MESSAGE
+from utils.clock import utc_now
 
 
 @dataclass

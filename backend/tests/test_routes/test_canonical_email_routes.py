@@ -1,4 +1,4 @@
-"""Tests de INTEGRACION de la spec 019: con la garantía de correo canónico
+"""Tests de INTEGRACIÓN de la spec 019: con la garantía de correo canónico
 activa en la base de pruebas (la crean los modelos con `create_all()`), el
 registro, el login y el restablecimiento siguen aceptando correos con
 mayúsculas o espacios y los guardan canónicos. También se comprueba que una

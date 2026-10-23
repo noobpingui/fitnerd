@@ -35,7 +35,7 @@ def user_agents(request):
 
 # SDD: REQ-001 AC-001.1
 def test_resend_request_has_fitnerd_user_agent():
-    """La peticion lleva el User-Agent exacto de fitnerd."""
+    """La petición lleva el User-Agent exacto de fitnerd."""
     transport, opener, _ = make_transport()
 
     transport.send(make_message())
@@ -45,7 +45,7 @@ def test_resend_request_has_fitnerd_user_agent():
 
 # SDD: REQ-001 AC-001.2
 def test_resend_request_has_single_user_agent_without_python_urllib():
-    """Hay una unica cabecera User-Agent y no contiene Python-urllib."""
+    """Hay una única cabecera User-Agent y no contiene Python-urllib."""
     transport, opener, _ = make_transport()
 
     transport.send(make_message())
@@ -123,7 +123,7 @@ def test_connection_error_raises_email_send_error_without_key():
 
 # SDD: REQ-003 AC-003.3
 def test_missing_api_key_raises_without_network():
-    """Sin API key lanza EmailSendError y no se hace ninguna peticion."""
+    """Sin API key lanza EmailSendError y no se hace ninguna petición."""
     transport, opener, _ = make_transport(api_key=None)
 
     with pytest.raises(EmailSendError):

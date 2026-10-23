@@ -550,7 +550,7 @@ def test_reset_password_rejects_passwords_over_72_bytes_with_validation_error(pa
     assert user.password_hash == original_hash
 
 
-# SDD: REQ-009 AC-008.4
+# SDD: REQ-008 AC-008.4
 def test_invalid_token_takes_precedence_over_invalid_password():
     """Con token invalido y contraseña corta, prevalece el error del enlace."""
     ctx = make_service([make_user("ana@example.com")])

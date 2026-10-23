@@ -19,7 +19,7 @@ from services.auth_input_rules import (
     validate_last_name,
 )
 from services.date_of_birth_rules import parse_date_of_birth
-from services.profile_service import utc_now
+from utils.clock import utc_now
 
 WRONG_CREDENTIALS_MESSAGE = "Correo o contraseña incorrectos"
 EMAIL_TAKEN_MESSAGE = "Ya existe una cuenta con este correo"

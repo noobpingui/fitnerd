@@ -7,10 +7,10 @@ Estas specs no tienen `backlog.md` propio; los puntos salen de los hallazgos MEN
 **002-forgot-password** · [specs/002-forgot-password/](../specs/002-forgot-password/)
 - [ ] MENOR: `ProductionConfig` hereda `FRONTEND_BASE_URL` con `http://localhost:5173` por defecto (`backend/config.py:61`); si falta en el `.env` de EC2, los correos llevan enlaces a `localhost` sin error. Poner un valor propio de producción o fallar al arrancar.
 - [ ] MENOR: ningún test ejecuta `ResendTransport` ni `EmailSender.init_app`; el camino real de producción solo se ha probado a mano.
-- [ ] NIT: el marcador `# SDD: REQ-009 AC-008.4` de `test_password_reset_service.py` es incoherente (AC-008.4 es de REQ-008).
+- [x] NIT: el marcador `# SDD: REQ-009 AC-008.4` de `test_password_reset_service.py` es incoherente (AC-008.4 es de REQ-008). (hecho en `chore/code-hygiene`)
 
 **003-resend-user-agent** · [specs/003-resend-user-agent/](../specs/003-resend-user-agent/)
-- [ ] NIT: docstrings y comentarios sin tildes en `tests/fakes.py`, `test_email_sender.py` y `test_password_reset_routes.py:522`.
+- [x] NIT: docstrings y comentarios sin tildes en `tests/fakes.py`, `test_email_sender.py` y `test_password_reset_routes.py:522`. (hecho en `chore/code-hygiene`)
 - [ ] NIT: AC-001.2 se prueba con `FakeOpener`, que no pasa por el `OpenerDirector` real; un test con `urllib.request.build_opener(FakeHandler())` demostraría que no hay un segundo `User-Agent`.
 
 **004-coach-observability** · [specs/004-coach-observability/](../specs/004-coach-observability/)
@@ -20,30 +20,30 @@ Estas specs no tienen `backlog.md` propio; los puntos salen de los hallazgos MEN
 **005-coach-feedback** · [specs/005-coach-feedback/](../specs/005-coach-feedback/)
 - [ ] MENOR: el test de AC-N002.1 (`test_langfuse_backend.py:401`) retrasa solo `flush`, no `create_score`; no demuestra que la 204 llegue en menos de 0,5 s con un destino lento. Añadir un retardo en `create_score` del fake o documentar la limitación.
 - [ ] NIT: en el test de servicio de AC-N001.1 (`test_coach_feedback.py:489`) el JWT es una constante que nunca llega al servicio, así que la comprobación es tautológica (el test de ruta sí cubre el JWT real).
-- [ ] NIT: falta una tilde en un comentario de `coach_service.py:66` («de quién es cada contador»).
+- [x] NIT: falta una tilde en un comentario de `coach_service.py:66` («de quién es cada contador»). (hecho en `chore/code-hygiene`)
 
 **006-user-profile** · [specs/006-user-profile/](../specs/006-user-profile/)
-- [ ] NIT: `body-metrics/dateUtils.ts` reexporta `parseLocalDate` y `todayIsoDate` solo por compatibilidad; importar directamente desde `@/lib/dates` y quitar la reexportación.
+- [x] NIT: `body-metrics/dateUtils.ts` reexporta `parseLocalDate` y `todayIsoDate` solo por compatibilidad; importar directamente desde `@/lib/dates` y quitar la reexportación. (ya no reexporta nada)
 - [ ] NIT: el texto «Indica tu fecha de nacimiento» de `PhysicalDataForm.tsx` no figura en la spec ni lo cubre ningún test.
 
 **007-macros-calculation** · [specs/007-macros-calculation/](../specs/007-macros-calculation/)
-- [ ] NIT: `MIN_TARGET_KCAL` sin anotación de tipo en `macros/calculations.ts:34` (`Record<"male" | "female", number>` por coherencia).
+- [x] NIT: `MIN_TARGET_KCAL` sin anotación de tipo en `macros/calculations.ts:34` (`Record<"male" | "female", number>` por coherencia). (hecho: lleva `Record<Gender, number>`)
 - [ ] NIT: casts innecesarios `as Record<string, string>` en `calculations.test.ts` (líneas 98, 111 y 240).
 - [ ] NIT: en `spec.md` de la 007, AC-004.5 aparece antes que AC-004.4.
 
 **008-metrics-from-profile** · [specs/008-metrics-from-profile/](../specs/008-metrics-from-profile/)
 - [ ] NIT: el aviso «No se pudo borrar la medición…» de `MetricsHistory.tsx` solo se limpia al abrir otro diálogo de borrado.
-- [ ] NIT: docstrings sin tildes en `test_body_metric_routes.py` («unicas», «restriccion», «medicion», «invalido»).
+- [x] NIT: docstrings sin tildes en `test_body_metric_routes.py` («unicas», «restriccion», «medicion», «invalido»). (hecho en `chore/code-hygiene`)
 
 **009-metrics-indicators** · [specs/009-metrics-indicators/](../specs/009-metrics-indicators/)
-- [ ] MENOR: la conversión ft/in a cm está duplicada en `macros/calculations.ts:78`.
+- [x] MENOR: la conversión ft/in a cm está duplicada en `macros/calculations.ts:78`. (hecho: se usa `heightCmFromAnswers`)
 - [ ] NIT: comentario desplazado en `TrendChart.tsx`.
 - [ ] NIT: `renderLoaded` de `BodyMetricsPage.test.tsx` (líneas 376-380) espera con un número mágico de microtareas; esperar una condición observable del perfil cargado.
 
 **010-progress-analysis-context** · [specs/010-progress-analysis-context/](../specs/010-progress-analysis-context/)
 - [ ] MENOR: los tests de validación del cuerpo llevan marcadores `SDD:` de AC que no prueban (`test_progress_analysis_service.py:789-824`, `test_progress_analysis_routes.py:187`); inflan la trazabilidad.
 - [ ] NIT: `InsightsInput` y `input as Insights` en `insightsView.ts:77-81` abren un agujero de tipos solo para acomodar el cast del test.
-- [ ] NIT: comentarios con regionalismos o sin tildes («503 prolijo», «errores tecnicos», «se envia») en `progress_analysis_service.py:144`, `ProgressAnalysis.tsx:40` y `api.ts:41`.
+- [x] NIT: comentarios con regionalismos o sin tildes («503 prolijo», «errores tecnicos», «se envia») en `progress_analysis_service.py:144`, `ProgressAnalysis.tsx:40` y `api.ts:41`. (hecho en `chore/code-hygiene`)
 - [ ] NIT: `analysisRequest.ts:39-40` repite `hasRate && rate.kind === "ok"`; usar una variable estrechada.
 - [ ] NIT: tras un despliegue, una pestaña con el bundle anterior recibe 400 en el análisis hasta recargar (transitorio; basta una nota en docs).
 - [ ] NIT: el encabezado de `spec.md` de la 010 dice «47 AC» y el cuerpo tiene 49.
@@ -57,7 +57,7 @@ Estas specs no tienen `backlog.md` propio; los puntos salen de los hallazgos MEN
 **013-polish-006-010** · [specs/013-polish-006-010/](../specs/013-polish-006-010/)
 - [ ] NIT: `test_source_cleanup_013.py:103,125-127` tiene aserciones que nunca pueden fallar y una condición enrevesada; no comprueba que cada test cite su AC (sustituir el bucle por un diccionario nombre-a-marcador).
 - [ ] NIT: sangría incorrecta en el objeto de opciones de `findByRole` de `MetricsHistory.test.tsx:685-688`.
-- [ ] NIT: el test de F3 de `MetricsHistory.test.tsx:739` lleva `// SDD: 013 NFR-001`, sin AC; trazarlo como `REQ-005 AC-005.2`.
+- [x] NIT: el test de F3 de `MetricsHistory.test.tsx:739` lleva `// SDD: 013 NFR-001`, sin AC; trazarlo como `REQ-005 AC-005.2`. (hecho en `chore/code-hygiene`: `REQ-005 AC-005.2`)
 - [ ] NIT: caso límite en `MetricsHistory.tsx:163`: si la fila a borrar desaparece por otra vía y la petición falla, se muestra el aviso igualmente.
 
 ## 014-auth-hardening · Endurecer la autenticación: token de reset atómico, emails en minúsculas, reglas de contraseña unificadas y logs saneados (2026-10-16)
@@ -112,12 +112,12 @@ Feature: [specs/016-past-date-measurements/](../specs/016-past-date-measurements
 Feature: [specs/017-frontend-polish/](../specs/017-frontend-polish/)
 
 - [ ] Distinguir en el boundary un error de render de un fallo de descarga, si hiciera falta.
-- [ ] Comentarios sin tilde y con voseo en router.tsx, router.test.tsx, AppLayout.tsx, ProtectedRoute.tsx y setup.ts (fuera de alcance; solo se corrigen los que se toquen).
+- [x] Comentarios sin tilde y con voseo en router.tsx, router.test.tsx, AppLayout.tsx, ProtectedRoute.tsx y setup.ts (fuera de alcance; solo se corrigen los que se toquen). (hecho en `chore/code-hygiene`)
 - [ ] Valorar LazyMotion de motion si el chunk de entrada vuelve a crecer.
 - [ ] Si la implementación cambia el orden de los tests de lazyRoutes.test.tsx, el test de "Cargando…" debe seguir siendo el primero (cache de React.lazy).
 - [ ] Añadir AC-001.5 (caso «pies no válidos manda Entre 3 y 8 ft») y AC-N002.4 (configuración de lint) a plan.md, sección 5, «Pasan ya en verde», para que el registro coincida con la aceptación del usuario.
 - [ ] Los tests de AC-002.2 a AC-002.4 (lazyRoutes) siguen verdes antes de la carga diferida y no prueban que el chunk no se descargue hasta navegar: añadir esa comprobación en verify o en tests.
-- [ ] ResetPasswordForm.test.tsx (fuera del alcance de la 017, que solo cubre LoginForm y ForgotPasswordForm) tiene «boton», «peticion» y «esta en curso» en comentarios o nombres de test (Art. P2 General).
+- [x] ResetPasswordForm.test.tsx (fuera del alcance de la 017, que solo cubre LoginForm y ForgotPasswordForm) tiene «boton», «peticion» y «esta en curso» en comentarios o nombres de test (Art. P2 General). (hecho en `chore/code-hygiene`: nombres de tests con tildes)
 - [ ] Los «Cargando…» encadenados (guard, layout y pantalla) siguen en la primera visita a una ruta protegida; es consecuencia del ADR-0026 (F6 resuelto solo con `className`, sin precargar el layout).
 - [ ] Añadir un test del envío correcto de FeedbackForm (elegir categoría y mensaje, 201 y onSuccess) y otro del mensaje de error del servidor, con una utilidad para manejar el Select de Radix.
 - [ ] F11 (test-author): `FeedbackForm.test.tsx:42-44` comprueba el error de categoría contando los textos «Elige una categoría» (placeholder y mensaje de error), lo que es frágil. Sería mejor localizar el `FormMessage` del campo.
@@ -166,11 +166,11 @@ Feature: [specs/020-metrics-followups-prod-config/](../specs/020-metrics-followu
 - [ ] Al registrar en lb, el peso del perfil puede variar en 0,1 lb respecto a lo escrito (160 lb pasa a 160,1) por el redondeo a 0,1 kg del envío.
 - [ ] Con `isLoadingError`, un fallo de relectura en segundo plano que no viene de un registro ya no muestra ningún aviso en Métricas ni en el perfil; valorar un aviso general.
 - [ ] Con el aviso de relectura visible y una medición posterior a hoy, el aviso de fecha futura (spec 016) solo se calcula al reintentar correctamente.
-- [ ] F4 (NIT, test-author): el marcador de `BodyMetricsPage.sync.test.tsx:209` dice `NFR-002 AC-004.1` y debería decir `REQ-004 AC-004.1`.
+- [x] F4 (NIT, test-author): el marcador de `BodyMetricsPage.sync.test.tsx:209` dice `NFR-002 AC-004.1` y debería decir `REQ-004 AC-004.1`. (hecho en `chore/code-hygiene`)
 - [ ] F5 (NIT, test-author): `round1` de `fakeMetricsServer.ts` redondea en binario, mientras el servidor usa `Decimal` half-up; pueden divergir en valores frontera.
 - [ ] F6 (NIT, test-author): `app_clock` no es autouse, y `make_app` solo repone `email_sender`, no los demás singletons.
 - [x] F7 (NIT, planner): pasar la ADR-0028 a «Aceptada» en la ADR y en el índice de `docs/sdd/decisions/README.md` (pendiente: rama `chore/…` tras el merge). (aceptada por el usuario en `chore/harness-friction`)
-- [ ] F8 (NIT, implementer): `auth_service`, `body_metric_service` y `progress_analysis_service` deberían importar `utc_now` de `utils.clock`, no del reexporte de `profile_service`.
+- [x] F8 (NIT, implementer): `auth_service`, `body_metric_service` y `progress_analysis_service` deberían importar `utc_now` de `utils.clock`, no del reexporte de `profile_service`. (hecho en `chore/code-hygiene`)
 - [ ] F9 (MENOR, test-author): ningún test comprueba que, tras guardar solo la meta con el aviso visible, un «Reintentar» correcto conserva la meta nueva (`PhysicalDataForm.refresh-edge.test.tsx:128-146`).
 - [ ] F10 (NIT, implementer): con `keepDraft` se ve «Cambios guardados» mientras el formulario tiene ediciones sin guardar (`PhysicalDataForm.tsx:221,230`).
 - [ ] F11 (NIT, implementer): `retryRefresh` usa un `dirty` obsoleto del render en que se pulsó; si el usuario edita mientras la relectura está en curso, esa edición se descarta (`PhysicalDataForm.tsx:226-230`).
@@ -297,7 +297,7 @@ Feature: [specs/023-generic-food-catalog/](../specs/023-generic-food-catalog/)
 - [x] Verificar en la verificación que el chunk de entrada de `npm run build` sigue por debajo de 500 kB (ADR-0026). (comprobado en cada verify; 384,63 kB en la 025)
 - [x] Revisión manual de la migración `d4f6a8c0e2b5` frente a los modelos (Art. P2.4), a cargo del reviewer. (hecho en la review de la 023 (APPROVED))
 - [x] Las filas `manual` del CSV las revisa el usuario en el gate de review. (hecho en la review de la 023; ya no queda ninguna fila `manual`)
-- [ ] `diaryRoute.test.tsx` conserva en su cabecera la frase «`/foods` sigue mostrando "Alimentos"»; hay que limpiarla cuando se implemente T-137.
+- [x] `diaryRoute.test.tsx` conserva en su cabecera la frase «`/foods` sigue mostrando "Alimentos"»; hay que limpiarla cuando se implemente T-137. (hecho en `chore/code-hygiene`)
 - [ ] La suite de la 021 (`features/foods`) y el endpoint `GET /api/foods/search` se conservan sin cambios, como indica la spec.
 - [ ] Cambiar pytest.raises(RuntimeError) por una excepción concreta en test_an_error_while_writing_rolls_back_and_is_raised_again.
 - [ ] Revisar en la fase de implementación si los tests de constantes del esqueleto deben seguir existiendo o pasar a ser parte del test de comportamiento.
@@ -326,9 +326,9 @@ Feature: [specs/023-generic-food-catalog/](../specs/023-generic-food-catalog/)
 - [ ] F7 NIT: en Costa Rica y México, «limón» es la lima verde, y el catálogo da primero el limón amarillo (diferencia nutricional mínima).
 - [ ] F8 NIT: sinónimos dudosos: «dolfín» no lo puedo verificar, «pinha» es portugués, «tuna» se confunde con atún en inglés y «fruta del pan jaca» mezcla dos frutas. «zapote», «anona» y «lampuga» son correctos.
 - [ ] F9 NIT: «Puerro» y «Tempeh» están crudos, aunque normalmente se comen cocidos.
-- [ ] F10 NIT: falta un espacio en `UsdaItemPayload ={` (frontend/src/features/diary/types.ts:34).
+- [x] F10 NIT: falta un espacio en `UsdaItemPayload ={` (frontend/src/features/diary/types.ts:34). (hecho en `chore/code-hygiene`)
 - [ ] F11 NIT: el mensaje del downgrade dice «Hay 1 alimentos…» (migración:95); si se corrige, hay que cambiar también `DOWNGRADE_MESSAGE` en `test_catalog_migration.py`.
-- [ ] F12 NIT (test-author): el comentario de frontend/src/app/diaryRoute.test.tsx:2 sigue diciendo que `/foods` muestra «Alimentos».
+- [x] F12 NIT (test-author): el comentario de frontend/src/app/diaryRoute.test.tsx:2 sigue diciendo que `/foods` muestra «Alimentos». (hecho en `chore/code-hygiene`)
 - [x] `state.json` muestra `max_iterations: 3`, pero la config vale 4. (la config vale 4; el 3 es solo el `state.json` de la 023, ya cerrada)
 - [ ] Retirar FoodsPage, FoodResultList y useFoodSearch, que ya no tienen ruta (ya está en el backlog).
 - [x] Runbook (P4): migración antes del merge y carga del catálogo tras el CD, en la etapa docs. (hecho: `docs/deploy-runbook.md`)

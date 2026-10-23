@@ -1,4 +1,4 @@
-// Las rutas de recuperacion de contraseña son PUBLICAS: se abren sin sesion
+// Las rutas de recuperación de contraseña son PÚBLICAS: se abren sin sesión
 // y no deben redirigir al login.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { render, screen, waitFor } from "@testing-library/react"
@@ -56,7 +56,7 @@ describe("AppRouter - rutas de recuperacion de contraseña", () => {
   }
 
   // SDD: REQ-001 AC-001.2
-  it("/forgot-password muestra el formulario sin sesion y sin redirigir al login", async () => {
+  it("/forgot-password muestra el formulario sin sesión y sin redirigir al login", async () => {
     window.history.pushState({}, "", "/forgot-password")
 
     renderRouter()
@@ -69,7 +69,7 @@ describe("AppRouter - rutas de recuperacion de contraseña", () => {
   })
 
   // SDD: REQ-001 AC-001.2
-  it("/reset-password?token=abc es accesible sin sesion y sin redirigir al login", async () => {
+  it("/reset-password?token=abc es accesible sin sesión y sin redirigir al login", async () => {
     window.history.pushState({}, "", "/reset-password?token=abc")
 
     renderRouter()
@@ -133,7 +133,7 @@ describe("AppRouter - secciones retiradas y secciones activas (spec 012)", () =>
   )
 
   // SDD: 012 REQ-004 AC-004.2
-  it("sin sesion, /favorites termina en /login", async () => {
+  it("sin sesión, /favorites termina en /login", async () => {
     window.history.pushState({}, "", "/favorites")
 
     renderRouter()

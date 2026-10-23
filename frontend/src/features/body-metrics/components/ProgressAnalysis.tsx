@@ -36,10 +36,10 @@ export function ProgressAnalysis({
         size="lg"
         onClick={() => mutate(request)}
         disabled={isPending}
-        // Mismo lenguaje de "boton vivo" que ya usamos en el avatar/logo
-        // del navbar: crece un poco en hover, se achica al clickear,
-        // animado. scale-105 (no 110, como el avatar) porque este boton
-        // es ancho/rectangular - una escala mas grande se ve exagerada
+        // Mismo lenguaje de "botón vivo" que ya se usa en el avatar y el logo
+        // del navbar: crece un poco en hover y se achica al pulsarlo,
+        // animado. scale-105 (no 110, como el avatar) porque este botón
+        // es ancho y rectangular: una escala mayor se ve exagerada
         // en un elemento con texto largo.
         className="gap-2 text-base transition-transform duration-200 hover:scale-105 active:scale-95"
       >
