@@ -61,7 +61,7 @@ class FakeRateLimiter:
     """Doble de RateLimiter (Redis) - `allowed` decide si
     check_and_increment devuelve True o False, sin tocar Redis para nada.
     `calls` guarda los argumentos de cada llamada, para poder verificar
-    CON QUE key se esta limitando (ej: que incluya el user_id correcto)."""
+    CON QUÉ key se está limitando (ej: que incluya el user_id correcto)."""
     def __init__(self, allowed=True):
         self.allowed = allowed
         self.calls = []
@@ -107,7 +107,7 @@ class FakeEmailSender:
 class FakeClock:
     """Reloj controlable para probar limites y caducidades por tiempo sin
     esperar de verdad. Es invocable (`clock()` devuelve `now`) para poder
-    inyectarlo donde el servicio espera una funcion de reloj."""
+    inyectarlo donde el servicio espera una función de reloj."""
     def __init__(self, now):
         self.now = now
 
@@ -120,7 +120,7 @@ class FakeClock:
 
 
 class FakeHTTPResponse:
-    """Respuesta de exito de mentira: solo hace de context manager vacio."""
+    """Respuesta de éxito de mentira: solo hace de context manager vacio."""
 
     def __enter__(self):
         return self
@@ -234,7 +234,7 @@ class FakeBodyMetricRepository:
 
 class FakeUserProfileRepository:
     """Doble de UserProfileRepository: `profiles` es un dict user_id -> perfil
-    (`UserProfile` sin sesion o `SimpleNamespace`)."""
+    (`UserProfile` sin sesión o `SimpleNamespace`)."""
 
     def __init__(self, profiles=None):
         self.profiles = dict(profiles or {})
@@ -246,7 +246,7 @@ class FakeUserProfileRepository:
 class FakeLockingUserRepository:
     """Doble de UserRepository con `get_by_id_for_update`: registra cada
     llamada en `for_update_calls`. Si `known_ids` es None, todo usuario
-    existe; si no, solo los ids indicados (los demas devuelven None)."""
+    existe; si no, solo los ids indicados (los demás devuelven None)."""
 
     def __init__(self, known_ids=None):
         self.known_ids = None if known_ids is None else set(known_ids)

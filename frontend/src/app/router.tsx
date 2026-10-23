@@ -54,13 +54,13 @@ function AnimatedRoutes() {
   const location = useLocation()
 
   return (
-    // key={location.pathname} en <Routes> es lo que le avisa a
-    // AnimatePresence "esto cambio, tratalo como que se va uno y entra
-    // otro" - sin esto, React Router simplemente reemplaza el contenido
-    // sin darle a AnimatePresence la chance de animar la salida.
+    // key={location.pathname} en <Routes> es lo que avisa a AnimatePresence
+    // de que la ruta cambió, para que trate el cambio como la salida de una
+    // pantalla y la entrada de otra. Sin esto, React Router reemplaza el
+    // contenido sin dar a AnimatePresence la oportunidad de animar la salida.
     // mode="wait" espera a que termine la salida antes de montar la nueva;
     // como el resto de las rutas no tiene PageTransition, esa espera es
-    // instantanea para ellas - solo login/registro se ven afectadas.
+    // instantánea para ellas: solo login y registro se ven afectadas.
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         {/* Rutas publicas */}

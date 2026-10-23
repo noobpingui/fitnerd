@@ -99,7 +99,7 @@ def read_profile(client, headers):
 
 
 # --------------------------------------------------------------------------
-# REQ-001: una sola medicion por dia
+# REQ-001: una sola medición por día
 # --------------------------------------------------------------------------
 
 
@@ -116,7 +116,7 @@ def test_post_creates_a_metric_with_201(client, registered_user):
     assert len(items) == 1
     assert items[0]["recorded_at"] == day(0)
     assert items[0]["weight"] == 80
-    # La medicion creada es corregible por su id (PUT nuevo de la feature).
+    # La medición creada es corregible por su id (PUT nuevo de la feature).
     corrected = put(client, headers, response.get_json()["id"], {"weight": 79})
     assert corrected.status_code == 200
     assert listing(client, headers)[0]["weight"] == 79
@@ -508,7 +508,7 @@ def test_delete_removes_the_metric_with_204(client, registered_user):
 
     assert response.status_code == 204
     assert listing(client, headers) == []
-    # Una nueva medicion el mismo dia vuelve a ser 201 (no queda hueco ni duplicado).
+    # Una nueva medición el mismo día vuelve a ser 201 (no queda hueco ni duplicado).
     again = post(client, headers, {"weight": 81})
     assert again.status_code == 201
     assert put(client, headers, again.get_json()["id"], {"weight": 82}).status_code == 200
@@ -544,7 +544,7 @@ def test_delete_of_an_unknown_id_is_404(client, registered_user):
 
 
 # --------------------------------------------------------------------------
-# REQ-005: el peso del perfil sigue a la ultima medicion de peso
+# REQ-005: el peso del perfil sigue a la última medición de peso
 # --------------------------------------------------------------------------
 
 
@@ -697,7 +697,7 @@ def test_user_id_in_the_body_is_ignored(client, app):
     assert len(listing(client, user_a["headers"])) == 1
     assert listing(client, user_b["headers"]) == []
     assert read_profile(client, user_b["headers"]) == profile_before
-    # B tampoco puede corregir la medicion de A.
+    # B tampoco puede corregir la medición de A.
     metric_id = response.get_json()["id"]
     assert put(client, user_b["headers"], metric_id, {"weight": 1}).status_code == 404
 

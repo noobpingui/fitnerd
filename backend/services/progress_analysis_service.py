@@ -8,7 +8,8 @@ from repositories.user_profile_repository import UserProfileRepository
 from repositories.user_repository import UserRepository
 from models.progress_analysis import ProgressAnalysis
 from services.calorie_suggestion import CalorieSuggestion, suggest_calories
-from services.profile_service import age_on, utc_now
+from services.profile_service import age_on
+from utils.clock import utc_now
 from services.progress_analysis_context import build_user_message, parse_analysis_request
 from unit_of_work.unit_of_work import UnitOfWork
 from utils.llm_client import LLMClient

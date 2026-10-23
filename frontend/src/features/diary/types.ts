@@ -31,7 +31,7 @@ export type Diary = {
   incomplete: NutrientKey[]
 }
 export type CatalogItemPayload = { catalog_id: string; grams: number }
-export type UsdaItemPayload ={ fdc_id: number; grams: number }
+export type UsdaItemPayload = { fdc_id: number; grams: number }
 export type CustomItemPayload = {
   name: string
   grams: number

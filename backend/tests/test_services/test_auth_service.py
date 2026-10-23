@@ -4,7 +4,7 @@ inyectados por constructor: no hay Postgres ni llamadas a Google.
 """
 
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 import bcrypt
 import pytest
@@ -131,8 +131,6 @@ def register(
 def years_before_today(years, extra_days=0):
     """Fecha ISO de quien cumple `years` años exactos hoy (más `extra_days` días
     de nacido después: positivo la acerca al siguiente cumpleaños)."""
-    from datetime import timedelta
-
     born = date(TODAY.year - years, TODAY.month, TODAY.day) + timedelta(days=extra_days)
     return born.isoformat()
 

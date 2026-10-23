@@ -12,10 +12,10 @@ import {
 import { clearToken, setToken } from "@/lib/authToken"
 
 // useMutation es el otro lado de la moneda de useQuery: se usa para
-// operaciones que ESCRIBEN (POST/PUT/DELETE) y que dispara una accion del
-// usuario (submit de un form), no algo que se auto-ejecuta al montar el
-// componente. No cachea nada - te da { mutate, isPending, isError, error }
-// y ejecutas la mutacion vos mismo llamando mutate(valores).
+// operaciones que ESCRIBEN (POST/PUT/DELETE) y que dispara una acción del
+// usuario (envío de un formulario), no algo que se ejecuta solo al montar el
+// componente. No cachea nada: devuelve { mutate, isPending, isError, error }
+// y la mutación se ejecuta llamando a mutate(valores).
 
 export function useLogin() {
   const navigate = useNavigate()

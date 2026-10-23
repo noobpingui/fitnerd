@@ -31,7 +31,7 @@ describe("ResetPasswordForm", () => {
   })
 
   // SDD: REQ-011 AC-011.2
-  it("muestra Mínimo 8 caracteres y no envia peticion con una contraseña corta", async () => {
+  it("muestra Mínimo 8 caracteres y no envía petición con una contraseña corta", async () => {
     const fakeFetch = vi.fn()
     vi.stubGlobal("fetch", fakeFetch)
     renderForm()
@@ -43,7 +43,7 @@ describe("ResetPasswordForm", () => {
   })
 
   // SDD: REQ-011 AC-011.3
-  it("muestra Las contraseñas no coinciden y no envia peticion", async () => {
+  it("muestra Las contraseñas no coinciden y no envía petición", async () => {
     const fakeFetch = vi.fn()
     vi.stubGlobal("fetch", fakeFetch)
     renderForm()
@@ -57,7 +57,7 @@ describe("ResetPasswordForm", () => {
   })
 
   // SDD: REQ-011 AC-011.8
-  it("muestra Contraseña demasiado larga con 73 bytes y no envia peticion", async () => {
+  it("muestra Contraseña demasiado larga con 73 bytes y no envía petición", async () => {
     const fakeFetch = vi.fn()
     vi.stubGlobal("fetch", fakeFetch)
     renderForm()
@@ -71,7 +71,7 @@ describe("ResetPasswordForm", () => {
   })
 
   // SDD: REQ-011 AC-011.9
-  it("muestra Contraseña demasiado larga con 37 ñ (74 bytes) y no envia peticion", async () => {
+  it("muestra Contraseña demasiado larga con 37 ñ (74 bytes) y no envía petición", async () => {
     const fakeFetch = vi.fn()
     vi.stubGlobal("fetch", fakeFetch)
     renderForm()
@@ -117,7 +117,7 @@ describe("ResetPasswordForm", () => {
   })
 
   // SDD: REQ-011 AC-011.7
-  it("muestra Guardando... y deshabilita el boton mientras la peticion esta en curso", async () => {
+  it("muestra Guardando... y deshabilita el botón mientras la petición está en curso", async () => {
     vi.stubGlobal("fetch", vi.fn().mockReturnValue(new Promise(() => {})))
     renderForm()
 
