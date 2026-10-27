@@ -9,7 +9,7 @@
   "branch": "fix/027-restore-token-hardening",
   "base_branch": "main",
   "created_at": "2026-10-27T05:55:23.138Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -20,7 +20,10 @@
       "at": "2026-10-27T06:23:45.638Z",
       "note": "auto (gate_mode=flow): plan 027 sin ADR ni migración"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-27T06:24:33.504Z",
+      "note": "auto (gate_mode=flow): 18 tareas, matriz completa"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -29,7 +32,8 @@
     "close": null
   },
   "commits": {
-    "spec": "8c13d6f"
+    "spec": "8c13d6f",
+    "plan": "b424cca"
   },
   "iterations": {
     "tests": 0,
@@ -111,6 +115,30 @@
       "stage": "plan",
       "event": "approved",
       "note": "auto (gate_mode=flow): plan 027 sin ADR ni migración"
+    },
+    {
+      "at": "2026-10-27T06:23:45.854Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: b424cca"
+    },
+    {
+      "at": "2026-10-27T06:23:46.046Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Descomponer el plan de 027 en tareas"
+    },
+    {
+      "at": "2026-10-27T06:24:33.402Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "Tareas 027: 18 (1 scaffold, 14 test, 3 impl), 29 AC cubiertos"
+    },
+    {
+      "at": "2026-10-27T06:24:33.504Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 18 tareas, matriz completa"
     }
   ]
 }
