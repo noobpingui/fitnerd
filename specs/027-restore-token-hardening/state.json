@@ -9,14 +9,17 @@
   "branch": "fix/027-restore-token-hardening",
   "base_branch": "main",
   "created_at": "2026-10-27T05:55:23.138Z",
-  "stage": "plan",
+  "stage": "tasks",
   "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-10-27T06:20:20.134Z",
       "note": "Aprobado, sigue"
     },
-    "plan": null,
+    "plan": {
+      "at": "2026-10-27T06:23:45.638Z",
+      "note": "auto (gate_mode=flow): plan 027 sin ADR ni migración"
+    },
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -25,7 +28,9 @@
     "docs": null,
     "close": null
   },
-  "commits": {},
+  "commits": {
+    "spec": "8c13d6f"
+  },
   "iterations": {
     "tests": 0,
     "implement": 0,
@@ -76,6 +81,36 @@
       "stage": "spec",
       "event": "approved",
       "note": "Aprobado, sigue"
+    },
+    {
+      "at": "2026-10-27T06:20:20.405Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 8c13d6f"
+    },
+    {
+      "at": "2026-10-27T06:20:20.595Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Diseñar el plan de 027 a partir de la spec aprobada"
+    },
+    {
+      "at": "2026-10-27T06:23:45.436Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "Plan 027: resolve_secret_key en config.py/app.py y validación estricta en parse_snapshot_payload; sin ADR ni migración"
+    },
+    {
+      "at": "2026-10-27T06:23:45.537Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Decisiones: comprobación en create_app (como FRONTEND_BASE_URL); error de FRONTEND_BASE_URL primero si fallan ambas; rango de fdc_id para cualquier origen; make_app con SECRET_KEY de pruebas; sin ADR nueva"
+    },
+    {
+      "at": "2026-10-27T06:23:45.638Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan 027 sin ADR ni migración"
     }
   ]
 }
