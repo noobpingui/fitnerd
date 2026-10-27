@@ -216,3 +216,5 @@ export const proposalFormSchema = z
       if (message) ctx.addIssue({ code: "custom", path: ["entries", index, "grams"], message })
     })
   })
+
+export const removalResponseSchema = z.object({ restore_token: z.string().min(1) })

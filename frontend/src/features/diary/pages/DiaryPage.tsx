@@ -1,20 +1,43 @@
-import { useMemo, type ReactElement } from "react"
+import { useCallback, useEffect, useMemo, useState, type ReactElement } from "react"
+import { useSearchParams } from "react-router"
 import { Button } from "@/components/ui/button"
 import { useProfile } from "@/features/profile/hooks"
 import { answersFromProfile } from "@/features/profile/mappers"
 import { calculateMacros } from "@/features/macros/calculations"
-import { todayIsoDate } from "@/lib/dates"
-import { DailyTotals } from "../components/DailyTotals"
-import { MealSection } from "../components/MealSection"
-import { MEAL_SECTIONS } from "../constants"
+import { DiaryDateNav } from "../components/DiaryDateNav"
+import { DiaryDayView } from "../components/DiaryDayView"
+import { resolveDiaryDate } from "../days"
 import { formatDiaryDate } from "../format"
-import { useDiary } from "../hooks"
-import type { NutrientTotals } from "../types"
+import { useDiary, useToday } from "../hooks"
+import type { MealType, NutrientTotals } from "../types"
 
 export function DiaryPage(): ReactElement {
-  const date = useMemo(() => todayIsoDate(), [])
+  // Con un diálogo abierto, «hoy» no avanza: el día y el diálogo no cambian (AC-005.4).
+  const [openDialogs, setOpenDialogs] = useState<ReadonlySet<MealType>>(new Set())
+  const today = useToday(openDialogs.size > 0)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { date, normalize } = resolveDiaryDate(searchParams.get("date"), today)
   const diary = useDiary(date)
   const profile = useProfile()
+
+  // Un parámetro inválido, fuera del intervalo o igual a hoy deja la dirección en /diary.
+  useEffect(() => {
+    if (normalize) setSearchParams({}, { replace: true })
+  }, [normalize, setSearchParams])
+
+  function goTo(next: string) {
+    setSearchParams(next === today ? {} : { date: next }, { replace: true })
+  }
+
+  const handleDialogOpenChange = useCallback((type: MealType, open: boolean) => {
+    setOpenDialogs((current) => {
+      if (current.has(type) === open) return current
+      const next = new Set(current)
+      if (open) next.add(type)
+      else next.delete(type)
+      return next
+    })
+  }, [])
 
   // Los objetivos son los mismos que muestra Macros para el mismo perfil.
   const targets = useMemo<NutrientTotals | null>(() => {
@@ -40,6 +63,10 @@ export function DiaryPage(): ReactElement {
 
   return (
     <div className="mx-auto max-w-2xl p-4 sm:p-8">
+      <h1 className="mb-1 text-2xl font-semibold">Diario</h1>
+      <p className="mb-2 text-muted-foreground">{formatDiaryDate(date, today)}</p>
+      <DiaryDateNav date={date} today={today} onChange={goTo} />
+
       {(isLoading || isError) && (
         <div role="status" aria-live="polite" className="my-4 text-sm text-muted-foreground">
           {isLoading && "Cargando el diario…"}
@@ -55,32 +82,14 @@ export function DiaryPage(): ReactElement {
       )}
 
       {diary.data && targets && (
-        <>
-          <h1 className="mb-1 text-2xl font-semibold">Diario</h1>
-          <p className="mb-4 text-muted-foreground">{formatDiaryDate(date)}</p>
-
-          <DailyTotals
-            totals={diary.data.totals}
-            incomplete={diary.data.incomplete}
-            targets={targets}
-          />
-
-          {diary.data.meals.length === 0 && (
-            <p className="mb-4 text-sm text-muted-foreground">
-              Todavía no has registrado nada hoy.
-            </p>
-          )}
-
-          {MEAL_SECTIONS.map((section) => (
-            <MealSection
-              key={section.type}
-              type={section.type}
-              label={section.label}
-              meal={diary.data.meals.find((meal) => meal.meal_type === section.type) ?? null}
-              date={date}
-            />
-          ))}
-        </>
+        <DiaryDayView
+          key={date}
+          date={date}
+          isToday={date === today}
+          diary={diary.data}
+          targets={targets}
+          onDialogOpenChange={handleDialogOpenChange}
+        />
       )}
     </div>
   )

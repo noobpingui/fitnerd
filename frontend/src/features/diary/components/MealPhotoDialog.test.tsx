@@ -23,6 +23,8 @@ vi.mock("@/features/diary/api", () => ({
   updateMealItemGrams: vi.fn(),
   removeMealItem: vi.fn(),
   analyzeMealPhoto: vi.fn(),
+  restoreMealItem: vi.fn(),
+  deleteMeal: vi.fn(),
 }))
 vi.mock("@/features/catalog/api", () => ({
   searchCatalog: vi.fn(),
@@ -1307,28 +1309,286 @@ describe("MealPhotoDialog - guardado y cierre", () => {
   })
 
   // SDD: 025 REQ-013 AC-013.1
-  it("«Cancelar» con una propuesta cierra sin guardar y sin pedir confirmación", async () => {
+  // SDD: 026 REQ-009 AC-009.2
+  it("«Cancelar» con una propuesta pide confirmación y «Descartar» cierra sin guardar", async () => {
+    const user = userEvent.setup()
+    const { onClose } = renderDialog()
+    await reachProposal(user, RICE_CHICKEN_SAUCE)
+
+    await user.click(button("Cancelar"))
+    expect(onClose).not.toHaveBeenCalled()
+    await user.click(await discardButton())
+
+    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(addMock).not.toHaveBeenCalled()
+  })
+
+  // SDD: 025 REQ-013 AC-013.1
+  // SDD: 026 REQ-009 AC-009.2
+  it("cerrar con Escape con una propuesta pide confirmación y «Descartar» no guarda nada", async () => {
+    const user = userEvent.setup()
+    const { onClose } = renderDialog()
+    await reachProposal(user, RICE_CHICKEN_SAUCE)
+
+    await user.keyboard("{Escape}")
+    expect(onClose).not.toHaveBeenCalled()
+    await user.click(await discardButton())
+
+    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(addMock).not.toHaveBeenCalled()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Spec 026, REQ-009: confirmar antes de descartar una propuesta
+// ---------------------------------------------------------------------------
+
+const DISCARD_TITLE = "¿Descartar la propuesta?"
+const DISCARD_TEXT =
+  "Perderás los alimentos propuestos. El análisis ya cuenta para el límite de 10 por hora."
+
+// Mientras la confirmación está abierta, Radix oculta el diálogo de la foto a las
+// consultas por rol: se busca con `hidden: true`.
+function photoDialogEvenIfHidden(label = currentLabel) {
+  return screen.getByRole("dialog", { name: `Añadir a ${label} con una foto`, hidden: true })
+}
+
+async function findConfirmation() {
+  return screen.findByRole("alertdialog", { name: DISCARD_TITLE })
+}
+
+async function discardButton() {
+  return within(await findConfirmation()).getByRole("button", { name: "Descartar" })
+}
+
+// El «fuera del diálogo» es el fondo oscuro que cubre la pantalla.
+function clickOutside(user: User) {
+  const overlay = document.querySelector('[data-slot="dialog-overlay"]') as HTMLElement
+  if (!overlay) throw new Error("No hay fondo de diálogo")
+  return user.click(overlay)
+}
+
+describe("MealPhotoDialog - confirmar el descarte de la propuesta (REQ-009)", () => {
+  beforeEach(resetMocks)
+
+  // SDD: 026 REQ-009 AC-009.1
+  it("«Cancelar» con una propuesta muestra la confirmación con su texto y sus dos botones, y el diálogo sigue abierto", async () => {
     const user = userEvent.setup()
     const { onClose } = renderDialog()
     await reachProposal(user, RICE_CHICKEN_SAUCE)
 
     await user.click(button("Cancelar"))
 
-    expect(onClose).toHaveBeenCalledTimes(1)
+    const alert = await findConfirmation()
+    expect(within(alert).getByText(DISCARD_TITLE)).toBeInTheDocument()
+    expect(within(alert).getByText(DISCARD_TEXT)).toBeInTheDocument()
+    expect(within(alert).getByRole("button", { name: "Descartar" })).toBeEnabled()
+    expect(within(alert).getByRole("button", { name: "Seguir revisando" })).toBeEnabled()
+    expect(photoDialogEvenIfHidden()).toBeInTheDocument()
+    expect(onClose).not.toHaveBeenCalled()
     expect(addMock).not.toHaveBeenCalled()
-    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
   })
 
-  // SDD: 025 REQ-013 AC-013.1
-  it("cerrar con Escape con una propuesta tampoco guarda nada", async () => {
+  // SDD: 026 REQ-009 AC-009.2
+  it("«Descartar» cierra el diálogo, no guarda nada y no relee el diario", async () => {
+    const user = userEvent.setup()
+    const { onClose } = renderDialog()
+    await waitFor(() => expect(getDiaryMock).toHaveBeenCalledTimes(1))
+    await reachProposal(user, RICE_CHICKEN_SAUCE)
+    await user.click(button("Cancelar"))
+
+    await user.click(await discardButton())
+
+    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(addMock).not.toHaveBeenCalled()
+    expect(getDiaryMock).toHaveBeenCalledTimes(1)
+  })
+
+  // SDD: 026 REQ-009 AC-009.3
+  it("«Seguir revisando» vuelve a la propuesta con los gramos editados y los alimentos quitados", async () => {
+    const user = userEvent.setup()
+    const { onClose } = renderDialog()
+    await reachProposal(user, RICE_CHICKEN_SAUCE)
+    await setGrams(user, "Arroz blanco cocido", "180")
+    await user.click(button("Quitar Pechuga de pollo a la plancha"))
+    const rowsBefore = rows().length
+    await user.click(button("Cancelar"))
+
+    await user.click(
+      within(await findConfirmation()).getByRole("button", { name: "Seguir revisando" })
+    )
+
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument())
+    expect(onClose).not.toHaveBeenCalled()
+    expect(rows()).toHaveLength(rowsBefore)
+    expect(gramsField("Arroz blanco cocido")).toHaveValue("180")
+    expect(
+      within(dialog()).queryByLabelText("Gramos de Pechuga de pollo a la plancha")
+    ).not.toBeInTheDocument()
+    expect(addMock).not.toHaveBeenCalled()
+  })
+
+  // SDD: 026 REQ-009 AC-009.3
+  it("Escape con la confirmación abierta la cierra y conserva la propuesta editada", async () => {
+    const user = userEvent.setup()
+    const { onClose } = renderDialog()
+    await reachProposal(user, RICE_CHICKEN_SAUCE)
+    await setGrams(user, "Arroz blanco cocido", "175")
+    await user.click(button("Cancelar"))
+    await findConfirmation()
+
+    await user.keyboard("{Escape}")
+
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument())
+    expect(onClose).not.toHaveBeenCalled()
+    expect(dialog()).toBeInTheDocument()
+    expect(gramsField("Arroz blanco cocido")).toHaveValue("175")
+  })
+
+  // SDD: 026 REQ-009 AC-009.4
+  it("Escape con una propuesta en pantalla muestra la misma confirmación en lugar de cerrar", async () => {
     const user = userEvent.setup()
     const { onClose } = renderDialog()
     await reachProposal(user, RICE_CHICKEN_SAUCE)
 
     await user.keyboard("{Escape}")
 
-    expect(onClose).toHaveBeenCalled()
-    expect(addMock).not.toHaveBeenCalled()
+    const alert = await findConfirmation()
+    expect(within(alert).getByText(DISCARD_TEXT)).toBeInTheDocument()
+    expect(onClose).not.toHaveBeenCalled()
+    expect(photoDialogEvenIfHidden()).toBeInTheDocument()
+  })
+
+  // SDD: 026 REQ-009 AC-009.4
+  it("pulsar fuera del diálogo con una propuesta muestra la misma confirmación en lugar de cerrar", async () => {
+    const user = userEvent.setup()
+    const { onClose } = renderDialog()
+    await reachProposal(user, RICE_CHICKEN_SAUCE)
+
+    await clickOutside(user)
+
+    expect(await findConfirmation()).toBeInTheDocument()
+    expect(onClose).not.toHaveBeenCalled()
+    expect(photoDialogEvenIfHidden()).toBeInTheDocument()
+  })
+
+  // SDD: 026 REQ-009 AC-009.4
+  // SDD: 026 NFR-001 AC-N001.3
+  it("la confirmación es un alertdialog cuyo nombre es su título y con el foco dentro", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(user, RICE_CHICKEN_SAUCE)
+
+    await user.click(button("Cancelar"))
+
+    const alert = await findConfirmation()
+    expect(alert).toHaveAccessibleName(DISCARD_TITLE)
+    await waitFor(() => expect(alert).toContainElement(document.activeElement as HTMLElement))
+  })
+
+  // Guarda de regresión de la 025: pasa sin implementar la 026.
+  // SDD: 026 REQ-009 AC-009.5
+  it("sin foto elegida, «Cancelar» cierra sin pedir confirmación", async () => {
+    const user = userEvent.setup()
+    const { onClose } = renderDialog()
+
+    await user.click(button("Cancelar"))
+
+    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
+  })
+
+  // Guarda de regresión de la 025: pasa sin implementar la 026.
+  // SDD: 026 REQ-009 AC-009.5
+  it("con una foto sin analizar, «Cancelar» cierra sin pedir confirmación", async () => {
+    const user = userEvent.setup()
+    const { onClose } = renderDialog()
+    await toPreview(user)
+
+    await user.click(button("Cancelar"))
+
+    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
+  })
+
+  // Guarda de regresión de la 025: pasa sin implementar la 026.
+  // SDD: 026 REQ-009 AC-009.5
+  it("con el análisis en curso, «Cancelar» cierra sin pedir confirmación", async () => {
+    const user = userEvent.setup()
+    analyzeMock.mockReturnValue(new Promise(() => {}))
+    const { onClose } = renderDialog()
+    await toPreview(user)
+    await clickAnalyze(user)
+    await within(dialog()).findByText("Analizando la foto…")
+
+    await user.click(button("Cancelar"))
+
+    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
+  })
+
+  // Guarda de regresión de la 025: pasa sin implementar la 026.
+  // SDD: 026 REQ-009 AC-009.5
+  it("con un error del análisis, «Cancelar» cierra sin pedir confirmación", async () => {
+    const user = userEvent.setup()
+    analyzeMock.mockRejectedValue(new ApiError(503, BUSY_503))
+    const { onClose } = renderDialog()
+    await toPreview(user)
+    await clickAnalyze(user)
+    await within(dialog()).findByText(BUSY_503)
+
+    await user.click(button("Cancelar"))
+
+    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
+  })
+
+  // Guarda de regresión de la 025: pasa sin implementar la 026.
+  // SDD: 026 REQ-009 AC-009.5
+  it("con «No reconocimos alimentos en la foto.», «Cancelar» cierra sin pedir confirmación", async () => {
+    const user = userEvent.setup()
+    analyzeMock.mockResolvedValue(makeAnalysis({ items: [], unmatched: [] }))
+    const { onClose } = renderDialog()
+    await toPreview(user)
+    await clickAnalyze(user)
+    await within(dialog()).findByText("No reconocimos alimentos en la foto.")
+
+    await user.click(button("Cancelar"))
+
+    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
+  })
+
+  // Guarda de regresión de la 025: pasa sin implementar la 026.
+  // SDD: 026 REQ-009 AC-009.6
+  it("mientras guarda la propuesta, Escape y pulsar fuera no cierran ni piden confirmación", async () => {
+    const user = userEvent.setup()
+    addMock.mockReturnValue(new Promise<Meal>(() => {}))
+    const { onClose } = renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await save(user)
+    await within(dialog()).findByRole("button", { name: "Guardando…" })
+
+    await user.keyboard("{Escape}")
+    await clickOutside(user)
+
+    expect(onClose).not.toHaveBeenCalled()
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
+    expect(dialog()).toBeInTheDocument()
+  })
+
+  // Guarda de regresión de la 025: pasa sin implementar la 026.
+  // SDD: 026 REQ-009 AC-009.6
+  it("tras guardar bien se cierra sin pedir confirmación", async () => {
+    const user = userEvent.setup()
+    const { onClose } = renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+
+    await save(user)
+
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
+    expect(addMock).toHaveBeenCalledTimes(1)
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
   })
 })
 

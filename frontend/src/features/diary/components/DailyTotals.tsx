@@ -42,7 +42,11 @@ export function DailyTotals({
                   {`${amount(view.consumed)} / ${intFormat.format(targets[key])} ${unit}`}
                 </span>
               </div>
-              <NutrientProgress label={NUTRIENT_LABELS[key]} percent={view.percent} />
+              <NutrientProgress
+                label={NUTRIENT_LABELS[key]}
+                percent={view.percent}
+                over={view.over}
+              />
               <p className="text-sm text-muted-foreground">
                 {view.over ? `${gap} por encima del objetivo` : `Quedan ${gap}`}
               </p>

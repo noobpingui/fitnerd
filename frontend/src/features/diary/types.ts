@@ -71,3 +71,4 @@ export type AddMealItemsPayload = {
   meal_type: MealType
   items: (CatalogItemPayload | UsdaItemPayload | CustomItemPayload)[]
 }
+export type RemovalUndo = { token: string; name: string; mealType: MealType }

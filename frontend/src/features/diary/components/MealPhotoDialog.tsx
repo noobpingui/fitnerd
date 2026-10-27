@@ -23,6 +23,7 @@ import {
 } from "../photo"
 import { proposalFromAnalysis } from "../proposal"
 import type { MealType, SavableItemPayload } from "../types"
+import { ConfirmDialog } from "./ConfirmDialog"
 import { PhotoPicker } from "./PhotoPicker"
 import { PhotoReview } from "./PhotoReview"
 
@@ -47,6 +48,8 @@ export function MealPhotoDialog({
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [preparing, setPreparing] = useState(false)
   const [upload, setUpload] = useState<Blob | null>(null)
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false)
+  const [contentElement, setContentElement] = useState<HTMLElement | null>(null)
   const analyze = useAnalyzeMealPhoto()
   const add = useAddMealItems(date)
   const previewRef = useRef<string | null>(null)
@@ -154,16 +157,27 @@ export function MealPhotoDialog({
   const noFoods = analysis !== null && !hasFoods
   const reviewing = analysis !== null && hasFoods
 
+  // Con una propuesta a medias, cerrar pide confirmación; mientras se guarda, no cierra.
+  function requestClose() {
+    if (add.isPending) return
+    if (reviewing) setConfirmingDiscard(true)
+    else onClose()
+  }
+
   return (
     <Dialog
       open
       onOpenChange={(open) => {
-        if (!open && !add.isPending) onClose()
+        if (!open) requestClose()
       }}
     >
       <DialogContent
+        ref={setContentElement}
         showCloseButton={false}
-        className="max-h-[90vh] overflow-y-auto max-sm:top-0 max-sm:left-0 max-sm:h-dvh max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-none max-sm:border-0"
+        // Sin transform (translate-none!): un ancestro con translate/scale haría que la
+        // confirmación anidada (position: fixed) se midiera contra este diálogo y no
+        // contra la ventana. Se centra con left/right 0 y margen automático.
+        className="top-[5vh] right-0 left-0 mx-auto max-h-[90vh] translate-none! overflow-y-auto max-sm:top-0 max-sm:h-dvh max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:rounded-none max-sm:border-0"
       >
         <DialogHeader>
           <DialogTitle>{`Añadir a ${label} con una foto`}</DialogTitle>
@@ -177,7 +191,7 @@ export function MealPhotoDialog({
             isSaving={add.isPending}
             saveError={add.isError ? saveErrorMessage(add.error) : null}
             onSave={(items) => void save(items)}
-            onCancel={onClose}
+            onCancel={requestClose}
           />
         )}
 
@@ -270,6 +284,17 @@ export function MealPhotoDialog({
               </div>
             )}
           </div>
+        )}
+        {confirmingDiscard && (
+          <ConfirmDialog
+            title="¿Descartar la propuesta?"
+            description="Perderás los alimentos propuestos. El análisis ya cuenta para el límite de 10 por hora."
+            confirmLabel="Descartar"
+            cancelLabel="Seguir revisando"
+            container={contentElement}
+            onConfirm={onClose}
+            onCancel={() => setConfirmingDiscard(false)}
+          />
         )}
       </DialogContent>
     </Dialog>

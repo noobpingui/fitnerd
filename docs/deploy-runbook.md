@@ -249,6 +249,25 @@ El botón «Cargar imagen» del diario (ADR-0033) usa el `POST /api/meals/analyz
 3. **Privacidad:** la Política de privacidad muestra el punto de Amazon Web Services (Amazon Bedrock) y la fecha del 22 de octubre de 2026.
 4. **Marcha atrás:** revertir el merge basta.
 
+### Caso A (sin migraciones) con backend y frontend: 026, días del diario y edición
+
+La 026 (ADR-0035) deja navegar entre días del diario, editar días pasados, borrar una comida y deshacer «Quitar». No hay migración ni variables nuevas, pero sí un endpoint nuevo y un orden de despliegue que conviene conocer.
+
+1. **Endpoints:**
+   - `POST /api/meals/restore` (nuevo, con sesión): recibe `{"restore_token": "…"}` y recrea el alimento quitado en su comida, día y posición.
+   - `DELETE /api/meals/{id}/items/{item_id}?undo=1`: con `undo=1` responde 200 con `{"restore_token": "…"}`; sin él sigue respondiendo 204.
+   - `POST /api/meals` acepta ahora fechas de 366 días atrás hasta mañana (reloj del servidor).
+2. **Orden de despliegue (frontend y backend no salen a la vez):** Vercel suele terminar antes que el CD. Un backend antiguo responde 204 al `DELETE …?undo=1`, así que el frontend nuevo no ofrece «Deshacer» (sin error) hasta que el CD termine. Un frontend antiguo con el backend nuevo no envía `undo=1` y todo sigue igual. No hace falta coordinar nada: espera al CD en verde y recarga las pestañas abiertas.
+3. **`SECRET_KEY` propia en EC2:** firma el `restore_token` (además del `feedback_id` del coach). Su valor por defecto es `DEFAULT SECRET` y `ProductionConfig` no exige otro, así que comprueba antes del merge que el `backend/.env` de EC2 tiene una `SECRET_KEY` propia y larga; con la de por defecto cualquiera podría fabricar tokens para su propia cuenta (hallazgo F2 de la review, en el backlog). Si la cambias, los `restore_token` pendientes (120 s) y los votos de respuestas ya emitidas dejan de valer (404); no rompe nada más.
+4. **Comprobaciones manuales en un navegador real** (jsdom no calcula posiciones ni colores). Con una cuenta real, tras el CD:
+   - **Confirmación al descartar (AC-009.1, AC-009.3, AC-009.4):** «Cargar imagen», analiza una foto, desplaza la lista de la propuesta hasta abajo y pulsa «Cancelar». La confirmación «¿Descartar la propuesta?» debe verse centrada en la ventana, no fuera de la vista. «Seguir revisando» conserva lo editado; «Descartar» cierra; Escape y clic fuera piden la misma confirmación. Prueba a 375 px (pantalla completa) y a 1024 px (diálogo pegado arriba, con scroll interno).
+   - **Barras en ámbar (AC-008.1 a AC-008.3):** supera el objetivo de calorías o de un macro y comprueba que la barra pasa a ámbar (sin rojo ni alerta); con el valor igual al objetivo sigue con el color normal.
+   - **Cambio de día a medianoche (AC-005.2):** con la pestaña en segundo plano pasada la medianoche, al volver el diario pasa al día nuevo (o comprueba que, con un diálogo abierto, no cambia hasta cerrarlo).
+   - **Selector de fecha (AC-002.6):** el selector nativo no deja elegir días futuros ni de hace más de 365 días.
+   - **«Deshacer» (AC-007.6):** quita un alimento, el aviso «Quitaste …» con «Deshacer» desaparece a los 10 s; pulsa «Deshacer» antes y el alimento vuelve a su sitio; quita el único alimento de una comida y deshaz: la comida vuelve a existir.
+   - **Borrar comida:** «Borrar comida» pide confirmación y quita todos los alimentos de esa comida.
+5. **Marcha atrás:** revertir el merge basta. No hay migración que deshacer; los alimentos quitados no se pueden restaurar tras la reversión, pero no se pierde nada más.
+
 ### Caso C (destructiva): migración después del CD
 
 1. Backup completo (paso 3) **verificado**, con el recuento de filas de lo que se va a borrar.

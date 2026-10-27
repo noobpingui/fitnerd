@@ -11,15 +11,20 @@ from services.meal_rules import (
     MAX_ITEMS_PER_MEAL,
     MEAL_NOT_FOUND_MESSAGE,
     NUTRIENT_KEYS,
+    RESTORE_TOKEN_TTL_SECONDS,
     TOO_MANY_ITEMS_MESSAGE,
     CatalogItemInput,
     CustomItemInput,
+    RemovedItemSnapshot,
     check_add_window,
+    epoch_seconds,
     is_db_id,
     parse_items,
     parse_meal_date,
     parse_meal_type,
+    parse_snapshot_payload,
     portion_nutrients,
+    snapshot_payload,
     sum_nutrients,
     validate_grams,
 )
@@ -85,7 +90,9 @@ class MealService:
         unit_of_work,
         clock=utc_now,
         catalog_repository=None,
+        restore_signer=None,
     ):
+        self.restore_signer = restore_signer
         self.catalog_repository = catalog_repository
         self.meal_repository = meal_repository
         self.food_repository = food_repository
@@ -197,10 +204,23 @@ class MealService:
             raise
         return _summarize(meal)
 
-    def remove_item(self, user_id, meal_id: int, item_id: int) -> None:
+    def remove_item(self, user_id, meal_id: int, item_id: int) -> str | None:
         try:
             self._lock_user(user_id)
             meal, item = self._find_item(user_id, meal_id, item_id)
+            snapshot = RemovedItemSnapshot(
+                meal_date=meal.meal_date,
+                meal_type=meal.meal_type,
+                position=item.position,
+                source=item.source,
+                catalog_id=item.catalog_id,
+                fdc_id=item.fdc_id,
+                name=item.name,
+                data_type=item.data_type,
+                grams=item.grams,
+                per_100g=_per_100g(item),
+                expires_at=epoch_seconds(self.clock()) + RESTORE_TOKEN_TTL_SECONDS,
+            )
             meal.items.remove(item)
             if not meal.items:
                 self.meal_repository.delete(meal)
@@ -210,6 +230,60 @@ class MealService:
         except Exception:
             self.unit_of_work.rollback()
             raise
+        if self.restore_signer is None:
+            return None
+        return self.restore_signer.sign(user_id, snapshot_payload(snapshot))
+
+    def restore_item(self, user_id, data: object) -> AddItemsResult:
+        body = require_json_object(data)
+        if self.restore_signer is None:
+            raise ResourceNotFoundError(ITEM_NOT_FOUND_MESSAGE)
+        payload = self.restore_signer.verify(user_id, body.get("restore_token"))
+        snapshot = parse_snapshot_payload(payload)
+        if snapshot is None or epoch_seconds(self.clock()) > snapshot.expires_at:
+            raise ResourceNotFoundError(ITEM_NOT_FOUND_MESSAGE)
+
+        try:
+            self._lock_user(user_id)
+            meal = self.meal_repository.get_by_user_date_and_type(
+                user_id, snapshot.meal_date, snapshot.meal_type
+            )
+            if meal is not None and len(meal.items) >= MAX_ITEMS_PER_MEAL:
+                raise ValidationError(TOO_MANY_ITEMS_MESSAGE)
+
+            created = meal is None
+            if created:
+                meal = self.meal_repository.create(
+                    Meal(
+                        user_id=user_id,
+                        meal_date=snapshot.meal_date,
+                        meal_type=snapshot.meal_type,
+                    )
+                )
+
+            item = _new_item(
+                snapshot.position,
+                snapshot.grams,
+                snapshot.per_100g,
+                source=snapshot.source,
+                catalog_id=snapshot.catalog_id,
+                fdc_id=snapshot.fdc_id,
+                name=snapshot.name,
+                data_type=snapshot.data_type,
+            )
+            index = next(
+                (i for i, other in enumerate(meal.items) if other.position > snapshot.position),
+                len(meal.items),
+            )
+            meal.items.insert(index, item)
+
+            if not created:
+                meal.touch()
+            self.unit_of_work.commit()
+        except Exception:
+            self.unit_of_work.rollback()
+            raise
+        return AddItemsResult(meal=_summarize(meal), created=created)
 
     def delete_meal(self, user_id, meal_id: int) -> None:
         try:

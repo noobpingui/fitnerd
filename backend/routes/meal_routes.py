@@ -1,4 +1,4 @@
-from flask import Blueprint, g, jsonify, request
+from flask import Blueprint, current_app, g, jsonify, request
 from werkzeug.exceptions import RequestEntityTooLarge
 
 from decorators import require_auth
@@ -15,6 +15,7 @@ from services.meal_rules import NUTRIENT_KEYS
 from services.meal_service import MealService, MealSummary
 from unit_of_work.unit_of_work import UnitOfWork
 from utils.clock import current_clock
+from utils.restore_token import RestoreTokenSigner
 
 meal_bp = Blueprint("meals", __name__, url_prefix="/api/meals")
 
@@ -59,6 +60,7 @@ def _build_meal_service() -> MealService:
         UnitOfWork(db.session),
         clock=current_clock(),
         catalog_repository=CatalogFoodRepository(db.session),
+        restore_signer=RestoreTokenSigner(current_app.config["SECRET_KEY"]),
     )
 
 
@@ -141,8 +143,18 @@ def update_item(meal_id, item_id):
 @meal_bp.route("/<int:meal_id>/items/<int:item_id>", methods=["DELETE"])
 @require_auth
 def remove_item(meal_id, item_id):
-    _build_meal_service().remove_item(g.decoded_token["id"], meal_id, item_id)
+    token = _build_meal_service().remove_item(g.decoded_token["id"], meal_id, item_id)
+    if request.args.get("undo") == "1" and token is not None:
+        return jsonify(restore_token=token), 200
     return "", 204
+
+
+@meal_bp.route("/restore", methods=["POST"])
+@require_auth
+def restore_item():
+    data = request.get_json(silent=True)
+    result = _build_meal_service().restore_item(g.decoded_token["id"], data)
+    return jsonify(_serialize_meal(result.meal)), (201 if result.created else 200)
 
 
 @meal_bp.route("/<int:meal_id>", methods=["DELETE"])

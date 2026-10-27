@@ -1,17 +1,24 @@
+import { useCallback, useEffect, useRef, useState } from "react"
 import {
   useMutation,
   useQuery,
   useQueryClient,
   type UseMutationResult,
 } from "@tanstack/react-query"
+import { ApiError } from "@/lib/apiClient"
+import { todayIsoDate } from "@/lib/dates"
 import {
   addMealItems,
   analyzeMealPhoto,
+  deleteMeal,
   getDiary,
   removeMealItem,
+  restoreMealItem,
   updateMealItemGrams,
 } from "./api"
-import type { AddMealItemsPayload, Meal, MealPhotoAnalysis } from "./types"
+import { TODAY_CHECK_INTERVAL_MS, UNDO_DURATION_MS } from "./constants"
+import { undoErrorMessage } from "./errors"
+import type { AddMealItemsPayload, Meal, MealPhotoAnalysis, RemovalUndo } from "./types"
 
 export const diaryKeys = { day: (date: string) => ["diary", date] as const }
 
@@ -47,8 +54,119 @@ export function useUpdateMealItemGrams(date: string) {
 
 export function useRemoveMealItem(date: string) {
   const queryClient = useQueryClient()
-  return useMutation<void, Error, { mealId: number; itemId: number }>({
+  return useMutation<string | null, Error, { mealId: number; itemId: number }>({
     mutationFn: ({ mealId, itemId }) => removeMealItem(mealId, itemId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: diaryKeys.day(date) }),
   })
+}
+
+export function useRestoreMealItem(date: string): UseMutationResult<Meal, Error, string> {
+  const queryClient = useQueryClient()
+  return useMutation<Meal, Error, string>({
+    mutationFn: (restoreToken) => restoreMealItem(restoreToken),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: diaryKeys.day(date) }),
+  })
+}
+
+// Un 404 cuenta como éxito: la comida ya no existe, que es lo que se pedía.
+export function useDeleteMeal(date: string): UseMutationResult<void, Error, number> {
+  const queryClient = useQueryClient()
+  return useMutation<void, Error, number>({
+    mutationFn: async (mealId) => {
+      try {
+        await deleteMeal(mealId)
+      } catch (error) {
+        if (!(error instanceof ApiError && error.status === 404)) throw error
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: diaryKeys.day(date) }),
+  })
+}
+
+// Fecha local de hoy, vigilada cada `intervalMs` y al volver la pestaña a estar visible.
+// En pausa no cambia; al quitar la pausa se comprueba en el acto.
+export function useToday(
+  paused: boolean = false,
+  intervalMs: number = TODAY_CHECK_INTERVAL_MS
+): string {
+  const [today, setToday] = useState(todayIsoDate)
+
+  useEffect(() => {
+    if (paused) return
+    const check = () => setToday(todayIsoDate())
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") check()
+    }
+    check()
+    const timerId = setInterval(check, intervalMs)
+    document.addEventListener("visibilitychange", onVisibilityChange)
+    return () => {
+      clearInterval(timerId)
+      document.removeEventListener("visibilitychange", onVisibilityChange)
+    }
+  }, [paused, intervalMs])
+
+  return today
+}
+
+export type RemovalUndoState = {
+  notice: RemovalUndo | null
+  offer: (notice: RemovalUndo | null) => void
+  undo: () => void
+  isRestoring: boolean
+  error: string | null
+}
+
+export function useRemovalUndo(
+  date: string,
+  durationMs: number = UNDO_DURATION_MS
+): RemovalUndoState {
+  const restore = useRestoreMealItem(date)
+  const [notice, setNotice] = useState<RemovalUndo | null>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const inFlightRef = useRef(false)
+
+  const clearTimer = useCallback(() => {
+    if (timerRef.current !== null) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+  }, [])
+
+  useEffect(() => clearTimer, [clearTimer])
+
+  const offer = useCallback(
+    (next: RemovalUndo | null) => {
+      clearTimer()
+      setNotice(next)
+      if (next) timerRef.current = setTimeout(() => setNotice(null), durationMs)
+    },
+    [clearTimer, durationMs]
+  )
+
+  const undo = useCallback(() => {
+    if (!notice || inFlightRef.current) return
+    inFlightRef.current = true
+    restore.mutate(notice.token, {
+      onSuccess: () => {
+        clearTimer()
+        setNotice(null)
+      },
+      onSettled: () => {
+        inFlightRef.current = false
+      },
+    })
+  }, [notice, restore, clearTimer])
+
+  return {
+    notice,
+    offer,
+    undo,
+    isRestoring: restore.isPending,
+    // El error pertenece al aviso cuyo token falló: un aviso nuevo no lo hereda.
+    error:
+      restore.isError && notice !== null && restore.variables === notice.token
+        ? undoErrorMessage(restore.error)
+        : null,
+  }
 }

@@ -3,7 +3,7 @@ base de datos ni red. Los mensajes se comparan con el texto literal de la
 sección 6 de la spec, no con las constantes del módulo.
 """
 
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 import pytest
@@ -12,19 +12,23 @@ from exceptions.custom_exceptions import ValidationError
 from services.meal_rules import (
     CatalogItemInput,
     CustomItemInput,
+    RemovedItemSnapshot,
     UsdaItemInput,
     check_add_window,
+    epoch_seconds,
     is_db_id,
     parse_items,
     parse_meal_date,
     parse_meal_type,
+    parse_snapshot_payload,
     portion_nutrients,
+    snapshot_payload,
     sum_nutrients,
     validate_grams,
 )
 
 DATE_INVALID = "La fecha no es válida."
-OUT_OF_WINDOW = "Solo puedes registrar comidas de hoy."
+OUT_OF_WINDOW = "Solo puedes registrar comidas de hoy o del último año."
 MEAL_TYPE_INVALID = "El tipo de comida no es válido."
 ITEMS_REQUIRED = "Añade al menos un alimento."
 TOO_MANY = "Una comida no puede tener más de 50 alimentos."
@@ -90,18 +94,157 @@ def test_parse_meal_date_rejects_an_invalid_date_for_the_diary_query(value):
     assert message_of(parse_meal_date, value) == DATE_INVALID
 
 
+# SDD: 026 REQ-001 AC-001.1
+@pytest.mark.parametrize("value", [date(2025, 10, 20), date(2026, 1, 15)])
+def test_check_add_window_accepts_past_dates_up_to_366_days_back(value):
+    """Con hoy el 2026-10-21, se aceptan desde el 2025-10-20."""
+    check_add_window(value, date(2026, 10, 21))
+
+
+# Guarda de regresión de la 022: pasa sin implementar la 026.
 # SDD: 022 REQ-004 AC-004.1
-@pytest.mark.parametrize("day", [20, 21, 22])
-def test_check_add_window_accepts_yesterday_today_and_tomorrow(day):
-    """Con hoy el 2026-10-21, se aceptan el 20, el 21 y el 22."""
-    check_add_window(date(2026, 10, day), date(2026, 10, 21))
+# Ayer, hoy y mañana siguen aceptándose.
+@pytest.mark.parametrize("value", [date(2026, 10, 20), date(2026, 10, 21), date(2026, 10, 22)])
+def test_check_add_window_still_accepts_yesterday_today_and_tomorrow(value):
+    check_add_window(value, date(2026, 10, 21))
 
 
-# SDD: 022 REQ-004 AC-004.2
-@pytest.mark.parametrize("day", [19, 23])
-def test_check_add_window_rejects_two_days_away(day):
-    """Con hoy el 2026-10-21, el 19 y el 23 quedan fuera de la ventana."""
-    assert message_of(check_add_window, date(2026, 10, day), date(2026, 10, 21)) == OUT_OF_WINDOW
+# SDD: 026 REQ-001 AC-001.2
+@pytest.mark.parametrize("value", [date(2025, 10, 19), date(2026, 10, 23)])
+def test_check_add_window_rejects_dates_outside_the_window(value):
+    """Con hoy el 2026-10-21, el 2025-10-19 y el 2026-10-23 quedan fuera de la ventana."""
+    assert message_of(check_add_window, value, date(2026, 10, 21)) == OUT_OF_WINDOW
+
+
+# --------------------------------------------------------------------------
+# Instantánea de un alimento quitado (ADR-0035)
+# --------------------------------------------------------------------------
+
+
+def snapshot(**overrides):
+    values = {
+        "meal_date": date(2026, 10, 20),
+        "meal_type": "breakfast",
+        "position": 1,
+        "source": "catalog",
+        "catalog_id": "platano",
+        "fdc_id": None,
+        "name": "Plátano",
+        "data_type": None,
+        "grams": Decimal("120.0"),
+        "per_100g": {"calories_kcal": 89.0, "protein_g": 1.1, "carbs_g": 22.8, "fat_g": 0.3},
+        "expires_at": 1792979000,
+    }
+    values.update(overrides)
+    return RemovedItemSnapshot(**values)
+
+
+# SDD: 026 REQ-007 AC-007.4
+@pytest.mark.parametrize(
+    "item",
+    [
+        snapshot(),
+        snapshot(
+            source="usda",
+            catalog_id=None,
+            fdc_id=171477,
+            name="Chicken",
+            data_type="sr_legacy_food",
+            per_100g={"calories_kcal": 165.0, "protein_g": 31.0, "carbs_g": None, "fat_g": None},
+        ),
+        snapshot(source="custom", catalog_id=None, name="Gallo pinto", grams=Decimal("250.5")),
+    ],
+)
+def test_snapshot_payload_round_trips_through_parse(item):
+    """Catálogo, USDA con valores `None` y personalizado vuelven iguales."""
+    assert parse_snapshot_payload(snapshot_payload(item)) == item
+
+
+# SDD: 026 REQ-007 AC-007.4
+def test_snapshot_payload_uses_the_documented_keys():
+    """El payload lleva las claves del contrato del plan."""
+    payload = snapshot_payload(snapshot())
+
+    assert set(payload) == {"v", "d", "t", "p", "s", "c", "f", "n", "dt", "g", "per", "exp"}
+    assert payload["v"] == 1
+    assert payload["d"] == "2026-10-20"
+
+
+# SDD: 026 REQ-007 AC-007.4
+def test_epoch_seconds_converts_a_naive_utc_instant():
+    """Un instante naive en UTC se convierte en segundos desde 1970."""
+    assert epoch_seconds(datetime(1970, 1, 1, 0, 1, 0)) == 60
+    assert epoch_seconds(datetime(2026, 10, 21, 3, 0, 0)) == 1792551600
+
+
+_VALID_PAYLOAD = {
+    "v": 1,
+    "d": "2026-10-20",
+    "t": "breakfast",
+    "p": 1,
+    "s": "catalog",
+    "c": "platano",
+    "f": None,
+    "n": "Plátano",
+    "dt": None,
+    "g": "120.0",
+    "per": {"calories_kcal": 89.0, "protein_g": 1.1, "carbs_g": 22.8, "fat_g": 0.3},
+    "exp": 1792979000,
+}
+
+
+def _payload_with(**changes):
+    """Copia del payload válido del plan con los cambios dados (sin llamar al código)."""
+    payload = dict(_VALID_PAYLOAD)
+    for key, value in changes.items():
+        if value is _REMOVE:
+            payload.pop(key, None)
+        else:
+            payload[key] = value
+    return payload
+
+
+_REMOVE = object()
+
+
+# SDD: 026 REQ-007 AC-007.4
+def test_parse_snapshot_payload_accepts_the_documented_payload():
+    """El payload de ejemplo del plan se convierte en el snapshot esperado."""
+    assert parse_snapshot_payload(dict(_VALID_PAYLOAD)) == snapshot()
+
+
+# SDD: 026 REQ-007 AC-007.4
+@pytest.mark.parametrize(
+    "payload",
+    [
+        None,
+        "texto",
+        [],
+        42,
+        _payload_with(v=2),
+        _payload_with(v=_REMOVE),
+        _payload_with(d="2026-02-30"),
+        _payload_with(d="20-10-2026"),
+        _payload_with(d=_REMOVE),
+        _payload_with(t="brunch"),
+        _payload_with(p=-1),
+        _payload_with(p="1"),
+        _payload_with(s="otro"),
+        _payload_with(n=""),
+        _payload_with(n=None),
+        _payload_with(g="0"),
+        _payload_with(g="2001"),
+        _payload_with(g="no-es-numero"),
+        _payload_with(per={"calories_kcal": 1.0}),
+        _payload_with(per="x"),
+        _payload_with(per={"calories_kcal": "a", "protein_g": 1, "carbs_g": 1, "fat_g": 1}),
+        _payload_with(exp="mañana"),
+        _payload_with(exp=_REMOVE),
+    ],
+)
+def test_parse_snapshot_payload_returns_none_for_malformed_payloads(payload):
+    """Cualquier campo ausente, de otro tipo o fuera de rango da `None`."""
+    assert parse_snapshot_payload(payload) is None
 
 
 # SDD: 022 REQ-003 AC-003.2

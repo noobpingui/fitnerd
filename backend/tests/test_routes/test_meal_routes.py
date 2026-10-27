@@ -583,9 +583,22 @@ def test_post_with_one_invalid_item_saves_nothing(client, app, headers, chicken)
 # --------------------------------------------------------------------------
 
 
+# SDD: 026 REQ-001 AC-001.1
+@pytest.mark.parametrize("date", ["2025-10-20", "2026-01-15"])
+def test_post_accepts_past_dates_up_to_366_days_back(client, headers, date):
+    """Con el reloj en 2026-10-21 03:00, 366 días atrás y fechas intermedias se guardan."""
+    response = post(client, headers, [GALLO], date=date)
+
+    assert response.status_code == 201
+    assert response.get_json()["date"] == date
+    assert len(diary(client, headers, date)["meals"]) == 1
+
+
+# Guarda de regresión de la 022: pasa sin implementar la 026.
 # SDD: 022 REQ-004 AC-004.1
+# Ayer, hoy y mañana siguen aceptándose.
 @pytest.mark.parametrize("date", ["2026-10-20", "2026-10-21", "2026-10-22"])
-def test_post_accepts_yesterday_today_and_tomorrow_of_the_server_clock(client, headers, date):
+def test_post_still_accepts_yesterday_today_and_tomorrow(client, headers, date):
     """Con el reloj en 2026-10-21 03:00 se guarda en la comida de esa fecha."""
     response = post(client, headers, [GALLO], date=date)
 
@@ -594,15 +607,47 @@ def test_post_accepts_yesterday_today_and_tomorrow_of_the_server_clock(client, h
     assert len(diary(client, headers, date)["meals"]) == 1
 
 
+# SDD: 026 REQ-001 AC-001.1
+def test_post_to_an_existing_meal_of_a_past_date_returns_200(client, headers):
+    """Una segunda petición al mismo día pasado y tipo responde 200."""
+    first = post(client, headers, [GALLO], date="2026-01-15")
+
+    second = post(client, headers, [GALLO], date="2026-01-15")
+
+    assert first.status_code == 201
+    assert second.status_code == 200
+    assert len(second.get_json()["items"]) == 2
+
+
 # SDD: 022 REQ-004 AC-004.2
-@pytest.mark.parametrize("date", ["2026-10-19", "2026-10-23"])
+# SDD: 026 REQ-001 AC-001.2
+@pytest.mark.parametrize("date", ["2025-10-19", "2026-10-23"])
 def test_post_rejects_dates_outside_the_window(client, app, headers, date):
-    """El 19 y el 23: «Solo puedes registrar comidas de hoy.» y nada guardado."""
+    """El 2025-10-19 y el 2026-10-23: «Solo puedes registrar comidas de hoy o del
+    último año.» y nada guardado."""
     response = post(client, headers, [GALLO], date=date)
 
     assert response.status_code == 400
-    assert response.get_json() == {"error": "Solo puedes registrar comidas de hoy."}
+    assert response.get_json() == {
+        "error": "Solo puedes registrar comidas de hoy o del último año."
+    }
     assert counts(app) == (0, 0)
+
+
+# SDD: 026 REQ-001 AC-001.4
+def test_patch_and_delete_work_on_a_meal_from_200_days_ago(client, headers):
+    """Cambiar los gramos y quitar un alimento de hace 200 días funciona como hoy."""
+    meal = post(client, headers, [GALLO, {**GALLO, "name": "Arroz"}], date="2026-04-04").get_json()
+    first, second = (item["id"] for item in meal["items"])
+
+    patched = patch(client, headers, meal["id"], first, {"grams": 100})
+    removed = delete_item(client, headers, meal["id"], second)
+
+    assert patched.status_code == 200
+    assert patched.get_json()["items"][0]["grams"] == 100
+    assert removed.status_code == 204
+    items = diary(client, headers, "2026-04-04")["meals"][0]["items"]
+    assert [i["id"] for i in items] == [first]
 
 
 # SDD: 022 REQ-004 AC-004.3
@@ -1402,3 +1447,264 @@ def test_delete_of_a_catalog_item_and_its_meal_work(client, headers, catalog):
 
     assert removed.status_code == 204
     assert diary(client, headers)["meals"] == []
+
+
+# --------------------------------------------------------------------------
+# Spec 026: fechas, deshacer y aislamiento
+# --------------------------------------------------------------------------
+
+RESTORE_URL = f"{URL}/restore"
+TOO_MANY_MESSAGE = {"error": "Una comida no puede tener más de 50 alimentos."}
+
+
+def delete_with_undo(client, headers, meal_id, item_id):
+    return client.delete(f"{URL}/{meal_id}/items/{item_id}?undo=1", headers=headers)
+
+
+def restore(client, headers, token):
+    return client.post(RESTORE_URL, json={"restore_token": token}, headers=headers)
+
+
+def three_item_breakfast(client, headers):
+    """Desayuno de hoy con tres alimentos personalizados: Avena, Plátano y Leche."""
+    names = ["Avena", "Plátano", "Leche"]
+    meal = post(
+        client, headers, [{**GALLO, "name": name} for name in names], meal_type="breakfast"
+    ).get_json()
+    return meal
+
+
+# Guarda de regresión de la 022: pasa sin implementar la 026.
+# SDD: 026 REQ-001 AC-001.3
+@pytest.mark.parametrize("date", [None, "20-10-2026", "2026-02-30"])
+def test_post_still_rejects_a_missing_or_invalid_date_with_the_date_message(
+    client, app, headers, date
+):
+    """Con la ventana nueva, una fecha ausente o imposible sigue dando «La fecha no es válida.»."""
+    body = {"meal_type": "lunch", "items": [GALLO]}
+    if date is not None:
+        body["date"] = date
+
+    response = client.post(URL, json=body, headers=headers)
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "La fecha no es válida."}
+    assert counts(app) == (0, 0)
+
+
+# SDD: 026 REQ-007 AC-007.2
+# SDD: 026 REQ-007 AC-007.3
+def test_delete_with_undo_returns_200_and_a_restore_token(client, headers):
+    """`?undo=1`: 200 con `restore_token` y el alimento ya no está en el diario."""
+    meal = three_item_breakfast(client, headers)
+
+    response = delete_with_undo(client, headers, meal["id"], meal["items"][1]["id"])
+
+    assert response.status_code == 200
+    body = response.get_json()
+    assert set(body) == {"restore_token"}
+    assert isinstance(body["restore_token"], str) and body["restore_token"] != ""
+    names = [i["name"] for i in diary(client, headers)["meals"][0]["items"]]
+    assert names == ["Avena", "Leche"]
+
+
+# Guarda de regresión de la 022: pasa sin implementar la 026.
+# SDD: 026 REQ-007 AC-007.2
+def test_delete_without_undo_still_returns_204_with_no_body(client, headers):
+    """Sin `undo=1` (o con otro valor), 204 sin cuerpo, como en la 022."""
+    meal = three_item_breakfast(client, headers)
+
+    plain = delete_item(client, headers, meal["id"], meal["items"][0]["id"])
+    other_value = client.delete(
+        f"{URL}/{meal['id']}/items/{meal['items'][1]['id']}?undo=0", headers=headers
+    )
+
+    assert plain.status_code == 204 and plain.data == b""
+    assert other_value.status_code == 204 and other_value.data == b""
+
+
+# SDD: 026 REQ-007 AC-007.3
+def test_restore_puts_the_item_back_in_the_existing_meal_and_position(client, headers):
+    """200 en la comida que existe, con el plátano entre la avena y la leche."""
+    meal = three_item_breakfast(client, headers)
+    original = meal["items"][1]
+    token = delete_with_undo(client, headers, meal["id"], original["id"]).get_json()[
+        "restore_token"
+    ]
+
+    response = restore(client, headers, token)
+
+    assert response.status_code == 200
+    body = response.get_json()
+    assert body["id"] == meal["id"]
+    assert [i["name"] for i in body["items"]] == ["Avena", "Plátano", "Leche"]
+    restored = body["items"][1]
+    assert restored["grams"] == original["grams"]
+    assert restored["per_100g"] == original["per_100g"]
+    assert restored["nutrients"] == original["nutrients"]
+    assert restored["source"] == original["source"]
+    names = [i["name"] for i in diary(client, headers)["meals"][0]["items"]]
+    assert names == ["Avena", "Plátano", "Leche"]
+    assert body["totals"] == meal["totals"]
+
+
+# SDD: 026 REQ-007 AC-007.3
+def test_restore_response_has_the_shape_of_post_meals(client, headers):
+    """La respuesta es la comida serializada como en `POST /api/meals`."""
+    meal = three_item_breakfast(client, headers)
+    token = delete_with_undo(client, headers, meal["id"], meal["items"][2]["id"]).get_json()[
+        "restore_token"
+    ]
+
+    body = restore(client, headers, token).get_json()
+
+    assert set(body) == {"id", "date", "meal_type", "items", "totals", "incomplete"}
+    assert body["date"] == TODAY
+    assert body["meal_type"] == "breakfast"
+
+
+# SDD: 026 REQ-007 AC-007.5
+def test_restore_recreates_the_meal_with_201_after_removing_its_only_item(client, headers):
+    """Quitar el único alimento borra la comida; restaurar responde 201 y la recrea."""
+    meal = post(client, headers, [GALLO], meal_type="dinner").get_json()
+    token = delete_with_undo(client, headers, meal["id"], meal["items"][0]["id"]).get_json()[
+        "restore_token"
+    ]
+    assert diary(client, headers)["meals"] == []
+
+    response = restore(client, headers, token)
+
+    assert response.status_code == 201
+    body = response.get_json()
+    assert body["meal_type"] == "dinner" and body["date"] == TODAY
+    assert [i["name"] for i in body["items"]] == ["Gallo pinto"]
+    assert len(diary(client, headers)["meals"]) == 1
+
+
+# SDD: 026 REQ-007 AC-007.5
+def test_restore_works_on_a_past_day(client, headers):
+    """El alimento de un día pasado vuelve a ese día, no a hoy."""
+    meal = post(client, headers, [GALLO], date="2026-10-10").get_json()
+    token = delete_with_undo(client, headers, meal["id"], meal["items"][0]["id"]).get_json()[
+        "restore_token"
+    ]
+
+    response = restore(client, headers, token)
+
+    assert response.status_code == 201
+    assert response.get_json()["date"] == "2026-10-10"
+    assert diary(client, headers)["meals"] == []
+
+
+# SDD: 026 REQ-007 AC-007.10
+def test_restore_into_a_meal_that_reached_50_items_is_a_400_and_changes_nothing(
+    client, app, headers
+):
+    """Quitar uno de 50, añadir otro y restaurar: 400 con el mensaje del tope."""
+    custom = {**GALLO, "name": "Alimento"}
+    meal = post(client, headers, [custom] * 50).get_json()
+    token = delete_with_undo(client, headers, meal["id"], meal["items"][0]["id"]).get_json()[
+        "restore_token"
+    ]
+    assert post(client, headers, [custom]).status_code == 200
+    before = counts(app)
+
+    response = restore(client, headers, token)
+
+    assert response.status_code == 400
+    assert response.get_json() == TOO_MANY_MESSAGE
+    assert counts(app) == before
+
+
+# SDD: 026 REQ-007 AC-007.3
+@pytest.mark.parametrize(
+    "body",
+    [{}, {"restore_token": None}, {"restore_token": 5}, {"restore_token": "sin-punto"},
+     {"restore_token": "a.b"}],
+)
+def test_restore_with_a_missing_or_invalid_token_is_a_404(client, app, headers, body):
+    """Sin token, que no es texto o que no es de este servidor: 404."""
+    three_item_breakfast(client, headers)
+    before = counts(app)
+
+    response = client.post(RESTORE_URL, json=body, headers=headers)
+
+    assert response.status_code == 404
+    assert response.get_json() == ITEM_NOT_FOUND
+    assert counts(app) == before
+
+
+# SDD: 026 REQ-007 AC-007.3
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"data": "texto", "content_type": "text/plain"},
+        {"data": "null", "content_type": "application/json"},
+        {"data": "[1, 2]", "content_type": "application/json"},
+    ],
+)
+def test_restore_rejects_a_body_that_is_not_a_json_object(client, headers, kwargs):
+    """Texto, `null` o lista: 400 «La petición no es válida»."""
+    response = client.post(RESTORE_URL, headers=headers, **kwargs)
+
+    assert response.status_code == 400
+    assert response.get_json() == INVALID_REQUEST
+
+
+# Guarda de regresión de la 022: pasa sin implementar la 026.
+# SDD: 026 NFR-002 AC-N002.1
+def test_deleting_the_meal_of_another_user_is_a_404_and_leaves_it_intact(client, headers):
+    """A pide borrar la comida de B: 404 «No encontramos esa comida.» y B conserva todo."""
+    other = register(client, "beto@example.com")
+    theirs = post(client, other, [GALLO, {**GALLO, "name": "Arroz"}]).get_json()
+
+    response = delete_meal(client, headers, theirs["id"])
+
+    assert response.status_code == 404
+    assert response.get_json() == MEAL_NOT_FOUND
+    items = diary(client, other)["meals"][0]["items"]
+    assert [i["name"] for i in items] == ["Gallo pinto", "Arroz"]
+
+
+# SDD: 026 NFR-002 AC-N002.2
+def test_restoring_with_the_token_of_another_user_is_a_404_and_changes_nothing(
+    client, app, headers
+):
+    """El token que obtuvo B no sirve para A: 404 y las comidas de B no cambian."""
+    other = register(client, "beto@example.com")
+    theirs = three_item_breakfast(client, other)
+    token = delete_with_undo(client, other, theirs["id"], theirs["items"][1]["id"]).get_json()[
+        "restore_token"
+    ]
+    before = counts(app)
+    their_diary = diary(client, other)
+
+    response = restore(client, headers, token)
+
+    assert response.status_code == 404
+    assert response.get_json() == ITEM_NOT_FOUND
+    assert counts(app) == before
+    assert diary(client, other) == their_diary
+    assert diary(client, headers)["meals"] == []
+
+
+# SDD: 026 NFR-002 AC-N002.3
+def test_without_a_session_nothing_is_added_deleted_or_restored(client, app, headers):
+    """Sin sesión, `POST /api/meals`, `DELETE /api/meals/{id}`, `DELETE …/items/{id}`
+    y `POST /api/meals/restore` dan 401 y no cambian nada."""
+    meal = three_item_breakfast(client, headers)
+    token = delete_with_undo(client, headers, meal["id"], meal["items"][1]["id"]).get_json()[
+        "restore_token"
+    ]
+    before = counts(app)
+
+    responses = [
+        client.post(URL, json={"date": TODAY, "meal_type": "lunch", "items": [GALLO]}),
+        client.delete(f"{URL}/{meal['id']}"),
+        client.delete(f"{URL}/{meal['id']}/items/{meal['items'][0]['id']}"),
+        client.delete(f"{URL}/{meal['id']}/items/{meal['items'][0]['id']}?undo=1"),
+        client.post(RESTORE_URL, json={"restore_token": token}),
+    ]
+
+    assert [r.status_code for r in responses] == [401] * 5
+    assert counts(app) == before

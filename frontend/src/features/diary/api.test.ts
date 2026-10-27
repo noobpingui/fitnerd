@@ -3,7 +3,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "@/lib/apiClient"
 import { RICE, TOMATO_SAUCE, makeAnalysis } from "@/test/analysisFixtures"
-import { analyzeMealPhoto } from "./api"
+import { makeMeal } from "@/test/diaryFixtures"
+import { analyzeMealPhoto, deleteMeal, removeMealItem, restoreMealItem } from "./api"
 
 vi.mock("@/lib/apiClient", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/apiClient")>()),
@@ -75,5 +76,92 @@ describe("analyzeMealPhoto", () => {
 
     await expect(analyzeMealPhoto(jpeg())).rejects.toBeDefined()
     expect(apiFetchMock).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe("removeMealItem", () => {
+  beforeEach(() => {
+    apiFetchMock.mockReset()
+  })
+
+  // SDD: 026 REQ-007 AC-007.3
+  it("llama a DELETE /api/meals/1/items/2?undo=1 y devuelve el token de restauración", async () => {
+    apiFetchMock.mockResolvedValue({ restore_token: "payload.firma" })
+
+    const token = await removeMealItem(1, 2)
+
+    expect(apiFetchMock).toHaveBeenCalledTimes(1)
+    const [path, options] = apiFetchMock.mock.calls[0]
+    expect(path).toBe("/api/meals/1/items/2?undo=1")
+    expect(options).toMatchObject({ method: "DELETE" })
+    expect(token).toBe("payload.firma")
+  })
+
+  // SDD: 026 REQ-007 AC-007.3
+  it.each([undefined, null, "", {}, { restore_token: "" }, { restore_token: 5 }])(
+    "si la respuesta no trae un token válido (%j), devuelve null",
+    async (response) => {
+      apiFetchMock.mockResolvedValue(response)
+
+      await expect(removeMealItem(1, 2)).resolves.toBeNull()
+      expect(apiFetchMock).toHaveBeenCalledTimes(1)
+      expect(apiFetchMock.mock.calls[0][0]).toBe("/api/meals/1/items/2?undo=1")
+    }
+  )
+
+  // SDD: 026 REQ-007 AC-007.3
+  it("si la petición falla, propaga el error", async () => {
+    apiFetchMock.mockRejectedValue(new Error("boom"))
+
+    await expect(removeMealItem(1, 2)).rejects.toThrow("boom")
+    expect(apiFetchMock.mock.calls[0][0]).toBe("/api/meals/1/items/2?undo=1")
+  })
+})
+
+describe("restoreMealItem", () => {
+  beforeEach(() => {
+    apiFetchMock.mockReset()
+  })
+
+  // SDD: 026 REQ-007 AC-007.3
+  it("hace POST /api/meals/restore con { restore_token } y devuelve la comida validada", async () => {
+    apiFetchMock.mockResolvedValue(makeMeal())
+
+    const meal = await restoreMealItem("payload.firma")
+
+    expect(apiFetchMock).toHaveBeenCalledTimes(1)
+    const [path, options] = apiFetchMock.mock.calls[0]
+    expect(path).toBe("/api/meals/restore")
+    expect(options).toMatchObject({ method: "POST", body: { restore_token: "payload.firma" } })
+    expect(meal.id).toBe(12)
+    expect(meal.items).toHaveLength(1)
+  })
+
+  // SDD: 026 REQ-007 AC-007.3
+  it("rechaza una respuesta con una forma inesperada", async () => {
+    apiFetchMock.mockResolvedValue({ items: "no es una lista" })
+
+    await expect(restoreMealItem("t.f")).rejects.toMatchObject({ name: "ZodError" })
+    expect(apiFetchMock).toHaveBeenCalledWith(
+      "/api/meals/restore",
+      expect.objectContaining({ method: "POST" }),
+    )
+  })
+})
+
+describe("deleteMeal", () => {
+  beforeEach(() => {
+    apiFetchMock.mockReset()
+    apiFetchMock.mockResolvedValue(undefined)
+  })
+
+  // SDD: 026 REQ-006 AC-006.3
+  it("hace DELETE /api/meals/1", async () => {
+    await deleteMeal(1)
+
+    expect(apiFetchMock).toHaveBeenCalledTimes(1)
+    const [path, options] = apiFetchMock.mock.calls[0]
+    expect(path).toBe("/api/meals/1")
+    expect(options).toMatchObject({ method: "DELETE" })
   })
 })
