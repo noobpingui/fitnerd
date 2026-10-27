@@ -44,3 +44,6 @@
 ## review · reviewer (iteración 3)
 - [ ] P4 (docs, doc-keeper): comprobar SECRET_KEY en el backend/.env de EC2 antes del merge y documentar los comandos locales con FLASK_ENV=production.
 - [ ] Confirmar AC-N002.1 en CI (sin SECRET_KEY en el entorno).
+
+## docs · doc-keeper
+- [ ] Añadir la fila de la 027 al historial de despliegues del runbook cuando se despliegue.

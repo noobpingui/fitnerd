@@ -48,6 +48,13 @@ Si una migración mezcla las dos cosas, sepárala en dos despliegues: primero la
 1. **PR abierto contra `main` con el CI en verde:** `gh pr checks N --watch`. Deben pasar los dos `test` (backend y frontend) y el preview de Vercel. El job `deploy` sale como *skipping* en un PR, y es lo normal.
 2. **Variables nuevas:** si la feature añade alguna, ya tiene que estar en el `backend/.env` de EC2 (o en Vercel, si es del frontend) **antes** del merge.
    - **`FRONTEND_BASE_URL` (desde la 020, ADR-0028):** en producción es obligatoria y debe empezar por `https://`. Comprueba que el `backend/.env` de EC2 tiene `FRONTEND_BASE_URL=https://fitnerd.betofallas.dev` **antes del merge**. Si falta o no empieza por `https://`, `ProductionConfig` lanza un error al arrancar: el contenedor no levanta tras el CD y la comprobación de `/api/health` falla. Antes de la 020 la ausencia pasaba sin avisar y los correos llevaban enlaces a `localhost`.
+   - **`SECRET_KEY` (desde la 027):** en producción es obligatoria y `ProductionConfig` falla al arrancar con «SECRET_KEY es obligatoria en producción y no puede ser un valor por defecto» si falta, está vacía, solo tiene espacios o vale `DEFAULT SECRET` o `change-me` (con o sin espacios en los extremos). Cualquier otro valor se usa tal cual, sin recortar. Comprueba **antes del merge** que el `backend/.env` de EC2 tiene una propia, **sin imprimirla** (ni en el chat ni en un log). En la instancia, como `ec2-user`, este comando solo dice si vale o no y cuántos caracteres tiene:
+     ```bash
+     v=$(grep -E '^SECRET_KEY=' /home/ec2-user/fitnerd/backend/.env | cut -d= -f2- | tr -d '\r"'"'"); t=$(echo "$v" | xargs)
+     case "$t" in ""|"DEFAULT SECRET"|"change-me") echo "NO VALE: ausente o por defecto";; *) echo "OK (${#v} caracteres)";; esac
+     ```
+     Si no vale, genera una nueva (p. ej. `python -c "import secrets; print(secrets.token_urlsafe(48))"` en tu máquina, sin pegarla en ningún sitio compartido), ponla en el `.env` y cambiarla invalida los `restore_token` pendientes (120 s) y los votos de respuestas ya emitidas del coach (404). La longitud mínima no se exige todavía (en el backlog).
+   - **Comandos locales con `FLASK_ENV=production`** (p. ej. `flask db upgrade` contra Supabase, o los scripts que llaman a `create_app()`): ahora también necesitan una `SECRET_KEY` válida en el entorno o en `backend/.env`. Si tu `.env` local trae `change-me` (el valor de `backend/.env.example`), el comando falla con el mismo error: exporta antes una clave propia solo para ese comando (`SECRET_KEY=<clave> FLASK_ENV=production flask db upgrade`), sin dejarla escrita en el historial del shell. Para una migración, la clave puede ser cualquiera que no sea un valor por defecto: no se usa para firmar nada.
 3. **Avisos del despliegue:** lee la sección de despliegue del `CLAUDE.md` y el PR por si hay pasos específicos de la feature.
 
 ---
@@ -258,7 +265,7 @@ La 026 (ADR-0035) deja navegar entre días del diario, editar días pasados, bor
    - `DELETE /api/meals/{id}/items/{item_id}?undo=1`: con `undo=1` responde 200 con `{"restore_token": "…"}`; sin él sigue respondiendo 204.
    - `POST /api/meals` acepta ahora fechas de 366 días atrás hasta mañana (reloj del servidor).
 2. **Orden de despliegue (frontend y backend no salen a la vez):** Vercel suele terminar antes que el CD. Un backend antiguo responde 204 al `DELETE …?undo=1`, así que el frontend nuevo no ofrece «Deshacer» (sin error) hasta que el CD termine. Un frontend antiguo con el backend nuevo no envía `undo=1` y todo sigue igual. No hace falta coordinar nada: espera al CD en verde y recarga las pestañas abiertas.
-3. **`SECRET_KEY` propia en EC2:** firma el `restore_token` (además del `feedback_id` del coach). Su valor por defecto es `DEFAULT SECRET` y `ProductionConfig` no exige otro, así que comprueba antes del merge que el `backend/.env` de EC2 tiene una `SECRET_KEY` propia y larga; con la de por defecto cualquiera podría fabricar tokens para su propia cuenta (hallazgo F2 de la review, en el backlog). Si la cambias, los `restore_token` pendientes (120 s) y los votos de respuestas ya emitidas dejan de valer (404); no rompe nada más.
+3. **`SECRET_KEY` propia en EC2:** firma el `restore_token` (además del `feedback_id` del coach). Su valor por defecto es `DEFAULT SECRET`; con él cualquiera podría fabricar tokens para su propia cuenta. Desde la 027 `ProductionConfig` ya no arranca con un valor por defecto (ver el paso 2 y el caso A de la 027). Si la cambias, los `restore_token` pendientes (120 s) y los votos de respuestas ya emitidas dejan de valer (404); no rompe nada más.
 4. **Comprobaciones manuales en un navegador real** (jsdom no calcula posiciones ni colores). Con una cuenta real, tras el CD:
    - **Confirmación al descartar (AC-009.1, AC-009.3, AC-009.4):** «Cargar imagen», analiza una foto, desplaza la lista de la propuesta hasta abajo y pulsa «Cancelar». La confirmación «¿Descartar la propuesta?» debe verse centrada en la ventana, no fuera de la vista. «Seguir revisando» conserva lo editado; «Descartar» cierra; Escape y clic fuera piden la misma confirmación. Prueba a 375 px (pantalla completa) y a 1024 px (diálogo pegado arriba, con scroll interno).
    - **Barras en ámbar (AC-008.1 a AC-008.3):** supera el objetivo de calorías o de un macro y comprueba que la barra pasa a ámbar (sin rojo ni alerta); con el valor igual al objetivo sigue con el color normal.
@@ -267,6 +274,15 @@ La 026 (ADR-0035) deja navegar entre días del diario, editar días pasados, bor
    - **«Deshacer» (AC-007.6):** quita un alimento, el aviso «Quitaste …» con «Deshacer» desaparece a los 10 s; pulsa «Deshacer» antes y el alimento vuelve a su sitio; quita el único alimento de una comida y deshaz: la comida vuelve a existir.
    - **Borrar comida:** «Borrar comida» pide confirmación y quita todos los alimentos de esa comida.
 5. **Marcha atrás:** revertir el merge basta. No hay migración que deshacer; los alimentos quitados no se pueden restaurar tras la reversión, pero no se pierde nada más.
+
+### Caso A (sin migraciones) con endurecimiento de configuración: 027, SECRET_KEY obligatoria en producción
+
+La 027 (fix) hace que el backend de producción se niegue a arrancar sin una `SECRET_KEY` propia y que `POST /api/meals/restore` rechace con 404 un `restore_token` firmado cuyo contenido tenga una versión distinta del entero `1`, una posición fuera de 0 a 2.147.483.647 o un identificador de USDA fuera de 1 a 2.147.483.647 (antes, un 500). No hay migración, ni variables nuevas, ni cambios en el frontend; el formato del token no cambia y los tokens emitidos antes del CD (120 s) siguen valiendo.
+
+1. **Antes del merge, `SECRET_KEY` en EC2:** comprueba, sin imprimirla, que el `backend/.env` de la instancia tiene una `SECRET_KEY` que no está vacía ni vale `DEFAULT SECRET` o `change-me` (comando en el paso 2). Si no, el contenedor no levanta tras el CD y la comprobación de `/api/health` falla.
+2. **CI:** el workflow del backend no define `SECRET_KEY`; los tests de producción de la 020 reciben una clave de pruebas desde `make_app`. Confirma que el `test` pasa en el PR (AC-N002.1).
+3. **Después del CD:** `/api/health` da 200 y el «Deshacer» del diario sigue funcionando (quita un alimento y deshaz).
+4. **Marcha atrás:** revertir el merge basta. Si el contenedor no arranca por el error de `SECRET_KEY`, corrige el `backend/.env` y reinicia (`docker compose -f docker-compose.prod.yml up -d`); no hace falta revertir.
 
 ### Caso C (destructiva): migración después del CD
 
@@ -308,7 +324,7 @@ Merge del PR y paso 6.
 | El código desplegado (backend o frontend) | `git revert -m 1 <merge-commit>` en una rama, PR y merge. El CD redespliega la versión anterior. El commit de merge de cada despliegue está en la tabla de la sección 8. |
 | Migración aditiva | Normalmente nada: el código anterior funciona con el esquema nuevo, así que basta con revertir el código. `flask db downgrade` solo si la migración estorba de verdad, y después de revisar qué hace su `downgrade()`. |
 | Migración destructiva | El `downgrade()` de la 012 recrea las tablas **vacías**. Los datos solo vuelven desde el backup: `pg_restore --data-only --table=<tabla>` desde el `.dump`, en un orden que respete las claves foráneas. Pruébalo antes contra la base local. |
-| `/api/health` no da 200 tras el CD | Mira los logs del job `deploy` y, en la instancia, `docker compose -f docker-compose.prod.yml logs backend --tail 100`. Si el error dice «FRONTEND_BASE_URL es obligatoria en producción», añade `FRONTEND_BASE_URL=https://fitnerd.betofallas.dev` al `backend/.env` de la instancia y reinicia el backend (`docker compose -f docker-compose.prod.yml up -d`). |
+| `/api/health` no da 200 tras el CD | Mira los logs del job `deploy` y, en la instancia, `docker compose -f docker-compose.prod.yml logs backend --tail 100`. Si el error dice «FRONTEND_BASE_URL es obligatoria en producción», añade `FRONTEND_BASE_URL=https://fitnerd.betofallas.dev` al `backend/.env` de la instancia y reinicia el backend (`docker compose -f docker-compose.prod.yml up -d`). Si dice «SECRET_KEY es obligatoria en producción y no puede ser un valor por defecto», pon una `SECRET_KEY` propia en ese mismo `.env` (sin imprimirla) y reinicia igual. |
 
 ---
 

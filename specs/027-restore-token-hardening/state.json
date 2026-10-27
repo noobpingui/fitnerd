@@ -9,7 +9,7 @@
   "branch": "fix/027-restore-token-hardening",
   "base_branch": "main",
   "created_at": "2026-10-27T05:55:23.138Z",
-  "stage": "docs",
+  "stage": "close",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -40,7 +40,10 @@
       "at": "2026-10-27T07:50:20.078Z",
       "note": "Aprobado. Yo confirmé el SECRET_KEY en el EC2: no es DEFAULT_KEY ni change-me"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-27T07:51:54.591Z",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
     "close": null
   },
   "commits": {
@@ -48,7 +51,8 @@
     "plan": "b424cca",
     "tasks": "02c325f",
     "tests": "9127597",
-    "implement": "84b4921"
+    "implement": "84b4921",
+    "review": "b788082"
   },
   "iterations": {
     "tests": 3,
@@ -535,6 +539,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Aprobado. Yo confirmé el SECRET_KEY en el EC2: no es DEFAULT_KEY ni change-me"
+    },
+    {
+      "at": "2026-10-27T07:50:20.374Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: b788082"
+    },
+    {
+      "at": "2026-10-27T07:50:20.591Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Actualizar documentación de 027 (incluye P4)"
+    },
+    {
+      "at": "2026-10-27T07:51:54.488Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "Docs 027: runbook, CLAUDE.md, README, .env.example"
+    },
+    {
+      "at": "2026-10-27T07:51:54.591Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): docs actualizados"
     }
   ]
 }
