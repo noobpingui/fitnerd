@@ -174,7 +174,10 @@ export function MealPhotoDialog({
       <DialogContent
         ref={setContentElement}
         showCloseButton={false}
-        className="max-h-[90vh] overflow-y-auto max-sm:top-0 max-sm:left-0 max-sm:h-dvh max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-none max-sm:border-0"
+        // Sin transform (translate-none!): un ancestro con translate/scale haría que la
+        // confirmación anidada (position: fixed) se midiera contra este diálogo y no
+        // contra la ventana. Se centra con left/right 0 y margen automático.
+        className="top-[5vh] right-0 left-0 mx-auto max-h-[90vh] translate-none! overflow-y-auto max-sm:top-0 max-sm:h-dvh max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:rounded-none max-sm:border-0"
       >
         <DialogHeader>
           <DialogTitle>{`Añadir a ${label} con una foto`}</DialogTitle>
