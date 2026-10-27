@@ -111,9 +111,68 @@ Reglas:
 - [x] T-130 [REQ-020] (impl) Borrar `ProposalSearchStep.tsx`, `FoodsPage.tsx` y su test, `FoodResultList.tsx`, `FoodSearchForm.tsx` y `foods/hooks.ts`; `/foods` sigue redirigiendo a `/diary` — `frontend/src/features/foods/pages/FoodsPage.tsx`
 - [x] T-131 [REQ-021] (impl) Punto «Diario de comidas:» con personalizados y favoritos y `updatedAt="27 de octubre de 2026"` — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
 
+## Iteración 2 (hallazgos F1 a F8 de la review)
+Las tareas T-001 a T-131 están hechas y no se reabren. Estas continúan la numeración: scaffold → test → impl. No hay
+migración nueva. Los tests que se adaptan conservan su marcador y el motivo está en cada tarea (plan, sección 5,
+«Iteración 2»).
+
+### Fase A0 (iteración 2) — Andamiaje (implementer, modo scaffold)
+- [ ] T-132 [NFR-004, AC-N004.1, AC-N004.2, AC-N004.3] (scaffold) Añadir a `catalog_search_service.py` `TypoSearchStats`, `TypoDistances` (con `within_tolerance`) y `typo_comparison_bound` que lanzan "not implemented", y el parámetro opcional `stats` (se acepta y no se usa) en `rank_candidates`, `rank_catalog` y `CatalogSearchService.search` — `backend/services/catalog_search_service.py`
+- [ ] T-133 [REQ-009, NFR-004, AC-N004.1] (scaffold) Añadir el parámetro opcional `stats` (solo se pasa, sin lógica) a `FoodLibraryService.search` — `backend/services/food_library_service.py`
+- [ ] T-134 [REQ-017, AC-017.5, AC-017.6] (scaffold) Crear el hook `useEscapeCapture(active, onEscape)` que lanza "not implemented" — `frontend/src/lib/useEscapeCapture.ts`
+- [ ] T-135 [REQ-018, AC-018.7] (scaffold) Añadir `unlinkCustomFood` (lanza "not implemented") a `proposal.ts` y `proposalReviewSchema` (declarativo, con `key` obligatoria) a `schemas.ts` del diario — `frontend/src/features/diary/proposal.ts`, `frontend/src/features/diary/schemas.ts`
+- [ ] T-136 [REQ-017, AC-017.7, AC-018.7] (scaffold) Añadir las props `renderInline` en `LibraryFoodList` y `onCustomFoodDeleted` en `FoodSearchPanel` (solo tipos, sin lógica) — `frontend/src/features/diary/components/LibraryFoodList.tsx`, `frontend/src/features/diary/components/FoodSearchPanel.tsx`
+
+### Fase A (iteración 2) — Tests (test-author)
+
+#### backend
+- [ ] T-137 [REQ-009, AC-009.6] (test) Quitar `FakeFoodFavoriteRepository.count_by_user` (se elimina del método real; motivo: F3, sin uso) — `backend/tests/fakes.py`
+- [ ] T-138 [NFR-004, AC-N004.1, AC-N004.2, AC-N004.3] (test) `TypoDistances.within_tolerance` (forma corta, palabra corta, memoria, tolerancia), `typo_comparison_bound` y `rank_catalog` con `stats` sobre el catálogo de la 023 (`arroces qzxw`, `arroces integrale`, `arroz`, `pam`) — `backend/tests/test_services/test_catalog_search_service.py`
+- [ ] T-139 [REQ-009, AC-009.1, AC-009.2, AC-009.3, AC-009.4, AC-009.5] (test) Adaptar `hundred_favorites()` y los dos tests de 100 favoritos para que las 100 frutas estén en el catálogo del `Env` (motivo: desde AC-009.6 los retirados no cuentan) — `backend/tests/test_services/test_food_library_service.py`
+- [ ] T-140 [REQ-009, AC-009.6, AC-009.7, AC-009.8, NFR-004, AC-N004.1, AC-N004.2, AC-N004.3] (test) `FoodLibraryService`: 99 visibles más un retirado, quitar un favorito retirado, 404 de otro usuario y búsqueda conjunta con `stats` y 500 propios — `backend/tests/test_services/test_food_library_service.py`
+- [ ] T-141 [REQ-009, AC-009.1, AC-009.2, AC-009.3, AC-009.4, AC-009.5] (test) Adaptar los dos tests de 100 favoritos por HTTP para sembrar las 100 frutas completas (mismo motivo que T-139) — `backend/tests/test_routes/test_food_library_routes.py`
+- [ ] T-142 [REQ-009, AC-009.6, AC-009.7, AC-009.8, NFR-004, AC-N004.1] (test) Favoritos retirados por HTTP (`delete(CatalogFood)` en la sesión y `seed`) y consulta de 100 caracteres que responde 200 con `results` vacío — `backend/tests/test_routes/test_food_library_routes.py`
+- [ ] T-143 [NFR-004, AC-N004.2] (test) `GET /api/catalog/search` con la consulta de AC-N004.1 responde 200, `results` vacío y el formato de la 023 — `backend/tests/test_routes/test_catalog_routes.py`
+
+#### frontend
+- [ ] T-144 [REQ-017, AC-017.5, AC-017.6] (test) `useEscapeCapture` con `renderHook`: activo llama a `onEscape` y marca `defaultPrevented`, no llega al listener de captura en `document`, otras teclas pasan, inactivo o desmontado no hace nada — `frontend/src/lib/useEscapeCapture.test.ts`
+- [ ] T-145 [REQ-017, AC-017.3, NFR-002, AC-N002.4] (test) Adaptar «si el borrado falla…»: tras el fallo ya no hay `alertdialog` y el mensaje se busca dentro del elemento de «Gallo pinto» de «Resultados» (motivo: AC-N002.4) — `frontend/src/features/diary/components/FoodSearchPanel.test.tsx`
+- [ ] T-146 [REQ-017, AC-017.5, AC-017.7, NFR-002, AC-N002.3, AC-N002.4, AC-N002.5, REQ-018] (test) `FoodSearchPanel`: Escape cierra la confirmación sin petición, confirmación dentro del elemento de «Recientes», foco en «Cancelar», foco de vuelta en «Borrar» y en la caja tras un 204, y `onCustomFoodDeleted` tras 204 o 404 y no tras un fallo — `frontend/src/features/diary/components/FoodSearchPanel.test.tsx`
+- [ ] T-147 [REQ-020, REQ-017, AC-017.5] (test) `AddFoodDialog`: quitar `searchCatalog`, `searchFoods`, sus `vi.mock` y las dos aserciones «no se llamó» (motivo: REQ-020 borra esos módulos) y añadir AC-017.5 completo (Escape cierra la confirmación; el segundo Escape cierra el diálogo) — `frontend/src/features/diary/components/AddFoodDialog.test.tsx`
+- [ ] T-148 [REQ-020] (test) `MealPhotoDialog`: quitar `searchCatalog`, `catalogSearchMock` y su aserción «no se llamó» (motivo: REQ-020) — `frontend/src/features/diary/components/MealPhotoDialog.test.tsx`
+- [ ] T-149 [REQ-017, AC-017.6, REQ-018, AC-018.7, AC-018.8] (test) `MealPhotoDialog`: Escape en la búsqueda de «Añadir otro alimento», borrar un propio ya en la propuesta (fila «Personalizado» sin `custom_food_id`) y guardar con 400 que conserva la propuesta — `frontend/src/features/diary/components/MealPhotoDialog.test.tsx`
+- [ ] T-150 [REQ-018, AC-018.7, REQ-020] (test) `proposal.test.ts`: los tests de `catalogEntry` pasan a `libraryEntry` con el mismo resultado (motivo: REQ-020) y se añaden `unlinkCustomFood` y `proposalItems` de la fila desvinculada — `frontend/src/features/diary/proposal.test.ts`
+- [ ] T-151 [REQ-018, AC-018.7] (test) `proposalReviewSchema` rechaza entradas sin `key`, conserva `key` y `customFoodId` y da los mismos mensajes de gramos que `proposalFormSchema` — `frontend/src/features/diary/schemas.test.ts`
+- [ ] T-152 [NFR-003, AC-N003.1] (test) `PhotoReview.tsx` no contiene `as never` ni `as unknown as` y usa `proposalReviewSchema` — `frontend/src/features/diary/components/PhotoReview.source.test.ts`
+- [ ] T-153 [REQ-020, AC-020.1] (test) `foodsRoute.test.tsx`: quitar los `vi.mock` de `features/catalog/api` y `features/foods/api` y el comentario obsoleto; añadir «el código sin uso de la búsqueda de la 023 y de USDA ya no existe» (`import.meta.glob` y escaneos `?raw`) — `frontend/src/app/foodsRoute.test.tsx`
+- [ ] T-154 [REQ-020] (test) Quitar los `vi.mock` de `features/catalog/api` y `features/foods/api` (el módulo deja de existir; ninguna aserción cambia) — `frontend/src/app/mealPhotoRoute.test.tsx`, `frontend/src/app/diaryRoute.test.tsx`
+- [ ] T-155 [REQ-020] (test) Borrar los tests y la fábrica del código retirado — `frontend/src/features/catalog/components/CatalogResultList.test.tsx`, `frontend/src/features/catalog/schemas.test.ts`, `frontend/src/test/catalogFixtures.ts`
+
+### Fase B (iteración 2) — Implementación (implementer)
+
+#### backend
+- [ ] T-160 [NFR-004, AC-N004.1, AC-N004.2, AC-N004.3] (impl) `TypoDistances` con memoria por pareja, `typo_comparison_bound`, resolución sin cálculo de formas y palabras cortas, y `TypoSearchStats` en la segunda pasada, sin cambiar resultados ni orden — `backend/services/catalog_search_service.py`
+- [ ] T-161 [REQ-009, AC-009.6, AC-009.7, AC-009.8, NFR-004] (impl) Límite de 100 que solo cuenta favoritos visibles, `remove_favorite` de un favorito retirado, `stats` en `search`, y quitar `count_by_user` — `backend/services/food_library_service.py`, `backend/repositories/food_favorite_repository.py`
+
+#### frontend
+- [ ] T-162 [REQ-017, AC-017.5, AC-017.6] (impl) `useEscapeCapture`: listener de `keydown` en `window` en fase de captura mientras está activo, con `preventDefault` y `stopPropagation` — `frontend/src/lib/useEscapeCapture.ts`
+- [ ] T-163 [REQ-017, AC-017.7, NFR-002] (impl) `LibraryFoodList`: `renderInline` en el elemento de la lista y `onDelete` con el botón pulsado — `frontend/src/features/diary/components/LibraryFoodList.tsx`
+- [ ] T-164 [REQ-017, AC-017.3, AC-017.5, AC-017.7, NFR-002, AC-N002.3, AC-N002.4, AC-N002.5] (impl) `FoodSearchPanel`: confirmación en línea (`alertdialog`) sin `ConfirmDialog`, Escape con `useEscapeCapture`, gestión del foco con `isConnected` y `onCustomFoodDeleted` — `frontend/src/features/diary/components/FoodSearchPanel.tsx`
+- [ ] T-165 [REQ-018, AC-018.7, REQ-020] (impl) `unlinkCustomFood`, `proposalReviewSchema` completo con variantes y `superRefine` compartidos, y quitar `catalogEntry` — `frontend/src/features/diary/proposal.ts`, `frontend/src/features/diary/schemas.ts`
+- [ ] T-166 [REQ-017, AC-017.6, REQ-018, AC-018.7, AC-018.8, NFR-003, AC-N003.1] (impl) `PhotoReview`: `proposalReviewSchema` sin `as never` ni `as unknown as`, `unlinkCustomFood` vía `onCustomFoodDeleted` y error 400 sin perder la propuesta — `frontend/src/features/diary/components/PhotoReview.tsx`
+- [ ] T-167 [REQ-020, AC-020.1] (impl) Borrar `features/catalog/` entero (`api.ts`, `hooks.ts`, `schemas.ts`, `types.ts` y `components/CatalogResultList.tsx`) — `frontend/src/features/catalog/api.ts`
+- [ ] T-168 [REQ-020, AC-020.1] (impl) Borrar `features/foods/api.ts`, quitar `foodSearchResponseSchema` y los tipos `FoodPer100g`, `Food` y `FoodSearchResponse` — `frontend/src/features/foods/api.ts`, `frontend/src/features/foods/schemas.ts`, `frontend/src/features/foods/types.ts`
+
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |
 |---|---|---|---|
+| REQ-009 (it. 2) | AC-009.6, AC-009.7, AC-009.8 | T-137, T-139, T-140, T-141, T-142 | T-161 |
+| REQ-017 (it. 2) | AC-017.5, AC-017.6, AC-017.7 | T-144, T-146, T-147, T-149 | T-162, T-163, T-164, T-166 |
+| REQ-018 (it. 2) | AC-018.7, AC-018.8 | T-149, T-150, T-151 | T-165, T-166 |
+| REQ-020 (it. 2) | AC-020.1 | T-147, T-148, T-150, T-153, T-154, T-155 | T-165, T-167, T-168 |
+| NFR-002 (it. 2) | AC-N002.3, AC-N002.4, AC-N002.5 | T-145, T-146 | T-163, T-164 |
+| NFR-003 (it. 2) | AC-N003.1 | T-152 | T-166 |
+| NFR-004 | AC-N004.1, AC-N004.2, AC-N004.3 | T-138, T-140, T-142, T-143 | T-160, T-161 |
 | REQ-001 | AC-001.1, AC-001.2, AC-001.3, AC-001.4, AC-001.5, AC-001.6, AC-001.7, AC-001.9, AC-001.10 | T-031, T-037, T-046, T-050, T-063 | T-100, T-101, T-103, T-106, T-109 |
 | REQ-001 | AC-001.8 | T-047 | T-100, T-106 |
 | REQ-002 | AC-002.1, AC-002.2, AC-002.3 | T-037, T-047 | T-106 |

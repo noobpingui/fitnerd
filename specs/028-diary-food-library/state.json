@@ -10,7 +10,7 @@
   "branch": "feat/028-diary-food-library",
   "base_branch": "main",
   "created_at": "2026-10-27T08:34:57.517Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -21,7 +21,10 @@
       "at": "2026-10-27T18:16:02.899Z",
       "note": "auto (gate_mode=flow): plan iteración 2 sin cambios de contrato HTTP ni migración"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-27T18:17:08.802Z",
+      "note": "auto (gate_mode=flow): 33 tareas nuevas y matriz actualizada"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -31,7 +34,7 @@
   },
   "commits": {
     "spec": "66a0bff",
-    "plan": "12aaa4c",
+    "plan": "3b4ddaa",
     "tasks": "e3203f3",
     "tests": "20960b4",
     "implement": "56a780a"
@@ -423,6 +426,30 @@
       "stage": "plan",
       "event": "note",
       "note": "Decisiones: useEscapeCapture en captura sobre window; confirmación en el li; favoritos visibles contados en el servicio; memoria TypoDistances y contador TypoSearchStats; proposalReviewSchema con key obligatoria; se borra catalog/ y foods/api.ts; ADR-0036 revisada, sigue Propuesta"
+    },
+    {
+      "at": "2026-10-27T18:16:03.299Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 3b4ddaa"
+    },
+    {
+      "at": "2026-10-27T18:16:03.503Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Actualizar tasks.md para la iteración 2"
+    },
+    {
+      "at": "2026-10-27T18:17:08.687Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks it.2: 33 tareas nuevas T-132 a T-168 (5 scaffold, 19 test, 9 impl)"
+    },
+    {
+      "at": "2026-10-27T18:17:08.802Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 33 tareas nuevas y matriz actualizada"
     }
   ]
 }
