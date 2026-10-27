@@ -11,16 +11,15 @@ from decimal import Decimal
 import pytest
 
 from extensions import db, jwt_manager
-from models import CatalogFood, Food
-from models import User
+from models import CatalogFood, Food, User
 from models.meal import Meal, MealItem
-from services.meal_rules import RemovedItemSnapshot, epoch_seconds, snapshot_payload
-from utils.restore_token import RestoreTokenSigner
 from repositories.catalog_food_repository import CatalogFoodRepository
 from repositories.food_repository import FoodRepository
 from services.catalog_load_service import CatalogLoadService
+from services.meal_rules import RemovedItemSnapshot, epoch_seconds, snapshot_payload
 from tests.catalog_samples import catalog_row, write_catalog_csv
 from unit_of_work.unit_of_work import UnitOfWork
+from utils.restore_token import RestoreTokenSigner
 
 URL = "/api/meals"
 NOW = datetime(2026, 10, 21, 3, 0)

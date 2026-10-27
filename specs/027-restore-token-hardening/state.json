@@ -9,7 +9,7 @@
   "branch": "fix/027-restore-token-hardening",
   "base_branch": "main",
   "created_at": "2026-10-27T05:55:23.138Z",
-  "stage": "verify",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,13 +25,10 @@
       "note": "auto (gate_mode=flow): 18 tareas, matriz completa"
     },
     "tests": {
-      "at": "2026-10-27T06:56:51.744Z",
-      "note": "auto (gate_mode=flow): red check PASS"
+      "at": "2026-10-27T07:04:55.496Z",
+      "note": "auto (gate_mode=flow): corrección I001"
     },
-    "implement": {
-      "at": "2026-10-27T07:00:07.641Z",
-      "note": "auto (gate_mode=flow): 2182 passed"
-    },
+    "implement": null,
     "verify": null,
     "review": null,
     "docs": null,
@@ -41,10 +38,11 @@
     "spec": "8c13d6f",
     "plan": "b424cca",
     "tasks": "02c325f",
-    "tests": "fd0d315"
+    "tests": "fd0d315",
+    "implement": "36d017b"
   },
   "iterations": {
-    "tests": 2,
+    "tests": 3,
     "implement": 0,
     "review": 0
   },
@@ -62,11 +60,11 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-27T06:56:51.482Z",
-    "reason": "Tests 027 aprobados tras red check PASS (iteración 3)",
+    "at": "2026-10-27T07:04:55.342Z",
+    "reason": "Corrección de orden de imports (I001) tras verify FAIL",
     "sha256": {
       "backend/tests/conftest.py": "59011481d856dc9983d98e9ef5b5d228c92f1e6be72ad2bab4d2d69fba280eb3",
-      "backend/tests/test_routes/test_meal_routes.py": "eb1b9873d5289fa7f39074788565d877e6931a096fb45ec684c78d92d83e662c",
+      "backend/tests/test_routes/test_meal_routes.py": "e249b9b70caac26e91e95b60d1b35c72a942ee48f038b32d0278878535ebc455",
       "backend/tests/test_services/test_meal_rules.py": "54872725e2184a3b5ae890bc3c87450129fa3b4c903c4e791e375ee2648e9f6c",
       "backend/tests/test_services/test_secret_key_config.py": "659fd5f492bbfcd0077c3949fc47c4f8ece9288e00051f66fe3941196053cc4f"
     }
@@ -264,6 +262,48 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): 2182 passed"
+    },
+    {
+      "at": "2026-10-27T07:00:07.972Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 36d017b"
+    },
+    {
+      "at": "2026-10-27T07:00:08.196Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa"
+    },
+    {
+      "at": "2026-10-27T07:03:28.152Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify FAIL: Verificación full 027: suite backend 2182 passed; lint_ratchet FAIL por 1 violación nueva I001 en backend/tests/test_routes/test_meal_routes.py L8 (test-author). Trazabilidad completa (29 AC, 9 REQ/NFR con tareas, 18 tareas [x], sin skip/xfail)."
+    },
+    {
+      "at": "2026-10-27T07:03:36.848Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Verify FAIL: ratchet I001 (imports sin ordenar) en test_meal_routes.py L8 · tests 3/4"
+    },
+    {
+      "at": "2026-10-27T07:04:55.216Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Corrección I001 en test_meal_routes.py (solo imports), 148 passed"
+    },
+    {
+      "at": "2026-10-27T07:04:55.342Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "4 archivo(s) de test: Corrección de orden de imports (I001) tras verify FAIL"
+    },
+    {
+      "at": "2026-10-27T07:04:55.496Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección I001"
     }
   ]
 }

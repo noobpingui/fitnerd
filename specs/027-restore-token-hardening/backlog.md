@@ -26,3 +26,10 @@
 
 ## implement · implementer
 - [ ] El test-author debe corregir el orden de imports (I001) en backend/tests/test_routes/test_meal_routes.py L8, o el verifier debe decidir cómo tratarlo, porque hace fallar el ratchet.
+
+## verify · verifier (full, iteración 1)
+- [ ] test_production_app_starts_in_tests_without_secret_key_in_the_environment prueba el valor por defecto del fixture make_app, no la ausencia real de la variable; el nombre es más fuerte que lo que comprueba.
+- [ ] Confirmar AC-N002.1 en la ejecución de CI tras el push (CI sin SECRET_KEY).
+
+## tests · test-author (iteración 4)
+- [ ] Renombrar test_production_app_starts_in_tests_without_secret_key_in_the_environment (backend/tests/test_services/test_secret_key_config.py L144) para que el nombre no prometa más de lo que comprueba.
