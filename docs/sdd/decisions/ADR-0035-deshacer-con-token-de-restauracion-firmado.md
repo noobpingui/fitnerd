@@ -1,7 +1,7 @@
 # ADR-0035: Deshacer «Quitar» con un token de restauración firmado, sin estado en el servidor
 
 - **Estado:** Aceptada · 2026-10-26 (plan de la feature `026-diary-days-and-editing`; aceptada por el usuario)
-- **Decidido por:** el planner lo propone; lo acepta o rechaza el usuario en el gate de review (Art. P5.2).
+- **Decidido por:** el planner lo propone; lo acepta o rechaza el usuario en el gate del plan (Art. P5.2).
 
 ## Contexto
 La spec 026 (REQ-007) pide que, tras quitar un alimento del diario, el usuario pueda pulsar «Deshacer» durante 10

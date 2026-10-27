@@ -10,7 +10,7 @@
   "branch": "feat/026-diary-days-and-editing",
   "base_branch": "main",
   "created_at": "2026-10-27T01:22:43.361Z",
-  "stage": "docs",
+  "stage": "close",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -41,7 +41,10 @@
       "at": "2026-10-27T04:40:10.350Z",
       "note": "Aprobado."
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-27T04:41:18.453Z",
+      "note": "auto (gate_mode=flow): docs actualizadas"
+    },
     "close": null
   },
   "commits": {
@@ -49,7 +52,8 @@
     "plan": "3545129",
     "tasks": "f500114",
     "tests": "0b17e2a",
-    "implement": "16215b2"
+    "implement": "16215b2",
+    "review": "1e2a0b7"
   },
   "iterations": {
     "tests": 4,
@@ -466,6 +470,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Aprobado."
+    },
+    {
+      "at": "2026-10-27T04:40:10.603Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: 1e2a0b7"
+    },
+    {
+      "at": "2026-10-27T04:40:10.793Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Actualizar documentación de 026"
+    },
+    {
+      "at": "2026-10-27T04:41:18.357Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "Runbook, README y CLAUDE.md actualizados; ADR-0035 F7 corregida"
+    },
+    {
+      "at": "2026-10-27T04:41:18.453Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): docs actualizadas"
     }
   ]
 }
