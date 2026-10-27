@@ -163,7 +163,7 @@ def parse_snapshot_payload(payload: object) -> RemovedItemSnapshot | None:
         return None
     if not _optional_text(catalog_id) or not _optional_text(data_type):
         return None
-    if fdc_id is not None and (not is_int(fdc_id) or not 1 <= fdc_id <= MAX_DB_INTEGER):
+    if fdc_id is not None and not is_db_id(fdc_id):
         return None
     if source == "catalog" and not catalog_id:
         return None
@@ -224,7 +224,7 @@ def validate_grams(value: object) -> Decimal:
 
 def _parse_usda_item(item: dict, grams: Decimal) -> UsdaItemInput:
     fdc_id = item.get("fdc_id")
-    if not is_db_id(fdc_id):
+    if not is_int(fdc_id) or not 1 <= fdc_id <= MAX_DB_INTEGER:
         raise ValidationError(FOOD_NOT_FOUND_MESSAGE)
     return UsdaItemInput(fdc_id=fdc_id, grams=grams)
 

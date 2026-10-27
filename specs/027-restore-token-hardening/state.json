@@ -29,8 +29,8 @@
       "note": "auto (gate_mode=flow): F1 y F2 de la review"
     },
     "implement": {
-      "at": "2026-10-27T07:31:19.005Z",
-      "note": "auto (gate_mode=flow): F3 y F4"
+      "at": "2026-10-27T07:41:45.849Z",
+      "note": "auto (gate_mode=flow): F5"
     },
     "verify": null,
     "review": null,
@@ -42,12 +42,12 @@
     "plan": "b424cca",
     "tasks": "02c325f",
     "tests": "9127597",
-    "implement": "36d017b"
+    "implement": "0986bed"
   },
   "iterations": {
     "tests": 3,
     "implement": 0,
-    "review": 2
+    "review": 3
   },
   "max_iterations": 4,
   "red_check": {
@@ -421,6 +421,60 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): F3 y F4"
+    },
+    {
+      "at": "2026-10-27T07:31:19.286Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 0986bed"
+    },
+    {
+      "at": "2026-10-27T07:31:19.497Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa tras correcciones de review"
+    },
+    {
+      "at": "2026-10-27T07:35:27.734Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verificación full 027 tras correcciones F1-F4: backend 2182 passed; lint_ratchet sin violaciones nuevas; snapshot de tests intacto; 29 AC trazados; 18 tareas [x]; sin skip/xfail nuevos"
+    },
+    {
+      "at": "2026-10-27T07:35:36.888Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS tras F1-F4: 2182 passed, ratchet limpio"
+    },
+    {
+      "at": "2026-10-27T07:35:37.002Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-27T07:35:37.218Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review 2 tras correcciones F1-F4"
+    },
+    {
+      "at": "2026-10-27T07:39:13.381Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "Review 2: F4 sin resolver (is_db_id aplicado en _parse_usda_item de la 022, no en parse_snapshot_payload:166) · review 3/4"
+    },
+    {
+      "at": "2026-10-27T07:41:45.740Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F5: is_db_id en parse_snapshot_payload y _parse_usda_item restaurado; 2182 passed"
+    },
+    {
+      "at": "2026-10-27T07:41:45.849Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F5"
     }
   ]
 }

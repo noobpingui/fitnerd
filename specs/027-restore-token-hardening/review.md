@@ -1,81 +1,68 @@
 # Review 027 — Endurecer SECRET_KEY en producción y la validación del snapshot del token de restauración
 
-- **Iteración:** 1 de 4
-- **Diff revisado:** `git diff main...fix/027-restore-token-hardening` @ `39c9116` (+ sin commitear: solo `state.json` y `verify-report.md` de la feature)
+- **Iteración:** 2 de 4
+- **Diff revisado:** `git diff main...fix/027-restore-token-hardening` @ `0986bed`, con foco en `git diff 39c9116 HEAD` (correcciones F1–F4). Sin commitear: solo `state.json` y `verify-report.md` de la feature.
 - **Veredicto:** APPROVED
 
 ## 1. Resumen
-El cambio replica el patrón de `FRONTEND_BASE_URL` (ADR-0028). `resolve_secret_key` en `config.py` se llama desde `create_app()` y hace que producción no arranque con una `SECRET_KEY` ausente, vacía, en blanco o por defecto. Además, `parse_snapshot_payload` exige el entero `1` como versión y pone topes a la posición y al `fdc_id` según el rango de la base. El diff de producción es pequeño (3 archivos, unas 30 líneas), sin migración ni variables nuevas. Los tests cubren cada AC y los de rutas fabrican tokens con el firmante real. No encuentro hallazgos bloqueantes ni mayores.
+Esta segunda review comprueba las correcciones de F1–F4 de la iteración 1. F1, F2 y F3 están resueltos. F4 no: el implementer aplicó `is_db_id` en `_parse_usda_item` (`backend/services/meal_rules.py:227`), que no era el sitio señalado y ya hacía la misma comprobación. La condición duplicada de `parse_snapshot_payload` (`backend/services/meal_rules.py:166`) sigue igual. El cambio en `_parse_usda_item` es equivalente (`is_db_id` = `is_int(value) and 1 <= value <= MAX_DB_INTEGER`, `meal_rules.py:321-322`), así que no hay regresión. F4 sigue siendo un NIT. No hay hallazgos BLOQUEANTES ni MAYORES.
 
 ## 2. Cumplimiento de la spec
+La implementación de producción de la 027 no cambia respecto a la iteración 1, salvo las anotaciones de tipo y el refactor equivalente de `_parse_usda_item`. La tabla de evidencias de la iteración 1 sigue valiendo. Cambian estos puntos:
+
 | REQ / AC | ¿Implementado como se especificó? | Evidencia (archivo:línea o test) |
 |---|---|---|
-| AC-001.1 | Sí | `backend/config.py:48` (`not isinstance(value, str)` cubre `None`); `backend/app.py:39-42`; `test_secret_key_config.py:61`, `:118[None]` |
-| AC-001.2 | Sí | `backend/config.py:38,48`; `test_secret_key_config.py:69`, `:118` |
-| AC-001.3 | Sí | `backend/config.py:38,48`; `test_secret_key_config.py:69`, `:118` |
-| AC-001.4 | Sí | `backend/config.py:48` (`strip()` contra `{""}`); `test_secret_key_config.py:76`, `:118` |
-| AC-001.5 | Sí | `backend/config.py:48` (compara `value.strip()`); `test_secret_key_config.py:83`, `:118` |
-| AC-001.6 | Sí | `backend/app.py:32-42` (FRONTEND_BASE_URL se evalúa antes y lanza antes de `db.init_app`); `test_secret_key_config.py:125` |
-| AC-002.1 | Sí | `backend/config.py:50` (devuelve `value` original); `test_secret_key_config.py:91`, `:136` |
-| AC-002.2 | Sí | `backend/config.py:50` (sin `strip()` en el retorno); `test_secret_key_config.py:91`, `:136` |
-| AC-002.3 | Sí | `backend/routes/meal_routes.py:63` lee `app.config["SECRET_KEY"]` ya resuelto; `test_meal_routes.py:1802` |
-| AC-003.1 | Sí | `backend/config.py:47`, `:64`; `test_secret_key_config.py:97`, `:166` |
-| AC-003.2 | Sí | `backend/config.py:47`; `test_secret_key_config.py:103`, `:174` |
-| AC-003.3 | Sí | `TestingConfig` hereda `SECRET_KEY_REQUIRED = False` (`backend/config.py:64`); `test_secret_key_config.py:183` |
-| AC-004.1 | Sí | `backend/services/meal_rules.py:138-139`; `test_meal_rules.py:219` |
-| AC-004.2 | Sí | `backend/services/meal_rules.py:139` (`is_int` excluye `bool`); `test_meal_rules.py` (versión `True` y `["1", 2, 0, None, ausente]`) |
-| AC-004.3 | Sí | `test_meal_rules.py` `test_parse_snapshot_payload_accepts_version_one_with_the_full_snapshot` |
-| AC-004.4 | Sí | `backend/services/meal_service.py:242-243` (`snapshot is None` lleva a 404 antes de escribir); `test_meal_routes.py:1759` |
-| AC-005.1 / AC-005.4 | Sí | `backend/services/meal_rules.py:160`; `test_meal_rules.py:247` |
-| AC-005.2 | Sí | `backend/services/meal_rules.py:160`; `test_meal_rules.py:255` (también `10**20`) |
-| AC-005.3 | Sí | `backend/services/meal_rules.py:160`; tests de `-1`, `1.0`, `True`, `"3"`, `None` y ausente en `test_meal_rules.py` |
-| AC-005.5 | Sí | `test_meal_routes.py:1767` (404, diario y conteos sin cambios) |
-| AC-006.1 / AC-006.2 | Sí | `backend/services/meal_rules.py:166`; `test_meal_rules.py:281` y el test de `1.0` |
-| AC-006.3 | Sí | `test_meal_rules.py:294` (`1` y `MAX_INT`) |
-| AC-006.4 | Sí | `backend/services/meal_rules.py:166` (solo si `fdc_id is not None`); `test_meal_rules.py` (catálogo y personalizado sin `fdc_id`) |
-| AC-006.5 | Sí | `test_meal_routes.py:1777` |
-| AC-N001.1 | Sí | `test_meal_rules.py:335` (ida y vuelta por origen y posición `0`, `1` y `MAX_INT`) |
-| AC-N001.2 | Sí | Suite de la 026 sin cambios (el diff de `backend/tests/**` solo añade). He vuelto a ejecutar `test_meal_rules.py`, `test_meal_routes.py`, `test_secret_key_config.py` y `test_production_config.py` sin `SECRET_KEY` en el entorno del proceso: 415 passed. El marcador está en un test del firmante (ver F2) |
-| AC-N002.1 | Sí (en CI pendiente de confirmar) | `backend/tests/conftest.py:227`; `.github/workflows/backend-tests.yml:104-113` no define `SECRET_KEY`; los `make_app("production", …)` de `test_coach_observability.py` y `test_langfuse_backend.py` también se benefician |
+| AC-001.1 a AC-001.6 | Sí | `backend/config.py:44-50`, `backend/app.py:32-42`; `test_secret_key_config.py` |
+| AC-002.1 a AC-002.3 | Sí | `backend/config.py:50` devuelve `value` sin `strip()`; `test_secret_key_config.py:136` |
+| AC-003.1 a AC-003.3 | Sí | `backend/config.py:47`, `:64`, `:124` |
+| AC-004.1 a AC-004.4 | Sí | `backend/services/meal_rules.py:136-140` |
+| AC-005.1 a AC-005.5 | Sí | `backend/services/meal_rules.py:160` |
+| AC-006.1 a AC-006.5 | Sí | `backend/services/meal_rules.py:166` |
+| AC-N001.1 / AC-N001.2 | Sí | `test_meal_rules.py` (ida y vuelta); `test_secret_key_config.py:155` (renombrado); la suite de la 026 no cambia |
+| AC-N002.1 | Sí (en CI, pendiente de confirmar) | `test_secret_key_config.py:144` (renombrado), `backend/tests/conftest.py:227` |
+
+He vuelto a ejecutar `test_secret_key_config.py`, `test_meal_rules.py` y `test_meal_routes.py`: 393 passed.
 
 ## 3. Cumplimiento del plan
-- Se sigue el plan al pie de la letra: tabla de comportamiento de `resolve_secret_key`, orden en `create_app()` (`backend/app.py:32-42`), atributos de clase (`backend/config.py:64`, `:124`) y reglas de `parse_snapshot_payload`.
-- Desviación cosmética: el plan fija `resolve_secret_key(value: str | None, *, required: bool) -> str`, y la implementación (`backend/config.py:44`) no lleva anotaciones de tipo. Es coherente con `resolve_frontend_base_url`, del mismo módulo, que tampoco las lleva. Ver F3.
-- `MealService`, `RestoreTokenSigner` y las rutas no cambian, como estaba previsto.
+- La firma de `resolve_secret_key` ya coincide con la del plan (`backend/config.py:44`).
+- Desviación sin impacto: el commit `0986bed` toca `_parse_usda_item`, código de la 022 que el plan de la 027 no menciona. Es un refactor equivalente y no cambia el comportamiento.
 
 ## 4. Checklist de la constitución
 ### Parte I (base)
-- [x] B2: cada agente se mantuvo en su rol. `snapshot --check` da idéntico. El último cambio de tests (`39c9116`, I001) es posterior al implement, pero lo autoriza el `rework tests` registrado en `history`, con un `snapshot` posterior. `git diff 39c9116 HEAD -- backend/tests` está vacío.
-- [x] B4: los marcadores `SDD: 027` coinciden con los AC que prueban, salvo el matiz de F2.
-- [x] B5: no se borra, salta ni debilita ningún test. No hay llamadas externas. No queda ningún `NotImplementedError` en `resolve_secret_key`.
-- [x] B5.7: el ratchet no tiene violaciones nuevas (verify, iteración 2).
-- [x] B6.5: sin secretos en el diff ni variables nuevas.
+- [x] B2: cada agente se mantuvo en su rol. `snapshot --check` da idéntico (snapshot del 07:28:34). Los renombrados de `9127597` llegan tras un `rework tests` registrado en `history` y un `snapshot` posterior. `commits.tests` = `9127597`, y desde ahí `0986bed` no toca `backend/tests/**`.
+- [x] B4: el nombre de los dos tests marcados ya describe lo que comprueban (F1 y F2).
+- [x] B5: no se borra, salta ni debilita ningún test. Los cambios de `9127597` solo afectan a nombres y docstrings.
+- [x] B5.7: el ratchet no tiene violaciones nuevas (verify tras F1–F4).
+- [x] B6.5: el diff no trae secretos ni variables nuevas.
 
 ### Parte II (proyecto)
-- [x] P1.1: los marcadores llevan el número de spec. Docstrings y comentarios en español.
-- [x] P1 backend: unitarios en `test_services/` e integración en `test_routes/` con `client`. Sin `unittest.mock` ni `monkeypatch` («ausente» se expresa con `SECRET_KEY=None`). Solo se usa el Postgres de prueba.
-- [x] P2.1–P2.3: la validación sigue en `services/meal_rules.py` y el 404 sale de `ResourceNotFoundError`. Las rutas no cambian.
-- [x] P2.4: no hay cambios de modelo ni migraciones, y no hace falta ninguna.
-- [x] P2.5: se reutilizan `RestoreTokenSigner`, `is_int` y `MAX_DB_INTEGER`. Queda una oportunidad de reutilizar `is_db_id` (F4, NIT).
-- [x] P2 General: el mensaje y los comentarios están en español correcto, con tildes.
-- [x] P3.2: la validación del contenido del token es más estricta.
-- [x] P3.5: no hay variables nuevas. `SECRET_KEY` ya figura en `backend/.env.example`.
-- [ ] P4 (pendiente de `docs`): el paso manual de comprobar en EC2 que `SECRET_KEY` existe y no es un valor por defecto antes del merge debe quedar en `docs/deploy-runbook.md` y en `CLAUDE.md`. Si no se hace, el CD dejaría el contenedor sin arrancar. Corresponde al `doc-keeper` y ya está en el backlog de la feature.
-- [x] P5.1: sin CRLF en el diff (verify).
+- [x] P1: sin `monkeypatch` ni `unittest.mock`. Docstrings en español.
+- [x] P2.1–P2.4: no cambian las capas ni los modelos, y no hay migración.
+- [ ] P2.5: queda una duplicación de `is_db_id` en `meal_rules.py:166` (F4, NIT).
+- [x] P3.2 / P3.5: la validación es más estricta y no hay variables nuevas.
+- [ ] P4: pendiente de la etapa `docs` (doc-keeper), como indica el orquestador. Esta review no lo cuenta como defecto.
+- [x] P5.1: sin CRLF en el diff.
 
 ## 5. Hallazgos
+### Estado de los hallazgos de la iteración 1
+| # | Estado | Evidencia |
+|---|---|---|
+| F1 | Resuelto | Renombrado a `test_production_app_starts_in_tests_with_the_make_app_test_secret_key` (`backend/tests/test_services/test_secret_key_config.py:144`). El nombre ya no promete que falte la variable en el entorno. |
+| F2 | Resuelto (aceptado) | Renombrado a `test_restore_token_format_guard_signer_round_trip_is_unchanged_by_027` (`test_secret_key_config.py:155`), con un docstring que explica que es una guarda del formato. El marcador `AC-N001.2` se conserva, ahora con un nombre honesto. |
+| F3 | Resuelto | `backend/config.py:44`: `def resolve_secret_key(value: str \| None, *, required: bool) -> str`. |
+| F4 | **No resuelto** | Ver F5. |
+
+### Hallazgos de esta iteración
 | # | Severidad | Archivo:línea | Hallazgo | Responsable |
 |---|---|---|---|---|
-| F1 | MENOR | `backend/tests/test_services/test_secret_key_config.py:144` | `test_production_app_starts_in_tests_without_secret_key_in_the_environment` no elimina `SECRET_KEY` del entorno. En local, `backend/.env` la define y `load_dotenv()` la carga en `Config.SECRET_KEY`. El test solo comprueba que el fixture `make_app` aporta `"test-production-secret-key"`, así que el nombre promete más de lo que verifica. AC-N002.1 solo se confirma de verdad en CI. Propuesta: renombrar el test, p. ej. `test_make_app_gives_production_its_own_test_secret_key`. Ya está en el backlog. | test-author |
-| F2 | NIT | `backend/tests/test_services/test_secret_key_config.py:154-162` | El marcador `AC-N001.2` está en un test nuevo del firmante (`RestoreTokenSigner("test-secret")`) que no tiene relación con el contenido del snapshot. La evidencia real de AC-N001.2 es que la suite de la 026 pasa sin cambios. El test no aporta nada a la 027 y está en un archivo de configuración. | test-author |
-| F3 | NIT | `backend/config.py:44` | `resolve_secret_key` no lleva las anotaciones `value: str \| None, *, required: bool) -> str` del plan. Es cosmético y coherente con `resolve_frontend_base_url`. | implementer |
-| F4 | NIT | `backend/services/meal_rules.py:166` | La condición `is_int(fdc_id) and 1 <= fdc_id <= MAX_DB_INTEGER` repite lo que ya hace `is_db_id` (`backend/services/meal_rules.py:321-322`). Se podría escribir `fdc_id is not None and not is_db_id(fdc_id)`. | implementer |
+| F5 | NIT | `backend/services/meal_rules.py:166` | Es el F4 de la iteración 1, que sigue abierto. La condición `fdc_id is not None and (not is_int(fdc_id) or not 1 <= fdc_id <= MAX_DB_INTEGER)` repite `is_db_id` (`meal_rules.py:321-322`). El commit `0986bed` cambió `_parse_usda_item` (`meal_rules.py:227`), que ya hacía esa comprobación y no era el sitio señalado. Propuesta: `if fdc_id is not None and not is_db_id(fdc_id): return None`. | implementer |
 
-Observaciones que no son hallazgos (para `docs` y el cierre):
-- Con la 027, `FLASK_ENV=production flask db upgrade` desde local y los scripts que llaman a `create_app()` fallan si el `.env` local trae `change-me`. Hay que documentarlo (Q1 de la spec, backlog).
-- La longitud mínima de `SECRET_KEY` (Q3) y la validación de la longitud del nombre, del `catalog_id` y de `dt` en el token quedan fuera de alcance. Ya están en el backlog.
+Observaciones que no son hallazgos:
+- El cambio de `_parse_usda_item` (`meal_rules.py:227`) es equivalente y no rompe nada, pero queda fuera del alcance de la 027. Se puede conservar.
+- `backend/.pytest_cache` todavía guarda los nombres antiguos de los tests. Es caché local, no está versionada y no afecta a nada.
+- Siguen pendientes para `docs` y el cierre P4 (comprobar `SECRET_KEY` en EC2 antes del merge y documentar los comandos locales con `FLASK_ENV=production`), la longitud mínima de `SECRET_KEY` (Q3) y las validaciones de longitud de los campos del token. Todo está en el backlog.
 
 ## 6. Decisión
-APPROVED. No hay hallazgos BLOQUEANTES ni MAYORES. Cada AC está implementado como dice la spec, con evidencia en el código y en los tests. Los tests no han cambiado desde el snapshot autorizado. Los hallazgos MENOR y NIT pueden ir al backlog.
+APPROVED. No hay hallazgos BLOQUEANTES ni MAYORES. F1, F2 y F3 están resueltos. F4 sigue abierto como NIT (F5) y no bloquea: puede ir al backlog o corregirse en una pasada del implementer. Los tests coinciden con el snapshot autorizado y la suite de la feature pasa.
 
 ## Comentarios del usuario
