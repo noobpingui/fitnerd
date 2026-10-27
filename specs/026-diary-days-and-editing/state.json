@@ -10,7 +10,7 @@
   "branch": "feat/026-diary-days-and-editing",
   "base_branch": "main",
   "created_at": "2026-10-27T01:22:43.361Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -21,7 +21,10 @@
       "at": "2026-10-27T02:02:56.953Z",
       "note": "Aprobado, acepto la ADR"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-27T02:04:40.300Z",
+      "note": "auto (gate_mode=flow): 50 tareas, cobertura completa"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -30,7 +33,8 @@
     "close": null
   },
   "commits": {
-    "spec": "756db4f"
+    "spec": "756db4f",
+    "plan": "3545129"
   },
   "iterations": {
     "tests": 0,
@@ -118,6 +122,30 @@
       "stage": "plan",
       "event": "approved",
       "note": "Aprobado, acepto la ADR"
+    },
+    {
+      "at": "2026-10-27T02:02:57.229Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 3545129"
+    },
+    {
+      "at": "2026-10-27T02:02:57.401Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Escribir tasks.md de 026"
+    },
+    {
+      "at": "2026-10-27T02:04:40.204Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "50 tareas: 9 scaffold, 23 test, 18 impl; cobertura de 59+6 AC"
+    },
+    {
+      "at": "2026-10-27T02:04:40.300Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 50 tareas, cobertura completa"
     }
   ]
 }
