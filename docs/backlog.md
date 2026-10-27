@@ -459,5 +459,5 @@ Feature: [specs/027-restore-token-hardening/](../specs/027-restore-token-hardeni
 
 - [ ] Validar la longitud del nombre, del `catalog_id` y del `data_type` dentro del snapshot del `restore_token`, para que un token anómalo no provoque un 500.
 - [ ] Exigir una longitud mínima a `SECRET_KEY` en producción (Q3, p. ej. 32 caracteres) en una spec posterior.
-- [ ] Confirmar en el CI de GitHub (sin `SECRET_KEY` en el entorno) que los tests de producción de la 020 pasan (AC-N002.1); en local, `backend/.env` define `SECRET_KEY` y lo oculta.
-- [ ] Añadir la fila de la 027 al historial de despliegues del runbook cuando se despliegue.
+- [x] Confirmar en el CI de GitHub (sin `SECRET_KEY` en el entorno) que los tests de producción de la 020 pasan (AC-N002.1); en local, `backend/.env` define `SECRET_KEY` y lo oculta.
+- [x] Añadir la fila de la 027 al historial de despliegues del runbook cuando se despliegue.

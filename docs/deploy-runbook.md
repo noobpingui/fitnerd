@@ -344,5 +344,6 @@ Merge del PR y paso 6.
 | 2026-10-22 | 024, análisis de foto con Bedrock | #32, `10920a2` | — (configuración de AWS hecha a mano antes del merge; el primer CD falló por falta de disco en la instancia y se relanzó tras `docker image prune -f`) | — |
 | 2026-10-22 | 025, foto desde el diario | #34, `3e436d9` | — (solo frontend) | — |
 | 2026-10-26 | 026, días y edición del diario | #37, `ca909bb` | — (`SECRET_KEY` propia confirmada en EC2; comprobaciones manuales en navegador hechas) | — |
+| 2026-10-27 | 027, SECRET_KEY obligatoria en producción y validación del token de restauración | #39, `a5e9740` | — (`SECRET_KEY` propia confirmada en EC2 antes del merge; AC-N002.1 confirmado en el job `test` del PR) | — |
 
 Añade una fila en cada despliegue.
