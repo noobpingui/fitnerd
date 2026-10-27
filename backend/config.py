@@ -34,6 +34,17 @@ def resolve_frontend_base_url(value, *, required):
     return cleaned
 
 
+DEFAULT_SECRET_KEY = "DEFAULT SECRET"
+KNOWN_DEFAULT_SECRET_KEYS = frozenset({"DEFAULT SECRET", "change-me"})
+SECRET_KEY_REQUIRED_MESSAGE = (
+    "SECRET_KEY es obligatoria en producción y no puede ser un valor por defecto"
+)
+
+
+def resolve_secret_key(_value, *, required):
+    raise NotImplementedError("not implemented")
+
+
 def observability_enabled(config):
     """La observabilidad solo se activa con ambas claves y fuera de los tests."""
     return bool(

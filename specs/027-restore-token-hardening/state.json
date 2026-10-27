@@ -9,7 +9,7 @@
   "branch": "fix/027-restore-token-hardening",
   "base_branch": "main",
   "created_at": "2026-10-27T05:55:23.138Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -24,7 +24,10 @@
       "at": "2026-10-27T06:24:33.504Z",
       "note": "auto (gate_mode=flow): 18 tareas, matriz completa"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-27T06:56:51.744Z",
+      "note": "auto (gate_mode=flow): red check PASS"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -33,17 +36,18 @@
   },
   "commits": {
     "spec": "8c13d6f",
-    "plan": "b424cca"
+    "plan": "b424cca",
+    "tasks": "02c325f"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 2,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 4,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-27T06:56:27.472Z"
   },
   "verify": {
     "result": null,
@@ -53,7 +57,16 @@
     "verdict": null,
     "at": null
   },
-  "tests_snapshot": null,
+  "tests_snapshot": {
+    "at": "2026-10-27T06:56:51.482Z",
+    "reason": "Tests 027 aprobados tras red check PASS (iteración 3)",
+    "sha256": {
+      "backend/tests/conftest.py": "59011481d856dc9983d98e9ef5b5d228c92f1e6be72ad2bab4d2d69fba280eb3",
+      "backend/tests/test_routes/test_meal_routes.py": "eb1b9873d5289fa7f39074788565d877e6931a096fb45ec684c78d92d83e662c",
+      "backend/tests/test_services/test_meal_rules.py": "54872725e2184a3b5ae890bc3c87450129fa3b4c903c4e791e375ee2648e9f6c",
+      "backend/tests/test_services/test_secret_key_config.py": "659fd5f492bbfcd0077c3949fc47c4f8ece9288e00051f66fe3941196053cc4f"
+    }
+  },
   "bypass": false,
   "history": [
     {
@@ -139,6 +152,84 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): 18 tareas, matriz completa"
+    },
+    {
+      "at": "2026-10-27T06:24:33.741Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 02c325f"
+    },
+    {
+      "at": "2026-10-27T06:24:33.938Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold de config.py (T-001)"
+    },
+    {
+      "at": "2026-10-27T06:25:02.065Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-27T06:27:56.978Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (verifier)"
+    },
+    {
+      "at": "2026-10-27T06:32:21.681Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Rojo: 35 fallos 027 con motivo legitimo; FAIL por 6 tests que pasan sin guarda de regresion (test-author) y AC-N002.1 sin marcador SDD (test-author)"
+    },
+    {
+      "at": "2026-10-27T06:32:36.631Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL: 7 tests sin guarda, guarda inválida en test_the_constants_match_the_spec y AC-N002.1 sin marcador · tests 1/4"
+    },
+    {
+      "at": "2026-10-27T06:51:37.835Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Red iteración 2: 35 fallos 027 legítimos y guardas corregidas; FAIL por monkeypatch en test_production_app_starts_in_tests_without_secret_key_in_the_environment (P1.3 y plan) y AC-N001.2 sin marcador SDD (test-author)"
+    },
+    {
+      "at": "2026-10-27T06:51:48.397Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL 2: monkeypatch.delenv sin justificar (P1.3) y AC-N001.2 sin marcador · tests 2/4"
+    },
+    {
+      "at": "2026-10-27T06:56:27.472Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red iteración 3: 35 fallos 027 legítimos (sin ilegítimos), 27 guardas con comentario, sin monkeypatch, AC-N001.2 marcado; regresión 026 y make_app 240 passed"
+    },
+    {
+      "at": "2026-10-27T06:56:51.366Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS: 35 rojos legítimos, 27 guardas de regresión, 29 AC con marcador"
+    },
+    {
+      "at": "2026-10-27T06:56:51.482Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "4 archivo(s) de test: Tests 027 aprobados tras red check PASS (iteración 3)"
+    },
+    {
+      "at": "2026-10-27T06:56:51.636Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Decisión: AC-N002.1 se prueba sin override SECRET_KEY=None (con la 027 haría fallar el arranque); make_app aporta la clave de pruebas"
+    },
+    {
+      "at": "2026-10-27T06:56:51.744Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS"
     }
   ]
 }
