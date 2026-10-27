@@ -10,29 +10,17 @@
   "branch": "feat/028-diary-food-library",
   "base_branch": "main",
   "created_at": "2026-10-27T08:34:57.517Z",
-  "stage": "verify",
+  "stage": "plan",
   "status": "in_progress",
   "approvals": {
     "spec": {
-      "at": "2026-10-27T08:53:22.120Z",
+      "at": "2026-10-27T18:05:01.046Z",
       "note": "aprobado, cierra la etapa spec"
     },
-    "plan": {
-      "at": "2026-10-27T09:06:07.479Z",
-      "note": "auto (gate_mode=flow): plan con ADR-0036 propuesta, migración aditiva con relleno"
-    },
-    "tasks": {
-      "at": "2026-10-27T09:08:28.163Z",
-      "note": "auto (gate_mode=flow): 73 tareas, cobertura de 21 REQ y 3 NFR"
-    },
-    "tests": {
-      "at": "2026-10-27T17:36:50.716Z",
-      "note": "auto (gate_mode=flow): 2 tests corregidos con aprobación del usuario; sin red check"
-    },
-    "implement": {
-      "at": "2026-10-27T17:36:59.134Z",
-      "note": "auto (gate_mode=flow): suite completa en verde"
-    },
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
     "verify": null,
     "review": null,
     "docs": null,
@@ -42,17 +30,18 @@
     "spec": "4538f39",
     "plan": "12aaa4c",
     "tasks": "e3203f3",
-    "tests": "20960b4"
+    "tests": "20960b4",
+    "implement": "56a780a"
   },
   "iterations": {
     "tests": 4,
     "implement": 0,
-    "review": 0
+    "review": 1
   },
   "max_iterations": 4,
   "red_check": {
-    "result": "PASS",
-    "at": "2026-10-27T16:59:05.870Z"
+    "result": null,
+    "at": null
   },
   "verify": {
     "result": null,
@@ -329,6 +318,78 @@
       "stage": "implement",
       "event": "note",
       "note": "Decisiones: confirmación de borrado en línea (alertdialog) en vez de ConfirmDialog por AC-017.3; RecentFoodRow en repositories; custom_food_id opcional en MealItem; migración e6a8c0d2f4b7 solo creada; 2 tests corregidos con aprobación del usuario"
+    },
+    {
+      "at": "2026-10-27T17:36:59.762Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 56a780a"
+    },
+    {
+      "at": "2026-10-27T17:36:59.964Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "verify full 028"
+    },
+    {
+      "at": "2026-10-27T17:43:30.139Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: full 028: backend 2561 passed y ratchet sin violaciones nuevas; frontend 1547 passed, lint sin errores ni avisos, tsc y build OK; 107/107 AC con SDD: 028 en verde; 21 REQ y 3 NFR con tarea; 73/73 tareas [x]; sin skip/only nuevos; snapshot de tests intacto. Manual recomendado: AC-N002.2 (lector de pantalla)"
+    },
+    {
+      "at": "2026-10-27T17:43:42.138Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: 2561 backend, 1547 frontend, lint, tsc y build; 107/107 AC"
+    },
+    {
+      "at": "2026-10-27T17:43:42.244Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS completo"
+    },
+    {
+      "at": "2026-10-27T17:43:42.457Z",
+      "stage": "review",
+      "event": "started",
+      "note": "review 028"
+    },
+    {
+      "at": "2026-10-27T17:48:37.664Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-27T17:48:37.792Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED: 0 bloqueantes, 0 mayores, 6 menores, 2 nit"
+    },
+    {
+      "at": "2026-10-27T17:53:19.985Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "usuario en el gate de review: corregir F1 a F8 (F3 y F7 afectan a la spec) · review 1/4"
+    },
+    {
+      "at": "2026-10-27T17:57:04.606Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "Q11 (F3), Q12 (F7) y umbral de CPU de NFR-004 (F4) pendientes del usuario"
+    },
+    {
+      "at": "2026-10-27T18:02:38.089Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec iteración 2: 21 REQ, 4 NFR; F3, F7, F1, F2, F4 incorporados; Q11 y Q12 resueltas"
+    },
+    {
+      "at": "2026-10-27T18:05:01.046Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "aprobado, cierra la etapa spec"
     }
   ]
 }

@@ -29,6 +29,21 @@ Esta spec sustituye, de la 023: AC-004.16 (las erratas ya coinciden, con las reg
 REQ-009 (AC-009.1 y AC-009.7: la búsqueda se lanza mientras se escribe o con Intro). De la 022 sustituye la decisión Q4
 (los personalizados ya no viven solo en su comida). Lo demás de esas specs se mantiene.
 
+**Iteración 2 (tras la review, hallazgos F1 a F8).** Se conservan todos los REQ y AC anteriores con su numeración; lo
+nuevo o cambiado se marca con «(iteración 2)»:
+
+- F1 (Escape con la confirmación de borrado abierta): REQ-017 y AC-017.5 y AC-017.6, nuevos.
+- F2 (foco y posición de la confirmación de borrado): REQ-017 y AC-017.7, nuevos; NFR-002 y AC-N002.3 a AC-N002.5,
+  nuevos.
+- F3 (favoritos del catálogo retirados): REQ-009 y AC-009.6 a AC-009.8, nuevos (pregunta Q11).
+- F4 (coste de la búsqueda con tolerancia): NFR-004 y AC-N004.1 a AC-N004.3, nuevos. Por indicación del usuario, la
+  cota es determinista (un tope de comparaciones de distancia de edición por búsqueda) y no un tiempo absoluto.
+- F5 (código sin uso de la búsqueda anterior): texto de REQ-020 ampliado, sin AC nuevos.
+- F7 (alimento propio de la propuesta borrado de la biblioteca): REQ-018 y AC-018.7 y AC-018.8, nuevos (pregunta Q12).
+- F6 (tipos del formulario de la propuesta) y F8 (plan y ADR desfasados) son internos y no cambian ningún requisito.
+
+Ningún AC anterior se sustituye.
+
 ## 2. Historia de usuario
 
 Como **usuario con sesión que lleva su diario de comidas**, quiero **volver a registrar mis alimentos personalizados sin
@@ -283,6 +298,13 @@ responder 404 con `{"error": "No encontramos ese alimento."}`.
 IF el usuario ya tiene 100 favoritos y marca uno nuevo THEN THE SYSTEM SHALL responder 400 con
 `{"error": "Ya tienes 100 favoritos. Quita alguno para añadir otro."}`.
 
+(iteración 2, F3, Q11) Para el límite de 100 SHALL contar solo los favoritos que el usuario ve en su lista (REQ-010):
+los del catálogo cuyo alimento ya no está en el catálogo no cuentan. WHEN el usuario pide
+`DELETE /api/food-library/favorites/catalog/{catalog_id}` de un favorito suyo cuyo alimento ya no está en el catálogo
+THE SYSTEM SHALL quitarlo de sus favoritos y responder 204, de modo que no vuelve a aparecer si una carga posterior
+devuelve el alimento. El 404 de `DELETE` sobre `catalog/{catalog_id}` queda solo para un identificador no válido o que
+no está ni en el catálogo ni en los favoritos del usuario.
+
 - **AC-009.1:** Given un usuario sin favoritos, When pide `PUT …/favorites/catalog/banano` dos veces, Then recibe 204 las
   dos veces y sus favoritos tienen «Banano» una sola vez.
 - **AC-009.2:** Given «Banano» favorito, When pide `DELETE …/favorites/catalog/banano` dos veces, Then recibe 204 las dos
@@ -292,6 +314,15 @@ IF el usuario ya tiene 100 favoritos y marca uno nuevo THEN THE SYSTEM SHALL res
 - **AC-009.4:** Given un usuario con 100 favoritos, When marca uno nuevo, Then recibe 400 con ese mensaje; y When vuelve a
   marcar uno que ya es favorito, Then recibe 204.
 - **AC-009.5:** Given que A marca «Banano» como favorito, When B pide sus favoritos, Then «Banano» no aparece.
+- **AC-009.6 (iteración 2, F3):** Given un usuario con 100 favoritos, uno de ellos del catálogo cuyo alimento una carga
+  posterior quitó del catálogo, When marca un alimento nuevo, Then recibe 204 y su lista de favoritos (REQ-010) tiene
+  100 alimentos, entre ellos el nuevo.
+- **AC-009.7 (iteración 2, F3):** Given un favorito del catálogo «Banano» cuyo alimento una carga quitó del catálogo,
+  When el usuario pide `DELETE …/favorites/catalog/banano`, Then recibe 204; y When otra carga devuelve «Banano» al
+  catálogo, Then «Banano» no aparece en sus favoritos.
+- **AC-009.8 (iteración 2, F3):** Given un `catalog_id` válido que no está en el catálogo ni en los favoritos del
+  usuario (aunque sea favorito de otro usuario), When pide `DELETE …/favorites/catalog/{catalog_id}`, Then recibe 404 con
+  `{"error": "No encontramos ese alimento."}` y los favoritos del otro usuario no cambian.
 
 ### REQ-010 — Lista de favoritos
 WHEN un usuario con sesión pide `GET /api/food-library/favorites` THE SYSTEM SHALL responder 200 con sus favoritos, del
@@ -410,6 +441,12 @@ resultados, «Favoritos» o «Recientes» THE SYSTEM SHALL pedir confirmación c
 alimentos?», el texto «Las comidas ya registradas no cambian.» y los botones «Borrar» y «Cancelar»; al confirmar SHALL
 borrarlo (REQ-004) y quitarlo de las listas. Los alimentos del catálogo no tienen este botón.
 
+(iteración 2, F1 y F2) La confirmación SHALL mostrarse junto al alimento, dentro de su elemento de la lista en la que se
+pulsó «Borrar», sin ocultar el resto de la búsqueda. WHILE la confirmación está abierta, WHEN el usuario pulsa Escape
+THE SYSTEM SHALL cerrar solo la confirmación, como «Cancelar»: SHALL NOT cerrar el diálogo «Añadir a {sección}», SHALL
+NOT abrir la confirmación de descartar la propuesta de la 026 y SHALL conservar el texto de la caja de búsqueda. Con la
+confirmación ya cerrada, Escape vuelve a funcionar como en las specs 022 a 026.
+
 - **AC-017.1:** Given el resultado propio «Gallo pinto», When el usuario pulsa «Borrar Gallo pinto de tus alimentos» y
   confirma, Then se pide el borrado de su id y «Gallo pinto» desaparece de los resultados, de «Favoritos» y de
   «Recientes».
@@ -418,6 +455,17 @@ borrarlo (REQ-004) y quitarlo de las listas. Los alimentos del catálogo no tien
 - **AC-017.3:** Given que el borrado falla, When confirma, Then ve «No se pudo borrar el alimento.» y el alimento sigue en
   la lista.
 - **AC-017.4:** Given un resultado del catálogo, When se muestra, Then no tiene botón «Borrar».
+- **AC-017.5 (iteración 2, F1):** Given el diálogo «Añadir a {sección}» con «gallo» en la caja y la confirmación de
+  borrar «Gallo pinto» abierta, When el usuario pulsa Escape, Then la confirmación se cierra, no se hace ninguna
+  petición de borrado, el diálogo «Añadir a {sección}» sigue abierto con «gallo» en la caja y «Gallo pinto» sigue en
+  los resultados; y When pulsa Escape otra vez, Then el diálogo se cierra, como sin la confirmación abierta.
+- **AC-017.6 (iteración 2, F1):** Given la búsqueda de «Añadir otro alimento» de una propuesta de foto con la
+  confirmación de borrar un alimento propio abierta, When el usuario pulsa Escape, Then la confirmación se cierra, no
+  se hace ninguna petición de borrado, no aparece la confirmación de descartar la propuesta (026) y la búsqueda sigue
+  visible con su texto.
+- **AC-017.7 (iteración 2, F2):** Given «Gallo pinto» en «Favoritos» y en «Recientes», When el usuario pulsa «Borrar
+  Gallo pinto de tus alimentos» en «Recientes», Then la confirmación aparece dentro del elemento de «Gallo pinto» de la
+  lista «Recientes», no dentro de la lista «Favoritos», y las listas siguen visibles para los lectores de pantalla.
 
 ### Frontend · propuesta de foto
 
@@ -428,6 +476,14 @@ elegir alimentos del catálogo, propios, favoritos o recientes y pulsar «Crear 
 SHALL abrir el formulario de alimento personalizado con «Añadir a la propuesta», con el nombre de la búsqueda (o del
 alimento sin coincidencia) y, al resolver un alimento sin coincidencia, sus gramos. Lo elegido o creado SHALL entrar en
 la propuesta (al final, o en el lugar del alimento sin coincidencia que se resuelve).
+
+(iteración 2, F7, Q12) WHEN el usuario borra de su biblioteca, desde la búsqueda de la propuesta (REQ-017), un alimento
+propio que ya está en filas de esa propuesta THE SYSTEM SHALL conservar esas filas con su nombre, sus valores por 100 g,
+sus gramos y la etiqueta «Personalizado», sin el vínculo al alimento borrado, y al guardar SHALL enviarlas como
+personalizados con `name` y `per_100g` (que REQ-001 vuelve a guardar en la biblioteca como un alimento propio nuevo), de
+modo que el borrado no hace fallar el guardado. IF el guardado de la propuesta responde 400 con
+`No encontramos ese alimento.` (por ejemplo, porque el alimento se borró desde otra pestaña o dispositivo) THEN THE
+SYSTEM SHALL mostrar ese mensaje y conservar la propuesta entera, como con cualquier error de guardado de la 025.
 
 - **AC-018.1:** Given una propuesta, When el usuario pulsa «Añadir otro alimento», Then ve la búsqueda con «Favoritos» y
   «Recientes» y el botón «Crear alimento personalizado».
@@ -443,6 +499,15 @@ la propuesta (al final, o en el lugar del alimento sin coincidencia que se resue
   la propuesta con sus `last_grams`.
 - **AC-018.6:** Given la búsqueda de un alimento sin coincidencia sin resultados, When el usuario pulsa «Crear alimento
   personalizado», Then el formulario muestra el nombre y los gramos de ese alimento.
+- **AC-018.7 (iteración 2, F7):** Given una propuesta con el alimento propio «Gallo pinto» (180 kcal, 6 g, 30 g y 4 g
+  por 100 g) elegido con 250 g, When el usuario pulsa «Añadir otro alimento», borra «Gallo pinto» de sus alimentos y
+  confirma, vuelve a la propuesta y pulsa «Guardar en {sección}», Then la fila sigue con «Gallo pinto», 250 g y
+  «Personalizado» antes de guardar, y se envía una sola petición con `{"name": "Gallo pinto", "grams": 250,
+  "per_100g": {"calories_kcal": 180, "protein_g": 6, "carbs_g": 30, "fat_g": 4}}` para esa fila, sin
+  `custom_food_id`.
+- **AC-018.8 (iteración 2, F7):** Given una propuesta con un alimento propio elegido y otro del catálogo, When el
+  guardado responde 400 con `{"error": "No encontramos ese alimento."}`, Then se ve «No encontramos ese alimento.» y la
+  propuesta sigue con sus dos filas, sus gramos y su total.
 
 ### REQ-019 — Totales de la propuesta siempre al día
 THE SYSTEM SHALL mostrar en cada fila de la propuesta y en el total los nutrientes de los gramos y alimentos actuales
@@ -460,6 +525,9 @@ justo después de cada cambio: editar gramos, resolver un alimento sin coinciden
 
 ### REQ-020 — `/foods` sin pantalla propia
 THE SYSTEM SHALL seguir llevando la ruta `/foods` a `/diary`, sin el código de la pantalla «Alimentos» de la 021.
+(iteración 2, F5) Tampoco SHALL quedar en el frontend el código que solo usaban esa pantalla o la búsqueda del diario
+de la 023 sustituida por la búsqueda compartida (REQ-013); el backend no cambia (`GET /api/foods/search` y
+`GET /api/catalog/search` se conservan, ver «Fuera de alcance» y REQ-006).
 
 - **AC-020.1:** Given un usuario con sesión y onboarding completado, When abre `/foods`, Then termina en `/diary` y ve la
   pantalla «Diario».
@@ -492,12 +560,55 @@ alimento; el botón de favorito SHALL indicar su estado pulsado.
 - **AC-N002.2:** Given los estados «Buscando…», sin resultados, error y error de carga de tus alimentos, When aparecen,
   Then están dentro de una región que se anuncia a los lectores de pantalla.
 
+(iteración 2, F2) En la confirmación de borrado de REQ-017, THE SYSTEM SHALL llevar el foco al botón «Cancelar» al
+abrirla; al cerrarla con «Cancelar», con Escape o tras un borrado que falla, SHALL devolverlo al botón «Borrar {nombre}
+de tus alimentos» desde el que se abrió; y tras un borrado correcto, en el que ese botón desaparece, SHALL llevarlo a la
+caja «Buscar alimento». El foco SHALL NOT quedar en el cuerpo de la página.
+
+- **AC-N002.3 (iteración 2, F2):** Given el resultado propio «Gallo pinto», When el usuario pulsa «Borrar Gallo pinto de
+  tus alimentos», Then el foco está en el botón «Cancelar» de la confirmación.
+- **AC-N002.4 (iteración 2, F2):** Given la confirmación de borrar «Gallo pinto» abierta desde «Recientes», When el
+  usuario la cierra con «Cancelar», con Escape o al confirmar un borrado que falla, Then el foco está en el botón
+  «Borrar Gallo pinto de tus alimentos» de «Recientes».
+- **AC-N002.5 (iteración 2, F2):** Given la confirmación de borrar «Gallo pinto» abierta, When el usuario confirma y el
+  borrado responde 204, Then «Gallo pinto» desaparece y el foco está en la caja «Buscar alimento».
+
 ### NFR-003 — Lint de la propuesta
 THE SYSTEM SHALL dejar la propuesta de foto sin el aviso `react(incompatible-library)` de `npm run lint`, sin introducir
 errores de lint.
 
 - **AC-N003.1:** Given el frontend tras el cambio, When se ejecuta `npm run lint`, Then no aparece ningún aviso
   `incompatible-library` en `PhotoReview.tsx` y no hay errores.
+
+### NFR-004 — Coste acotado de la búsqueda con tolerancia (iteración 2, F4)
+Como la búsqueda no tiene límite de uso (NFR-001), THE SYSTEM SHALL acotar el trabajo de la segunda búsqueda con
+tolerancia de REQ-006, en la búsqueda conjunta (REQ-007) y en `GET /api/catalog/search`, con una cota que no depende de
+la máquina ni del tiempo (iteración 2, F4, cota determinista en lugar de una cota de tiempo):
+
+- Una **comparación** es el cálculo de la distancia de edición entre una forma de una palabra de la consulta y una
+  palabra de un nombre o sinónimo (incluidos los inicios de esa palabra, que cuentan dentro de la misma comparación).
+- **F** es el número de formas distintas, de 4 o más caracteres, de las palabras **distintas** de la consulta (las
+  palabras repetidas cuentan una vez). **P** es el número de palabras distintas, ya sin mayúsculas ni tildes, de los
+  nombres y sinónimos que entran en esa búsqueda: el catálogo y, en la búsqueda conjunta, los alimentos propios del
+  usuario.
+- Cada búsqueda SHALL hacer como mucho **F × P** comparaciones. La primera búsqueda (sin tolerancia) y las consultas en
+  las que la primera búsqueda ya encuentra alimentos SHALL NOT hacer ninguna.
+- Repetir palabras en la consulta SHALL NOT aumentar el número de comparaciones.
+
+Esta cota SHALL NOT cambiar qué alimentos aparecen ni su orden según REQ-006 y REQ-007 (los AC de esos requisitos siguen
+valiendo).
+
+- **AC-N004.1:** Given el catálogo de la 023 y un usuario con 500 alimentos propios con nombres de 2 a 5 palabras, When
+  se hace la búsqueda conjunta con la consulta de 100 caracteres `"arroces " * 12 + "qzxw"`, Then responde 200 con
+  `results` vacío, el número de comparaciones es como mucho F × P y es el mismo que con la consulta `arroces qzxw`.
+- **AC-N004.2:** Given los mismos datos, When se busca con `q=arroces integrale` (dispara la búsqueda con tolerancia y
+  encuentra resultados) en la búsqueda conjunta, Then la respuesta incluye «Arroz integral cocido» y el número de
+  comparaciones es como mucho F × P; y When se busca con la consulta de AC-N004.1 en `GET /api/catalog/search`, Then
+  responde 200 con `results` vacío y el número de comparaciones es como mucho F × P (con P solo del catálogo) y el mismo
+  que con `arroces qzxw`.
+- **AC-N004.3 (iteración 2, F4):** Given los mismos datos, When se busca `q=arroz` (la primera búsqueda encuentra
+  alimentos) o `q=pam` (sin formas de 4 o más caracteres) en la búsqueda conjunta, Then no se hace ninguna comparación y
+  los resultados son los de REQ-006 y REQ-007.
 
 ## 6. Datos y contratos visibles
 
@@ -546,7 +657,7 @@ lleva además `last_grams` (número con un decimal como mucho).
 | `GET /api/food-library/favorites` | 200 `{"results": [...]}`, todos, por nombre | — |
 | `PUT /api/food-library/favorites/catalog/{catalog_id}` | 204 | 404 `No encontramos ese alimento.`; 400 `Ya tienes 100 favoritos. Quita alguno para añadir otro.` |
 | `PUT /api/food-library/favorites/custom/{custom_food_id}` | 204 | ídem |
-| `DELETE /api/food-library/favorites/catalog/{catalog_id}` | 204 (también si no era favorito) | 404 `No encontramos ese alimento.` |
+| `DELETE /api/food-library/favorites/catalog/{catalog_id}` | 204 (también si no era favorito y, desde la iteración 2, si era favorito y el alimento ya no está en el catálogo) | 404 `No encontramos ese alimento.` si el id no es válido o no está ni en el catálogo ni en sus favoritos |
 | `DELETE /api/food-library/favorites/custom/{custom_food_id}` | 204 (también si no era favorito) | ídem |
 | `DELETE /api/food-library/custom/{custom_food_id}` | 204 | 404 `No encontramos ese alimento.` |
 
@@ -575,7 +686,7 @@ lleva además `last_grams` (número con un decimal como mucho).
 | Error al cargar tus alimentos | «No se pudieron cargar tus alimentos.» con «Reintentar» |
 | Alimento en una lista | Nombre; «Personalizado» si es propio; «{n} kcal», «{g} g proteína», «{g} g carbohidratos», «{g} g grasa» por 100 g; «Elegir» («Elegir {nombre}»); favorito («Añadir {nombre} a favoritos» / «Quitar {nombre} de favoritos»); en los propios, «Borrar» («Borrar {nombre} de tus alimentos») |
 | Error de favorito | «No se pudo actualizar tus favoritos.» (o el mensaje del servidor si es el límite) |
-| Confirmación de borrado | Título «¿Borrar «{nombre}» de tus alimentos?»; texto «Las comidas ya registradas no cambian.»; botones «Borrar» y «Cancelar» |
+| Confirmación de borrado | Título «¿Borrar «{nombre}» de tus alimentos?»; texto «Las comidas ya registradas no cambian.»; botones «Borrar» y «Cancelar»; junto al alimento, en su lista; Escape la cierra como «Cancelar» y el foco vuelve a «Borrar» (iteración 2) |
 | Error de borrado | «No se pudo borrar el alimento.» |
 | Aviso del formulario personalizado | «Se guardará en tus alimentos para usarlo otro día. Si ya tienes uno con el mismo nombre, se actualizarán sus valores.» |
 | Gramos al elegir | Desde «Recientes», sus `last_grams`; desde resultados o «Favoritos», 100; al resolver un alimento sin coincidencia de la propuesta, sus gramos |
@@ -603,9 +714,12 @@ que rellena la biblioteca desde los personalizados existentes (REQ-005); no se a
 | Q8 | Al elegir un alimento de «Recientes», ¿qué gramos se proponen? | Los de su registro más reciente (`last_grams`); desde resultados o «Favoritos», 100 g (AC-014.5). | acepto todas las respuestas propuestas |
 | Q9 | ¿Qué cuenta como «reciente»? | Los 10 últimos alimentos distintos del catálogo o propios que siguen en el diario, por el momento en que se añadieron (no por la fecha de la comida); sin USDA, sin alimentos retirados del catálogo ni propios borrados (REQ-008). | acepto todas las respuestas propuestas |
 | Q10 | ¿Se avisa en la Política de privacidad? | Sí: «Diario de comidas:» menciona los alimentos personalizados guardados y los favoritos, con la fecha nueva (REQ-021). | acepto todas las respuestas propuestas |
+| Q11 | (Iteración 2, F3) Un favorito del catálogo cuyo alimento retira una carga posterior no se ve en la lista. ¿Cuenta para el límite de 100? ¿Se puede quitar? | No cuenta para el límite y `DELETE …/favorites/catalog/{id}` lo quita (204), así no reaparece si el alimento vuelve. Si vuelve sin haberlo quitado, reaparece aunque eso deje más de 100 visibles; hasta bajar de 100, marcar uno nuevo da el 400 del límite (REQ-009, AC-009.6 a AC-009.8). Alternativa descartada: contar todos y solo permitir el `DELETE`, que deja el límite bloqueado por alimentos que el usuario no ve. | Q11 y Q12 aceptados tal cual |
+| Q12 | (Iteración 2, F7) En la propuesta de foto, si el usuario elige un alimento propio y después lo borra de su biblioteca desde «Añadir otro alimento», ¿qué pasa con esa fila? | La fila se conserva con su nombre, valores, gramos y «Personalizado», y se guarda como personalizado con `name` y `per_100g`; por REQ-001 eso vuelve a crear el alimento en la biblioteca (con otro id). Si el borrado se hizo desde otro sitio y el guardado da 400 «No encontramos ese alimento.», se muestra el mensaje y se conserva la propuesta (REQ-018, AC-018.7 y AC-018.8). Alternativas: (a) la fila pasa a «sin coincidencia» y hay que resolverla otra vez; (b) la fila se quita de la propuesta. | Q11 y Q12 aceptados tal cual |
 
-**Estado:** las diez preguntas están resueltas; el usuario aceptó todas las propuestas por defecto. Ya estaban
-recogidas en la spec y quedan así:
+**Estado:** todas las preguntas están resueltas. El usuario aceptó las propuestas por defecto de Q1 a Q10 y, en la
+iteración 2, las de Q11 y Q12 tal cual. Además, en «Comentarios del usuario» eligió para F4 la alternativa determinista,
+recogida en NFR-004 (AC-N004.1 a AC-N004.3). Quedan así:
 
 - Q1 → REQ-001 (AC-001.1 a AC-001.10) y AC-016.2.
 - Q2 → REQ-005.
@@ -617,6 +731,9 @@ recogidas en la spec y quedan así:
 - Q8 → AC-014.5, AC-018.3 y AC-018.5.
 - Q9 → REQ-008.
 - Q10 → REQ-021.
+- Q11 (resuelta) → REQ-009, AC-009.6 a AC-009.8 y la tabla de endpoints.
+- Q12 (resuelta) → REQ-018, AC-018.7 y AC-018.8.
+- F4 (comentario del usuario) → NFR-004, AC-N004.1 a AC-N004.3.
 
 No quedan preguntas abiertas.
 
@@ -632,3 +749,7 @@ No quedan preguntas abiertas.
 - **Distancia de edición:** número mínimo de operaciones de una letra (insertar, borrar, cambiar o intercambiar dos
   contiguas) para pasar de un texto a otro.
 - **Búsqueda compartida:** el mismo componente de búsqueda en el diálogo de añadir y en la propuesta de foto.
+
+## Comentarios del usuario
+
+F4 tu alternativa determinista

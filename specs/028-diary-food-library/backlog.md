@@ -45,3 +45,22 @@
 - [ ] El fixture `src/test/diaryFixtures.ts` podría traer `custom_food_id: null` para volver a hacerlo obligatorio en `MealItem`.
 - [ ] `AddFoodDialog` no pasa contenedor a la confirmación de borrado: hoy es en línea y no lo necesita.
 - [ ] Decisión del implementer a revisar en review: la confirmación de borrar un alimento propio es en línea (`role="alertdialog"`), no con `ConfirmDialog`, porque el modal marca la lista «Resultados» como `aria-hidden` y AC-017.3 la exige accesible; se quitó la prop `confirmContainer`.
+
+## verify · verifier
+- [ ] Documentar en `docs/deploy-runbook.md` el paso manual de producción de la migración `e6a8c0d2f4b7` (Art. P4), en la etapa docs.
+- [ ] AC manual AC-N002.2 (anuncio real por lector de pantalla): revisar antes del cierre.
+- [ ] La nota de la etapa spec en `state.json` dice «112 AC»; `spec.md` tiene 107 AC con marcador. Corregir el texto en la etapa docs.
+- [ ] 14 archivos de test tienen CRLF en la copia de trabajo y LF en HEAD; no afecta al commit, vigilar `core.autocrlf`.
+- [ ] La nota del verifier sobre `(saved,) = …` sin aserción de longitud está obsoleta: los 5 desempaquetados ya llevan `assert len(...) == 1`.
+
+## review · reviewer
+- [ ] F1 (implementer, MENOR): con la confirmación de borrado abierta, Escape cierra todo «Añadir a {sección}» o abre la confirmación de descartar la propuesta, porque Radix escucha en fase de captura. Interceptar `onEscapeKeyDown` en el diálogo contenedor y añadir un test.
+- [ ] F2 (implementer, MENOR): al confirmar o cancelar el borrado en línea, el foco cae en `body`. Debe volver a la lista o al disparador, y la confirmación se pinta lejos del alimento.
+- [ ] F3 (spec-writer, MENOR): los favoritos del catálogo de alimentos retirados cuentan para el límite de 100 y no se pueden quitar (DELETE responde 404).
+- [ ] F4 (implementer, MENOR): la pasada de erratas cuesta unos 0,9 s de CPU con una consulta adversaria de 100 caracteres y 500 propios, y no hay límite de uso. Mitigaciones: `startswith` para formas de menos de 4 caracteres, cortar en cuanto una palabra no encaja o limitar el número de palabras.
+- [ ] F5 (planner, MENOR): código muerto en el frontend: `features/catalog/{api,hooks}.ts`, `CatalogResultList.tsx`, `features/foods/api.ts` y `catalogEntry`.
+- [ ] F6 (implementer, NIT): `zodResolver(...) as never` en `PhotoReview.tsx:58`; alinear los tipos de `key`.
+- [ ] F7 (spec-writer, MENOR): un alimento propio elegido en la propuesta y borrado después de la biblioteca hace fallar todo el guardado con 400, sin indicar qué fila es.
+- [ ] F8 (planner, NIT): el plan y la ADR-0036 siguen describiendo `ConfirmDialog`/`confirmContainer`; reflejar la confirmación en línea en la etapa docs.
+- [ ] Etapa docs: documentar en `docs/deploy-runbook.md` el paso manual de la migración `e6a8c0d2f4b7` (Art. P4).
+- [ ] Prueba manual de AC-N002.2 con lector de pantalla, aún pendiente.
