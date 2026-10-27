@@ -33,3 +33,10 @@
 
 ## tests · test-author (iteración 4)
 - [ ] Renombrar test_production_app_starts_in_tests_without_secret_key_in_the_environment (backend/tests/test_services/test_secret_key_config.py L144) para que el nombre no prometa más de lo que comprueba.
+
+## review · reviewer
+- [ ] F1 (MENOR, test-author): `test_production_app_starts_in_tests_without_secret_key_in_the_environment` (`backend/tests/test_services/test_secret_key_config.py:144`) promete más de lo que comprueba; renombrarlo. AC-N002.1 se confirma en CI.
+- [ ] F2 (NIT, test-author): el marcador AC-N001.2 está en un test del firmante que no tiene que ver con la 027 (`test_secret_key_config.py:154-162`).
+- [ ] F3 (NIT, implementer): faltan las anotaciones de tipo de `resolve_secret_key` (`backend/config.py:44`).
+- [ ] F4 (NIT, implementer): reutilizar `is_db_id` para el `fdc_id` en `backend/services/meal_rules.py:166`.
+- [ ] docs (P4): documentar en el runbook y en `CLAUDE.md` que hay que comprobar en EC2, antes del merge, que `SECRET_KEY` existe y no es un valor por defecto, y que los comandos locales con `FLASK_ENV=production` necesitan una clave válida.

@@ -141,7 +141,7 @@ def test_production_app_starts_and_keeps_the_exact_secret_key(make_app, value):
 
 # Guarda de regresión de la 020: pasa sin implementar la 027.
 # SDD: 027 NFR-002 AC-N002.1
-def test_production_app_starts_in_tests_without_secret_key_in_the_environment(make_app):
+def test_production_app_starts_in_tests_with_the_make_app_test_secret_key(make_app):
     """Los tests de producción de la 020 no necesitan `SECRET_KEY` en el entorno:
     sin override, el fixture `make_app` aporta una propia de pruebas, así que el
     arranque no depende de lo que haya en `os.environ`."""
@@ -152,8 +152,9 @@ def test_production_app_starts_in_tests_without_secret_key_in_the_environment(ma
 
 # Guarda de regresión de la 026: pasa sin implementar la 027.
 # SDD: 027 NFR-001 AC-N001.2
-def test_restore_token_round_trip_still_works_with_the_026_signer():
-    """El firmante de la 026 no cambia: firma y verifica un payload del snapshot."""
+def test_restore_token_format_guard_signer_round_trip_is_unchanged_by_027():
+    """Guarda del formato del token: el firmante de la 026 no cambia con la 027;
+    firma y verifica un payload del snapshot con una clave cualquiera."""
     from utils.restore_token import RestoreTokenSigner
 
     payload = {"v": 1, "d": "2026-10-20", "t": "breakfast", "p": 1, "s": "custom"}
