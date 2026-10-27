@@ -10,14 +10,17 @@
   "branch": "feat/028-diary-food-library",
   "base_branch": "main",
   "created_at": "2026-10-27T08:34:57.517Z",
-  "stage": "plan",
+  "stage": "tasks",
   "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-10-27T08:53:22.120Z",
       "note": "aprobado, cierra la etapa spec"
     },
-    "plan": null,
+    "plan": {
+      "at": "2026-10-27T09:06:07.479Z",
+      "note": "auto (gate_mode=flow): plan con ADR-0036 propuesta, migración aditiva con relleno"
+    },
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -26,7 +29,9 @@
     "docs": null,
     "close": null
   },
-  "commits": {},
+  "commits": {
+    "spec": "4538f39"
+  },
   "iterations": {
     "tests": 0,
     "implement": 0,
@@ -77,6 +82,36 @@
       "stage": "spec",
       "event": "approved",
       "note": "aprobado, cierra la etapa spec"
+    },
+    {
+      "at": "2026-10-27T08:53:22.400Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 4538f39"
+    },
+    {
+      "at": "2026-10-27T08:53:22.575Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Diseñar plan.md de 028-diary-food-library"
+    },
+    {
+      "at": "2026-10-27T09:06:07.383Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan 028: custom_foods, food_favorites, meal_items.custom_food_id; migración aditiva e6a8c0d2f4b7; ADR-0036 propuesta"
+    },
+    {
+      "at": "2026-10-27T09:06:07.479Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan con ADR-0036 propuesta, migración aditiva con relleno"
+    },
+    {
+      "at": "2026-10-27T09:06:07.568Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Decisiones: tablas custom_foods y food_favorites; custom_food_id ON DELETE SET NULL; erratas OSA en catalog_search_service; token de deshacer con cf opcional; downgrade borra favoritos; reescribe tests de 023/022 por cambio de spec; ADR-0036 Propuesta (la acepta el usuario en review)"
     }
   ]
 }

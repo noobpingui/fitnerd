@@ -1,0 +1,631 @@
+# Plan 028 — Biblioteca de alimentos del diario: personalizados reutilizables, recientes y favoritos, con búsqueda compartida
+
+- **Spec:** [spec.md](spec.md) (aprobada el 2026-10-27)
+- **Ámbitos:** `backend`, `frontend`
+
+## 1. Resumen de la solución
+- **Backend:** dos tablas nuevas, `custom_foods` (biblioteca por usuario) y `food_favorites`, y la columna
+  `meal_items.custom_food_id` (`ON DELETE SET NULL`). `POST /api/meals` crea o actualiza el alimento propio al registrar
+  un personalizado y acepta `custom_food_id`. Un `FoodLibraryService` nuevo da la búsqueda conjunta, los recientes (una
+  consulta con función de ventana sobre `meal_items`), los favoritos y el borrado, detrás de `/api/food-library`. La
+  tolerancia a erratas y el plural «-ces» se añaden a las funciones puras de `catalog_search_service.py`, así que
+  también valen para `GET /api/catalog/search`. Capas `routes → services → repositories → models` (Art. P2.1), sin
+  proveedores externos.
+- **Migración** aditiva que rellena la biblioteca desde los personalizados ya registrados (ADR-0036). No se aplica sola.
+- **Frontend:** una feature de datos `food-library` (api, hooks, tipos y esquemas) y, en `diary`, un componente
+  `FoodSearchPanel` compartido por `AddFoodDialog` y `PhotoReview`, con búsqueda mientras se escribe (300 ms),
+  «Favoritos», «Recientes», favoritos y borrado. `PhotoReview` deja `form.watch` y lee los gramos con `useWatch`
+  emparejados por clave. Se retira el código de `FoodsPage` y se actualiza la Política de privacidad.
+
+## 2. Impacto en la arquitectura
+| Ámbito | Capa / área | Archivos nuevos | Archivos modificados | Motivo |
+|---|---|---|---|---|
+| backend | models | `backend/models/custom_food.py`, `backend/models/food_favorite.py` | `backend/models/meal.py`, `backend/models/__init__.py` | Tablas `custom_foods` y `food_favorites`; columna `meal_items.custom_food_id` (REQ-001, REQ-004, REQ-009) |
+| backend | migrations | `backend/migrations/versions/e6a8c0d2f4b7_create_food_library.py` | — | DDL y relleno de la biblioteca (REQ-005) |
+| backend | repositories | `backend/repositories/custom_food_repository.py`, `backend/repositories/food_favorite_repository.py` | `backend/repositories/meal_repository.py` | Acceso a la biblioteca, favoritos y consulta de recientes (REQ-008) |
+| backend | services (reglas puras) | `backend/services/food_library_rules.py` | `backend/services/catalog_search_service.py`, `backend/services/meal_rules.py` | Clave de nombre, límites, mensajes; erratas y «-ces» (REQ-006); `LibraryItemInput` y `cf` del token (REQ-003, REQ-012) |
+| backend | services | `backend/services/food_library_service.py` | `backend/services/meal_service.py` | Búsqueda conjunta, recientes, favoritos y borrado (REQ-004, REQ-007 a REQ-010); guardar en la biblioteca y añadir por id (REQ-001 a REQ-003, REQ-012) |
+| backend | routes | `backend/routes/food_library_routes.py` | `backend/routes/__init__.py`, `backend/routes/meal_routes.py` | `/api/food-library/*` (REQ-011); `custom_food_id` en las respuestas de `/api/meals` |
+| backend | tests | `backend/tests/test_services/test_food_library_rules.py`, `backend/tests/test_services/test_food_library_service.py`, `backend/tests/test_services/test_food_library_migration.py`, `backend/tests/test_routes/test_food_library_routes.py`, `backend/tests/test_routes/test_meal_library_routes.py` | `backend/tests/fakes.py`, `backend/tests/test_services/test_catalog_search_service.py`, `backend/tests/test_services/test_meal_service.py`, `backend/tests/test_services/test_meal_rules.py`, `backend/tests/test_routes/test_catalog_routes.py`, `backend/tests/test_routes/test_meal_routes.py` | Ver sección 5 |
+| frontend | feature `food-library` (datos) | `frontend/src/features/food-library/api.ts`, `hooks.ts`, `types.ts`, `schemas.ts` | — | Llamadas, claves de TanStack Query y validación de `/api/food-library` |
+| frontend | lib | `frontend/src/lib/useDebouncedValue.ts` | — | Retardo de 300 ms con «disparo inmediato» para Intro (REQ-013) |
+| frontend | diary · componentes | `frontend/src/features/diary/components/FoodSearchPanel.tsx`, `frontend/src/features/diary/components/LibraryFoodList.tsx` | `AddFoodDialog.tsx`, `PhotoReview.tsx`, `ProposalEntryRow.tsx`, `CustomFoodForm.tsx`, `MealPhotoDialog.tsx` | Búsqueda compartida (REQ-013 a REQ-018), totales al día (REQ-019), aviso del formulario (AC-016.2) |
+| frontend | diary · lógica | — | `frontend/src/features/diary/proposal.ts`, `types.ts`, `schemas.ts`, `format.ts`, `errors.ts`, `constants.ts`, `hooks.ts` | Entradas con clave y alimento propio, `custom_food_id`, mensajes, invalidar la biblioteca al añadir |
+| frontend | retirada | — | se borran `frontend/src/features/diary/components/ProposalSearchStep.tsx`, `frontend/src/features/foods/pages/FoodsPage.tsx`, `frontend/src/features/foods/pages/FoodsPage.test.tsx`, `frontend/src/features/foods/components/FoodResultList.tsx`, `frontend/src/features/foods/components/FoodSearchForm.tsx`, `frontend/src/features/foods/hooks.ts` | REQ-020 y Q7; sustituidos por `FoodSearchPanel` |
+| frontend | legal | — | `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx` | REQ-021 |
+| frontend | tests | `frontend/src/features/food-library/api.test.ts`, `frontend/src/lib/useDebouncedValue.test.ts`, `frontend/src/features/diary/components/FoodSearchPanel.test.tsx`, `frontend/src/features/diary/components/PhotoReview.source.test.ts` | `AddFoodDialog.test.tsx`, `MealPhotoDialog.test.tsx`, `DiaryPage.test.tsx`, `proposal.test.ts`, `schemas.test.ts`, `api.test.ts` (diary), `PrivacyPolicyPage.test.tsx`, `foodsRoute.test.tsx`, `mealPhotoRoute.test.tsx` | Ver sección 5 |
+| docs | ADR | `docs/sdd/decisions/ADR-0036-biblioteca-de-alimentos-propios.md` | `docs/sdd/decisions/README.md` | Decisión nueva (sección 8) |
+
+Sin dependencias nuevas, sin variables de entorno nuevas y sin cambios en `config.py`, `extensions.py` ni Caddy.
+
+## 3. Diseño
+### 3.1 Datos y migraciones
+
+**`public.custom_foods`** (`backend/models/custom_food.py`, clase `CustomFood`):
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | `Integer` PK autoincremental | `custom_food_id` |
+| `user_id` | `UUID` FK `public.users.id` | sin `ondelete`, como `meals` |
+| `name` | `Text` no nulo | último nombre registrado, ya recortado; `CHECK ck_custom_foods_name_length`: `char_length(name) BETWEEN 1 AND 100` |
+| `name_key` | `Text` no nulo | `custom_food_name_key(name)` |
+| `calories_kcal`, `protein_g`, `carbs_g`, `fat_g` | `Float` no nulos | por 100 g; `CHECK ck_custom_foods_calories` (0 a 900) y `ck_custom_foods_macros` (cada macro de 0 a 100) |
+| `created_at`, `updated_at` | `DateTime` con `server_default now()` | `updated_at` con `onupdate` |
+
+Restricción `UNIQUE (user_id, name_key)` con nombre `uq_custom_foods_user_id_name_key` (también sirve de índice por
+usuario).
+
+**`public.food_favorites`** (`backend/models/food_favorite.py`, clase `FoodFavorite`):
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | `Integer` PK | |
+| `user_id` | `UUID` FK `public.users.id` | |
+| `catalog_id` | `String(60)` nulo | sin FK (ADR-0031): un favorito vuelve a aparecer si una carga devuelve el alimento |
+| `custom_food_id` | `Integer` nulo, FK `public.custom_foods.id` `ON DELETE CASCADE`, nombre `fk_food_favorites_custom_food_id` | |
+| `created_at` | `DateTime` | |
+
+`CHECK ck_food_favorites_one_food`: `(catalog_id IS NULL) <> (custom_food_id IS NULL)`;
+`UNIQUE (user_id, catalog_id)` `uq_food_favorites_user_id_catalog_id` y `UNIQUE (user_id, custom_food_id)`
+`uq_food_favorites_user_id_custom_food_id` (en Postgres los `NULL` no chocan).
+
+**`public.meal_items`** (`backend/models/meal.py`): columna `custom_food_id: Mapped[int | None]`, `Integer` nula,
+`ForeignKey("public.custom_foods.id", ondelete="SET NULL", name="fk_meal_items_custom_food_id")`, índice
+`ix_meal_items_custom_food_id` y `CHECK ck_meal_items_custom_food_source`: `custom_food_id IS NULL OR source = 'custom'`.
+No se tocan las `CHECK` existentes. Sin `relationship` entre los modelos: el borrado en cascada y el `SET NULL` los
+hace la base.
+
+`backend/models/__init__.py` importa `CustomFood` y `FoodFavorite` (para `create_all()` de los tests).
+
+**Migración `e6a8c0d2f4b7_create_food_library.py`** (`down_revision = 'd4f6a8c0e2b5'`, la cabeza actual):
+- `upgrade()`:
+  1. `create_table('custom_foods', …)` y `create_table('food_favorites', …)` con las restricciones anteriores, todas
+     con nombre explícito (iguales a las del modelo, para que el `downgrade` funcione igual sobre una base creada con
+     `create_all()`).
+  2. `add_column('meal_items', custom_food_id)`, `create_foreign_key('fk_meal_items_custom_food_id', …,
+     ondelete='SET NULL')`, `create_index('ix_meal_items_custom_food_id', …)` y
+     `create_check_constraint('ck_meal_items_custom_food_source', …)`.
+  3. **Relleno (REQ-005):** con `op.get_bind()` y `sa.text` con parámetros enlazados (Art. P3.4):
+     - lee `mi.id, m.user_id, mi.name, mi.per_100g_* , mi.created_at` de `meal_items` unido a `meals` con
+       `mi.source = 'custom'`, ordenado por `mi.created_at, mi.id`;
+     - agrupa en Python por `(user_id, clave)` con una copia **local** de la regla de clave (la migración no importa
+       código de la app, que puede cambiar): `" ".join(_fold(name).split())`, con `_fold` = `casefold` + NFKD sin marcas
+       combinantes;
+     - por grupo, inserta un `custom_foods` con el nombre y los valores del **último** registro del grupo
+       (`RETURNING id`) y ejecuta `UPDATE public.meal_items SET custom_food_id = :id WHERE id = ANY(:ids)`;
+     - no aplica el límite de 500.
+- `downgrade()`: quita la `CHECK`, el índice, la FK y la columna de `meal_items`; después `drop_table('food_favorites')`
+  y `drop_table('custom_foods')`. Se pierden los favoritos; los alimentos propios se regeneran con otro `upgrade`.
+- Es aditiva y **no se aplica sola**: el `doc-keeper` añade el caso a `docs/deploy-runbook.md` (volcado completo
+  verificado en `C:/Users/alber/fitnerd-backups` y `flask db upgrade` con `FLASK_ENV` bien puesto **antes del merge**,
+  como la 022 y la 023), Art. P4.
+
+### 3.2 Contratos e interfaces
+
+#### API HTTP (todas con `@require_auth`; `user_id` siempre de `g.decoded_token["id"]`, Art. P3.1)
+
+| Petición | Respuesta | Errores |
+|---|---|---|
+| `GET /api/food-library/search?q=` | 200 `{"results": [LibraryFood]}` (≤ 20) | 400 con los mensajes de `normalize_query` (023) |
+| `GET /api/food-library/recent` | 200 `{"results": [LibraryFood + last_grams]}` (≤ 10) | — |
+| `GET /api/food-library/favorites` | 200 `{"results": [LibraryFood]}` | — |
+| `PUT /api/food-library/favorites/catalog/<catalog_id>` | 204 | 404 `No encontramos ese alimento.`; 400 `Ya tienes 100 favoritos. Quita alguno para añadir otro.` |
+| `PUT /api/food-library/favorites/custom/<custom_food_id>` | 204 | ídem |
+| `DELETE /api/food-library/favorites/catalog/<catalog_id>` | 204 | 404 |
+| `DELETE /api/food-library/favorites/custom/<custom_food_id>` | 204 | 404 |
+| `DELETE /api/food-library/custom/<custom_food_id>` | 204 | 404 |
+
+Los parámetros de ruta son **texto** (no `<int:…>`), para que `abc` llegue al servicio y responda el 404 con el mensaje
+de la spec (AC-004.3). `LibraryFood` serializado:
+`{"kind": "catalog"|"custom", "id": str|int, "name": str, "per_100g": {cuatro float}, "favorite": bool}` y, solo en
+recientes, `"last_grams": float`.
+
+`/api/meals`: cada alimento de las respuestas añade `"custom_food_id": int | null`; `POST /api/meals` acepta
+`{"custom_food_id": int, "grams": number}`. Mensajes nuevos: `Ya tienes 500 alimentos propios. Borra alguno para crear
+otro.` (400) y `No encontramos ese alimento.` (400, el `FOOD_NOT_FOUND_MESSAGE` existente).
+
+#### Backend · firmas exactas (esqueletos: `raise NotImplementedError("not implemented")`, Art. P1.backend.5)
+
+`backend/services/food_library_rules.py`:
+```python
+MAX_CUSTOM_FOODS = 500
+MAX_FAVORITES = 100
+MAX_RECENT_FOODS = 10
+CUSTOM_FOODS_LIMIT_MESSAGE = "Ya tienes 500 alimentos propios. Borra alguno para crear otro."
+FAVORITES_LIMIT_MESSAGE = "Ya tienes 100 favoritos. Quita alguno para añadir otro."
+LIBRARY_KINDS: tuple[str, ...] = ("catalog", "custom")
+
+@dataclass(frozen=True)
+class LibraryFood:
+    kind: str                      # "catalog" | "custom"
+    id: str | int
+    name: str
+    per_100g: dict[str, float]
+    favorite: bool
+    last_grams: Decimal | None = None
+
+@dataclass(frozen=True)
+class RecentFoodRow:
+    catalog_id: str | None
+    custom_food_id: int | None
+    grams: Decimal
+
+def custom_food_name_key(name: str) -> str: ...
+def parse_custom_food_id(value: object) -> int | None: ...   # int o texto de dígitos entre 1 y 2.147.483.647; si no, None
+```
+
+`backend/services/catalog_search_service.py` (se conservan `MAX_RESULTS`, `GROUP_*`, `match_group`, `rank_catalog` y
+`CatalogSearchService` con su firma):
+```python
+def query_forms(query: str) -> list[tuple[str, ...]]: ...       # añade la forma «-ces» → «z» (≥ 3 caracteres)
+def edit_distance(a: str, b: str) -> int: ...                   # OSA: insertar, borrar, cambiar, intercambiar contiguas
+def prefix_edit_distance(form: str, word: str) -> int: ...      # mínimo frente a la palabra y a cada uno de sus inicios
+def typo_tolerance(form: str) -> int: ...                       # < 4 → 0; 4 a 7 → 1; ≥ 8 → 2
+def typo_distance(name: str, synonyms: Sequence[str], query: list[tuple[str, ...]]) -> int | None: ...
+
+@dataclass(frozen=True)
+class SearchCandidate:
+    name: str
+    synonyms: Sequence[str]
+    source_order: int      # 0 catálogo, 1 propio
+    key: str               # desempate estable (id como texto)
+    item: object
+
+def rank_candidates(candidates: Iterable[SearchCandidate], query: str, limit: int = MAX_RESULTS) -> list: ...
+```
+
+`backend/services/food_library_service.py`:
+```python
+class FoodLibraryService:
+    def __init__(self, catalog_repository, custom_food_repository, favorite_repository,
+                 meal_repository, user_repository, unit_of_work): ...
+    def search(self, user_id, raw_query: str | None) -> list[LibraryFood]: ...
+    def recent(self, user_id) -> list[LibraryFood]: ...
+    def favorites(self, user_id) -> list[LibraryFood]: ...
+    def add_favorite(self, user_id, kind: str, food_id: object) -> None: ...
+    def remove_favorite(self, user_id, kind: str, food_id: object) -> None: ...
+    def delete_custom_food(self, user_id, custom_food_id: object) -> None: ...
+```
+
+`backend/services/meal_rules.py` (añadidos):
+```python
+@dataclass(frozen=True)
+class LibraryItemInput:
+    custom_food_id: int
+    grams: Decimal
+
+# RemovedItemSnapshot gana un último campo con valor por defecto:
+#     custom_food_id: int | None = None
+# parse_items(...) -> list[CatalogItemInput | UsdaItemInput | CustomItemInput | LibraryItemInput]
+```
+
+`backend/services/meal_service.py`: `MealService.__init__(…, catalog_repository=None, restore_signer=None,
+custom_food_repository=None)` (kwarg nuevo al final; con `None` no se guarda en la biblioteca, como hoy con
+`catalog_repository`, para no romper los tests unitarios existentes).
+
+`backend/repositories/custom_food_repository.py`:
+```python
+class CustomFoodRepository(BaseRepository):
+    def __init__(self, session): ...
+    def list_by_user(self, user_id) -> list[CustomFood]: ...
+    def get_by_id_and_user(self, custom_food_id: int, user_id) -> CustomFood | None: ...
+    def get_by_ids_and_user(self, ids: list[int], user_id) -> list[CustomFood]: ...
+    def get_by_name_keys(self, user_id, name_keys: list[str]) -> list[CustomFood]: ...
+    def count_by_user(self, user_id) -> int: ...
+    def create(self, food: CustomFood) -> CustomFood: ...   # add + flush (para tener id); nunca commit
+```
+
+`backend/repositories/food_favorite_repository.py`:
+```python
+class FoodFavoriteRepository(BaseRepository):
+    def __init__(self, session): ...
+    def list_by_user(self, user_id) -> list[FoodFavorite]: ...
+    def get_for_food(self, user_id, catalog_id: str | None = None,
+                     custom_food_id: int | None = None) -> FoodFavorite | None: ...
+    def count_by_user(self, user_id) -> int: ...
+```
+
+`backend/repositories/meal_repository.py`: `def list_recent_foods(self, user_id, limit: int) -> list[RecentFoodRow]`.
+
+`backend/routes/food_library_routes.py`: `food_library_bp = Blueprint("food_library", __name__,
+url_prefix="/api/food-library")`, `def _build_food_library_service() -> FoodLibraryService` y
+`def library_food_to_json(food: LibraryFood) -> dict`.
+
+#### Frontend · firmas exactas (esqueletos: `throw new Error("not implemented")`, parámetros con `_`, Art. P1.frontend.5)
+
+`frontend/src/features/food-library/types.ts`:
+```ts
+export type LibraryNutrientKey = "calories_kcal" | "protein_g" | "carbs_g" | "fat_g"
+export type LibraryPer100g = Record<LibraryNutrientKey, number>
+export type CatalogLibraryFood = { kind: "catalog"; id: string; name: string; per_100g: LibraryPer100g; favorite: boolean }
+export type CustomLibraryFood = { kind: "custom"; id: number; name: string; per_100g: LibraryPer100g; favorite: boolean }
+export type LibraryFood = CatalogLibraryFood | CustomLibraryFood
+export type RecentFood = LibraryFood & { last_grams: number }
+```
+
+`frontend/src/features/food-library/schemas.ts`: `libraryFoodSchema` (unión discriminada por `kind`),
+`libraryResultsSchema` (`{ results: LibraryFood[] }`) y `recentResultsSchema` (`{ results: RecentFood[] }`).
+
+`frontend/src/features/food-library/api.ts`:
+```ts
+export async function searchFoodLibrary(query: string): Promise<LibraryFood[]>
+export async function getRecentFoods(): Promise<RecentFood[]>
+export async function getFavoriteFoods(): Promise<LibraryFood[]>
+export async function setFoodFavorite(food: Pick<LibraryFood, "kind" | "id">, favorite: boolean): Promise<void>
+export async function deleteCustomFood(customFoodId: number): Promise<void>
+```
+(`setFoodFavorite` hace `PUT` o `DELETE` a `/api/food-library/favorites/{kind}/{encodeURIComponent(String(id))}`.)
+
+`frontend/src/features/food-library/hooks.ts`:
+```ts
+export const foodLibraryKeys = {
+  all: ["food-library"] as const,
+  search: (query: string) => ["food-library", "search", query] as const,
+  recent: () => ["food-library", "recent"] as const,
+  favorites: () => ["food-library", "favorites"] as const,
+}
+export function useFoodLibrarySearch(query: string | null): UseQueryResult<LibraryFood[], Error>
+export function useRecentFoods(): UseQueryResult<RecentFood[], Error>
+export function useFavoriteFoods(): UseQueryResult<LibraryFood[], Error>
+export function useSetFoodFavorite(): UseMutationResult<void, Error, { food: LibraryFood; favorite: boolean }>
+export function useDeleteCustomFood(): UseMutationResult<void, Error, number>
+```
+
+`frontend/src/lib/useDebouncedValue.ts`:
+```ts
+export function useDebouncedValue<T>(value: T, delayMs: number): [T, (next: T) => void]
+```
+
+`frontend/src/features/diary/components/FoodSearchPanel.tsx`:
+```ts
+export function FoodSearchPanel(props: {
+  initialQuery?: string
+  onQueryChange?: (query: string) => void
+  onSelect: (food: LibraryFood, defaultGrams: string) => void
+  onCreateCustom: (name: string) => void
+  actions?: ReactNode
+  confirmContainer?: HTMLElement | null
+}): ReactElement
+```
+
+`frontend/src/features/diary/components/LibraryFoodList.tsx`:
+```ts
+export function LibraryFoodList(props: {
+  label: string
+  foods: LibraryFood[]
+  onSelect: (food: LibraryFood) => void
+  onToggleFavorite: (food: LibraryFood) => void
+  onDelete: (food: LibraryFood) => void
+  disabled?: boolean
+}): ReactElement
+```
+
+`frontend/src/features/diary`:
+- `types.ts`: `MealItem.custom_food_id: number | null`; `LibraryItemPayload = { custom_food_id: number; grams: number }`;
+  `SavableItemPayload = CatalogItemPayload | CustomItemPayload | LibraryItemPayload`; `AddMealItemsPayload.items`
+  admite `LibraryItemPayload`; la variante `custom` de `ProposalEntry` gana `customFoodId?: number` (opcional: los
+  creados en la propuesta no lo llevan); `ProposalFormEntry = ProposalEntry & { key: string }`;
+  `ProposalFormValues = { entries: ProposalFormEntry[] }`.
+- `schemas.ts`: `custom_food_id: z.number().nullable().default(null)` en los alimentos de `mealResponseSchema`;
+  `key: z.string().optional()` en las tres variantes de `proposalEntrySchema` y `customFoodId: z.number().optional()`
+  en la `custom`.
+- `proposal.ts`:
+  ```ts
+  export function libraryEntry(food: LibraryFood, grams: string): ProposalEntry
+  export function withEntryKey(entry: ProposalEntry): ProposalFormEntry
+  export function mergeProposalEntries(
+    fields: ProposalFormEntry[],
+    watched: readonly (Partial<ProposalFormEntry> | undefined)[] | undefined
+  ): ProposalFormEntry[]
+  ```
+  (`proposalItems` convierte un `custom` con `customFoodId` en `{ custom_food_id, grams }`.)
+- `format.ts`: `export function gramsText(value: number): string` (150 → `"150"`, 12.5 → `"12,5"`).
+- `errors.ts`: `FAVORITE_FAILED_MESSAGE = "No se pudo actualizar tus favoritos."`,
+  `export function favoriteErrorMessage(error: unknown): string` (400 → mensaje del servidor),
+  `DELETE_CUSTOM_FOOD_FAILED_MESSAGE = "No se pudo borrar el alimento."`,
+  `LIBRARY_LOAD_FAILED_MESSAGE = "No se pudieron cargar tus alimentos."`.
+- `constants.ts`: `SEARCH_DEBOUNCE_MS = 300` y `CUSTOM_FOOD_LIBRARY_NOTICE = "Se guardará en tus alimentos para usarlo
+  otro día. Si ya tienes uno con el mismo nombre, se actualizarán sus valores."`.
+- `PhotoReview`: prop nueva opcional `confirmContainer?: HTMLElement | null` (la pasa `MealPhotoDialog` con su
+  `contentElement`).
+
+### 3.3 Lógica
+
+**Clave de nombre (`custom_food_name_key`):** `" ".join(fold(name).split())`, reutilizando `fold` de
+`services/catalog_rules.py` (casefold + NFKD sin marcas: «Piña» = «Pina»). Solo mayúsculas, tildes y espacios; la
+puntuación sí distingue.
+
+**`MealService.add_items` (REQ-001 a REQ-003):**
+1. `parse_items` cuenta `custom_food_id` como cuarto origen: exactamente uno de `catalog_id`, `fdc_id`, `name`,
+   `custom_food_id` (si no, `ITEM_SOURCE_MESSAGE`); valida gramos como hoy; `custom_food_id` debe cumplir `is_db_id`
+   (si no, `ValidationError(FOOD_NOT_FOUND_MESSAGE)`, 400, AC-003.2). `_load_foods` pasa a filtrar por
+   `isinstance(entry, UsdaItemInput)` (hoy filtra «lo que no es catálogo ni personalizado», que incluiría los nuevos).
+2. Tras `_lock_user` (ADR-0020): `_load_custom_foods(user_id, inputs)` carga por id los `LibraryItemInput` con
+   `get_by_ids_and_user` (falta alguno → 400 `FOOD_NOT_FOUND_MESSAGE`) y **copia sus valores en ese momento**, antes de
+   tocar la biblioteca.
+3. `_save_custom_foods(user_id, inputs)` (solo si hay `custom_food_repository`): agrupa los `CustomItemInput` por clave
+   conservando el orden (el último de la petición gana, AC-001.6); busca las existentes con `get_by_name_keys`; si
+   `count_by_user + nuevas > MAX_CUSTOM_FOODS` → `ValidationError(CUSTOM_FOODS_LIMIT_MESSAGE)` antes de escribir nada
+   (AC-002.1 a AC-002.3); actualiza `name` y los cuatro valores de las existentes y crea las nuevas con `create`
+   (flush para el id). Devuelve `{clave: CustomFood}`.
+4. Cada alimento se crea como hoy; los `custom` llevan `custom_food_id` (el de su clave o el pedido). Los
+   `LibraryItemInput` se guardan con `source="custom"`, el nombre y los valores copiados en el paso 2.
+5. Cualquier error → `unit_of_work.rollback()` (no queda nada, AC-001.7, AC-002.x). Concurrencia (AC-001.8): el
+   bloqueo de la fila del usuario serializa las dos peticiones; la segunda ve el alimento ya creado. La restricción
+   única es la red de seguridad.
+
+**`MealService.remove_item` / `restore_item` (REQ-012):** el snapshot lleva `custom_food_id`. `snapshot_payload`
+añade `"cf"` **solo si no es `None`** (el test de la 026 que fija el conjunto exacto de claves sigue válido).
+`parse_snapshot_payload`: `cf` ausente → `None`; presente → debe cumplir `is_db_id` y `source == "custom"`, si no el
+token no es válido (404, como la 027). Al restaurar con `cf`, se vincula solo si
+`custom_food_repository.get_by_id_and_user(cf, user_id)` lo encuentra; si no, `None` (AC-012.2).
+
+**`FoodLibraryService`:**
+- `search`: `normalize_query` (023) → `favorites = _favorite_keys(user_id)` → candidatos: todo el catálogo
+  (`source_order=0`, sinónimos) y la biblioteca del usuario (`list_by_user`, `source_order=1`, sin sinónimos) →
+  `rank_candidates(…, MAX_RESULTS)` → `LibraryFood` con `favorite`.
+- `recent`: `meal_repository.list_recent_foods(user_id, MAX_RECENT_FOODS)` → carga los del catálogo por id
+  (`catalog_repository.get_by_ids`) y los propios (`get_by_ids_and_user`), mantiene el orden de las filas, salta los que
+  ya no existan y pone `last_grams` de la fila y los valores **actuales** (AC-008.8).
+- `favorites`: `favorite_repository.list_by_user` → carga catálogo y propios; omite los del catálogo que ya no están
+  (AC-010.2); ordena por `(fold(name), source_order, name, id)`.
+- `add_favorite` / `remove_favorite`: `kind` fuera de `LIBRARY_KINDS` → 404. Valida el id (`is_catalog_id` o
+  `parse_custom_food_id`) y la existencia (`catalog_repository.get_by_ids([id])` o `get_by_id_and_user`); si no →
+  `ResourceNotFoundError(FOOD_NOT_FOUND_MESSAGE)`. `add`: bloquea la fila del usuario; si ya es favorito, no hace nada
+  (204); si `count_by_user >= MAX_FAVORITES` → `ValidationError(FAVORITES_LIMIT_MESSAGE)`; si no, crea y `commit`.
+  `remove`: borra si existe y `commit`.
+- `delete_custom_food`: `parse_custom_food_id` → bloquea la fila del usuario → `get_by_id_and_user` (si no, 404) →
+  `delete` → `commit`. La base pone `meal_items.custom_food_id` a `NULL` y borra sus favoritos.
+- Ningún método llama a proveedores externos ni usa `rate_limiter` (NFR-001).
+
+**`MealRepository.list_recent_foods`:** consulta con el ORM (sin SQL concatenado):
+`row_number() OVER (PARTITION BY meal_items.catalog_id, meal_items.custom_food_id ORDER BY meal_items.created_at DESC,
+meal_items.id DESC)` sobre `meal_items JOIN meals` del usuario, con
+`(source = 'catalog' AND catalog_id IN (SELECT id FROM catalog_foods)) OR custom_food_id IS NOT NULL`; fuera, `rn = 1`
+ordenado por `created_at DESC, id DESC` y `LIMIT`. Editar gramos no cambia `created_at` (AC-008.3); restaurar crea una
+fila nueva (AC-012.1).
+
+**Búsqueda (`rank_candidates`, REQ-006 y REQ-007):**
+1. `forms = query_forms(query)`; vacío → `[]`.
+2. **Pasada exacta:** `match_group(name, synonyms, forms)`; orden `(grupo, fold(name), source_order, name, key)`.
+3. Si no hay **ninguna** coincidencia: **pasada con tolerancia**: `typo_distance` = mínimo, entre el nombre y cada
+   sinónimo, de la suma por palabra de la consulta del mínimo `prefix_edit_distance(forma, palabra)` entre sus formas y
+   las palabras del término, contando solo las que cumplen `≤ typo_tolerance(forma)`; si alguna palabra de la consulta
+   no tiene coincidencia, el término no vale. Orden `(distancia, fold(name), source_order, name, key)`.
+4. `prefix_edit_distance` calcula la tabla OSA de `form` frente a `word` y devuelve el mínimo de la última fila (la
+   forma completa frente a cada inicio de la palabra, incluida la palabra entera).
+5. `rank_catalog(foods, query, limit)` pasa a ser `rank_candidates` con todos los alimentos en `source_order=0`; el
+   orden de la 023 no cambia (la columna nueva es constante).
+Comprobación con los AC: «arorz»/«arroz» = 1 (intercambio); «ijol» frente a «frijoles» > 1 (AC-006.8); «huevi» frente a
+«hueso» = 2 > 1 (AC-006.9); «pam» no tiene tolerancia (AC-006.7); «nueces» → forma «nuez» (AC-006.10).
+
+**Frontend · `FoodSearchPanel` (REQ-013 a REQ-017):**
+- Formulario react-hook-form con `foodSearchFormSchema` de `features/foods/schemas.ts` (se conserva), `mode` y
+  `reValidateMode` `"onSubmit"` (sin avisos mientras se escribe, Q6). El texto se lee con `useWatch`.
+- `const [active, flush] = useDebouncedValue(typed.trim(), SEARCH_DEBOUNCE_MS)`; `query = active` si tiene de 2 a 100
+  caracteres, si no `null`. Intro válido → `flush(trimmed)` (búsqueda en el acto; cuando vence el retardo el valor es
+  el mismo y no hay otra petición, AC-013.6). Intro no válido → mensaje de zod, sin petición.
+- `useFoodLibrarySearch(query)`: `useQuery` con clave `foodLibraryKeys.search(query)`, `enabled: query !== null`,
+  `retry: false`, `staleTime: 60_000`. Al ser por clave, una respuesta tardía de «pollo» nunca se muestra con «arroz»
+  (AC-013.3). «Reintentar» = `refetch()`.
+- Con el texto recortado de menos de 2 caracteres: `useFavoriteFoods()` y `useRecentFoods()` (`staleTime: 0`,
+  `retry: false`; se vuelven a pedir al montar, AC-014.6) en dos `LibraryFoodList` con encabezado «Favoritos» y
+  «Recientes»; sin ninguno, el texto de la 023; si cualquiera falla, `LIBRARY_LOAD_FAILED_MESSAGE` con «Reintentar»
+  (refetch de las dos).
+- Con 2 o más caracteres y el retardo pendiente (texto distinto de `active`), la región muestra «Buscando…».
+- Región `role="status" aria-live="polite"` con: «Buscando…», sin resultados (con «Crear alimento personalizado», que
+  llama a `onCreateCustom(query)`), error con «Reintentar» (`searchErrorView` de `features/foods/searchError.ts`), error
+  de carga de tus alimentos y el texto inicial (NFR-002). Fuera de la región: el botón «Crear alimento personalizado»
+  cuando hay resultados (`onCreateCustom("")`), la lista «Resultados» y `actions`.
+- Gramos al elegir: desde «Recientes», `gramsText(last_grams)`; desde «Resultados» o «Favoritos», `"100"`.
+- Favorito: `useSetFoodFavorite` (sin actualización optimista; `onSuccess` devuelve la promesa de invalidar
+  `foodLibraryKeys.all`, así el botón cambia cuando llegan los datos nuevos). Error → `favoriteErrorMessage` en un
+  `role="alert"`; el botón no cambia (AC-015.4 y AC-015.5). Los botones de favorito se deshabilitan mientras hay una
+  petición en curso.
+- Borrar: `ConfirmDialog` (`diary/components/ConfirmDialog.tsx`, reutilizado) con título `¿Borrar «{nombre}» de tus
+  alimentos?`, texto, «Borrar» (destructivo) y «Cancelar», `container={confirmContainer}`. `useDeleteCustomFood`
+  (`onSuccess` invalida `foodLibraryKeys.all`; un 404 cuenta como éxito, igual que `useDeleteMeal`); error →
+  `DELETE_CUSTOM_FOOD_FAILED_MESSAGE` dentro de la confirmación, que sigue abierta.
+- `LibraryFoodList`: `<ul aria-label={label}>`; por alimento: nombre; «Personalizado» si `kind === "custom"`; macros con
+  `formatCalories`/`formatGrams` de `features/foods/format.ts`; «Elegir» (`aria-label="Elegir {nombre}"`); favorito
+  (`aria-pressed`, `aria-label` «Añadir {nombre} a favoritos» o «Quitar {nombre} de favoritos», icono `Star` de
+  `lucide-react`, ya instalado); en los propios, «Borrar» (`aria-label="Borrar {nombre} de tus alimentos"`). Clave
+  React `${kind}:${id}`.
+
+**Frontend · `AddFoodDialog` (REQ-013 a REQ-017):** paso `search` = `FoodSearchPanel` con `actions` = «Cancelar»; el
+diálogo guarda la última consulta (`onQueryChange`) para que «Volver a la búsqueda» la recupere (la caché de TanStack
+Query devuelve los resultados sin pedirlos otra vez). Paso `portion`: nombre, «Personalizado» si es propio,
+`PortionForm` con `defaultGrams` recibido; envía `{ catalog_id }` o `{ custom_food_id }` (AC-016.1). Paso `custom`:
+`CustomFoodForm` con el nombre recibido. `useAddMealItems` invalida además `foodLibraryKeys.all`.
+
+**Frontend · `CustomFoodForm` (AC-016.2, AC-016.3):** muestra `CUSTOM_FOOD_LIBRARY_NOTICE` en todos sus usos. El 400
+del límite ya sale como mensaje del servidor con `saveErrorMessage`, y el formulario no se desmonta.
+
+**Frontend · `PhotoReview` (REQ-018, REQ-019, NFR-003):**
+- `defaultValues: { entries: initialEntries.map(withEntryKey) }`; `useFieldArray` para `append`, `update` y `remove`.
+- Se quita `form.watch`. `const watched = useWatch({ control: form.control, name: "entries" })` y
+  `const entries = mergeProposalEntries(fields as ProposalFormEntry[], watched)`: por cada `field`, si hay un valor
+  observado con la misma `key`, toma sus `grams`; si no, los del `field`. Toda entrada que se añade o sustituye pasa
+  por `withEntryKey` (clave nueva), así un valor obsoleto de `useWatch` nunca se aplica a otra fila. La clave sale de un
+  contador del módulo (`proposal.ts`).
+- Vistas: `list`; `search` (`{ mode: "add" } | { mode: "resolve", index }`) con `FoodSearchPanel` (`initialQuery` = nombre
+  del alimento sin coincidencia o vacío, `actions` = «Volver a la propuesta», `confirmContainer`); `custom`
+  (`{ index: number | null, name, grams }`). Elegir: al resolver, `update(index, withEntryKey(libraryEntry(food,
+  String(current.grams))))`; al añadir, `append(withEntryKey(libraryEntry(food, defaultGrams)))`. Crear desde la
+  búsqueda: al añadir, formulario con el nombre buscado y gramos vacíos; al resolver, con el nombre y los gramos del
+  alimento sin coincidencia (AC-018.6). «Añadir a la propuesta» hace `append` o `update` con `customEntry`.
+- `libraryEntry`: catálogo → igual que `catalogEntry` (etiqueta «Añadido por ti»); propio → `{ kind: "custom",
+  customFoodId: id, name, per100g, grams }` (etiqueta «Personalizado»).
+
+**Frontend · retirada (REQ-020):** se borran `FoodsPage.tsx` y su test, `FoodResultList.tsx`, `FoodSearchForm.tsx`
+(sustituido por la caja del panel), `foods/hooks.ts` y `ProposalSearchStep.tsx`. Se conservan `foods/api.ts`,
+`foods/schemas.ts`, `foods/format.ts`, `foods/searchError.ts` y `foods/types.ts` (los usan el diario o los mocks de las
+pruebas de rutas). `router.tsx` no cambia: `/foods` sigue redirigiendo a `/diary`.
+
+**Frontend · Política de privacidad (REQ-021):** solo el `<li>` «Diario de comidas:» añade «los alimentos
+personalizados que guardas para reutilizarlos y los que marcas como favoritos»; `updatedAt="27 de octubre de 2026"`.
+No se menciona «favoritos» en «Actividad en la app» ni en «Para qué usamos tu información» (los guardas de la 012 lo
+prohíben).
+
+### 3.4 Interfaz de usuario
+- **Diálogo «Añadir a {sección}»:** caja «Buscar alimento» (ejemplo «Ej.: arroz blanco cocido, banano»), sin botón
+  «Buscar». Debajo, la región de estado; con la caja vacía, «Favoritos» y «Recientes»; al escribir, «Resultados». Pie:
+  «Crear alimento personalizado» y «Cancelar». Al elegir: nombre (y «Personalizado»), «Gramos» y vista previa.
+- **Propuesta de foto:** «Añadir otro alimento» y «Buscar» de un alimento sin coincidencia abren el mismo panel con
+  «Volver a la propuesta»; «Crear alimento personalizado» abre el formulario con «Añadir a la propuesta». Las filas y el
+  total se recalculan en cada cambio.
+- **Confirmación de borrado:** diálogo de alerta con los textos de la sección 6 de la spec.
+- Validación: zod para la consulta (`foodSearchFormSchema`), para las respuestas (`food-library/schemas.ts`) y para los
+  formularios existentes (Art. P3.2).
+
+## 4. Mapa REQ → diseño
+| REQ / NFR | Dónde se resuelve |
+|---|---|
+| REQ-001 | `MealService._save_custom_foods` y `add_items`; `custom_food_name_key`; `CustomFoodRepository`; `custom_foods` con `uq_custom_foods_user_id_name_key`; `custom_food_id` en `_serialize_item` |
+| REQ-002 | `MAX_CUSTOM_FOODS` y `CUSTOM_FOODS_LIMIT_MESSAGE`; comprobación en `_save_custom_foods` antes de escribir |
+| REQ-003 | `LibraryItemInput` en `parse_items`; `MealService._load_custom_foods`; `_load_foods` filtrado por `UsdaItemInput` |
+| REQ-004 | `FoodLibraryService.delete_custom_food`; `DELETE /api/food-library/custom/<id>`; FK `ON DELETE SET NULL` y `CASCADE` |
+| REQ-005 | Migración `e6a8c0d2f4b7` (relleno en `upgrade()`) |
+| REQ-006 | `query_forms` («-ces»), `edit_distance`, `prefix_edit_distance`, `typo_tolerance`, `typo_distance`, `rank_candidates`; `rank_catalog` (y así `GET /api/catalog/search`) |
+| REQ-007 | `FoodLibraryService.search`; `GET /api/food-library/search`; `library_food_to_json` |
+| REQ-008 | `MealRepository.list_recent_foods`; `FoodLibraryService.recent`; `GET /api/food-library/recent` |
+| REQ-009 | `FoodLibraryService.add_favorite` / `remove_favorite`; `food_favorites`; rutas `PUT`/`DELETE …/favorites/{catalog,custom}/<id>` |
+| REQ-010 | `FoodLibraryService.favorites`; `GET /api/food-library/favorites` |
+| REQ-011 | `@require_auth` en todas las rutas de `food_library_routes.py` |
+| REQ-012 | `RemovedItemSnapshot.custom_food_id`, `snapshot_payload`/`parse_snapshot_payload` con `cf`, `MealService.restore_item` |
+| REQ-013 | `FoodSearchPanel` + `useDebouncedValue` + `useFoodLibrarySearch`; `AddFoodDialog` y `PhotoReview` lo usan |
+| REQ-014 | `FoodSearchPanel` (listas con la caja vacía), `useRecentFoods`, `useFavoriteFoods`, `gramsText`; invalidación en `useAddMealItems` |
+| REQ-015 | `LibraryFoodList` (etiqueta, botón de favorito), `useSetFoodFavorite`, `favoriteErrorMessage` |
+| REQ-016 | `AddFoodDialog` (paso `portion` con `custom_food_id`), `CustomFoodForm` (`CUSTOM_FOOD_LIBRARY_NOTICE`), `saveErrorMessage` |
+| REQ-017 | `LibraryFoodList` («Borrar»), `ConfirmDialog`, `useDeleteCustomFood`, `DELETE_CUSTOM_FOOD_FAILED_MESSAGE` |
+| REQ-018 | `PhotoReview` (vistas `search` y `custom`), `libraryEntry`, `proposalItems` con `customFoodId` |
+| REQ-019 | `PhotoReview` con `useWatch` + `mergeProposalEntries` + `withEntryKey` |
+| REQ-020 | Retirada de `FoodsPage`, `FoodResultList`, `FoodSearchForm`, `foods/hooks.ts`; `router.tsx` sin cambios |
+| REQ-021 | `PrivacyPolicyPage.tsx` |
+| NFR-001 | `FoodLibraryService` sin `embedding_client` ni `rate_limiter` |
+| NFR-002 | Región `role="status"` del panel, `aria-label` de las listas y botones, `aria-pressed` del favorito |
+| NFR-003 | `PhotoReview.tsx` sin `form.watch` (`useWatch`) |
+
+## 5. Estrategia de pruebas
+
+**Entorno:** Postgres de prueba (`TEST_DATABASE_URL`, `docker compose up -d postgres redis`, puerto 5433) para el
+backend; Vitest con jsdom para el frontend. Ningún test llama a servicios externos (Art. B5.4).
+
+### backend
+- **Aislamiento (Art. P1.backend.3):** unitarios con fakes escritos a mano e inyectados por constructor; sin
+  `unittest.mock` ni `monkeypatch`. Fakes nuevos en `backend/tests/fakes.py`:
+  - `make_custom_food(id, user_id, name, calories_kcal=…, protein_g=…, carbs_g=…, fat_g=…)` (`SimpleNamespace` con
+    `name_key` calculada con `custom_food_name_key`);
+  - `FakeCustomFoodRepository` (en memoria, filtra por usuario; `create` asigna id creciente; `deleted` y `created` para
+    las aserciones; implementa todos los métodos de la sección 3.2);
+  - `FakeFoodFavoriteRepository` (`list_by_user`, `get_for_food`, `count_by_user`, `create`, `delete`);
+  - `FakeMealRepository.list_recent_foods(user_id, limit)` que devuelve las filas precargadas en `recent_rows`.
+  Se reutilizan `FakeUnitOfWork`, `FakeLockingUserRepository`, `FakeCatalogFoodRepository`, `make_catalog_food`,
+  `FakeClock` y `RestoreTokenSigner` real.
+- **Unitarios:**
+  - `test_food_library_rules.py`: `custom_food_name_key` (AC-001.2, AC-001.4, AC-001.10), `parse_custom_food_id`
+    (AC-003.2, AC-004.3).
+  - `test_catalog_search_service.py` (ampliado): `edit_distance`, `prefix_edit_distance`, `typo_tolerance`,
+    `query_forms` con «-ces», `rank_catalog` y `rank_candidates` con los casos de AC-006.1 a AC-006.11 (datos «solo para
+    la prueba» con `make_catalog_food`), y el orden catálogo antes que propio con el mismo nombre (AC-007.3).
+  - `test_food_library_service.py`: búsqueda conjunta con favoritos y ajenos (AC-007.1 a AC-007.5, AC-007.7), recientes
+    con valores actuales y `last_grams` y omisiones (AC-008.1, AC-008.4, AC-008.8), favoritos (AC-009.1 a AC-009.4,
+    AC-010.1, AC-010.2), borrado (AC-004.2, AC-004.3) y que no usa proveedores (AC-N001.1, con un servicio construido
+    sin ellos).
+  - `test_meal_service.py` (ampliado): guardar o actualizar en la biblioteca (AC-001.1, AC-001.2, AC-001.4 a AC-001.7,
+    AC-001.10), límite (AC-002.1 a AC-002.3), alimento por id (AC-003.1 a AC-003.5), restaurar con `cf`
+    (AC-012.1, AC-012.2).
+  - `test_meal_rules.py` (ampliado): `parse_items` con `custom_food_id` y mezclas (AC-003.2, AC-003.3, AC-003.5);
+    `snapshot_payload` con y sin `cf` y `parse_snapshot_payload` que rechaza `cf` no válido o en otro origen.
+  - `test_food_library_migration.py` (patrón de `test_catalog_migration.py` y `tests/migration_helpers.py`):
+    `run_downgrade` y después datos insertados con SQL (`created_at` explícitos del 1 y del 5 de octubre) y `run_upgrade`,
+    todo dentro de la transacción de la prueba con `rollback()` final (AC-005.1 a AC-005.3); y que el `downgrade` quita
+    la columna y las tablas.
+- **Integración** (`client`, usuarios registrados por la API como en `test_meal_routes.py`):
+  - `test_food_library_routes.py`: REQ-004 (AC-004.1 a AC-004.4), REQ-006 por la búsqueda conjunta (AC-006.1 a
+    AC-006.11 con un catálogo cargado como en `test_meal_routes.py`), REQ-007 (AC-007.1 a AC-007.7), REQ-008 (AC-008.1
+    a AC-008.8; para AC-008.4 se quita un alimento de `catalog_foods` con la sesión), REQ-009 (AC-009.1 a AC-009.5),
+    REQ-010 (AC-010.1 a AC-010.3), REQ-011 (AC-011.1 en las ocho rutas, sin token y con uno caducado firmado con
+    `jwt_manager`), NFR-001 (AC-N001.1 con `FakeVoyageClient` instalado en `embedding_client.client` y `calls == []`;
+    AC-N001.2 con 60 búsquedas).
+  - `test_meal_library_routes.py`: REQ-001 (AC-001.1 a AC-001.10; AC-001.8 con el patrón de dos hilos y la fila del
+    usuario bloqueada desde otra conexión de `test_password_reset_routes.py`), REQ-002, REQ-003, REQ-012 (AC-012.1,
+    AC-012.2) y AC-001.9.
+  - `test_catalog_routes.py` (ampliado): AC-006.12 (`q=aroz` con el formato de la 023).
+- **Tests existentes cuyo comportamiento sustituye la spec aprobada** (se reescriben con el marcador de la 028, no se
+  debilitan, Art. B5.3):
+  - `test_catalog_search_service.py::test_search_does_not_tolerate_typos` (023 AC-004.16, sustituido por AC-006.2):
+    pasa a afirmar que `guevos` y `huevoz` sí encuentran «Huevo cocido».
+  - `test_meal_routes.py::test_post_response_has_the_full_contract_shape`: el conjunto exacto de claves del alimento
+    incluye `custom_food_id` (sección 6 de la spec).
+- **Marcadores:** `# SDD: 028 REQ-… AC-…` (Art. P1.1).
+
+### frontend
+- **Aislamiento (Art. P1.frontend.4):** `vi.mock("@/features/food-library/api", …)` con `searchFoodLibrary`,
+  `getRecentFoods`, `getFavoriteFoods`, `setFoodFavorite` y `deleteCustomFood`, y `vi.mock("@/features/diary/api", …)`
+  como hoy. Los tests que abren el diálogo de añadir o la propuesta (`AddFoodDialog.test.tsx`, `MealPhotoDialog.test.tsx`,
+  `DiaryPage.test.tsx` y, si la abre, `mealPhotoRoute.test.tsx`) añaden ese mock. El retardo se prueba con
+  `vi.useFakeTimers({ shouldAdvanceTime: true })` y `userEvent.setup({ advanceTimers: vi.advanceTimersByTime })`; las
+  carreras (AC-013.3), con promesas controladas a mano.
+- **Unitarios:**
+  - `lib/useDebouncedValue.test.ts`: retardo, reinicio en cada cambio y `flush` inmediato (AC-013.2, AC-013.6).
+  - `food-library/api.test.ts` (mock de `apiClient`): rutas, métodos, `encodeURIComponent` y validación con zod.
+  - `diary/proposal.test.ts`: `libraryEntry`, `withEntryKey`, `mergeProposalEntries` (valor observado por clave, entrada
+    nueva sin observar, observados obsoletos tras quitar) y `proposalItems` con `customFoodId` (AC-018.4, AC-019.1 a
+    AC-019.4).
+  - `diary/schemas.test.ts`: `custom_food_id` en `mealResponseSchema` (con `null` por defecto).
+- **Componentes:**
+  - `FoodSearchPanel.test.tsx`: REQ-013 (AC-013.1 a AC-013.8), REQ-014 (AC-014.1 a AC-014.4), REQ-015 (AC-015.1 a
+    AC-015.5), REQ-017 (AC-017.1 a AC-017.4), NFR-002 (AC-N002.1, AC-N002.2).
+  - `AddFoodDialog.test.tsx` (se reescribe sobre el panel): AC-013.9, AC-014.5, AC-014.6, REQ-016 (AC-016.1 a
+    AC-016.3). Los casos de la 023 que siguen vigentes (elegir, porción, personalizado, errores al guardar) se adaptan a
+    la búsqueda nueva (escribir e Intro en lugar del botón) y conservan su marcador.
+  - `MealPhotoDialog.test.tsx` (ampliado): REQ-018 (AC-018.1 a AC-018.6), REQ-019 (AC-019.1 a AC-019.4) y AC-013.9 en la
+    propuesta; las búsquedas existentes de la 025 pasan al mock de `food-library`.
+  - `PhotoReview.source.test.ts`: AC-N003.1 como escaneo del código (`?raw`): `PhotoReview.tsx` no llama a
+    `form.watch`/`.watch(`; el `verifier` además ejecuta `npm run lint`.
+  - `PrivacyPolicyPage.test.tsx`: AC-021.1. El test «la última actualización es la del 22 de octubre de 2026» (025) se
+    reescribe con la fecha nueva (sustituido por REQ-021).
+  - `foodsRoute.test.tsx`: AC-020.1 (se añade el marcador 028 al test existente de `/foods` → `/diary` o un test nuevo).
+- **Tests que se borran:** `features/foods/pages/FoodsPage.test.tsx`, con el código que prueba (REQ-020 y Q7 retiran la
+  pantalla; Art. B5.3 no aplica a tests de código retirado por la spec).
+- **Marcadores:** `// SDD: 028 REQ-… AC-…`; nombres en español (Art. P1.frontend.3).
+
+## 6. Riesgos y mitigaciones
+| Riesgo | Probabilidad | Impacto | Mitigación |
+|---|---|---|---|
+| `useWatch` devuelve valores obsoletos tras `update()` y los totales quedan mal (lo que pasó en la 025) | Media | Alto | Gramos emparejados por `key` en `mergeProposalEntries` y clave nueva en cada entrada sustituida; tests de AC-019.x en `proposal.test.ts` y `MealPhotoDialog.test.tsx` |
+| La clave de nombre de la migración y la del servicio divergen y el relleno crea duplicados que el servicio no encuentra | Baja | Medio | Copia literal de la misma regla; test de migración con «Gallo pinto»/«gallo pinto» (AC-005.1) y test de servicio con los mismos casos |
+| Consulta de recientes lenta con muchos alimentos | Baja | Bajo | Ventana por usuario sobre `meals` (índice único por `user_id`) y `ix_meal_items_meal_id`; volumen personal |
+| Escaneos de la 012 (`test_no_catalog_leftovers.py`, `noRetiredSections.test.ts`) prohíben la cadena `/api/favorites` | Media | Medio | Las rutas son `/api/food-library/favorites`; no escribir nunca `/api/favorites` en código ni comentarios |
+| Tests existentes que abren el diálogo de añadir sin mock de `food-library` hacen peticiones reales o fallan | Alta | Medio | Lista de archivos en la sección 5; el `test-author` añade el mock |
+| Pruebas con temporizadores falsos y `userEvent` inestables | Media | Bajo | `shouldAdvanceTime` y `advanceTimers` de `userEvent`; sin esperas reales |
+| Despliegue sin aplicar la migración: `POST /api/meals` falla por la columna `custom_food_id` | Media | Alto | Paso manual antes del merge en `docs/deploy-runbook.md` (doc-keeper), como la 022 y la 023 |
+
+## 7. Cumplimiento de la constitución
+- **Art. B1/B4/B5:** todos los REQ y NFR mapeados (sección 4) y todos los AC con test previsto (sección 5). Tests antes
+  de la implementación; esqueletos con las firmas de 3.2. Los tests existentes que se reescriben lo hacen porque la spec
+  aprobada sustituye ese comportamiento (023 AC-004.16, botón «Buscar» de la 023 REQ-009, fecha de la Política,
+  contrato del alimento de `/api/meals`); no se debilitan. Se borra `FoodsPage.test.tsx` junto al código que la spec
+  retira (REQ-020).
+- **Art. B5.7:** sin errores de lint nuevos; NFR-003 quita un aviso existente.
+- **Art. P1:** marcadores con `028`; fakes a mano sin `unittest.mock` ni `monkeypatch`; mocks en la capa `api.ts`.
+- **Art. P2.backend:** capas respetadas; servicios con dependencias por constructor y `_build_*_service()`; solo
+  `UnitOfWork` hace commit (`CustomFoodRepository.create` solo hace `flush`); errores con `ValidationError` y
+  `ResourceNotFoundError`; migración incluida y revisada a mano (P2.4, P4); se reutilizan `fold`, `words`,
+  `word_forms`, `match_group`, `normalize_query`, `is_db_id`, `is_catalog_id`, `RestoreTokenSigner` y el bloqueo de
+  la fila del usuario.
+- **Art. P2.frontend:** feature `food-library` con `api.ts`, `hooks.ts`, `types.ts` y `schemas.ts`, sin `components/`
+  ni `pages/` porque es solo de datos (la interfaz pertenece al diario y vive en `diary/components/`, lo que evita una
+  dependencia en los dos sentidos entre features); HTTP solo por `apiFetch`; TanStack Query y react-hook-form con zod.
+- **Art. P3:** las ocho rutas con `@require_auth` y filtradas por el `user_id` del token; entradas validadas en el
+  servicio y con zod; sin proveedores de IA (no hace falta rate limiting, NFR-001); ORM y parámetros enlazados; sin
+  variables nuevas.
+- **Art. P4:** migración incluida; paso manual de producción a documentar en `docs/deploy-runbook.md`.
+- **Art. P5:** la ADR-0036 queda «Propuesta»; la acepta la sesión principal con la aprobación del usuario.
+- Ningún «DEBERÍA» queda sin cumplir.
+
+## 8. ADRs
+- [ADR-0036](../../docs/sdd/decisions/ADR-0036-biblioteca-de-alimentos-propios.md): biblioteca de alimentos propios,
+  vínculo con `ON DELETE SET NULL`, favoritos, recientes sin estado, búsqueda en dos pasadas con distancia OSA,
+  migración con relleno y propuesta de foto con `useWatch` emparejado por clave (Propuesta).
