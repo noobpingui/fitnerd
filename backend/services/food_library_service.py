@@ -1,7 +1,12 @@
 from exceptions.custom_exceptions import ResourceNotFoundError, ValidationError
 from models import FoodFavorite
 from services.catalog_rules import fold, is_catalog_id
-from services.catalog_search_service import MAX_RESULTS, SearchCandidate, rank_candidates
+from services.catalog_search_service import (
+    MAX_RESULTS,
+    SearchCandidate,
+    TypoSearchStats,
+    rank_candidates,
+)
 from services.food_library_rules import (
     FAVORITES_LIMIT_MESSAGE,
     LIBRARY_KINDS,
@@ -44,7 +49,9 @@ class FoodLibraryService:
         self.user_repository = user_repository
         self.unit_of_work = unit_of_work
 
-    def search(self, user_id, raw_query: str | None) -> list[LibraryFood]:
+    def search(
+        self, user_id, raw_query: str | None, stats: TypoSearchStats | None = None
+    ) -> list[LibraryFood]:
         query = normalize_query(raw_query)
         favorites = self._favorite_keys(user_id)
         candidates = [

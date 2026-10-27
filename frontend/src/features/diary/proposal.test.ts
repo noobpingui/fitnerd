@@ -2,11 +2,9 @@
 // construcción, macros, total y carga útil de guardado.
 import { beforeEach, describe, expect, it } from "vitest"
 import { CHICKEN, RICE, TOMATO_SAUCE, makeAnalysis } from "@/test/analysisFixtures"
-import { makeCatalogFood } from "@/test/catalogFixtures"
-import { makeBananaFood, makeCustomLibraryFood } from "@/test/foodLibraryFixtures"
+import { makeBananaFood, makeCustomLibraryFood, makeLibraryFood } from "@/test/foodLibraryFixtures"
 import { formatPortionPreview } from "./format"
 import {
-  catalogEntry,
   confidenceLabel,
   customEntry,
   entryNutrients,
@@ -18,6 +16,7 @@ import {
   proposalFromAnalysis,
   proposalItems,
   proposalTotals,
+  unlinkCustomFood,
   withEntryKey,
 } from "./proposal"
 import type { CustomItemPayload, ProposalEntry, ProposalFormEntry } from "./types"
@@ -73,10 +72,11 @@ describe("proposalFromAnalysis", () => {
   })
 })
 
-describe("catalogEntry y customEntry", () => {
+describe("libraryEntry (catálogo) y customEntry", () => {
   // SDD: 025 REQ-009 AC-009.2
+  // SDD: 028 REQ-020
   it("un alimento elegido del catálogo queda marcado como «user»", () => {
-    const entry = catalogEntry(makeCatalogFood({ id: "aguacate", name: "Aguacate" }), "100")
+    const entry = libraryEntry(makeLibraryFood({ id: "aguacate", name: "Aguacate" }), "100")
 
     expect(entry).toMatchObject({
       kind: "catalog",
@@ -214,8 +214,9 @@ describe("confidenceLabel y entryTag", () => {
   })
 
   // SDD: 025 REQ-009 AC-009.2
+  // SDD: 028 REQ-020
   it("un alimento elegido por el usuario lleva «Añadido por ti»", () => {
-    expect(entryTag(catalogEntry(makeCatalogFood(), "100"))).toBe("Añadido por ti")
+    expect(entryTag(libraryEntry(makeLibraryFood(), "100"))).toBe("Añadido por ti")
   })
 
   // SDD: 025 REQ-010 AC-010.3
@@ -257,9 +258,13 @@ describe("proposalItems", () => {
   })
 
   // SDD: 025 REQ-009 AC-009.4
+  // SDD: 028 REQ-020
   it("un alimento del catálogo repetido se envía dos veces", () => {
     const [rice] = fullProposal()
-    const again = catalogEntry(makeCatalogFood({ id: "arroz-blanco-cocido", name: "Arroz blanco cocido" }), "100")
+    const again = libraryEntry(
+      makeLibraryFood({ id: "arroz-blanco-cocido", name: "Arroz blanco cocido" }),
+      "100"
+    )
 
     expect(proposalItems([rice, again])).toEqual([
       { catalog_id: "arroz-blanco-cocido", grams: 150 },
@@ -530,5 +535,43 @@ describe("proposalItems con alimentos propios", () => {
     const [item] = proposalItems([withEntryKey(libraryEntry(GALLO_PROPIO, "250"))])
 
     expect(JSON.stringify(item)).not.toContain("key")
+  })
+})
+
+describe("unlinkCustomFood", () => {
+  const PER_100G = GALLO_PROPIO.per_100g
+
+  // SDD: 028 REQ-018 AC-018.7
+  it("la fila del alimento borrado queda sin identificador ni clave, con nombre, valores y gramos", () => {
+    const entry = withEntryKey(libraryEntry(GALLO_PROPIO, "250"))
+
+    const unlinked = unlinkCustomFood(entry, 12)
+
+    expect(unlinked).toEqual({ kind: "custom", name: "Gallo pinto", per100g: PER_100G, grams: "250" })
+    expect(unlinked).not.toHaveProperty("customFoodId")
+    expect(unlinked).not.toHaveProperty("key")
+    expect(entryTag(unlinked as ProposalEntry)).toBe("Personalizado")
+  })
+
+  // SDD: 028 REQ-018 AC-018.7
+  it("devuelve null para otro identificador, una fila del catálogo, una sin coincidencia o un personalizado creado en la propuesta", () => {
+    const [rice, , unmatched] = fullProposal()
+
+    expect(unlinkCustomFood(libraryEntry(GALLO_PROPIO, "250"), 99)).toBeNull()
+    expect(unlinkCustomFood(rice, 12)).toBeNull()
+    expect(unlinkCustomFood(unmatched, 12)).toBeNull()
+    expect(unlinkCustomFood(customEntry(GALLO), 12)).toBeNull()
+    // Contraste: la fila vinculada con ese identificador sí se desvincula.
+    expect(unlinkCustomFood(libraryEntry(GALLO_PROPIO, "250"), 12)).not.toBeNull()
+  })
+
+  // SDD: 028 REQ-018 AC-018.7
+  it("la fila desvinculada se envía con name, grams y per_100g, sin custom_food_id", () => {
+    const unlinked = unlinkCustomFood(libraryEntry(GALLO_PROPIO, "250"), 12) as ProposalEntry
+
+    const items = proposalItems([unlinked])
+
+    expect(items).toEqual([{ name: "Gallo pinto", grams: 250, per_100g: PER_100G }])
+    expect(Object.keys(items[0]).sort()).toEqual(["grams", "name", "per_100g"])
   })
 })

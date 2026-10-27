@@ -133,8 +133,33 @@ class SearchCandidate:
     item: object
 
 
+TYPO_MIN_FORM_LENGTH = 4
+
+
+@dataclass
+class TypoSearchStats:
+    comparisons: int = 0
+
+
+class TypoDistances:
+    """Memoria de distancias de una búsqueda, por pareja (forma, palabra), con contador."""
+
+    def __init__(self, stats: TypoSearchStats | None = None):
+        self.stats = stats
+
+    def within_tolerance(self, _form: str, _word: str) -> int | None:
+        raise NotImplementedError("not implemented")
+
+
+def typo_comparison_bound(_candidates: Iterable[SearchCandidate], _query: str) -> int:
+    raise NotImplementedError("not implemented")
+
+
 def rank_candidates(
-    candidates: Iterable[SearchCandidate], query: str, limit: int = MAX_RESULTS
+    candidates: Iterable[SearchCandidate],
+    query: str,
+    limit: int = MAX_RESULTS,
+    stats: TypoSearchStats | None = None,
 ) -> list:
     forms = query_forms(query)
     if not forms:
@@ -163,7 +188,9 @@ def rank_candidates(
     return [entry[5].item for entry in ranked[:limit]]
 
 
-def rank_catalog(foods: Iterable, query: str, limit: int = MAX_RESULTS) -> list:
+def rank_catalog(
+    foods: Iterable, query: str, limit: int = MAX_RESULTS, stats: TypoSearchStats | None = None
+) -> list:
     candidates = (
         SearchCandidate(food.name, food.synonyms, 0, str(food.id), food) for food in foods
     )
@@ -175,6 +202,8 @@ class CatalogSearchService:
     def __init__(self, catalog_repository):
         self.catalog_repository = catalog_repository
 
-    def search(self, raw_query: str | None) -> list[CatalogFood]:
+    def search(
+        self, raw_query: str | None, stats: TypoSearchStats | None = None
+    ) -> list[CatalogFood]:
         query = normalize_query(raw_query)
         return rank_catalog(self.catalog_repository.list_all(), query)

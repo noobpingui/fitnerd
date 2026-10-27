@@ -14,7 +14,15 @@ from sqlalchemy import delete, select
 from extensions import db, embedding_client, jwt_manager, rate_limiter
 from models import CatalogFood, CustomFood, Food, FoodFavorite, User
 from models.meal import MealItem
+from repositories.catalog_food_repository import CatalogFoodRepository
+from repositories.custom_food_repository import CustomFoodRepository
+from routes.food_library_routes import _build_food_library_service
 from services.catalog_rules import fold
+from services.catalog_search_service import (
+    SearchCandidate,
+    TypoSearchStats,
+    typo_comparison_bound,
+)
 from tests.fakes import FakeRedisClient, FakeVoyageClient
 
 URL = "/api/food-library"
@@ -195,6 +203,11 @@ BANANA = {"id": "banano", "name": "Banano", "synonyms": ["guineo"], "calories_kc
           "protein_g": 1.09, "carbs_g": 22.84, "fat_g": 0.33}
 OATS = {"id": "avena-cocida", "name": "Avena cocida"}
 YOGURT = {"id": "yogur-natural", "name": "Yogur natural"}
+
+
+def hundred_fruits():
+    """Las 100 frutas de los favoritos: desde AC-009.6 deben estar en el catálogo para contar."""
+    return [{"id": f"fruta-{n:03d}", "name": f"Fruta {n:03d}"} for n in range(100)]
 
 
 # --------------------------------------------------------------------------
@@ -787,7 +800,7 @@ def test_marking_a_new_food_with_100_favorites_is_400_and_an_existing_one_is_204
 ):
     """Con 100 favoritos, uno nuevo da el 400 del límite; volver a marcar uno que
     ya es favorito da 204."""
-    seed(app, BANANA, {"id": "fruta-000", "name": "Fruta 000"})
+    seed(app, BANANA, *hundred_fruits())
     with app.app_context():
         user_id = db.session.scalar(select(User.id).where(User.email == "ana@example.com"))
         db.session.add_all(
@@ -807,7 +820,7 @@ def test_marking_a_new_food_with_100_favorites_is_400_and_an_existing_one_is_204
 # SDD: 028 REQ-009 AC-009.4
 def test_a_favorite_can_be_marked_again_after_removing_one_at_the_limit(client, app, headers):
     """Con 100 favoritos, quitar uno deja marcar otro."""
-    seed(app, BANANA, {"id": "fruta-000", "name": "Fruta 000"})
+    seed(app, BANANA, *hundred_fruits())
     with app.app_context():
         user_id = db.session.scalar(select(User.id).where(User.email == "ana@example.com"))
         db.session.add_all(
@@ -1001,3 +1014,108 @@ def test_60_valid_searches_in_a_row_all_answer_200(client, app, headers, redis_f
 
     assert statuses == [200] * 60
     assert redis_fake.counts == counts_before
+
+
+# --------------------------------------------------------------------------
+# Iteración 2: favoritos retirados del catálogo (REQ-009, F3)
+# --------------------------------------------------------------------------
+
+
+def remove_from_catalog(app, catalog_id):
+    """Quita un alimento del catálogo con la sesión, como haría una carga."""
+    with app.app_context():
+        db.session.execute(delete(CatalogFood).where(CatalogFood.id == catalog_id))
+        db.session.commit()
+
+
+# SDD: 028 REQ-009 AC-009.6
+def test_a_favorite_removed_from_the_catalog_does_not_count_for_the_limit(client, app, headers):
+    """100 favoritos, uno retirado del catálogo: marcar «Banano» da 204 y la lista
+    de favoritos tiene 100 alimentos, entre ellos «Banano»."""
+    seed(app, BANANA, *hundred_fruits())
+    with app.app_context():
+        user_id = db.session.scalar(select(User.id).where(User.email == "ana@example.com"))
+        db.session.add_all(
+            [FoodFavorite(user_id=user_id, catalog_id=f"fruta-{n:03d}") for n in range(100)]
+        )
+        db.session.commit()
+    remove_from_catalog(app, "fruta-099")
+
+    response = put_favorite(client, headers, "catalog", "banano")
+
+    assert response.status_code == 204
+    listed = names_of(favorites(client, headers))
+    assert len(listed) == 100
+    assert "Banano" in listed
+
+
+# SDD: 028 REQ-009 AC-009.7
+def test_unmarking_a_favorite_removed_from_the_catalog_is_204_and_it_does_not_come_back(
+    client, app, headers
+):
+    """El favorito «Banano» retirado del catálogo se quita con 204; si una carga
+    posterior devuelve «Banano», no aparece en los favoritos."""
+    seed(app, BANANA)
+    seed_favorite(app, "ana@example.com", catalog_id="banano")
+    remove_from_catalog(app, "banano")
+
+    response = delete_favorite(client, headers, "catalog", "banano")
+
+    assert response.status_code == 204
+    assert favorites_in_database(app) == 0
+    seed(app, BANANA)
+    assert names_of(favorites(client, headers)) == []
+
+
+# SDD: 028 REQ-009 AC-009.8
+def test_unmarking_a_food_that_is_nowhere_for_this_user_is_404_and_leaves_the_other_user_alone(
+    client, app, headers, other_headers
+):
+    """«queso» es favorito retirado de Luis, no de Ana: Ana recibe 404 y el favorito de
+    Luis sigue. En el mismo escenario, el favorito retirado de Ana se quita con 204."""
+    seed_favorite(app, "luis@example.com", catalog_id="queso")
+    seed_favorite(app, "ana@example.com", catalog_id="avena-cocida")
+
+    removed = delete_favorite(client, headers, "catalog", "avena-cocida")
+    rejected = delete_favorite(client, headers, "catalog", "queso")
+
+    assert removed.status_code == 204
+    assert rejected.status_code == 404
+    assert rejected.get_json() == NOT_FOUND
+    with app.app_context():
+        remaining = db.session.scalars(select(FoodFavorite.catalog_id)).all()
+    assert remaining == ["queso"]
+
+
+# SDD: 028 NFR-004 AC-N004.1
+def test_a_search_of_100_characters_answers_200_empty_within_the_comparison_bound(
+    client, app, headers
+):
+    """`"arroces " * 12 + "qzxw"` responde 200 con `results` vacío; el servicio, con la base
+    real y un alimento propio, hace las mismas comparaciones que con `arroces qzxw`
+    y como mucho F × P."""
+    seed(app, WHITE_RICE, BROWN_RICE, BEANS)
+    seed_custom(app, "ana@example.com", "Gallo pinto")
+    long_query = "arroces " * 12 + "qzxw"
+    assert len(long_query) == 100
+
+    response = search(client, headers, long_query)
+
+    assert response.status_code == 200
+    assert response.get_json() == {"results": []}
+    user_id = user_id_of(app, "ana@example.com")
+    with app.app_context():
+        service = _build_food_library_service()
+        candidates = [
+            SearchCandidate(food.name, food.synonyms, 0, str(food.id), food)
+            for food in CatalogFoodRepository(db.session).list_all()
+        ] + [
+            SearchCandidate(food.name, (), 1, str(food.id), food)
+            for food in CustomFoodRepository(db.session).list_by_user(user_id)
+        ]
+        long_stats, short_stats = TypoSearchStats(), TypoSearchStats()
+        assert service.search(user_id, long_query, stats=long_stats) == []
+        assert service.search(user_id, "arroces qzxw", stats=short_stats) == []
+        assert short_stats.comparisons > 0
+        assert long_stats.comparisons == short_stats.comparisons
+        assert long_stats.comparisons <= typo_comparison_bound(candidates, long_query)

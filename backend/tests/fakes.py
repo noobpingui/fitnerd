@@ -753,9 +753,6 @@ class FakeFoodFavoriteRepository:
                 return favorite
         return None
 
-    def count_by_user(self, user_id):
-        return len(self.list_by_user(user_id))
-
     def create(self, favorite):
         self.favorites.append(favorite)
         self.created.append(favorite)

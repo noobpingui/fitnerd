@@ -1,4 +1,4 @@
-import type { ReactElement } from "react"
+import type { ReactElement, ReactNode } from "react"
 import { Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { formatCalories, formatGrams } from "@/features/foods/format"
@@ -18,6 +18,7 @@ export function LibraryFoodList({
   onSelect: (food: LibraryFood) => void
   onToggleFavorite: (food: LibraryFood) => void
   onDelete: (food: LibraryFood) => void
+  renderInline?: (food: LibraryFood) => ReactNode
   disabled?: boolean
 }): ReactElement {
   return (

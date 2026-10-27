@@ -10,7 +10,7 @@
   "branch": "feat/028-diary-food-library",
   "base_branch": "main",
   "created_at": "2026-10-27T08:34:57.517Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,7 +25,10 @@
       "at": "2026-10-27T18:17:08.802Z",
       "note": "auto (gate_mode=flow): 33 tareas nuevas y matriz actualizada"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-27T22:58:13.002Z",
+      "note": "auto (gate_mode=flow): red check PASS; excepción B5.2/B5.6 ratificada por el usuario con «si»"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -35,7 +38,7 @@
   "commits": {
     "spec": "66a0bff",
     "plan": "3b4ddaa",
-    "tasks": "e3203f3",
+    "tasks": "0e8f5c2",
     "tests": "20960b4",
     "implement": "56a780a"
   },
@@ -46,8 +49,8 @@
   },
   "max_iterations": 4,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-27T18:56:19.860Z"
   },
   "verify": {
     "result": null,
@@ -58,34 +61,36 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-27T17:36:50.537Z",
-    "reason": "tests 028 corregidos tras implement (claves exactas y debounce)",
+    "at": "2026-10-27T22:58:12.824Z",
+    "reason": "tests 028 iteración 2 tras red check PASS",
     "sha256": {
-      "backend/tests/fakes.py": "40f6eda0a3aa1bd7419a6d7e08923d051dfc488d35e07fb14319cc418927b06d",
-      "backend/tests/test_routes/test_catalog_routes.py": "739711485e5358ac672af02c4579364068b83533afdaa5788cb9dd7a93357fcc",
-      "backend/tests/test_routes/test_food_library_routes.py": "feaa0954bd84c680d247f7630c37cc87f7506502493e6184efb1857d82689f67",
+      "backend/tests/fakes.py": "7bdb9c2679732d1a6c3a953353c272c057cc705ff21cb47f19fb1e2a5a80bb94",
+      "backend/tests/test_routes/test_catalog_routes.py": "b574b2ff5238a9baa429cba23423f87b09fb5cf8d44ee9c74c6b9fb46fd035e8",
+      "backend/tests/test_routes/test_food_library_routes.py": "2a1b89a3fba57b69cf70bdb5a06373b94dbafb6828c3ef2ffe603e3fcd8ab362",
       "backend/tests/test_routes/test_meal_library_routes.py": "02bb30f672795ff47fad78694acbde56f0bb9403f7d912c51923b5f3c0b05be8",
       "backend/tests/test_routes/test_meal_routes.py": "76036750692adcd6b19d305045201e71a4ec1e6bbcf2a8006a6388f724d79e56",
-      "backend/tests/test_services/test_catalog_search_service.py": "6b263caafc3dd5f33c3f2cbfd261e7cff747a839c3577cbdcdc6777688adc0cc",
+      "backend/tests/test_services/test_catalog_search_service.py": "23d879dad0e1a5d72940c6c8ca9a66d741f4619e7da2804f79717583dd4adfff",
       "backend/tests/test_services/test_food_library_migration.py": "a085ef87a79b7032208615489863f68320769b85b69a733e060e6208f4959dfc",
       "backend/tests/test_services/test_food_library_rules.py": "677cd843d7ad560cda54cf3bd2b8800dfdc2baee94c7456852fdf514a3e2d576",
-      "backend/tests/test_services/test_food_library_service.py": "c3f1dc39e3f2a78acd32a107fc0ca600068a40bd999f13e177e8f8d87ab2c194",
+      "backend/tests/test_services/test_food_library_service.py": "4cd07800cb83a40c73333de4c782acf141e0b6c232de039659c007ba251ecf2b",
       "backend/tests/test_services/test_meal_rules.py": "e4b26b3672ac372845c2112707e22149fb2dbee9dde69da064e3b0e9504cc9c6",
       "backend/tests/test_services/test_meal_service.py": "03113b7b9d75b818a8c484c05d20ca6eb17b23eb9724a077bc175e60ce589cf4",
-      "frontend/src/app/foodsRoute.test.tsx": "dd9dfdb960903773177685ed749a6e5157020dc02378896d3d846ebc96d4a285",
-      "frontend/src/app/mealPhotoRoute.test.tsx": "ed3254bb890504867f597eece19a9a238856e9d04ced311231d63135e868d0d9",
-      "frontend/src/features/diary/components/AddFoodDialog.test.tsx": "2bdc70c21dc072383aca7b25a9644615efbac3794f337c7fa1affd77686246db",
-      "frontend/src/features/diary/components/FoodSearchPanel.test.tsx": "a7568f2c25189082d4fe2f3dc041c8134c8a9a6d5f7a2fe2734ec55ef3322c11",
-      "frontend/src/features/diary/components/MealPhotoDialog.test.tsx": "ef57484bf887e8fb23dee7d633f889f1fd89cf9f3c6e4cf17c93bd4f3f882ad4",
-      "frontend/src/features/diary/components/PhotoReview.source.test.ts": "fe3e55042dda09eb5dceff1a770ad44a8b7c0f60f32d7350f0b36d1f11333033",
+      "frontend/src/app/diaryRoute.test.tsx": "363867fcdf5435b45b7852cde00e16a4bcd36e2a592fd5451bbe771f0a8f6ce7",
+      "frontend/src/app/foodsRoute.test.tsx": "dbd1658aabcf95e0f277fc68933f39d082627626fe780e9b2d65c2ebd38559c8",
+      "frontend/src/app/mealPhotoRoute.test.tsx": "18eab1df790dab1397c9f4b7cd2b0d41e969d6ef88e7ef73cebe88ab79ed965f",
+      "frontend/src/features/diary/components/AddFoodDialog.test.tsx": "917cc987555de474baa7e33eb6ecbb68b59d6ba49565c1c7e717a11c845853c7",
+      "frontend/src/features/diary/components/FoodSearchPanel.test.tsx": "6b56b137738d9f1bec4b7d54aae94d7ff1fded6ff2a0a0bf6888a95701b5258f",
+      "frontend/src/features/diary/components/MealPhotoDialog.test.tsx": "c261b3babfde3058be251e645620696483818e84ec6080359fe470a631953321",
+      "frontend/src/features/diary/components/PhotoReview.source.test.ts": "31761aa66c324044dfbd5d52fa5d85f173c476104a27a42919c69f689468cea5",
       "frontend/src/features/diary/errors.test.ts": "0e51a08c1ac6af2c40bad36f6e9572dd07b6292b21c0be380a1669ba61811fff",
       "frontend/src/features/diary/format.test.ts": "67cacf1e87f50a936a2353fc56c1eda981a2bd48e0d789939d79343bc0793637",
       "frontend/src/features/diary/pages/DiaryPage.test.tsx": "5b33e42d3075522b140129bcdf32f08ff43582565fcfcf1a008df469c7576e2d",
-      "frontend/src/features/diary/proposal.test.ts": "18ada87a5d0ec22e9cbf93fa4376d595c0d26f774ac225981ecdea4ed5cb70c9",
-      "frontend/src/features/diary/schemas.test.ts": "187e199e156cde6928e74dad32f250ea8b621ef9d7d18597ddf36e2d4753dccd",
+      "frontend/src/features/diary/proposal.test.ts": "46cac79d869121b1f74d74ed888e218429a93761d3c8e707da81fb3a91a1d7db",
+      "frontend/src/features/diary/schemas.test.ts": "ed93f52706f3a4b08230e9b4be911cfd4732d0ded46e39c23be8d9ac619d59e8",
       "frontend/src/features/food-library/api.test.ts": "58a73f9ba79a94b855393352aff866525356e769fccf33efc9a1d33fd9d8adb1",
       "frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx": "b3fe09d8cf2d50b998cb9ae727e7be286ae1a25c20ea5571ca4800753a68080a",
       "frontend/src/lib/useDebouncedValue.test.ts": "b908c11b2d9696d5a2f42e61238d612c9a8e9421eaf78a7b4681f11174356381",
+      "frontend/src/lib/useEscapeCapture.test.ts": "0d2826ae1c309059ac083e1989fa35db533f6dba998974c3879d5cd9a198713c",
       "frontend/src/test/foodLibraryFixtures.ts": "4ef8c1b3aadc7474defa071469691abf4e666edee02fa08fdb885b4b0fe4e64f"
     }
   },
@@ -450,6 +455,96 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): 33 tareas nuevas y matriz actualizada"
+    },
+    {
+      "at": "2026-10-27T18:17:09.087Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 0e8f5c2"
+    },
+    {
+      "at": "2026-10-27T18:17:09.297Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "tests it.2"
+    },
+    {
+      "at": "2026-10-27T18:17:09.409Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (T-132 a T-136)"
+    },
+    {
+      "at": "2026-10-27T18:18:43.043Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (iteración 2, T-137 a T-155)"
+    },
+    {
+      "at": "2026-10-27T18:35:28.193Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (verifier, iteración 2)"
+    },
+    {
+      "at": "2026-10-27T18:42:41.791Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: red iteracion 2: backend 906 pasan y 25 fallan (19 nuevos por comportamiento ausente y 6 por AttributeError de count_by_user, aceptados); frontend 506 pasan y 37 fallan: 27 legitimos y 10 de proposalReviewSchema (T-151) rojos solo por la guarda estructural beforeEach, cuyo comportamiento ya pasa en el andamiaje; responsable test-author"
+    },
+    {
+      "at": "2026-10-27T18:43:00.156Z",
+      "stage": "tests",
+      "event": "needs_input",
+      "note": "red check FAIL con max_iterations agotado (tests 4/4): 10 tests de proposalReviewSchema; hace falta decisión del usuario"
+    },
+    {
+      "at": "2026-10-27T18:45:45.164Z",
+      "stage": "tests",
+      "event": "blocked",
+      "note": "límite de iteraciones alcanzado (tests: 4/4). usuario concede una iteración más (opción a, max_iterations 5): 10 tests de proposalReviewSchema"
+    },
+    {
+      "at": "2026-10-27T18:46:06.144Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "reanudo tras bloqueo por límite: el usuario concedió una iteración más (opción a)"
+    },
+    {
+      "at": "2026-10-27T18:46:06.250Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "iteración extra concedida por el usuario (a): sin contador porque la CLI no permite subir max_iterations de la feature; 10 tests de proposalReviewSchema"
+    },
+    {
+      "at": "2026-10-27T18:56:19.860Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red check iteración 2 (T-137 a T-155) tras corrección: backend 19 nuevos y 6 existentes rojos legítimos (not implemented, asserts, 404, AttributeError count_by_user aceptado); frontend 27 rojos legítimos; guardas aceptadas: proposalReviewSchema (4 bloques, 9 casos), foodsRoute, backend 100 favoritos y AC-009.4/5 adaptados"
+    },
+    {
+      "at": "2026-10-27T22:58:12.613Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Usuario ratifica excepción a Art. B5.2 y B5.6 para proposalReviewSchema (scaffold declarativo completo; 9 casos como guardas de regresión)"
+    },
+    {
+      "at": "2026-10-27T22:58:12.718Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS it.2: 25 backend y 27 frontend en rojo legítimo; excepción B5.2/B5.6 ratificada"
+    },
+    {
+      "at": "2026-10-27T22:58:12.824Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "28 archivo(s) de test: tests 028 iteración 2 tras red check PASS"
+    },
+    {
+      "at": "2026-10-27T22:58:13.002Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS; excepción B5.2/B5.6 ratificada por el usuario con «si»"
     }
   ]
 }

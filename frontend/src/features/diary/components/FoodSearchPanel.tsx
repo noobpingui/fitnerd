@@ -53,6 +53,7 @@ export function FoodSearchPanel({
   onQueryChange?: (query: string) => void
   onSelect: (food: LibraryFood, defaultGrams: string) => void
   onCreateCustom: (name: string) => void
+  onCustomFoodDeleted?: (customFoodId: number) => void
   actions?: ReactNode
 }): ReactElement {
   const form = useForm<FoodSearchFormValues>({

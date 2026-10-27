@@ -5,10 +5,17 @@ Los mensajes se comparan con el texto literal de la sección 6 de la spec.
 """
 
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
 
 from exceptions.custom_exceptions import ResourceNotFoundError, ValidationError
+from services.catalog_csv_reader import read_catalog_csv
+from services.catalog_search_service import (
+    SearchCandidate,
+    TypoSearchStats,
+    typo_comparison_bound,
+)
 from services.food_library_rules import LibraryFood, RecentFoodRow
 from services.food_library_service import FoodLibraryService
 from tests.fakes import (
@@ -558,10 +565,16 @@ def hundred_favorites():
     return [make_favorite(USER, catalog_id=f"fruta-{n:03d}") for n in range(100)]
 
 
+def hundred_fruits():
+    """Las 100 frutas de `hundred_favorites()` en el catálogo: desde AC-009.6 los
+    favoritos cuyo alimento ya no está en el catálogo no cuentan para el límite."""
+    return [make_catalog_food(f"fruta-{n:03d}", f"Fruta {n:03d}") for n in range(100)]
+
+
 # SDD: 028 REQ-009 AC-009.4
 def test_add_favorite_with_100_favorites_is_rejected_with_the_limit_message():
     """Con 100 favoritos, marcar uno nuevo da el 400 de la spec y no guarda nada."""
-    env = Env(catalog=[BANANA], favorites=hundred_favorites())
+    env = Env(catalog=[BANANA, *hundred_fruits()], favorites=hundred_favorites())
 
     message = expect_error(ValidationError, env.service.add_favorite, USER, "catalog", "banano")
 
@@ -573,8 +586,7 @@ def test_add_favorite_with_100_favorites_is_rejected_with_the_limit_message():
 # SDD: 028 REQ-009 AC-009.4
 def test_add_favorite_that_already_is_a_favorite_works_with_100_favorites():
     """Con 100 favoritos, volver a marcar uno que ya lo es no falla ni lo duplica."""
-    catalog = [make_catalog_food("fruta-000", "Fruta 000")]
-    env = Env(catalog=catalog, favorites=hundred_favorites())
+    env = Env(catalog=hundred_fruits(), favorites=hundred_favorites())
 
     env.service.add_favorite(USER, "catalog", "fruta-000")
 
@@ -711,3 +723,138 @@ def test_delete_custom_food_that_does_not_exist_or_is_not_valid_is_not_found(foo
 
     assert message == NOT_FOUND
     assert len(env.customs.foods) == 1
+
+
+# --------------------------------------------------------------------------
+# Iteración 2: favoritos retirados del catálogo (REQ-009, F3)
+# --------------------------------------------------------------------------
+
+
+# SDD: 028 REQ-009 AC-009.6
+def test_a_favorite_whose_food_left_the_catalog_does_not_count_for_the_limit():
+    """99 favoritos visibles más uno retirado: marcar «Banano» crea el favorito y
+    la lista de favoritos tiene 100 alimentos, entre ellos el nuevo."""
+    visible = hundred_fruits()[:99]
+    env = Env(catalog=[BANANA, *visible], favorites=hundred_favorites())
+
+    env.service.add_favorite(USER, "catalog", "banano")
+
+    assert len(env.favorites.created) == 1
+    assert env.uow.committed is True
+    favorites = env.service.favorites(USER)
+    assert len(favorites) == 100
+    assert ("catalog", "banano") in identities(favorites)
+
+
+# SDD: 028 REQ-009 AC-009.7
+def test_remove_favorite_of_a_food_that_left_the_catalog_deletes_it_for_good():
+    """Quitar un favorito retirado lo borra y confirma; si «Banano» vuelve al
+    catálogo, no reaparece en los favoritos."""
+    env = Env(catalog=[], favorites=[make_favorite(USER, catalog_id="banano")])
+
+    env.service.remove_favorite(USER, "catalog", "banano")
+
+    assert env.favorites.favorites == []
+    assert len(env.favorites.deleted) == 1
+    assert env.uow.committed is True
+    env.catalog.foods.append(BANANA)
+    assert env.service.favorites(USER) == []
+
+
+# SDD: 028 REQ-009 AC-009.8
+def test_remove_favorite_of_a_food_nowhere_for_this_user_is_not_found():
+    """El favorito retirado de otro usuario no cuenta: 404 y sus favoritos no cambian.
+    En el mismo escenario, el favorito retirado del propio usuario sí se quita."""
+    other_favorite = make_favorite(OTHER, catalog_id="banano")
+    env = Env(catalog=[], favorites=[other_favorite, make_favorite(USER, catalog_id="queso")])
+
+    env.service.remove_favorite(USER, "catalog", "queso")
+    message = expect_error(
+        ResourceNotFoundError, env.service.remove_favorite, USER, "catalog", "banano"
+    )
+
+    assert message == NOT_FOUND
+    assert env.favorites.favorites == [other_favorite]
+    assert len(env.favorites.deleted) == 1
+
+
+# --------------------------------------------------------------------------
+# Iteración 2: coste acotado de la búsqueda conjunta (NFR-004, F4)
+# --------------------------------------------------------------------------
+
+CATALOG_CSV = Path(__file__).resolve().parents[2] / "scripts" / "data" / "food_catalog.csv"
+LONG_GIBBERISH = "arroces " * 12 + "qzxw"
+SYLLABLES = ["ba", "ke", "di", "mo", "tu", "fa", "li", "ne", "so", "gu"]
+
+
+def catalog_023():
+    return [
+        make_catalog_food(record.id, record.name, record.synonyms)
+        for record in read_catalog_csv(CATALOG_CSV)
+    ]
+
+
+def own_foods_500():
+    """500 alimentos propios con nombres deterministas de 2 a 5 palabras."""
+    foods = []
+    for n in range(500):
+        name_words = []
+        for k in range(2 + n % 4):
+            word = SYLLABLES[(n // 10**k) % 10] + SYLLABLES[(n * (k + 3) + k) % 10]
+            word += "".join(SYLLABLES[(n + k + j) % 10] for j in range(k % 2))
+            name_words.append(word)
+        foods.append(gallo(1000 + n, name=" ".join(name_words).capitalize()))
+    return foods
+
+
+def joint_search(query):
+    """Resultados, comparaciones y cota de la búsqueda conjunta con la 023 y 500 propios."""
+    env = Env(catalog=catalog_023(), customs=own_foods_500())
+    stats = TypoSearchStats()
+    results = env.service.search(USER, query, stats=stats)
+    candidates = [
+        SearchCandidate(food.name, food.synonyms, 0, str(food.id), food)
+        for food in env.catalog.list_all()
+    ] + [
+        SearchCandidate(food.name, (), 1, str(food.id), food)
+        for food in env.customs.list_by_user(USER)
+    ]
+    return results, stats.comparisons, typo_comparison_bound(candidates, query)
+
+
+# SDD: 028 NFR-004 AC-N004.1
+def test_the_joint_search_with_the_long_query_stays_within_the_bound_like_the_short_one():
+    """Con la 023 y 500 propios, `"arroces " * 12 + "qzxw"` no encuentra nada, hace como
+    mucho F × P comparaciones y las mismas que `arroces qzxw`."""
+    assert len(LONG_GIBBERISH) == 100
+
+    long_results, long_comparisons, long_bound = joint_search(LONG_GIBBERISH)
+    short_results, short_comparisons, short_bound = joint_search("arroces qzxw")
+
+    assert long_results == [] and short_results == []
+    assert short_comparisons > 0
+    assert long_comparisons == short_comparisons
+    assert long_bound == short_bound
+    assert long_comparisons <= long_bound
+
+
+# SDD: 028 NFR-004 AC-N004.2
+def test_the_joint_search_with_typos_finds_the_food_within_the_bound():
+    """`arroces integrale` incluye «Arroz integral cocido» sin pasar de F × P."""
+    results, comparisons, bound = joint_search("arroces integrale")
+
+    assert "Arroz integral cocido" in names(results)
+    assert 0 < comparisons <= bound
+
+
+# SDD: 028 NFR-004 AC-N004.3
+def test_the_joint_search_with_exact_matches_or_short_forms_makes_no_comparisons():
+    """`arroz` y `pam` hacen 0 comparaciones; `arroces qzxw`, que necesita tolerancia, hace más."""
+    rice, rice_comparisons, _ = joint_search("arroz")
+    _, pam_comparisons, _ = joint_search("pam")
+    _, typo_comparisons, _ = joint_search("arroces qzxw")
+
+    assert "Arroz blanco cocido" in names(rice)
+    assert rice_comparisons == 0
+    assert pam_comparisons == 0
+    assert typo_comparisons > 0

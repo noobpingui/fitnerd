@@ -875,6 +875,7 @@ describe("FoodSearchPanel - borrar un alimento propio", () => {
   })
 
   // SDD: 028 REQ-017 AC-017.3
+  // SDD: 028 NFR-002 AC-N002.4
   it("si el borrado falla muestra «No se pudo borrar el alimento.» y el alimento sigue en la lista", async () => {
     const user = userEvent.setup()
     searchMock.mockResolvedValue([GALLO])
@@ -886,9 +887,13 @@ describe("FoodSearchPanel - borrar un alimento propio", () => {
 
     await user.click(within(confirmation).getByRole("button", { name: "Borrar" }))
 
-    expect(await within(confirmation).findByText(DELETE_FAILED)).toBeInTheDocument()
-    expect(screen.getByRole("alertdialog", { name: CONFIRM_TITLE })).toBeInTheDocument()
-    expect(screen.getByRole("list", { name: "Resultados" })).toHaveTextContent("Gallo pinto")
+    // Iteración 2 (AC-N002.4): el borrado que falla cierra la confirmación; el aviso sale
+    // dentro del elemento de «Gallo pinto» de «Resultados», que sigue en la lista.
+    const results = screen.getByRole("list", { name: "Resultados" })
+    const row = within(results).getByText("Gallo pinto").closest("li") as HTMLElement
+    expect(await within(row).findByText(DELETE_FAILED)).toBeInTheDocument()
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
+    expect(results).toHaveTextContent("Gallo pinto")
   })
 
   // SDD: 028 REQ-017 AC-017.3
@@ -931,6 +936,202 @@ describe("FoodSearchPanel - borrar un alimento propio", () => {
     await screen.findByRole("list", { name: "Recientes" })
 
     expect(screen.queryByRole("button", { name: /^Borrar / })).not.toBeInTheDocument()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Iteración 2: confirmación en línea, Escape y foco (REQ-017, NFR-002)
+// ---------------------------------------------------------------------------
+
+describe("FoodSearchPanel - confirmación de borrado en línea", () => {
+  beforeEach(resetMocks)
+
+  const DELETE_LABEL = "Borrar Gallo pinto de tus alimentos"
+  const FAVORITE_GALLO = { ...GALLO, favorite: true }
+
+  // «Gallo pinto» a la vez en «Favoritos» y en «Recientes», con la caja vacía.
+  async function renderWithBothLists() {
+    favoritesMock.mockResolvedValue([FAVORITE_GALLO])
+    recentMock.mockResolvedValue([makeRecentFood(FAVORITE_GALLO, 200)])
+    const rendered = renderPanel()
+    const recent = await screen.findByRole("list", { name: "Recientes" })
+    const favorites = await screen.findByRole("list", { name: "Favoritos" })
+    return { ...rendered, recent, favorites }
+  }
+
+  // Solo «Recientes», con un `onCustomFoodDeleted` espiado.
+  async function renderWithDeletedCallback() {
+    const onCustomFoodDeleted = vi.fn()
+    recentMock.mockResolvedValue([makeRecentFood(FAVORITE_GALLO, 200)])
+    favoritesMock.mockResolvedValue([])
+    const rendered = renderPanel({ onCustomFoodDeleted })
+    const recent = await screen.findByRole("list", { name: "Recientes" })
+    return { ...rendered, recent, onCustomFoodDeleted }
+  }
+
+  function recentTrigger() {
+    return within(screen.getByRole("list", { name: "Recientes" })).getByRole("button", {
+      name: DELETE_LABEL,
+    })
+  }
+
+  // SDD: 028 REQ-017 AC-017.5
+  it("Escape cierra la confirmación sin pedir el borrado y conserva el texto y el alimento", async () => {
+    const user = userEvent.setup()
+    searchMock.mockResolvedValue([GALLO])
+    renderPanel()
+    await typeAndEnter(user, "gallo")
+    const results = await screen.findByRole("list", { name: "Resultados" })
+    await user.click(within(results).getByRole("button", { name: DELETE_LABEL }))
+    // La confirmación está dentro del elemento del alimento, no en un diálogo aparte.
+    const confirmation = await within(results).findByRole("alertdialog")
+    expect(confirmation.closest("li")).toHaveTextContent("Gallo pinto")
+
+    await user.keyboard("{Escape}")
+
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument())
+    expect(deleteMock).not.toHaveBeenCalled()
+    expect(box()).toHaveValue("gallo")
+    expect(screen.getByRole("list", { name: "Resultados" })).toHaveTextContent("Gallo pinto")
+  })
+
+  // SDD: 028 REQ-017 AC-017.7
+  it("«Borrar» de «Recientes» pinta la confirmación dentro del elemento de «Recientes», no en «Favoritos»", async () => {
+    const user = userEvent.setup()
+    const { recent, favorites } = await renderWithBothLists()
+
+    await user.click(within(recent).getByRole("button", { name: DELETE_LABEL }))
+
+    const confirmation = await within(recent).findByRole("alertdialog")
+    expect(confirmation.closest("li")).toBe(within(recent).getByText("Gallo pinto").closest("li"))
+    expect(within(favorites).queryByRole("alertdialog")).not.toBeInTheDocument()
+    // No es modal: las dos listas siguen accesibles por rol.
+    expect(screen.getByRole("list", { name: "Favoritos" })).toBeInTheDocument()
+    expect(screen.getByRole("list", { name: "Recientes" })).toBeInTheDocument()
+  })
+
+  // SDD: 028 NFR-002 AC-N002.3
+  it("al abrir la confirmación el foco está en «Cancelar»", async () => {
+    const user = userEvent.setup()
+    const { recent } = await renderWithBothLists()
+
+    await user.click(within(recent).getByRole("button", { name: DELETE_LABEL }))
+
+    const confirmation = await within(recent).findByRole("alertdialog")
+    await waitFor(() =>
+      expect(within(confirmation).getByRole("button", { name: "Cancelar" })).toHaveFocus()
+    )
+  })
+
+  // SDD: 028 NFR-002 AC-N002.4
+  it("«Cancelar» devuelve el foco a «Borrar Gallo pinto de tus alimentos» de «Recientes»", async () => {
+    const user = userEvent.setup()
+    const { recent } = await renderWithBothLists()
+    await user.click(within(recent).getByRole("button", { name: DELETE_LABEL }))
+    const confirmation = await within(recent).findByRole("alertdialog")
+
+    await user.click(within(confirmation).getByRole("button", { name: "Cancelar" }))
+
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument())
+    await waitFor(() => expect(recentTrigger()).toHaveFocus())
+    expect(deleteMock).not.toHaveBeenCalled()
+  })
+
+  // SDD: 028 NFR-002 AC-N002.4
+  it("Escape devuelve el foco a «Borrar Gallo pinto de tus alimentos» de «Recientes»", async () => {
+    const user = userEvent.setup()
+    const { recent } = await renderWithBothLists()
+    await user.click(within(recent).getByRole("button", { name: DELETE_LABEL }))
+    await within(recent).findByRole("alertdialog")
+
+    await user.keyboard("{Escape}")
+
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument())
+    await waitFor(() => expect(recentTrigger()).toHaveFocus())
+  })
+
+  // SDD: 028 NFR-002 AC-N002.4
+  // SDD: 028 REQ-017 AC-017.3
+  it("un borrado que falla cierra la confirmación, deja el aviso en «Recientes» y devuelve el foco al botón", async () => {
+    const user = userEvent.setup()
+    deleteMock.mockRejectedValue(new ApiError(500, "boom"))
+    const { recent, favorites } = await renderWithBothLists()
+    await user.click(within(recent).getByRole("button", { name: DELETE_LABEL }))
+    const confirmation = await within(recent).findByRole("alertdialog")
+
+    await user.click(within(confirmation).getByRole("button", { name: "Borrar" }))
+
+    expect(await within(recent).findByText(DELETE_FAILED)).toBeInTheDocument()
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
+    expect(within(favorites).queryByText(DELETE_FAILED)).not.toBeInTheDocument()
+    await waitFor(() => expect(recentTrigger()).toHaveFocus())
+  })
+
+  // SDD: 028 NFR-002 AC-N002.5
+  it("tras un borrado correcto «Gallo pinto» desaparece y el foco pasa a la caja «Buscar alimento»", async () => {
+    const user = userEvent.setup()
+    let deleted = false
+    searchMock.mockImplementation(async () => (deleted ? [] : [GALLO]))
+    deleteMock.mockImplementation(async () => {
+      deleted = true
+    })
+    renderPanel()
+    await typeAndEnter(user, "gallo")
+    const results = await screen.findByRole("list", { name: "Resultados" })
+    await user.click(within(results).getByRole("button", { name: DELETE_LABEL }))
+    const confirmation = await within(results).findByRole("alertdialog")
+
+    await user.click(within(confirmation).getByRole("button", { name: "Borrar" }))
+
+    await waitFor(() => expect(screen.queryByText("Gallo pinto")).not.toBeInTheDocument())
+    await waitFor(() => expect(box()).toHaveFocus())
+  })
+
+  // SDD: 028 REQ-018 AC-018.7
+  it("avisa con el id borrado tras un 204", async () => {
+    const user = userEvent.setup()
+    const { recent, onCustomFoodDeleted } = await renderWithDeletedCallback()
+    await user.click(within(recent).getByRole("button", { name: DELETE_LABEL }))
+    const confirmation = await within(recent).findByRole("alertdialog")
+    expect(onCustomFoodDeleted).not.toHaveBeenCalled()
+
+    await user.click(within(confirmation).getByRole("button", { name: "Borrar" }))
+
+    await waitFor(() => expect(onCustomFoodDeleted).toHaveBeenCalledTimes(1))
+    expect(onCustomFoodDeleted).toHaveBeenCalledWith(12)
+  })
+
+  // SDD: 028 REQ-018 AC-018.7
+  it("avisa con el id borrado también tras un 404, que cuenta como éxito", async () => {
+    const user = userEvent.setup()
+    deleteMock.mockRejectedValue(new ApiError(404, "No encontramos ese alimento."))
+    const { recent, onCustomFoodDeleted } = await renderWithDeletedCallback()
+    await user.click(within(recent).getByRole("button", { name: DELETE_LABEL }))
+    const confirmation = await within(recent).findByRole("alertdialog")
+
+    await user.click(within(confirmation).getByRole("button", { name: "Borrar" }))
+
+    await waitFor(() => expect(onCustomFoodDeleted).toHaveBeenCalledTimes(1))
+    expect(onCustomFoodDeleted).toHaveBeenCalledWith(12)
+  })
+
+  // SDD: 028 REQ-018 AC-018.7
+  it("no avisa tras un borrado que falla, pero sí cuando un segundo intento sale bien", async () => {
+    const user = userEvent.setup()
+    deleteMock.mockRejectedValueOnce(new ApiError(500, "boom"))
+    const { recent, onCustomFoodDeleted } = await renderWithDeletedCallback()
+    await user.click(within(recent).getByRole("button", { name: DELETE_LABEL }))
+    const first = await within(recent).findByRole("alertdialog")
+    await user.click(within(first).getByRole("button", { name: "Borrar" }))
+    expect(await within(recent).findByText(DELETE_FAILED)).toBeInTheDocument()
+    expect(onCustomFoodDeleted).not.toHaveBeenCalled()
+
+    await user.click(within(recent).getByRole("button", { name: DELETE_LABEL }))
+    const second = await within(recent).findByRole("alertdialog")
+    await user.click(within(second).getByRole("button", { name: "Borrar" }))
+
+    await waitFor(() => expect(onCustomFoodDeleted).toHaveBeenCalledTimes(1))
+    expect(onCustomFoodDeleted).toHaveBeenCalledWith(12)
   })
 })
 

@@ -1,17 +1,15 @@
 // Test del diálogo «Añadir a {sección}» (specs 022, 023 y 028): búsqueda
 // compartida en el catálogo y en los alimentos propios, favoritos y recientes,
 // gramos con vista previa, alimento personalizado y errores. La red se simula
-// en los api.ts del diario y de la biblioteca de alimentos; los del catálogo y
-// de USDA solo se vigilan para comprobar que ya no se usan.
+// en los api.ts del diario y de la biblioteca de alimentos.
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ApiError } from "@/lib/apiClient"
 import { addMealItems, getDiary } from "@/features/diary/api"
-import { searchCatalog } from "@/features/catalog/api"
-import { searchFoods } from "@/features/foods/api"
 import {
+  deleteCustomFood,
   getFavoriteFoods,
   getRecentFoods,
   searchFoodLibrary,
@@ -41,20 +39,13 @@ vi.mock("@/features/food-library/api", () => ({
   setFoodFavorite: vi.fn(),
   deleteCustomFood: vi.fn(),
 }))
-vi.mock("@/features/catalog/api", () => ({
-  searchCatalog: vi.fn(),
-}))
-vi.mock("@/features/foods/api", () => ({
-  searchFoods: vi.fn(),
-}))
 
 const addMock = vi.mocked(addMealItems)
 const getDiaryMock = vi.mocked(getDiary)
 const searchMock = vi.mocked(searchFoodLibrary)
 const recentMock = vi.mocked(getRecentFoods)
 const favoritesMock = vi.mocked(getFavoriteFoods)
-const catalogSearchMock = vi.mocked(searchCatalog)
-const usdaSearchMock = vi.mocked(searchFoods)
+const deleteMock = vi.mocked(deleteCustomFood)
 
 const CHICKEN: LibraryFood = makeLibraryFood()
 const BANANA: LibraryFood = makeBananaFood()
@@ -159,13 +150,11 @@ function resetMocks() {
   searchMock.mockReset()
   recentMock.mockReset()
   favoritesMock.mockReset()
-  catalogSearchMock.mockReset()
-  usdaSearchMock.mockReset()
+  deleteMock.mockReset()
   searchMock.mockResolvedValue([])
   recentMock.mockResolvedValue([])
   favoritesMock.mockResolvedValue([])
-  catalogSearchMock.mockResolvedValue({ results: [] })
-  usdaSearchMock.mockResolvedValue({ results: [] })
+  deleteMock.mockResolvedValue(undefined)
   addMock.mockResolvedValue(makeMeal({ meal_type: "breakfast" }) as Meal)
   getDiaryMock.mockResolvedValue({
     date: "2026-10-20",
@@ -204,7 +193,7 @@ describe("AddFoodDialog - búsqueda compartida", () => {
   })
 
   // SDD: 028 REQ-013 AC-013.9
-  it("busca en la biblioteca (catálogo y propios), no en el catálogo de la 023 ni en USDA, y muestra la pechuga con sus macros y sin etiqueta de origen", async () => {
+  it("busca en la biblioteca (catálogo y propios) y muestra la pechuga con sus macros y sin etiqueta de origen", async () => {
     const user = userEvent.setup()
     renderDialog()
     searchMock.mockResolvedValue([CHICKEN])
@@ -214,8 +203,6 @@ describe("AddFoodDialog - búsqueda compartida", () => {
     expect(await within(dialog()).findByText("Pechuga de pollo a la plancha")).toBeInTheDocument()
     expect(searchMock).toHaveBeenCalledTimes(1)
     expect(searchMock).toHaveBeenCalledWith("pollo")
-    expect(catalogSearchMock).not.toHaveBeenCalled()
-    expect(usdaSearchMock).not.toHaveBeenCalled()
     const list = within(dialog()).getByRole("list", { name: "Resultados" })
     expect(within(list).getByText("165 kcal")).toBeInTheDocument()
     expect(within(list).getByText("31,0 g proteína")).toBeInTheDocument()
@@ -739,6 +726,32 @@ describe("AddFoodDialog - guardar y cerrar", () => {
 
     expect(onClose).toHaveBeenCalled()
     expect(addMock).not.toHaveBeenCalled()
+  })
+
+  // SDD: 028 REQ-017 AC-017.5
+  it("con la confirmación de borrar abierta, Escape solo la cierra; un segundo Escape cierra el diálogo", async () => {
+    const user = userEvent.setup()
+    const { onClose } = renderDialog()
+    searchMock.mockResolvedValue([GALLO_PROPIO])
+    await search(user, "gallo")
+    const results = await within(dialog()).findByRole("list", { name: "Resultados" })
+    await user.click(within(results).getByRole("button", { name: "Borrar Gallo pinto de tus alimentos" }))
+    // La confirmación sale dentro del elemento del alimento, dentro del diálogo.
+    const confirmation = await within(results).findByRole("alertdialog")
+    expect(confirmation.closest("li")).toHaveTextContent("Gallo pinto")
+
+    await user.keyboard("{Escape}")
+
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument())
+    expect(onClose).not.toHaveBeenCalled()
+    expect(deleteMock).not.toHaveBeenCalled()
+    expect(dialog()).toBeInTheDocument()
+    expect(within(dialog()).getByRole("searchbox", { name: "Buscar alimento" })).toHaveValue("gallo")
+    expect(within(dialog()).getByRole("list", { name: "Resultados" })).toHaveTextContent("Gallo pinto")
+
+    await user.keyboard("{Escape}")
+
+    expect(onClose).toHaveBeenCalled()
   })
 
   // SDD: 022 REQ-011 AC-011.10

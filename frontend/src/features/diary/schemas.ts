@@ -1,5 +1,5 @@
 import { z } from "zod"
-import type { CustomItemPayload } from "./types"
+import type { CustomItemPayload, ProposalFormValues } from "./types"
 
 export const GRAMS_RANGE_MESSAGE = "Los gramos deben estar entre 1 y 2000."
 export const GRAMS_DECIMALS_MESSAGE = "Los gramos admiten como mucho un decimal."
@@ -214,6 +214,44 @@ const proposalEntrySchema = z.discriminatedUnion("kind", [
 // Valida los gramos de las entradas que se guardan; las «unmatched» no se validan.
 export const proposalFormSchema = z
   .object({ entries: z.array(proposalEntrySchema) })
+  .superRefine((values, ctx) => {
+    values.entries.forEach((entry, index) => {
+      if (entry.kind === "unmatched") return
+      const message = gramsError(entry.grams)
+      if (message) ctx.addIssue({ code: "custom", path: ["entries", index, "grams"], message })
+    })
+  })
+
+const reviewEntrySchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("catalog"),
+    catalogId: z.string(),
+    name: z.string(),
+    per100g,
+    grams: z.string(),
+    tag: z.enum(["high", "medium", "low", "user"]),
+    key: z.string(),
+  }),
+  z.object({
+    kind: z.literal("custom"),
+    name: z.string(),
+    per100g,
+    grams: z.string(),
+    customFoodId: z.number().optional(),
+    key: z.string(),
+  }),
+  z.object({
+    kind: z.literal("unmatched"),
+    name: z.string(),
+    grams: z.number(),
+    confidence,
+    key: z.string(),
+  }),
+])
+
+// Como proposalFormSchema pero con `key` obligatoria (PhotoReview).
+export const proposalReviewSchema: z.ZodType<ProposalFormValues, ProposalFormValues> = z
+  .object({ entries: z.array(reviewEntrySchema) })
   .superRefine((values, ctx) => {
     values.entries.forEach((entry, index) => {
       if (entry.kind === "unmatched") return

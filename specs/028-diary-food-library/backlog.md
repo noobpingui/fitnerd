@@ -69,3 +69,17 @@
 - [ ] Si los favoritos huérfanos del catálogo se acumulan, contar los visibles en una sola consulta SQL (`count_visible_by_user`) en lugar de en el servicio.
 - [ ] Prueba manual pendiente con lector de pantalla: AC-N002.2 y la nueva confirmación en línea (anuncio del `alertdialog` dentro del elemento y vuelta del foco).
 - [ ] Valorar mover `useEscapeCapture` a otros diálogos en línea si aparecen más (por ahora solo lo usa la confirmación de borrado).
+
+## tests (iteración 2) · test-author
+- [ ] Las guardas `?raw` de `schemas.ts` (variantes `z.literal(...)` y `gramsError(x.grams)` una sola vez) son frágiles si se renombra `gramsError`; sustituirlas tras la review por un test de tipos o de paridad entre `proposalFormSchema` y `proposalReviewSchema`.
+- [ ] ruff marca 2 errores de importación sin ordenar en `backend/tests/conftest.py`, previos a esta feature.
+- [ ] En la iteración 2, T-144 nombra los parámetros de `useEscapeCapture` al revés; la firma real es `(onEscape, active)`.
+
+## tests (red check, iteración 2) · verifier
+- [ ] Quitar la llamada a `count_by_user` en `food_library_service.py` (T-161) y corregir la nota «sin uso» de T-137.
+- [ ] Revisar en verify que los 9 tests de comportamiento de `proposalReviewSchema` pasan una vez resuelta la guarda.
+- [ ] Anotar en la spec la ubicación del aviso de borrado fallido (en «Resultados»), que hoy solo fija el plan.
+
+## tests (red check PASS, iteración 2) · verifier
+- [ ] Excepción ratificada por el usuario a Art. B5.2 y B5.6: `proposalReviewSchema` se entregó completo en el scaffold (declarativo, con `superRefine`), y sus 5 tests (9 casos) de `schemas.test.ts` son guardas de regresión marcadas `SDD: 028 regression guard`. T-165 debe conservar la lógica compartida de gramos.
+- [ ] `tasks.md`: T-134 escribe `useEscapeCapture(active, onEscape)`, pero la firma de test y plan es `(onEscape, active)`. T-137 dice «sin uso» de `count_by_user`, pero `food_library_service.py:132` aún lo llama (lo quita T-161). Las frases de T-145 siguen el plan, no la spec (AC-017.3).

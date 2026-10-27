@@ -101,6 +101,11 @@ export function mergeProposalEntries(
   })
 }
 
+// Si la entrada es el alimento propio borrado, la misma entrada sin `customFoodId` (y sin `key`); si no, null.
+export function unlinkCustomFood(_entry: ProposalEntry, _customFoodId: number): ProposalEntry | null {
+  throw new Error("not implemented")
+}
+
 export function customEntry(payload: CustomItemPayload): ProposalEntry {
   return {
     kind: "custom",

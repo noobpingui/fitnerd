@@ -1,6 +1,6 @@
 // Test del diálogo «Añadir a {sección} con una foto» (spec 025): elegir y
 // validar la foto, análisis, revisión de la propuesta, guardado y accesibilidad.
-// La red se simula en los api.ts del diario y del catálogo, y el navegador
+// La red se simula en los api.ts del diario y de la biblioteca, y el navegador
 // (decodificar, canvas y URLs blob:) con FakePhotoProcessor, inyectado por prop.
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { act, render, screen, waitFor, within } from "@testing-library/react"
@@ -9,11 +9,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ApiError } from "@/lib/apiClient"
 import { addMealItems, analyzeMealPhoto, getDiary } from "@/features/diary/api"
 import {
+  deleteCustomFood,
   getFavoriteFoods,
   getRecentFoods,
   searchFoodLibrary,
 } from "@/features/food-library/api"
-import { searchCatalog } from "@/features/catalog/api"
 import { CHICKEN, RICE, TOMATO_SAUCE, makeAnalysis } from "@/test/analysisFixtures"
 import { makeMeal } from "@/test/diaryFixtures"
 import {
@@ -43,9 +43,6 @@ vi.mock("@/features/food-library/api", () => ({
   setFoodFavorite: vi.fn(),
   deleteCustomFood: vi.fn(),
 }))
-vi.mock("@/features/catalog/api", () => ({
-  searchCatalog: vi.fn(),
-}))
 
 const addMock = vi.mocked(addMealItems)
 const analyzeMock = vi.mocked(analyzeMealPhoto)
@@ -53,7 +50,7 @@ const getDiaryMock = vi.mocked(getDiary)
 const searchMock = vi.mocked(searchFoodLibrary)
 const recentMock = vi.mocked(getRecentFoods)
 const favoritesMock = vi.mocked(getFavoriteFoods)
-const catalogSearchMock = vi.mocked(searchCatalog)
+const deleteMock = vi.mocked(deleteCustomFood)
 
 const MB = 1024 * 1024
 const RICE_PREVIEW = "195 kcal · 4,0 g proteína · 42,3 g carbohidratos · 0,4 g grasa"
@@ -246,11 +243,11 @@ function resetMocks() {
   searchMock.mockReset()
   recentMock.mockReset()
   favoritesMock.mockReset()
-  catalogSearchMock.mockReset()
+  deleteMock.mockReset()
   searchMock.mockResolvedValue([])
   recentMock.mockResolvedValue([])
   favoritesMock.mockResolvedValue([])
-  catalogSearchMock.mockResolvedValue({ results: [] })
+  deleteMock.mockResolvedValue(undefined)
   addMock.mockResolvedValue(makeMeal({ meal_type: "lunch" }) as Meal)
   getDiaryMock.mockResolvedValue({
     date: "2026-10-22",
@@ -946,7 +943,6 @@ describe("MealPhotoDialog - añadir y resolver alimentos", () => {
     expect(await within(dialog()).findByRole("button", { name: "Elegir Aguacate" })).toBeInTheDocument()
     expect(searchMock).toHaveBeenCalledTimes(1)
     expect(searchMock).toHaveBeenCalledWith("aguacate")
-    expect(catalogSearchMock).not.toHaveBeenCalled()
   })
 
   // SDD: 028 REQ-013 AC-013.9
@@ -1512,6 +1508,130 @@ describe("MealPhotoDialog - biblioteca de alimentos en la propuesta", () => {
     await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument())
     expect(dialog()).toBeInTheDocument()
     expect(within(dialog()).getByRole("searchbox", { name: "Buscar alimento" })).toBeInTheDocument()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Spec 028, iteración 2 · REQ-017 y REQ-018: borrar alimentos propios desde la propuesta
+// ---------------------------------------------------------------------------
+
+describe("MealPhotoDialog - borrar un alimento propio desde la propuesta", () => {
+  beforeEach(resetMocks)
+
+  const DELETE_LABEL = "Borrar Gallo pinto de tus alimentos"
+
+  // «Gallo pinto» propio sigue en la biblioteca hasta que se borra.
+  function galloUntilDeleted() {
+    let deleted = false
+    searchMock.mockImplementation(async () => (deleted ? [] : [GALLO_PROPIO]))
+    deleteMock.mockImplementation(async () => {
+      deleted = true
+    })
+  }
+
+  // SDD: 028 REQ-017 AC-017.6
+  it("Escape en la búsqueda de «Añadir otro alimento» con la confirmación abierta solo la cierra", async () => {
+    const user = userEvent.setup()
+    const { onClose } = renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+    searchMock.mockResolvedValue([GALLO_PROPIO])
+    await search(user, "gallo")
+    await user.click(await within(dialog()).findByRole("button", { name: DELETE_LABEL }))
+    // La confirmación sale dentro del elemento del alimento.
+    const confirmation = await within(dialog()).findByRole("alertdialog")
+    expect(confirmation.closest("li")).toHaveTextContent("Gallo pinto")
+
+    await user.keyboard("{Escape}")
+
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument())
+    expect(deleteMock).not.toHaveBeenCalled()
+    expect(onClose).not.toHaveBeenCalled()
+    // Ni la confirmación de descartar la propuesta (026) ni el cierre del diálogo.
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
+    expect(dialog()).toBeInTheDocument()
+    const box = within(dialog()).getByRole("searchbox", { name: "Buscar alimento" })
+    expect(box).toHaveValue("gallo")
+    expect(within(dialog()).getByRole("list", { name: "Resultados" })).toHaveTextContent("Gallo pinto")
+  })
+
+  // SDD: 028 REQ-018 AC-018.7
+  it("al borrar un propio que ya está en la propuesta, la fila sigue y se guarda como personalizado con name y per_100g", async () => {
+    const user = userEvent.setup()
+    const { onClose } = renderDialog()
+    galloUntilDeleted()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+    await search(user, "gallo")
+    await chooseFood(user, "Gallo pinto")
+    await setGrams(user, "Gallo pinto", "250")
+    await user.click(button("Añadir otro alimento"))
+    await search(user, "gallo")
+    await user.click(await within(dialog()).findByRole("button", { name: DELETE_LABEL }))
+    const confirmation = await within(dialog()).findByRole("alertdialog")
+    await user.click(within(confirmation).getByRole("button", { name: "Borrar" }))
+    await waitFor(() => expect(deleteMock).toHaveBeenCalledWith(12))
+    await user.click(button("Volver a la propuesta"))
+
+    expect(rows()).toHaveLength(2)
+    expect(rows()[1]).toHaveTextContent("Gallo pinto")
+    expect(rows()[1]).toHaveTextContent("Personalizado")
+    expect(gramsField("Gallo pinto")).toHaveValue("250")
+    await save(user)
+
+    await waitFor(() => expect(addMock).toHaveBeenCalledTimes(1))
+    expect(addMock).toHaveBeenCalledWith({
+      date: "2026-10-22",
+      meal_type: "lunch",
+      items: [
+        { catalog_id: "arroz-blanco-cocido", grams: 150 },
+        {
+          name: "Gallo pinto",
+          grams: 250,
+          per_100g: { calories_kcal: 180, protein_g: 6, carbs_g: 30, fat_g: 4 },
+        },
+      ],
+    })
+    await waitFor(() => expect(onClose).toHaveBeenCalled())
+  })
+
+  // SDD: 028 REQ-018 AC-018.8
+  // SDD: 028 REQ-018 AC-018.7
+  it("si guardar responde 400 «No encontramos ese alimento.» conserva la propuesta entera con sus gramos y su total", async () => {
+    const user = userEvent.setup()
+    const { onClose } = renderDialog()
+    galloUntilDeleted()
+    addMock.mockRejectedValue(new ApiError(400, "No encontramos ese alimento."))
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+    await search(user, "gallo")
+    await chooseFood(user, "Gallo pinto")
+    await setGrams(user, "Gallo pinto", "250")
+    const totalBefore = within(dialog()).getByText(/^Total:/).textContent
+    expect(totalBefore).toContain("645 kcal")
+    // El borrado hecho desde la propuesta desvincula la fila (AC-018.7).
+    await user.click(button("Añadir otro alimento"))
+    await search(user, "gallo")
+    await user.click(await within(dialog()).findByRole("button", { name: DELETE_LABEL }))
+    const confirmation = await within(dialog()).findByRole("alertdialog")
+    await user.click(within(confirmation).getByRole("button", { name: "Borrar" }))
+    await waitFor(() => expect(deleteMock).toHaveBeenCalledWith(12))
+    await user.click(button("Volver a la propuesta"))
+
+    await save(user)
+
+    expect(await within(dialog()).findByRole("alert")).toHaveTextContent("No encontramos ese alimento.")
+    expect(onClose).not.toHaveBeenCalled()
+    expect(rows()).toHaveLength(2)
+    expect(gramsField("Arroz blanco cocido")).toHaveValue("150")
+    expect(gramsField("Gallo pinto")).toHaveValue("250")
+    expect(within(dialog()).getByText(/^Total:/).textContent).toBe(totalBefore)
+    // La fila desvinculada viaja con su nombre y sus valores, no con el id borrado.
+    expect(addMock.mock.calls[0][0].items[1]).toEqual({
+      name: "Gallo pinto",
+      grams: 250,
+      per_100g: { calories_kcal: 180, protein_g: 6, carbs_g: 30, fat_g: 4 },
+    })
   })
 })
 

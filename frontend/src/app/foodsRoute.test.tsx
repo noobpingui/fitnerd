@@ -18,12 +18,6 @@ vi.mock("@/features/diary/api", () => ({
   updateMealItemGrams: vi.fn(),
   removeMealItem: vi.fn(),
 }))
-vi.mock("@/features/catalog/api", () => ({
-  searchCatalog: vi.fn(),
-}))
-vi.mock("@/features/foods/api", () => ({
-  searchFoods: vi.fn(),
-}))
 vi.mock("@/features/food-library/api", () => ({
   searchFoodLibrary: vi.fn(),
   getRecentFoods: vi.fn(async () => []),
@@ -57,7 +51,7 @@ const routerSources = import.meta.glob("/src/app/router.tsx", {
 }) as Record<string, string>
 
 // Archivos de la pantalla «Alimentos» de la 021 que la 028 retira (REQ-020, Q7).
-// La búsqueda de USDA (`foods/api.ts`) y sus tipos, formato y esquemas se conservan.
+// Sus formato, esquema de la caja de búsqueda y mensajes de error se conservan: los usa el panel.
 const retiredFoodsFiles = import.meta.glob([
   "/src/features/foods/pages/FoodsPage.tsx",
   "/src/features/foods/pages/FoodsPage.test.tsx",
@@ -66,6 +60,29 @@ const retiredFoodsFiles = import.meta.glob([
   "/src/features/foods/hooks.ts",
   "/src/features/diary/components/ProposalSearchStep.tsx",
 ])
+
+// Iteración 2 (REQ-020, F5): el código sin uso de la búsqueda de la 023 y de USDA.
+const unusedSearchFiles = import.meta.glob([
+  "/src/features/catalog/**",
+  "/src/features/foods/api.ts",
+  "/src/test/catalogFixtures.ts",
+])
+
+const proposalSources = import.meta.glob("/src/features/diary/proposal.ts", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>
+const foodsSchemasSources = import.meta.glob("/src/features/foods/schemas.ts", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>
+const foodsTypesSources = import.meta.glob("/src/features/foods/types.ts", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>
 
 function renderRouter() {
   return render(
@@ -153,5 +170,18 @@ describe("AppRouter - ruta /foods", () => {
 
     expect(await screen.findByRole("heading", { level: 1, name: "Diario" })).toBeInTheDocument()
     expect(window.location.pathname).toBe("/diary")
+  })
+
+  // SDD: 028 REQ-020 AC-020.1
+  it("el código sin uso de la búsqueda de la 023 y de USDA ya no existe", () => {
+    expect(Object.keys(unusedSearchFiles)).toEqual([])
+    expect(proposalSources["/src/features/diary/proposal.ts"]).not.toMatch(/catalogEntry/)
+    expect(foodsSchemasSources["/src/features/foods/schemas.ts"]).not.toMatch(
+      /foodSearchResponseSchema/
+    )
+    expect(foodsTypesSources["/src/features/foods/types.ts"]).not.toMatch(/FoodSearchResponse/)
+    // Contraste: lo que el panel sigue usando se conserva.
+    expect(foodsSchemasSources["/src/features/foods/schemas.ts"]).toMatch(/foodSearchFormSchema/)
+    expect(proposalSources["/src/features/diary/proposal.ts"]).toMatch(/libraryEntry/)
   })
 })

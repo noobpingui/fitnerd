@@ -3,10 +3,12 @@ por constructor un `FakeCatalogFoodRepository`, sin base de datos ni red. Los
 catálogos de cada prueba son los de los AC de la spec."""
 
 import inspect
+from pathlib import Path
 
 import pytest
 
 from exceptions.custom_exceptions import ValidationError
+from services.catalog_csv_reader import read_catalog_csv
 from services.catalog_search_service import (
     GROUP_EXACT,
     GROUP_NAME_PREFIX,
@@ -14,12 +16,15 @@ from services.catalog_search_service import (
     MAX_RESULTS,
     CatalogSearchService,
     SearchCandidate,
+    TypoDistances,
+    TypoSearchStats,
     edit_distance,
     match_group,
     prefix_edit_distance,
     query_forms,
     rank_candidates,
     rank_catalog,
+    typo_comparison_bound,
     typo_tolerance,
 )
 from tests.fakes import FakeCatalogFoodRepository, make_catalog_food
@@ -664,3 +669,151 @@ def test_rank_catalog_keeps_working_with_typos_through_rank_candidates():
     foods = [food("Arroz blanco cocido"), food("Frijoles negros cocidos")]
 
     assert [f.name for f in rank_catalog(foods, "aroz")] == ["Arroz blanco cocido"]
+
+
+# --------------------------------------------------------------------------
+# Spec 028, iteración 2: coste acotado de la búsqueda con tolerancia (NFR-004)
+# --------------------------------------------------------------------------
+
+CATALOG_CSV = Path(__file__).resolve().parents[2] / "scripts" / "data" / "food_catalog.csv"
+LONG_GIBBERISH = "arroces " * 12 + "qzxw"
+
+
+def catalog_023():
+    """El catálogo real de la 023 (solo lectura), con la forma de `CatalogFood`."""
+    return [
+        make_catalog_food(record.id, record.name, record.synonyms)
+        for record in read_catalog_csv(CATALOG_CSV)
+    ]
+
+
+def comparisons_of(foods, query):
+    """Resultados y comparaciones que hace `rank_catalog` con tolerancia."""
+    stats = TypoSearchStats()
+    results = rank_catalog(foods, query, stats=stats)
+    return results, stats.comparisons
+
+
+# SDD: 028 NFR-004 AC-N004.3
+def test_within_tolerance_of_a_form_shorter_than_four_characters_does_not_compare():
+    """«pam» (3 caracteres) solo coincide con el inicio de una palabra y no
+    cuenta como comparación; una forma larga sí cuenta."""
+    stats = TypoSearchStats()
+    distances = TypoDistances(stats)
+
+    assert distances.within_tolerance("pam", "pamplona") == 0
+    assert distances.within_tolerance("pam", "pan") is None
+    assert stats.comparisons == 0
+
+    assert distances.within_tolerance("arroz", "arroz") == 0
+    assert stats.comparisons == 1
+
+
+# SDD: 028 NFR-004 AC-N004.1
+def test_within_tolerance_skips_a_word_too_short_to_be_within_the_tolerance():
+    """Una palabra más corta que la forma menos su tolerancia no se compara;
+    una justo en el límite sí."""
+    stats = TypoSearchStats()
+    distances = TypoDistances(stats)
+
+    assert distances.within_tolerance("arroz", "ar") is None
+    assert distances.within_tolerance("arroz", "arr") is None
+    assert stats.comparisons == 0
+
+    assert distances.within_tolerance("arroz", "arro") == 1
+    assert stats.comparisons == 1
+
+
+# SDD: 028 NFR-004 AC-N004.1
+def test_within_tolerance_remembers_each_pair_form_word():
+    """La misma pareja dos veces es una sola comparación, con el mismo valor;
+    otra pareja suma una."""
+    stats = TypoSearchStats()
+    distances = TypoDistances(stats)
+
+    assert distances.within_tolerance("arroz", "aroz") == 1
+    assert distances.within_tolerance("arroz", "aroz") == 1
+    assert stats.comparisons == 1
+
+    assert distances.within_tolerance("arroz", "arrozal") == 0
+    assert stats.comparisons == 2
+
+
+# SDD: 028 NFR-004 AC-N004.1
+def test_within_tolerance_returns_none_above_the_tolerance_and_counts_the_comparison():
+    """«arroz» frente a «arxxx» está a 3, por encima de 1; la tolerancia de una
+    forma de 9 caracteres es 2."""
+    stats = TypoSearchStats()
+    distances = TypoDistances(stats)
+
+    assert distances.within_tolerance("arroz", "arxxx") is None
+    assert stats.comparisons == 1
+
+    assert distances.within_tolerance("integrale", "integral") == 1
+    assert stats.comparisons == 2
+
+
+# SDD: 028 NFR-004 AC-N004.1
+def test_typo_comparison_bound_is_forms_times_distinct_words():
+    """F cuenta formas distintas de 4 o más caracteres; P, palabras distintas de
+    nombres y sinónimos, sin mayúsculas ni tildes. Valores calculados a mano."""
+    candidates = [
+        SearchCandidate("Arroz blanco cocido", ["arroz", "Arroz Blanco"], 0, "1", None),
+        SearchCandidate("Frijoles negros", [], 0, "2", None),
+        SearchCandidate("Arroz propio", [], 1, "3", None),
+    ]
+    # Palabras: arroz, blanco, cocido, frijoles, negros, propio = 6.
+
+    assert typo_comparison_bound(candidates, "arroces integrale") == 5 * 6
+    assert typo_comparison_bound(candidates, "arroces arroces") == 4 * 6
+    assert typo_comparison_bound(candidates, "arroces pam") == 4 * 6
+    assert typo_comparison_bound(candidates, "pam") == 0
+    assert typo_comparison_bound([], "arroces integrale") == 0
+
+
+# SDD: 028 NFR-004 AC-N004.1
+def test_the_long_query_of_repeated_words_makes_the_same_comparisons_as_the_short_one():
+    """`"arroces " * 12 + "qzxw"` (100 caracteres) no encuentra nada, hace
+    como mucho F × P comparaciones y las mismas que `arroces qzxw`."""
+    foods = catalog_023()
+    assert len(LONG_GIBBERISH) == 100
+    candidates = [SearchCandidate(f.name, f.synonyms, 0, str(f.id), f) for f in foods]
+
+    long_results, long_comparisons = comparisons_of(foods, LONG_GIBBERISH)
+    short_results, short_comparisons = comparisons_of(foods, "arroces qzxw")
+
+    assert long_results == [] and short_results == []
+    assert short_comparisons > 0
+    assert long_comparisons == short_comparisons
+    assert long_comparisons <= typo_comparison_bound(candidates, LONG_GIBBERISH)
+    assert typo_comparison_bound(candidates, LONG_GIBBERISH) == typo_comparison_bound(
+        candidates, "arroces qzxw"
+    )
+
+
+# SDD: 028 NFR-004 AC-N004.2
+def test_a_typo_search_with_results_stays_within_the_bound_and_finds_the_food():
+    """`arroces integrale` encuentra «Arroz integral cocido» sin pasar de F × P."""
+    foods = catalog_023()
+    candidates = [SearchCandidate(f.name, f.synonyms, 0, str(f.id), f) for f in foods]
+
+    results, comparisons = comparisons_of(foods, "arroces integrale")
+
+    assert "Arroz integral cocido" in [food.name for food in results]
+    assert 0 < comparisons <= typo_comparison_bound(candidates, "arroces integrale")
+
+
+# SDD: 028 NFR-004 AC-N004.3
+def test_exact_matches_and_forms_shorter_than_four_characters_make_no_comparisons():
+    """`arroz` ya coincide y `pam` no tiene formas de 4 caracteres: 0
+    comparaciones; la búsqueda que sí necesita tolerancia, más de 0."""
+    foods = catalog_023()
+
+    rice, rice_comparisons = comparisons_of(foods, "arroz")
+    _, pam_comparisons = comparisons_of(foods, "pam")
+    _, typo_comparisons = comparisons_of(foods, "arroces qzxw")
+
+    assert "Arroz blanco cocido" in [food.name for food in rice]
+    assert rice_comparisons == 0
+    assert pam_comparisons == 0
+    assert typo_comparisons > 0

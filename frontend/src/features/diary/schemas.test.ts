@@ -18,6 +18,7 @@ import {
   mealResponseSchema,
   parseDecimalText,
   proposalFormSchema,
+  proposalReviewSchema,
   type CustomFoodFormValues,
 } from "./schemas"
 import type { ProposalEntry } from "./types"
@@ -515,5 +516,86 @@ describe("customItemPayload", () => {
       grams: 250,
       per_100g: { calories_kcal: 160, protein_g: 5.5, carbs_g: 27, fat_g: 3.2 },
     })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Spec 028, iteración 2 (F6): proposalReviewSchema, con `key` obligatoria
+// ---------------------------------------------------------------------------
+
+const KEYED_RICE = { ...RICE_ENTRY, key: "k1" }
+const KEYED_GALLO = {
+  kind: "custom" as const,
+  customFoodId: 12,
+  name: "Gallo pinto",
+  per100g: { calories_kcal: 180, protein_g: 6, carbs_g: 30, fat_g: 4 },
+  grams: "250",
+  key: "k2",
+}
+const KEYED_SAUCE = { ...SAUCE_ENTRY, key: "k3" }
+
+function reviewIssues(entries: unknown[]): Record<number, string> {
+  const result = proposalReviewSchema.safeParse({ entries })
+  const messages: Record<number, string> = {}
+  if (result.success) return messages
+  for (const issue of result.error.issues) {
+    const [root, index, field] = issue.path
+    if (root === "entries" && field === "grams" && typeof index === "number") {
+      if (!(index in messages)) messages[index] = issue.message
+    }
+  }
+  return messages
+}
+
+describe("proposalReviewSchema", () => {
+  // SDD: 028 regression guard. El esquema se entregó completo en el scaffold porque es
+  // declarativo; estas pruebas protegen su comportamiento. El rojo de F6 lo aporta
+  // PhotoReview.source.test.ts (T-152).
+
+  // SDD: 028 regression guard (esquema declarativo entregado completo en el scaffold)
+  // SDD: 028 REQ-018 AC-018.7
+  it.each([
+    ["del catálogo", RICE_ENTRY],
+    ["personalizada", { ...KEYED_GALLO, key: undefined }],
+    ["sin coincidencia", SAUCE_ENTRY],
+  ])("rechaza una entrada %s sin `key`, que el esquema de la 025 sí acepta", (_label, entry) => {
+    const review = proposalReviewSchema.safeParse({ entries: [entry] })
+
+    expect(review.success).toBe(false)
+    if (!review.success) expect(review.error.issues[0].path).toContain("key")
+    expect(proposalFormSchema.safeParse({ entries: [entry] }).success).toBe(true)
+  })
+
+  // SDD: 028 regression guard (esquema declarativo entregado completo en el scaffold)
+  // SDD: 028 REQ-018 AC-018.7
+  it("conserva la `key` de cada entrada y el `customFoodId` de la propia", () => {
+    const result = proposalReviewSchema.safeParse({
+      entries: [KEYED_RICE, KEYED_GALLO, KEYED_SAUCE],
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data?.entries.map((entry) => entry.key)).toEqual(["k1", "k2", "k3"])
+    expect(result.data?.entries[1]).toMatchObject({ kind: "custom", customFoodId: 12 })
+  })
+
+  // SDD: 028 regression guard (esquema declarativo entregado completo en el scaffold)
+  // SDD: 028 REQ-018 AC-018.7
+  it.each([
+    ["", GRAMS_RANGE_MESSAGE],
+    ["0", GRAMS_RANGE_MESSAGE],
+    ["2001", GRAMS_RANGE_MESSAGE],
+    ["150,25", GRAMS_DECIMALS_MESSAGE],
+  ])("da con los gramos %j el mismo mensaje «%s» que proposalFormSchema", (grams, message) => {
+    const entries = [{ ...KEYED_RICE, grams }, { ...KEYED_GALLO, grams }, KEYED_SAUCE]
+
+    expect(reviewIssues(entries)).toEqual({ 0: message, 1: message })
+    expect(reviewIssues(entries)).toEqual(proposalIssues(entries as ProposalEntry[]))
+  })
+
+  // SDD: 028 regression guard (esquema declarativo entregado completo en el scaffold)
+  // SDD: 028 REQ-018 AC-018.7
+  it("no valida los gramos de una entrada sin coincidencia", () => {
+    expect(reviewIssues([KEYED_RICE, KEYED_SAUCE])).toEqual({})
+    expect(proposalReviewSchema.safeParse({ entries: [KEYED_RICE, KEYED_SAUCE] }).success).toBe(true)
   })
 })

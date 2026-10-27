@@ -53,4 +53,23 @@ describe("PhotoReview - código sin form.watch", () => {
   it("empareja lo observado con las filas por clave mediante `mergeProposalEntries`", () => {
     expect(code).toMatch(/mergeProposalEntries\s*\(/)
   })
+
+  // SDD: 028 NFR-003 AC-N003.1
+  it("usa `proposalReviewSchema`, con `key` obligatoria, como resolver del formulario", () => {
+    expect(code).toMatch(/proposalReviewSchema/)
+    expect(code).toMatch(/zodResolver\(\s*proposalReviewSchema\s*\)/)
+    expect(code).not.toMatch(/proposalFormSchema/)
+  })
+
+  // SDD: 028 NFR-003 AC-N003.1
+  it("no usa `as never` (el esquema y los valores del formulario ya casan)", () => {
+    expect(code).toMatch(/proposalReviewSchema/)
+    expect(code).not.toMatch(/as\s+never/)
+  })
+
+  // SDD: 028 NFR-003 AC-N003.1
+  it("no usa `as unknown as` para convertir los campos del formulario", () => {
+    expect(code).toMatch(/proposalReviewSchema/)
+    expect(code).not.toMatch(/as\s+unknown\s+as/)
+  })
 })
