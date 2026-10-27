@@ -326,5 +326,7 @@ Merge del PR y paso 6.
 | 2026-10-20 | 022, diario de comidas | #27, `c4be21e` | `b3d5f7a9c1e4` (`meals`, `meal_items`), aplicada después del merge, a continuación de la `c8e2a4f6b9d3` | `prod-2026-10-20.dump` |
 | 2026-10-21 | 023, catálogo genérico de alimentos | #30, `fb72991` | `d4f6a8c0e2b5` (`catalog_foods`, `meal_items.catalog_id`), aplicada antes del merge desde local; carga del catálogo en EC2 después del CD: 261 alimentos | `prod-2026-10-21.dump` |
 | 2026-10-22 | 024, análisis de foto con Bedrock | #32, `10920a2` | — (configuración de AWS hecha a mano antes del merge; el primer CD falló por falta de disco en la instancia y se relanzó tras `docker image prune -f`) | — |
+| 2026-10-22 | 025, foto desde el diario | #34, `3e436d9` | — (solo frontend) | — |
+| 2026-10-26 | 026, días y edición del diario | #37, `ca909bb` | — (`SECRET_KEY` propia confirmada en EC2; comprobaciones manuales en navegador hechas) | — |
 
 Añade una fila en cada despliegue.
