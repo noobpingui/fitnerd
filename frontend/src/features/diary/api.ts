@@ -1,5 +1,10 @@
 import { apiFetch } from "@/lib/apiClient"
-import { diaryResponseSchema, mealPhotoAnalysisSchema, mealResponseSchema } from "./schemas"
+import {
+  diaryResponseSchema,
+  mealPhotoAnalysisSchema,
+  mealResponseSchema,
+  removalResponseSchema,
+} from "./schemas"
 import type { AddMealItemsPayload, Diary, Meal, MealPhotoAnalysis } from "./types"
 
 export async function getDiary(date: string): Promise<Diary> {
@@ -27,8 +32,11 @@ export async function updateMealItemGrams(
 }
 
 export async function removeMealItem(mealId: number, itemId: number): Promise<string | null> {
-  await apiFetch<void>(`/api/meals/${mealId}/items/${itemId}`, { method: "DELETE" })
-  return null
+  const data = await apiFetch<unknown>(`/api/meals/${mealId}/items/${itemId}?undo=1`, {
+    method: "DELETE",
+  })
+  const parsed = removalResponseSchema.safeParse(data)
+  return parsed.success ? parsed.data.restore_token : null
 }
 
 // Envía un único archivo en `image` y valida la respuesta.
@@ -40,10 +48,15 @@ export async function analyzeMealPhoto(image: Blob): Promise<MealPhotoAnalysis> 
   )
 }
 
-export async function restoreMealItem(_restoreToken: string): Promise<Meal> {
-  throw new Error("not implemented")
+export async function restoreMealItem(restoreToken: string): Promise<Meal> {
+  return mealResponseSchema.parse(
+    await apiFetch<unknown>("/api/meals/restore", {
+      method: "POST",
+      body: { restore_token: restoreToken },
+    })
+  )
 }
 
-export async function deleteMeal(_mealId: number): Promise<void> {
-  throw new Error("not implemented")
+export async function deleteMeal(mealId: number): Promise<void> {
+  await apiFetch<void>(`/api/meals/${mealId}`, { method: "DELETE" })
 }

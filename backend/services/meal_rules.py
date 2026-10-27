@@ -1,16 +1,16 @@
 import re
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
-from decimal import ROUND_HALF_UP, Decimal
+from datetime import date, datetime, timedelta, timezone
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 
 from exceptions.custom_exceptions import ValidationError
-from models.meal import MEAL_TYPES
+from models.meal import MEAL_ITEM_SOURCES, MEAL_TYPES
 from services.auth_input_rules import INVALID_REQUEST_MESSAGE  # noqa: F401
 from services.catalog_rules import is_catalog_id
 from services.number_validation import is_int, is_number
 
 INVALID_DATE_MESSAGE = "La fecha no es válida."
-DATE_OUT_OF_WINDOW_MESSAGE = "Solo puedes registrar comidas de hoy."
+DATE_OUT_OF_WINDOW_MESSAGE = "Solo puedes registrar comidas de hoy o del último año."
 INVALID_MEAL_TYPE_MESSAGE = "El tipo de comida no es válido."
 ITEMS_REQUIRED_MESSAGE = "Añade al menos un alimento."
 TOO_MANY_ITEMS_MESSAGE = "Una comida no puede tener más de 50 alimentos."
@@ -89,20 +89,117 @@ class RemovedItemSnapshot:
     expires_at: int
 
 
-def epoch_seconds(_instant: datetime) -> int:
-    raise NotImplementedError("not implemented")
+def epoch_seconds(instant: datetime) -> int:
+    # El instante es naive y está en UTC (utc_now / AdjustableClock).
+    return int(instant.replace(tzinfo=timezone.utc).timestamp())
 
 
-def snapshot_payload(_snapshot: RemovedItemSnapshot) -> dict:
-    raise NotImplementedError("not implemented")
+def snapshot_payload(snapshot: RemovedItemSnapshot) -> dict:
+    return {
+        "v": 1,
+        "d": snapshot.meal_date.isoformat(),
+        "t": snapshot.meal_type,
+        "p": snapshot.position,
+        "s": snapshot.source,
+        "c": snapshot.catalog_id,
+        "f": snapshot.fdc_id,
+        "n": snapshot.name,
+        "dt": snapshot.data_type,
+        "g": str(snapshot.grams),
+        "per": {
+            key: None if snapshot.per_100g.get(key) is None else float(snapshot.per_100g[key])
+            for key in NUTRIENT_KEYS
+        },
+        "exp": snapshot.expires_at,
+    }
 
 
-def parse_snapshot_payload(_payload: object) -> RemovedItemSnapshot | None:
-    raise NotImplementedError("not implemented")
+def _optional_text(value: object) -> bool:
+    return value is None or isinstance(value, str)
+
+
+def _parse_snapshot_per_100g(value: object) -> dict[str, float | None] | None:
+    if not isinstance(value, dict):
+        return None
+    parsed: dict[str, float | None] = {}
+    for key in NUTRIENT_KEYS:
+        if key not in value:
+            return None
+        amount = value[key]
+        if amount is not None and not is_number(amount):
+            return None
+        parsed[key] = None if amount is None else float(amount)
+    return parsed
+
+
+def parse_snapshot_payload(payload: object) -> RemovedItemSnapshot | None:
+    if not isinstance(payload, dict) or payload.get("v") != 1 or payload.get("v") is True:
+        return None
+
+    raw_date = payload.get("d")
+    if not isinstance(raw_date, str) or not _DATE_PATTERN.fullmatch(raw_date):
+        return None
+    try:
+        meal_date = date.fromisoformat(raw_date)
+    except ValueError:
+        return None
+
+    meal_type = payload.get("t")
+    source = payload.get("s")
+    position = payload.get("p")
+    name = payload.get("n")
+    catalog_id = payload.get("c")
+    fdc_id = payload.get("f")
+    data_type = payload.get("dt")
+    expires_at = payload.get("exp")
+    if meal_type not in MEAL_TYPES or source not in MEAL_ITEM_SOURCES:
+        return None
+    if not is_int(position) or position < 0 or not is_int(expires_at):
+        return None
+    if not isinstance(name, str) or not name:
+        return None
+    if not _optional_text(catalog_id) or not _optional_text(data_type):
+        return None
+    if fdc_id is not None and not is_int(fdc_id):
+        return None
+    if source == "catalog" and not catalog_id:
+        return None
+    if source == "usda" and fdc_id is None:
+        return None
+
+    raw_grams = payload.get("g")
+    if not isinstance(raw_grams, str):
+        return None
+    try:
+        grams = Decimal(raw_grams)
+    except InvalidOperation:
+        return None
+    if not grams.is_finite() or not GRAMS_RANGE[0] <= grams <= GRAMS_RANGE[1]:
+        return None
+
+    per_100g = _parse_snapshot_per_100g(payload.get("per"))
+    if per_100g is None:
+        return None
+
+    return RemovedItemSnapshot(
+        meal_date=meal_date,
+        meal_type=meal_type,
+        position=position,
+        source=source,
+        catalog_id=catalog_id,
+        fdc_id=fdc_id,
+        name=name,
+        data_type=data_type,
+        grams=grams,
+        per_100g=per_100g,
+        expires_at=expires_at,
+    )
 
 
 def check_add_window(meal_date: date, today: date) -> None:
-    if not (today - timedelta(days=1) <= meal_date <= today + timedelta(days=1)):
+    earliest = today - timedelta(days=ADD_WINDOW_PAST_DAYS)
+    latest = today + timedelta(days=ADD_WINDOW_FUTURE_DAYS)
+    if not earliest <= meal_date <= latest:
         raise ValidationError(DATE_OUT_OF_WINDOW_MESSAGE)
 
 

@@ -55,6 +55,7 @@ export function analysisErrorView(error: unknown): AnalysisErrorView {
 export const DELETE_MEAL_FAILED_MESSAGE = "No se pudo borrar la comida. Vuelve a intentarlo."
 export const UNDO_FAILED_MESSAGE = "No se pudo deshacer. Vuelve a intentarlo."
 
-export function undoErrorMessage(_error: unknown): string {
-  throw new Error("not implemented")
+export function undoErrorMessage(error: unknown): string {
+  if (error instanceof ApiError && error.status === 400) return error.message
+  return UNDO_FAILED_MESSAGE
 }

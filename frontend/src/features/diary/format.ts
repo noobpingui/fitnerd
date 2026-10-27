@@ -1,4 +1,4 @@
-import { parseLocalDate } from "@/lib/dates"
+import { parseLocalDate, todayIsoDate } from "@/lib/dates"
 import { DATA_TYPE_LABELS } from "@/features/foods/format"
 import type { MealItem, Nutrients } from "./types"
 
@@ -18,9 +18,17 @@ const dateFormat = new Intl.DateTimeFormat("es-ES", {
   month: "long",
 })
 
-// La 026 añade `today` (año solo si no es el actual); aún no se usa: T-060.
-export function formatDiaryDate(isoDate: string, _today?: string): string {
-  return dateFormat.format(parseLocalDate(isoDate))
+const dateWithYearFormat = new Intl.DateTimeFormat("es-ES", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+})
+
+// El año solo aparece si no es el de `today`.
+export function formatDiaryDate(isoDate: string, today: string = todayIsoDate()): string {
+  const format = isoDate.slice(0, 4) === today.slice(0, 4) ? dateFormat : dateWithYearFormat
+  return format.format(parseLocalDate(isoDate))
 }
 
 export function formatKcal(value: number | null): string {
