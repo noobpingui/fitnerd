@@ -60,7 +60,13 @@ class CustomItemInput:
     per_100g: dict[str, float]
 
 
-_DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+@dataclass(frozen=True)
+class LibraryItemInput:
+    custom_food_id: int
+    grams: Decimal
+
+
+_DATE_PATTERN =re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _CENTS = Decimal("0.01")
 _TENTH = Decimal("0.1")
 
@@ -87,6 +93,7 @@ class RemovedItemSnapshot:
     grams: Decimal
     per_100g: dict[str, float | None]
     expires_at: int
+    custom_food_id: int | None = None
 
 
 def epoch_seconds(instant: datetime) -> int:

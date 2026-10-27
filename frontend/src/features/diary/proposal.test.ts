@@ -1,8 +1,9 @@
 // Funciones puras de la propuesta del análisis de una foto (spec 025):
 // construcción, macros, total y carga útil de guardado.
-import { describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it } from "vitest"
 import { CHICKEN, RICE, TOMATO_SAUCE, makeAnalysis } from "@/test/analysisFixtures"
 import { makeCatalogFood } from "@/test/catalogFixtures"
+import { makeBananaFood, makeCustomLibraryFood } from "@/test/foodLibraryFixtures"
 import { formatPortionPreview } from "./format"
 import {
   catalogEntry,
@@ -12,11 +13,14 @@ import {
   entryTag,
   formatProposalTotal,
   isSavable,
+  libraryEntry,
+  mergeProposalEntries,
   proposalFromAnalysis,
   proposalItems,
   proposalTotals,
+  withEntryKey,
 } from "./proposal"
-import type { CustomItemPayload, ProposalEntry } from "./types"
+import type { CustomItemPayload, ProposalEntry, ProposalFormEntry } from "./types"
 
 const GALLO: CustomItemPayload = {
   name: "Gallo pinto",
@@ -270,5 +274,261 @@ describe("proposalItems", () => {
     expect(Object.keys(items[0]).sort()).toEqual(["catalog_id", "grams"])
     expect(Object.keys(items[2]).sort()).toEqual(["grams", "name", "per_100g"])
     expect(JSON.stringify(items)).not.toMatch(/image|blob|jpeg|data:/i)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Spec 028: alimentos propios en la propuesta y totales siempre al día
+// ---------------------------------------------------------------------------
+
+const BANANO = makeBananaFood()
+const GALLO_PROPIO = makeCustomLibraryFood()
+
+function keyed(entry: ProposalEntry, key: string): ProposalFormEntry {
+  return { ...entry, key }
+}
+
+describe("libraryEntry", () => {
+  // SDD: 028 REQ-018 AC-018.5
+  it("un alimento del catálogo entra como el de la 025: marcado como «user» y con los gramos dados", () => {
+    expect(libraryEntry(BANANO, "150")).toEqual({
+      kind: "catalog",
+      catalogId: "banano",
+      name: "Banano",
+      per100g: BANANO.per_100g,
+      grams: "150",
+      tag: "user",
+    })
+  })
+
+  // SDD: 028 REQ-018 AC-018.2
+  it("un alimento propio entra como personalizado con su identificador, sus valores y los gramos dados", () => {
+    expect(libraryEntry(GALLO_PROPIO, "200")).toEqual({
+      kind: "custom",
+      customFoodId: 12,
+      name: "Gallo pinto",
+      per100g: GALLO_PROPIO.per_100g,
+      grams: "200",
+    })
+  })
+
+  // SDD: 028 REQ-018 AC-018.2
+  it("la etiqueta de un alimento propio es «Personalizado» y la del catálogo, «Añadido por ti»", () => {
+    expect(entryTag(libraryEntry(GALLO_PROPIO, "200"))).toBe("Personalizado")
+    expect(entryTag(libraryEntry(BANANO, "100"))).toBe("Añadido por ti")
+  })
+
+  // SDD: 028 REQ-019 AC-019.1
+  it("los nutrientes salen de los valores por 100 g y los gramos", () => {
+    const entry = libraryEntry(GALLO_PROPIO, "250")
+
+    expect(preview(entry)).toBe("450 kcal · 15,0 g proteína · 75,0 g carbohidratos · 10,0 g grasa")
+  })
+})
+
+describe("withEntryKey", () => {
+  // SDD: 028 REQ-019 AC-019.3
+  it("añade una clave de texto y conserva el resto de la entrada", () => {
+    const entry = libraryEntry(BANANO, "100")
+
+    const result = withEntryKey(entry)
+
+    expect(typeof result.key).toBe("string")
+    expect(result.key).not.toBe("")
+    expect(result).toMatchObject(entry)
+  })
+
+  // SDD: 028 REQ-019 AC-019.3
+  it("cada llamada da una clave distinta, también con la misma entrada", () => {
+    const entry = libraryEntry(BANANO, "100")
+
+    const keys = [withEntryKey(entry), withEntryKey(entry), withEntryKey(entry)].map((e) => e.key)
+
+    expect(new Set(keys).size).toBe(3)
+  })
+
+  // SDD: 028 REQ-019 AC-019.3
+  it("no modifica la entrada original", () => {
+    const entry = libraryEntry(BANANO, "100")
+
+    withEntryKey(entry)
+
+    expect("key" in entry).toBe(false)
+  })
+
+  // SDD: 028 REQ-019 AC-019.2
+  it("sirve también para una entrada sin coincidencia", () => {
+    const [, , sauce] = fullProposal()
+
+    expect(withEntryKey(sauce)).toMatchObject({ kind: "unmatched", name: "Salsa de tomate" })
+  })
+})
+
+describe("mergeProposalEntries", () => {
+  // Se crean antes de cada test (no al declarar el describe) para que un fallo
+  // de `libraryEntry` sea el de ese test y no impida recolectar el archivo.
+  let banano: ProposalFormEntry
+  let gallo: ProposalFormEntry
+
+  beforeEach(() => {
+    banano = keyed(libraryEntry(BANANO, "100"), "k-banano")
+    gallo = keyed(libraryEntry(GALLO_PROPIO, "200"), "k-gallo")
+  })
+
+  // SDD: 028 REQ-019 AC-019.1
+  it("toma los gramos observados de la entrada con la misma clave", () => {
+    const merged = mergeProposalEntries(
+      [banano, gallo],
+      [
+        { key: "k-banano", grams: "200" },
+        { key: "k-gallo", grams: "200" },
+      ]
+    )
+
+    expect(merged.map((entry) => entry.grams)).toEqual(["200", "200"])
+    expect(merged.map((entry) => entry.key)).toEqual(["k-banano", "k-gallo"])
+  })
+
+  // SDD: 028 REQ-019 AC-019.1
+  it("conserva el nombre, los valores por 100 g y la clase de cada entrada", () => {
+    const [merged] = mergeProposalEntries([banano], [{ key: "k-banano", grams: "200" }])
+
+    expect(merged).toMatchObject({
+      kind: "catalog",
+      catalogId: "banano",
+      name: "Banano",
+      per100g: BANANO.per_100g,
+      grams: "200",
+    })
+  })
+
+  // SDD: 028 REQ-019 AC-019.1
+  it("sin valores observados devuelve las entradas tal cual", () => {
+    expect(mergeProposalEntries([banano, gallo], undefined)).toEqual([banano, gallo])
+  })
+
+  // SDD: 028 REQ-019 AC-019.2
+  it("una entrada nueva que aún no está en lo observado conserva sus propios gramos", () => {
+    const merged = mergeProposalEntries([banano, gallo], [{ key: "k-banano", grams: "250" }])
+
+    expect(merged.map((entry) => entry.grams)).toEqual(["250", "200"])
+  })
+
+  // SDD: 028 REQ-019 AC-019.4
+  it("empareja por clave y no por posición: tras quitar una entrada, lo observado obsoleto no se aplica a otra", () => {
+    // Se quitó `banano`; lo observado todavía trae las dos filas con las posiciones antiguas.
+    const merged = mergeProposalEntries(
+      [gallo],
+      [
+        { key: "k-banano", grams: "999" },
+        { key: "k-gallo", grams: "250" },
+      ]
+    )
+
+    expect(merged).toHaveLength(1)
+    expect(merged[0].grams).toBe("250")
+  })
+
+  // SDD: 028 REQ-019 AC-019.2
+  it("una entrada sustituida (clave nueva) no recibe los gramos observados de la anterior", () => {
+    const replaced = keyed(libraryEntry(GALLO_PROPIO, "180"), "k-nuevo")
+
+    const merged = mergeProposalEntries([replaced], [{ key: "k-banano", grams: "100" }])
+
+    expect(merged[0].grams).toBe("180")
+  })
+
+  // SDD: 028 REQ-019 AC-019.3
+  it("lo observado en otro orden se empareja igual por su clave", () => {
+    const merged = mergeProposalEntries(
+      [banano, gallo],
+      [
+        { key: "k-gallo", grams: "300" },
+        { key: "k-banano", grams: "120" },
+      ]
+    )
+
+    expect(merged.map((entry) => entry.grams)).toEqual(["120", "300"])
+  })
+
+  // SDD: 028 REQ-019 AC-019.1
+  it("un valor observado vacío o sin gramos no pisa los gramos de la entrada", () => {
+    const merged = mergeProposalEntries(
+      [banano, gallo],
+      [undefined, { key: "k-gallo" }]
+    )
+
+    expect(merged.map((entry) => entry.grams)).toEqual(["100", "200"])
+  })
+
+  // SDD: 028 REQ-019 AC-019.1
+  it("un texto vacío de gramos sí se respeta: es lo que el usuario está escribiendo", () => {
+    const merged = mergeProposalEntries([banano], [{ key: "k-banano", grams: "" }])
+
+    expect(merged[0].grams).toBe("")
+  })
+
+  // SDD: 028 REQ-019 AC-019.1
+  it("no modifica las entradas de entrada", () => {
+    mergeProposalEntries([banano], [{ key: "k-banano", grams: "500" }])
+
+    expect(banano.grams).toBe("100")
+  })
+
+  // SDD: 028 REQ-019 AC-019.2
+  it("deja las entradas sin coincidencia como estaban", () => {
+    const [, , sauce] = fullProposal()
+    const unmatched = keyed(sauce, "k-salsa")
+
+    const merged = mergeProposalEntries([unmatched], [{ key: "k-salsa" }])
+
+    expect(merged).toEqual([unmatched])
+  })
+})
+
+describe("proposalItems con alimentos propios", () => {
+  // SDD: 028 REQ-018 AC-018.4
+  it("un alimento propio elegido se envía como custom_food_id y gramos", () => {
+    expect(proposalItems([libraryEntry(GALLO_PROPIO, "250")])).toEqual([
+      { custom_food_id: 12, grams: 250 },
+    ])
+  })
+
+  // SDD: 028 REQ-018 AC-018.4
+  it("el elegido (250 g) y el creado en la propuesta se envían cada uno a su manera, en orden", () => {
+    const items = proposalItems([libraryEntry(GALLO_PROPIO, "250"), customEntry(GALLO)])
+
+    expect(items).toEqual([
+      { custom_food_id: 12, grams: 250 },
+      { name: "Gallo pinto", grams: 200, per_100g: GALLO.per_100g },
+    ])
+  })
+
+  // SDD: 028 REQ-018 AC-018.4
+  it("un alimento propio solo lleva custom_food_id y gramos, sin nombre ni valores", () => {
+    const [item] = proposalItems([libraryEntry(GALLO_PROPIO, "250")])
+
+    expect(Object.keys(item).sort()).toEqual(["custom_food_id", "grams"])
+  })
+
+  // SDD: 028 REQ-018 AC-018.4
+  it("los gramos con coma decimal se envían como número", () => {
+    expect(proposalItems([libraryEntry(GALLO_PROPIO, "150,5")])).toEqual([
+      { custom_food_id: 12, grams: 150.5 },
+    ])
+  })
+
+  // SDD: 028 REQ-018 AC-018.5
+  it("un reciente del catálogo se envía como catalog_id y gramos", () => {
+    expect(proposalItems([libraryEntry(BANANO, "150")])).toEqual([
+      { catalog_id: "banano", grams: 150 },
+    ])
+  })
+
+  // SDD: 028 REQ-018 AC-018.4
+  it("la clave interna de la entrada no llega a la carga útil", () => {
+    const [item] = proposalItems([withEntryKey(libraryEntry(GALLO_PROPIO, "250"))])
+
+    expect(JSON.stringify(item)).not.toContain("key")
   })
 })

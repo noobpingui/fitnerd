@@ -56,6 +56,10 @@ export function formatPortionPreview(nutrients: Nutrients): string {
   ].join(" · ")
 }
 
+export function gramsText(_value: number): string {
+  throw new Error("not implemented")
+}
+
 export function sourceLabel(item: MealItem): string | null {
   if (item.source === "catalog") return null
   return item.data_type === null ? "Personalizado" : DATA_TYPE_LABELS[item.data_type]

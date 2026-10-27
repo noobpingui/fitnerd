@@ -91,7 +91,9 @@ class MealService:
         clock=utc_now,
         catalog_repository=None,
         restore_signer=None,
+        custom_food_repository=None,
     ):
+        self.custom_food_repository = custom_food_repository
         self.restore_signer = restore_signer
         self.catalog_repository = catalog_repository
         self.meal_repository = meal_repository

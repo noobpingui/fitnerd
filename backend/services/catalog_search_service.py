@@ -1,4 +1,5 @@
 from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
 
 from models import CatalogFood
 from services.catalog_rules import fold, word_forms, words
@@ -45,6 +46,39 @@ def match_group(name: str, synonyms: Sequence[str], query: list[tuple[str, ...]]
     if _name_starts_with(name_words, query):
         return GROUP_NAME_PREFIX
     return GROUP_OTHER
+
+
+def edit_distance(_a: str, _b: str) -> int:
+    raise NotImplementedError("not implemented")
+
+
+def prefix_edit_distance(_form: str, _word: str) -> int:
+    raise NotImplementedError("not implemented")
+
+
+def typo_tolerance(_form: str) -> int:
+    raise NotImplementedError("not implemented")
+
+
+def typo_distance(
+    _name: str, _synonyms: Sequence[str], _query: list[tuple[str, ...]]
+) -> int | None:
+    raise NotImplementedError("not implemented")
+
+
+@dataclass(frozen=True)
+class SearchCandidate:
+    name: str
+    synonyms: Sequence[str]
+    source_order: int  # 0 catálogo, 1 propio
+    key: str  # desempate estable (id como texto)
+    item: object
+
+
+def rank_candidates(
+    _candidates: Iterable[SearchCandidate], _query: str, _limit: int = MAX_RESULTS
+) -> list:
+    raise NotImplementedError("not implemented")
 
 
 def rank_catalog(foods: Iterable, query: str, limit: int = MAX_RESULTS) -> list:

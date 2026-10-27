@@ -276,3 +276,35 @@ def test_search_number_31_in_a_minute_is_still_200_and_uses_no_counter(
 
     assert statuses == [200] * 31
     assert redis_fake.counts == {}
+
+
+# SDD: 028 REQ-006 AC-006.12
+def test_a_typo_query_finds_the_rice_with_the_format_of_spec_023(client, app):
+    """`q=aroz` encuentra «Arroz blanco cocido» con el mismo formato de respuesta de la 023."""
+    seed(app, WHITE_RICE, BLACK_BEANS)
+
+    response = search(client, app, "aroz")
+
+    assert response.status_code == 200
+    assert response.get_json() == {
+        "results": [
+            {
+                "id": "arroz-blanco-cocido",
+                "name": "Arroz blanco cocido",
+                "per_100g": {
+                    "calories_kcal": 100.0,
+                    "protein_g": 10.0,
+                    "carbs_g": 10.0,
+                    "fat_g": 5.0,
+                },
+            }
+        ]
+    }
+
+
+# SDD: 028 REQ-006 AC-006.10
+def test_the_plural_ces_also_works_in_the_catalog_search(client, app):
+    """`nueces` encuentra «Nuez» en `GET /api/catalog/search`."""
+    seed(app, {"id": "nuez", "name": "Nuez"})
+
+    assert names_of(search(client, app, "nueces")) == ["Nuez"]

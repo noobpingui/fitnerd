@@ -430,11 +430,20 @@ class FakeMealRepository:
     `created` y `deleted` quedan para las aserciones y `meals` permite
     precargar. Los tres metodos de consulta filtran por usuario, como el real."""
 
-    def __init__(self, meals=None):
+    def __init__(self, meals=None, recent_rows=None):
         self.meals = list(meals or [])
         self.created = []
         self.deleted = []
+        self.recent_rows = list(recent_rows or [])
+        self.recent_calls = []
         self._next_id = max([m.id for m in self.meals if m.id is not None] + [0]) + 1
+
+    def list_recent_foods(self, user_id, limit):
+        """Spec 028: devuelve las filas de `recent_rows` (ya ordenadas y sin
+        repetir, como las daría la consulta real) respetando `limit`, y
+        registra cada llamada en `recent_calls`."""
+        self.recent_calls.append((user_id, limit))
+        return list(self.recent_rows)[:limit]
 
     def create(self, meal):
         if getattr(meal, "id", None) is None:
@@ -632,3 +641,126 @@ class FakeBedrockRuntimeClient:
             if "text" in block:
                 return block["text"]
         raise AssertionError("la última llamada no llevaba texto")
+
+
+# --- Spec 028: biblioteca de alimentos del diario -------------------------
+
+
+def make_custom_food(
+    id,
+    user_id,
+    name,
+    calories_kcal=0.0,
+    protein_g=0.0,
+    carbs_g=0.0,
+    fat_g=0.0,
+):
+    """Alimento propio de mentira con la forma de `CustomFood` (spec 028): los
+    cuatro valores son por 100 g y `name_key` sale de la regla real de la
+    spec (`custom_food_name_key`)."""
+    from types import SimpleNamespace
+
+    from services.food_library_rules import custom_food_name_key
+
+    return SimpleNamespace(
+        id=id,
+        user_id=user_id,
+        name=name,
+        name_key=custom_food_name_key(name),
+        calories_kcal=calories_kcal,
+        protein_g=protein_g,
+        carbs_g=carbs_g,
+        fat_g=fat_g,
+    )
+
+
+def make_favorite(user_id, catalog_id=None, custom_food_id=None):
+    """Favorito de mentira con la forma de `FoodFavorite` (spec 028): lleva
+    `catalog_id` o `custom_food_id`, nunca los dos."""
+    from types import SimpleNamespace
+
+    return SimpleNamespace(
+        user_id=user_id, catalog_id=catalog_id, custom_food_id=custom_food_id
+    )
+
+
+class FakeCustomFoodRepository:
+    """Doble de `CustomFoodRepository` en memoria (spec 028): filtra por
+    usuario como el real. `create` asigna un `id` entero creciente; `created`
+    y `deleted` quedan para las aserciones y `foods` permite precargar. Acepta
+    tanto instancias reales de `CustomFood` como `SimpleNamespace`."""
+
+    def __init__(self, foods=None):
+        self.foods = list(foods or [])
+        self.created = []
+        self.deleted = []
+        self._next_id = max([f.id for f in self.foods if f.id is not None] + [0]) + 1
+
+    def _own(self, user_id):
+        return [f for f in self.foods if str(f.user_id) == str(user_id)]
+
+    def list_by_user(self, user_id):
+        return sorted(self._own(user_id), key=lambda food: food.id)
+
+    def get_by_id_and_user(self, custom_food_id, user_id):
+        for food in self._own(user_id):
+            if food.id == custom_food_id:
+                return food
+        return None
+
+    def get_by_ids_and_user(self, ids, user_id):
+        wanted = set(ids)
+        return [food for food in self._own(user_id) if food.id in wanted]
+
+    def get_by_name_keys(self, user_id, name_keys):
+        wanted = set(name_keys)
+        return [food for food in self._own(user_id) if food.name_key in wanted]
+
+    def count_by_user(self, user_id):
+        return len(self._own(user_id))
+
+    def create(self, food):
+        if getattr(food, "id", None) is None:
+            food.id = self._next_id
+            self._next_id += 1
+        self.foods.append(food)
+        self.created.append(food)
+        return food
+
+    def delete(self, food):
+        self.foods.remove(food)
+        self.deleted.append(food)
+
+
+class FakeFoodFavoriteRepository:
+    """Doble de `FoodFavoriteRepository` en memoria (spec 028): `favorites`
+    permite precargar (ver `make_favorite`); `created` y `deleted` quedan para
+    las aserciones."""
+
+    def __init__(self, favorites=None):
+        self.favorites = list(favorites or [])
+        self.created = []
+        self.deleted = []
+
+    def list_by_user(self, user_id):
+        return [f for f in self.favorites if str(f.user_id) == str(user_id)]
+
+    def get_for_food(self, user_id, catalog_id=None, custom_food_id=None):
+        for favorite in self.list_by_user(user_id):
+            if catalog_id is not None and favorite.catalog_id == catalog_id:
+                return favorite
+            if custom_food_id is not None and favorite.custom_food_id == custom_food_id:
+                return favorite
+        return None
+
+    def count_by_user(self, user_id):
+        return len(self.list_by_user(user_id))
+
+    def create(self, favorite):
+        self.favorites.append(favorite)
+        self.created.append(favorite)
+        return favorite
+
+    def delete(self, favorite):
+        self.favorites.remove(favorite)
+        self.deleted.append(favorite)

@@ -179,6 +179,12 @@ function mealBody(items: unknown[]) {
   }
 }
 
+// El esquema aún no declara `custom_food_id` hasta la implementación (T-123): se
+// lee con un tipo abierto para que el test compile y falle por comportamiento.
+function customFoodIdOf(data: { items: object[] } | undefined): unknown {
+  return (data?.items[0] as { custom_food_id?: unknown } | undefined)?.custom_food_id
+}
+
 describe("mealResponseSchema", () => {
   const catalogItem = {
     id: 33,
@@ -243,6 +249,39 @@ describe("mealResponseSchema", () => {
       totals: NUTRIENTS, incomplete: [] }
 
     expect(diaryResponseSchema.safeParse(body).success).toBe(true)
+  })
+
+  // SDD: 028 REQ-001 AC-001.9
+  it("un personalizado vinculado a un alimento propio conserva su `custom_food_id`", () => {
+    const custom = { ...catalogItem, id: 32, source: "custom", catalog_id: null, custom_food_id: 12 }
+
+    const result = mealResponseSchema.safeParse(mealBody([custom]))
+
+    expect(result.success).toBe(true)
+    expect(customFoodIdOf(result.data)).toBe(12)
+  })
+
+  // SDD: 028 REQ-001 AC-001.9
+  it("un alimento con `custom_food_id: null` lo conserva nulo", () => {
+    const result = mealResponseSchema.safeParse(mealBody([{ ...catalogItem, custom_food_id: null }]))
+
+    expect(result.success).toBe(true)
+    expect(customFoodIdOf(result.data)).toBeNull()
+  })
+
+  // SDD: 028 REQ-004 AC-004.1
+  it("un alimento sin el campo `custom_food_id` (respuesta anterior a la 028) queda con `custom_food_id: null`", () => {
+    const result = mealResponseSchema.safeParse(mealBody([catalogItem]))
+
+    expect(result.success).toBe(true)
+    expect(customFoodIdOf(result.data)).toBeNull()
+  })
+
+  // SDD: 028 REQ-001 AC-001.9
+  it("rechaza un `custom_food_id` que no es un número", () => {
+    const custom = { ...catalogItem, source: "custom", catalog_id: null, custom_food_id: "12" }
+
+    expect(mealResponseSchema.safeParse(mealBody([custom])).success).toBe(false)
   })
 })
 
@@ -383,6 +422,88 @@ describe("proposalFormSchema", () => {
     ])
 
     expect(Object.keys(issues)).toEqual(["2"])
+  })
+
+  // SDD: 028 REQ-019 AC-019.3
+  it("conserva la `key` de cada entrada al validar (si no, no se emparejarían los gramos)", () => {
+    const result = proposalFormSchema.safeParse({
+      entries: [
+        { ...RICE_ENTRY, key: "k1" },
+        { ...SAUCE_ENTRY, key: "k2" },
+        {
+          kind: "custom",
+          name: "Gallo pinto",
+          per100g: { calories_kcal: 160, protein_g: 5.5, carbs_g: 27, fat_g: 3.2 },
+          grams: "200",
+          key: "k3",
+        },
+      ],
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data?.entries.map((entry) => (entry as { key?: string }).key)).toEqual([
+      "k1",
+      "k2",
+      "k3",
+    ])
+  })
+
+  // SDD: 028 REQ-018 AC-018.4
+  it("conserva el `customFoodId` de un alimento propio al validar", () => {
+    const result = proposalFormSchema.safeParse({
+      entries: [
+        {
+          kind: "custom",
+          customFoodId: 12,
+          name: "Gallo pinto",
+          per100g: { calories_kcal: 180, protein_g: 6, carbs_g: 30, fat_g: 4 },
+          grams: "250",
+          key: "k1",
+        },
+      ],
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data?.entries[0]).toMatchObject({ kind: "custom", customFoodId: 12 })
+  })
+
+  // SDD: 028 REQ-018 AC-018.2
+  it("un personalizado creado en la propuesta, sin `customFoodId`, sigue siendo válido", () => {
+    const result = proposalFormSchema.safeParse({
+      entries: [
+        {
+          kind: "custom",
+          name: "Gallo pinto",
+          per100g: { calories_kcal: 180, protein_g: 6, carbs_g: 30, fat_g: 4 },
+          grams: "200",
+        },
+      ],
+    })
+
+    expect(result.success).toBe(true)
+    // Contraste (028): con `customFoodId` el esquema si lo conserva.
+    const linked = proposalFormSchema.safeParse({
+      entries: [
+        {
+          kind: "custom",
+          customFoodId: 12,
+          name: "Gallo pinto",
+          per100g: { calories_kcal: 180, protein_g: 6, carbs_g: 30, fat_g: 4 },
+          grams: "200",
+        },
+      ],
+    })
+    expect(linked.data?.entries[0]).toMatchObject({ customFoodId: 12 })
+  })
+
+  // SDD: 028 REQ-019 AC-019.1
+  it("valida los gramos de una entrada con clave igual que sin ella", () => {
+    expect(
+      proposalIssues([{ ...RICE_ENTRY, grams: "0", key: "k1" } as ProposalEntry])
+    ).toEqual({ 0: GRAMS_RANGE_MESSAGE })
+    // Y la entrada valida con clave conserva la clave (028).
+    const valid = proposalFormSchema.safeParse({ entries: [{ ...RICE_ENTRY, key: "k1" }] })
+    expect(valid.data?.entries[0]).toMatchObject({ key: "k1" })
   })
 })
 

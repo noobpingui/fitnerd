@@ -5,6 +5,7 @@ from sqlalchemy.orm import selectinload
 
 from models import Meal
 from repositories.base_repository import BaseRepository
+from services.food_library_rules import RecentFoodRow
 
 
 class MealRepository(BaseRepository):
@@ -29,6 +30,9 @@ class MealRepository(BaseRepository):
             Meal.meal_type == meal_type,
         )
         return self.session.scalars(stmt).first()
+
+    def list_recent_foods(self, _user_id, _limit: int) -> list[RecentFoodRow]:
+        raise NotImplementedError("not implemented")
 
     def get_by_id_and_user(self, meal_id: int, user_id) -> Meal | None:
         # Filtra por usuario en la misma consulta: una comida ajena es

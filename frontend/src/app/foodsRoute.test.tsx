@@ -24,6 +24,13 @@ vi.mock("@/features/catalog/api", () => ({
 vi.mock("@/features/foods/api", () => ({
   searchFoods: vi.fn(),
 }))
+vi.mock("@/features/food-library/api", () => ({
+  searchFoodLibrary: vi.fn(),
+  getRecentFoods: vi.fn(async () => []),
+  getFavoriteFoods: vi.fn(async () => []),
+  setFoodFavorite: vi.fn(),
+  deleteCustomFood: vi.fn(),
+}))
 vi.mock("@/features/profile/api", () => ({
   getProfile: vi.fn(),
   saveProfile: vi.fn(),
@@ -48,6 +55,17 @@ const routerSources = import.meta.glob("/src/app/router.tsx", {
   import: "default",
   eager: true,
 }) as Record<string, string>
+
+// Archivos de la pantalla «Alimentos» de la 021 que la 028 retira (REQ-020, Q7).
+// La búsqueda de USDA (`foods/api.ts`) y sus tipos, formato y esquemas se conservan.
+const retiredFoodsFiles = import.meta.glob([
+  "/src/features/foods/pages/FoodsPage.tsx",
+  "/src/features/foods/pages/FoodsPage.test.tsx",
+  "/src/features/foods/components/FoodResultList.tsx",
+  "/src/features/foods/components/FoodSearchForm.tsx",
+  "/src/features/foods/hooks.ts",
+  "/src/features/diary/components/ProposalSearchStep.tsx",
+])
 
 function renderRouter() {
   return render(
@@ -84,7 +102,9 @@ describe("AppRouter - ruta /foods", () => {
     window.history.pushState({}, "", "/")
   })
 
+  // SDD: 028 regression guard (comportamiento de la 023: /foods redirige a /diary; no puede fallar antes de implementar)
   // SDD: 023 REQ-011 AC-011.1
+  // SDD: 028 REQ-020 AC-020.1
   it("abrir /foods termina en /diary y muestra la pantalla «Diario», no «Alimentos»", async () => {
     window.history.pushState({}, "", "/foods")
 
@@ -117,5 +137,21 @@ describe("AppRouter - ruta /foods", () => {
     expect(source).toMatch(/path="\/foods"/)
     expect(source).not.toMatch(/FoodsPage/)
     expect(source).not.toMatch(/features\/foods\/pages/)
+  })
+
+  // SDD: 028 REQ-020 AC-020.1
+  it("el código de la pantalla «Alimentos» de la 021 ya no existe", () => {
+    expect(Object.keys(retiredFoodsFiles)).toEqual([])
+  })
+
+  // SDD: 028 regression guard (comportamiento de la 023: /foods redirige a /diary; no puede fallar antes de implementar)
+  // SDD: 028 REQ-020 AC-020.1
+  it("/foods sigue llevando a /diary también cuando se abre con parámetros", async () => {
+    window.history.pushState({}, "", "/foods?q=arroz")
+
+    renderRouter()
+
+    expect(await screen.findByRole("heading", { level: 1, name: "Diario" })).toBeInTheDocument()
+    expect(window.location.pathname).toBe("/diary")
   })
 })

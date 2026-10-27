@@ -8,6 +8,7 @@ import {
   formatLoggedGrams,
   formatNutrientGrams,
   formatPortionPreview,
+  gramsText,
   sourceLabel,
 } from "./format"
 
@@ -163,5 +164,25 @@ describe("sourceLabel", () => {
     expect(sourceLabel(makeMealItem({ data_type: "foundation" }))).toBe("Foundation")
     expect(sourceLabel(makeCustomItem())).toBe("Personalizado")
     expect(sourceLabel(makeCatalogItem())).toBeNull()
+  })
+})
+
+describe("gramsText", () => {
+  // SDD: 028 REQ-014 AC-014.5
+  it.each([
+    [150, "150"],
+    [100, "100"],
+    [12.5, "12,5"],
+    [0.5, "0,5"],
+    [2000, "2000"],
+    [1, "1"],
+  ])("escribe %d g como %j: sin decimales de más y con coma decimal", (value, expected) => {
+    expect(gramsText(value)).toBe(expected)
+  })
+
+  // SDD: 028 REQ-014 AC-014.5
+  it("no agrupa los miles ni deja un decimal vacío: 150 no es «150,0»", () => {
+    expect(gramsText(1500)).toBe("1500")
+    expect(gramsText(150)).not.toContain(",")
   })
 })

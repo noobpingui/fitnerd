@@ -10,7 +10,7 @@
   "branch": "feat/028-diary-food-library",
   "base_branch": "main",
   "created_at": "2026-10-27T08:34:57.517Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,7 +25,10 @@
       "at": "2026-10-27T09:08:28.163Z",
       "note": "auto (gate_mode=flow): 73 tareas, cobertura de 21 REQ y 3 NFR"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-27T16:59:34.273Z",
+      "note": "auto (gate_mode=flow): red check PASS, 382 backend y 178 frontend en rojo legítimo"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -34,17 +37,18 @@
   },
   "commits": {
     "spec": "4538f39",
-    "plan": "12aaa4c"
+    "plan": "12aaa4c",
+    "tasks": "e3203f3"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 3,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 4,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-27T16:59:05.870Z"
   },
   "verify": {
     "result": null,
@@ -54,7 +58,38 @@
     "verdict": null,
     "at": null
   },
-  "tests_snapshot": null,
+  "tests_snapshot": {
+    "at": "2026-10-27T16:59:34.111Z",
+    "reason": "tests 028 tras red check PASS",
+    "sha256": {
+      "backend/tests/fakes.py": "40f6eda0a3aa1bd7419a6d7e08923d051dfc488d35e07fb14319cc418927b06d",
+      "backend/tests/test_routes/test_catalog_routes.py": "739711485e5358ac672af02c4579364068b83533afdaa5788cb9dd7a93357fcc",
+      "backend/tests/test_routes/test_food_library_routes.py": "a917388ceec390529816b4fb42069a5ca25a9bcafbe31e8a3ab62ec33a774436",
+      "backend/tests/test_routes/test_meal_library_routes.py": "417e198c195efd4e77b48a5bea79e4a0d939a965f30020de661a3a411a7cc6a9",
+      "backend/tests/test_routes/test_meal_routes.py": "ce13e670449957ab06149942c45d9b3df3023ec9b885f1a6bc13ccf5d258f941",
+      "backend/tests/test_services/test_catalog_search_service.py": "6b263caafc3dd5f33c3f2cbfd261e7cff747a839c3577cbdcdc6777688adc0cc",
+      "backend/tests/test_services/test_food_library_migration.py": "b07629323782607e2714798490529ac6329feabc75ff3aa2ecb7074442ecc1d5",
+      "backend/tests/test_services/test_food_library_rules.py": "677cd843d7ad560cda54cf3bd2b8800dfdc2baee94c7456852fdf514a3e2d576",
+      "backend/tests/test_services/test_food_library_service.py": "e8ff7aea3182c4f166e38d9158b79c988f5c14b5e260fae71bb0b3210a86ead2",
+      "backend/tests/test_services/test_meal_rules.py": "994440bb830f7a0e869379981ed2d03f4ada737a91c29a0fe853764f8f270b5d",
+      "backend/tests/test_services/test_meal_service.py": "67c4a8303870786e05834d0c63b26f409239e38eee434f6e948cbca2e0161773",
+      "frontend/src/app/foodsRoute.test.tsx": "dd9dfdb960903773177685ed749a6e5157020dc02378896d3d846ebc96d4a285",
+      "frontend/src/app/mealPhotoRoute.test.tsx": "ed3254bb890504867f597eece19a9a238856e9d04ced311231d63135e868d0d9",
+      "frontend/src/features/diary/components/AddFoodDialog.test.tsx": "2bdc70c21dc072383aca7b25a9644615efbac3794f337c7fa1affd77686246db",
+      "frontend/src/features/diary/components/FoodSearchPanel.test.tsx": "192f2402d180360f887c9145af6bc2c869ba1c689ad635e9f3ee5e1c2da3335d",
+      "frontend/src/features/diary/components/MealPhotoDialog.test.tsx": "ef57484bf887e8fb23dee7d633f889f1fd89cf9f3c6e4cf17c93bd4f3f882ad4",
+      "frontend/src/features/diary/components/PhotoReview.source.test.ts": "fe3e55042dda09eb5dceff1a770ad44a8b7c0f60f32d7350f0b36d1f11333033",
+      "frontend/src/features/diary/errors.test.ts": "0e51a08c1ac6af2c40bad36f6e9572dd07b6292b21c0be380a1669ba61811fff",
+      "frontend/src/features/diary/format.test.ts": "67cacf1e87f50a936a2353fc56c1eda981a2bd48e0d789939d79343bc0793637",
+      "frontend/src/features/diary/pages/DiaryPage.test.tsx": "5b33e42d3075522b140129bcdf32f08ff43582565fcfcf1a008df469c7576e2d",
+      "frontend/src/features/diary/proposal.test.ts": "18ada87a5d0ec22e9cbf93fa4376d595c0d26f774ac225981ecdea4ed5cb70c9",
+      "frontend/src/features/diary/schemas.test.ts": "187e199e156cde6928e74dad32f250ea8b621ef9d7d18597ddf36e2d4753dccd",
+      "frontend/src/features/food-library/api.test.ts": "58a73f9ba79a94b855393352aff866525356e769fccf33efc9a1d33fd9d8adb1",
+      "frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx": "b3fe09d8cf2d50b998cb9ae727e7be286ae1a25c20ea5571ca4800753a68080a",
+      "frontend/src/lib/useDebouncedValue.test.ts": "b908c11b2d9696d5a2f42e61238d612c9a8e9421eaf78a7b4681f11174356381",
+      "frontend/src/test/foodLibraryFixtures.ts": "4ef8c1b3aadc7474defa071469691abf4e666edee02fa08fdb885b4b0fe4e64f"
+    }
+  },
   "bypass": false,
   "history": [
     {
@@ -140,6 +175,96 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): 73 tareas, cobertura de 21 REQ y 3 NFR"
+    },
+    {
+      "at": "2026-10-27T09:08:28.408Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: e3203f3"
+    },
+    {
+      "at": "2026-10-27T09:08:28.574Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "tests 028"
+    },
+    {
+      "at": "2026-10-27T09:08:28.672Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (implementer, modo scaffold)"
+    },
+    {
+      "at": "2026-10-27T09:12:54.369Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-27T16:06:53.519Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (verifier)"
+    },
+    {
+      "at": "2026-10-27T16:17:07.272Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: red: 40 tests nuevos pasan sin implementacion (18 backend, 22 frontend); el resto de rojos son legitimos (not implemented, 404 de rutas no registradas, campos ausentes, migracion pendiente)"
+    },
+    {
+      "at": "2026-10-27T16:17:27.868Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red check FAIL: 18 tests backend y 22 frontend pasan sin implementación · tests 1/4"
+    },
+    {
+      "at": "2026-10-27T16:33:19.218Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: red iteracion 2: backend 382 fallos nuevos (legitimos) y 2 guardas rechazadas (test_the_limits_and_messages_match_the_spec, test_the_service_has_no_embedding_client_or_rate_limiter); frontend 229 fallos legitimos y 2 guardas aceptadas (foodsRoute /foods a /diary)"
+    },
+    {
+      "at": "2026-10-27T16:33:46.269Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red check FAIL (2): 2 guardas de backend rechazadas por el verifier · tests 2/4"
+    },
+    {
+      "at": "2026-10-27T16:42:47.030Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: red iteracion 3: backend 382 fallos legitimos y 1 test nuevo que pasa sin implementacion (test_meal_rules item3 de test_parse_items_rejects_a_custom_food_id_together_with_another_source); guardas de backend retiradas; frontend 229 fallos legitimos y 2 guardas de foodsRoute aceptadas"
+    },
+    {
+      "at": "2026-10-27T16:43:00.530Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red check FAIL (3): item3 de test_parse_items_rejects_a_custom_food_id_together_with_another_source pasa sin implementación · tests 3/4"
+    },
+    {
+      "at": "2026-10-27T16:59:05.870Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red iteracion 4 (ultima): backend 382 fallos legitimos y 0 tests nuevos que pasen; frontend 178 de 179 tests nuevos fallan legitimamente y 1 pasa: guarda de regresion de foodsRoute aceptada por el usuario; item3 retirado; migracion pendiente (T-100) con FileNotFound legitimo"
+    },
+    {
+      "at": "2026-10-27T16:59:34.004Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS tras 3 correcciones: 382 backend y 178 frontend fallan por comportamiento ausente"
+    },
+    {
+      "at": "2026-10-27T16:59:34.111Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "26 archivo(s) de test: tests 028 tras red check PASS"
+    },
+    {
+      "at": "2026-10-27T16:59:34.273Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 382 backend y 178 frontend en rojo legítimo"
     }
   ]
 }

@@ -1,4 +1,5 @@
 import type { CatalogFood } from "@/features/catalog/types"
+import type { LibraryFood } from "@/features/food-library/types"
 import { formatPortionPreview } from "./format"
 import { portionNutrients } from "./nutrition"
 import { parseDecimalText } from "./schemas"
@@ -10,6 +11,7 @@ import type {
   NutrientTotals,
   Nutrients,
   ProposalEntry,
+  ProposalFormEntry,
   SavableItemPayload,
 } from "./types"
 
@@ -54,6 +56,21 @@ export function catalogEntry(food: CatalogFood, grams: string): ProposalEntry {
     grams,
     tag: "user",
   }
+}
+
+export function libraryEntry(_food: LibraryFood, _grams: string): ProposalEntry {
+  throw new Error("not implemented")
+}
+
+export function withEntryKey(_entry: ProposalEntry): ProposalFormEntry {
+  throw new Error("not implemented")
+}
+
+export function mergeProposalEntries(
+  _fields: ProposalFormEntry[],
+  _watched: readonly (Partial<ProposalFormEntry> | undefined)[] | undefined
+): ProposalFormEntry[] {
+  throw new Error("not implemented")
 }
 
 export function customEntry(payload: CustomItemPayload): ProposalEntry {

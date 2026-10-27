@@ -80,14 +80,32 @@ describe("PrivacyPolicyPage", () => {
     expect(entry?.textContent).toMatch(/coach/i)
   })
 
-  // SDD: 025 REQ-014 AC-014.3
-  // (sustituye al de la 023, que fijaba el 21 de octubre: la 025 actualiza la política)
-  it("la última actualización es la del 22 de octubre de 2026", () => {
+  // SDD: 028 REQ-021 AC-021.1
+  // (sustituye al de la 025, que fijaba el 22 de octubre: la 028 actualiza la política)
+  it("la última actualización es la del 27 de octubre de 2026 y ya no la del 22", () => {
     renderPage()
 
     const text = document.body.textContent ?? ""
-    expect(text).toContain("Última actualización: 22 de octubre de 2026")
+    expect(text).toContain("Última actualización: 27 de octubre de 2026")
+    expect(text).not.toContain("22 de octubre de 2026")
     expect(text).not.toContain("21 de octubre de 2026")
+  })
+
+  // SDD: 028 REQ-021 AC-021.1
+  it("el punto «Diario de comidas:» menciona los alimentos personalizados que guardas y tus favoritos", () => {
+    renderPage()
+    const section = sectionOf("Qué información recolectamos")
+
+    const entry = within(section)
+      .getAllByRole("listitem")
+      .find((item) => /Diario de comidas:/.test(item.textContent ?? ""))
+
+    expect(entry).toBeDefined()
+    const text = (entry?.textContent ?? "").replace(/\s+/g, " ")
+    expect(text).toMatch(/alimentos personalizados/i)
+    expect(text).toMatch(/favoritos/i)
+    // Lo anterior de la 022 se mantiene.
+    expect(text).toMatch(/cantidades/i)
   })
 
   // SDD: 025 REQ-014 AC-014.1

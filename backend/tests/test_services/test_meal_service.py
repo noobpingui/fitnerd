@@ -16,11 +16,13 @@ from services.meal_service import MealService
 from tests.fakes import (
     FakeCatalogFoodRepository,
     FakeClock,
+    FakeCustomFoodRepository,
     FakeFoodRepository,
     FakeLockingUserRepository,
     FakeMealRepository,
     FakeUnitOfWork,
     make_catalog_food,
+    make_custom_food,
     make_food,
 )
 from utils.restore_token import RestoreTokenSigner
@@ -1532,3 +1534,574 @@ def test_remove_item_without_a_signer_returns_none():
 
     assert env.service.remove_item(USER, 1, 31) is None
     assert [item.id for item in meal.items] == [32]
+
+
+# --------------------------------------------------------------------------
+# Spec 028: biblioteca de alimentos propios (ADR-0036)
+# --------------------------------------------------------------------------
+
+CUSTOM_LIMIT = "Ya tienes 500 alimentos propios. Borra alguno para crear otro."
+ITEM_SOURCE = "Cada alimento debe ser del catálogo, de USDA o personalizado."
+
+
+class LibraryEnv:
+    """El servicio con el repositorio de alimentos propios, el catálogo falso y
+    un firmante real inyectados por constructor."""
+
+    def __init__(self, customs=None, meals=None, with_repository=True, known_ids=None):
+        self.meals = FakeMealRepository(meals)
+        self.foods = FakeFoodRepository([CHICKEN, RICE])
+        self.users = FakeLockingUserRepository(known_ids)
+        self.uow = FakeUnitOfWork()
+        self.catalog = FakeCatalogFoodRepository([CATALOG_CHICKEN, CATALOG_BANANA])
+        self.customs = FakeCustomFoodRepository(customs)
+        self.service = MealService(
+            self.meals,
+            self.foods,
+            self.users,
+            self.uow,
+            FakeClock(NOW),
+            catalog_repository=self.catalog,
+            restore_signer=RestoreTokenSigner(SIGNING_KEY),
+            custom_food_repository=self.customs if with_repository else None,
+        )
+
+
+def custom_item(name="Gallo pinto", grams=200, calories=180, protein=6, carbs=30, fat=4):
+    return {
+        "name": name,
+        "grams": grams,
+        "per_100g": {
+            "calories_kcal": calories,
+            "protein_g": protein,
+            "carbs_g": carbs,
+            "fat_g": fat,
+        },
+    }
+
+
+def own_gallo(food_id=1, user_id=USER, name="Gallo pinto"):
+    return make_custom_food(
+        food_id, user_id, name, calories_kcal=180.0, protein_g=6.0, carbs_g=30.0, fat_g=4.0
+    )
+
+
+def values_of(food):
+    return (food.calories_kcal, food.protein_g, food.carbs_g, food.fat_g)
+
+
+# SDD: 028 REQ-001 AC-001.1
+def test_add_items_saves_a_new_custom_item_in_the_library_and_links_it():
+    """Un usuario sin alimentos propios registra «Gallo pinto»: la biblioteca
+    tiene uno con esos cuatro valores y el alimento de la comida lo enlaza."""
+    env = LibraryEnv()
+
+    item = add(env, [custom_item()]).meal.meal.items[0]
+
+    assert len(env.customs.created) == 1
+    (saved,) = env.customs.created
+    assert (saved.name, str(saved.user_id)) == ("Gallo pinto", USER)
+    assert values_of(saved) == (180, 6, 30, 4)
+    assert item.source == "custom"
+    assert item.custom_food_id == saved.id and isinstance(saved.id, int)
+    assert env.uow.committed is True
+
+
+# SDD: 028 REQ-001 AC-001.1
+def test_add_items_still_registers_the_custom_item_as_before():
+    """El alimento de la comida lleva el nombre, los valores y los nutrientes de siempre."""
+    env = LibraryEnv()
+
+    item = add(env, [custom_item(grams=250, calories=160, protein=5.5, carbs=27, fat=3.2)]).meal.meal.items[0]
+
+    assert item.name == "Gallo pinto"
+    assert item.per_100g_calories_kcal == 160
+    assert item.calories_kcal == Decimal("400.00")
+    assert item.protein_g == Decimal("13.75")
+    # Lo nuevo de la 028: ademas, queda guardado en la biblioteca y enlazado.
+    assert item.custom_food_id is not None
+    assert [food.name for food in env.customs.foods] == ["Gallo pinto"]
+
+
+# SDD: 028 REQ-001 AC-001.2
+def test_add_items_updates_the_existing_own_food_with_the_same_name():
+    """«  gallo PINTO » actualiza el alimento propio: nuevo nombre sin espacios
+    de los extremos y los cuatro valores nuevos; el mismo `custom_food_id`."""
+    env = LibraryEnv(customs=[own_gallo(1)])
+
+    item = add(
+        env, [custom_item(name="  gallo PINTO ", grams=150, calories=170, protein=7, carbs=28, fat=3)]
+    ).meal.meal.items[0]
+
+    assert env.customs.created == []
+    assert len(env.customs.foods) == 1
+    (saved,) = env.customs.foods
+    assert saved.id == 1 and saved.name == "gallo PINTO"
+    assert values_of(saved) == (170, 7, 28, 3)
+    assert item.custom_food_id == 1
+    assert item.name == "gallo PINTO"
+
+
+# SDD: 028 REQ-001 AC-001.4
+def test_add_items_matches_the_existing_own_food_ignoring_accents():
+    """«Pina colada» actualiza «Piña colada»."""
+    env = LibraryEnv(customs=[own_gallo(1, name="Piña colada")])
+
+    item = add(env, [custom_item(name="Pina colada")]).meal.meal.items[0]
+
+    assert env.customs.created == []
+    assert len(env.customs.foods) == 1
+    assert item.custom_food_id == 1
+
+
+# SDD: 028 REQ-001 AC-001.10
+def test_add_items_matches_the_existing_own_food_with_repeated_spaces():
+    """«Gallo    pinto» actualiza «Gallo pinto»."""
+    env = LibraryEnv(customs=[own_gallo(1)])
+
+    item = add(env, [custom_item(name="Gallo    pinto")]).meal.meal.items[0]
+
+    assert env.customs.created == []
+    assert item.custom_food_id == 1
+
+
+# SDD: 028 REQ-001 AC-001.5
+def test_add_items_keeps_the_library_of_each_user_apart():
+    """Si el usuario 2 ya tiene «Gallo pinto», el usuario 1 crea el suyo, con
+    otro identificador, y el del usuario 2 no cambia."""
+    theirs = own_gallo(1, user_id=OTHER)
+    env = LibraryEnv(customs=[theirs])
+
+    item = add(env, [custom_item(calories=111)], user_id=USER).meal.meal.items[0]
+
+    assert len(env.customs.created) == 1
+    assert env.customs.created[0] is not theirs
+    assert item.custom_food_id != 1
+    assert values_of(theirs) == (180.0, 6.0, 30.0, 4.0)
+
+
+# SDD: 028 REQ-001 AC-001.6
+def test_add_items_with_two_custom_items_of_the_same_name_keeps_the_values_of_the_last():
+    """Un solo alimento propio con los valores del último; los dos alimentos de
+    la comida llevan su `custom_food_id`."""
+    env = LibraryEnv()
+
+    items = add(
+        env, [custom_item(grams=100, calories=100), custom_item(grams=50, calories=222)]
+    ).meal.meal.items
+
+    assert len(env.customs.created) == 1
+    (saved,) = env.customs.created
+    assert saved.calories_kcal == 222
+    assert [item.custom_food_id for item in items] == [saved.id, saved.id]
+    assert [item.per_100g_calories_kcal for item in items] == [100, 222]
+
+
+# SDD: 028 REQ-001 AC-001.7
+def test_add_items_with_an_invalid_custom_item_does_not_touch_the_library():
+    """Macros que suman más de 100 g: 400 de la 022 y la biblioteca no cambia,
+    ni siquiera con otro personalizado válido en la petición."""
+    env = LibraryEnv(customs=[own_gallo(1)])
+
+    message = expect_error(
+        ValidationError,
+        add,
+        env,
+        [custom_item(name="Nuevo", calories=100), custom_item(protein=60, carbs=50, fat=10)],
+    )
+
+    assert "no pueden sumar más de 100 g" in message
+    assert env.customs.created == []
+    assert values_of(env.customs.foods[0]) == (180.0, 6.0, 30.0, 4.0)
+    assert env.meals.created == []
+
+
+# SDD: 028 REQ-001 AC-001.1
+def test_add_items_locks_the_user_row_before_touching_the_library():
+    """El bloqueo de la fila del usuario serializa las peticiones simultáneas (AC-001.8)."""
+    env = LibraryEnv()
+
+    add(env, [custom_item()])
+
+    assert env.users.for_update_calls == [USER]
+    # Y la biblioteca si se toca despues del bloqueo (028).
+    assert [food.name for food in env.customs.foods] == ["Gallo pinto"]
+
+
+# SDD: 028 REQ-001 AC-001.9
+def test_add_items_of_usda_and_catalog_foods_do_not_create_own_foods():
+    """Los alimentos de USDA y del catálogo no tocan la biblioteca y llevan `custom_food_id` nulo."""
+    env = LibraryEnv()
+
+    items = add(
+        env,
+        [
+            {"fdc_id": 171477, "grams": 100},
+            {"catalog_id": "banano", "grams": 100},
+            custom_item(name="Gallo pinto"),
+        ],
+    ).meal.meal.items
+
+    # Solo el personalizado crea un alimento propio; los otros dos no.
+    assert [food.name for food in env.customs.foods] == ["Gallo pinto"]
+    assert items[0].custom_food_id is None and items[1].custom_food_id is None
+    assert items[2].custom_food_id is not None
+
+
+# SDD: 028 REQ-001 AC-001.1
+def test_add_items_without_a_library_repository_registers_the_item_without_a_link():
+    """Sin repositorio de la biblioteca el servicio se comporta como en la 022."""
+    env = LibraryEnv(with_repository=False)
+
+    item = add(env, [custom_item()]).meal.meal.items[0]
+
+    assert item.source == "custom"
+    assert item.custom_food_id is None
+    assert env.customs.created == []
+    # Contraste: con el repositorio, la misma entrada si queda enlazada (028).
+    linked = LibraryEnv()
+    assert add(linked, [custom_item()]).meal.meal.items[0].custom_food_id is not None
+
+
+# SDD: 028 REQ-002 AC-002.1
+def test_add_items_with_500_own_foods_rejects_a_new_name_and_saves_nothing():
+    """Con 500 alimentos propios, un nombre nuevo da el 400 de la spec; ni la
+    comida ni la biblioteca cambian."""
+    customs = [own_gallo(n, name=f"Alimento {n}") for n in range(1, 501)]
+    env = LibraryEnv(customs=customs)
+
+    message = expect_error(ValidationError, add, env, [custom_item(name="Nombre nuevo")])
+
+    assert message == CUSTOM_LIMIT
+    assert env.customs.created == []
+    assert len(env.customs.foods) == 500
+    assert env.uow.committed is False
+    assert env.uow.rolled_back is True
+
+
+# SDD: 028 REQ-002 AC-002.2
+def test_add_items_with_500_own_foods_accepts_the_name_of_one_of_them_and_updates_it():
+    """Con 500 alimentos propios, el nombre de uno de ellos actualiza ese alimento."""
+    customs = [own_gallo(n, name=f"Alimento {n}") for n in range(1, 501)]
+    env = LibraryEnv(customs=customs)
+
+    item = add(env, [custom_item(name="alimento 7", calories=77)]).meal.meal.items[0]
+
+    assert env.customs.created == []
+    assert item.custom_food_id == 7
+    assert env.customs.foods[6].calories_kcal == 77
+
+
+# SDD: 028 REQ-002 AC-002.3
+def test_add_items_with_499_own_foods_rejects_two_new_names_and_saves_nothing():
+    """499 propios y dos nombres nuevos en una petición: 400 y no se guarda nada."""
+    customs = [own_gallo(n, name=f"Alimento {n}") for n in range(1, 500)]
+    env = LibraryEnv(customs=customs)
+
+    message = expect_error(
+        ValidationError, add, env, [custom_item(name="Nuevo A"), custom_item(name="Nuevo B")]
+    )
+
+    assert message == CUSTOM_LIMIT
+    assert env.customs.created == []
+    assert env.uow.committed is False
+    assert env.uow.rolled_back is True
+
+
+# SDD: 028 REQ-002 AC-002.3
+def test_add_items_with_499_own_foods_accepts_exactly_one_new_name():
+    """499 propios y un nombre nuevo: llega a 500 sin error."""
+    customs = [own_gallo(n, name=f"Alimento {n}") for n in range(1, 500)]
+    env = LibraryEnv(customs=customs)
+
+    add(env, [custom_item(name="Nuevo A")])
+
+    assert len(env.customs.created) == 1
+
+
+# SDD: 028 REQ-002 AC-002.1
+def test_the_limit_of_own_foods_counts_only_the_foods_of_the_user():
+    """Los 500 alimentos de otro usuario no impiden crear el primero."""
+    customs = [own_gallo(n, user_id=OTHER, name=f"Alimento {n}") for n in range(1, 501)]
+    env = LibraryEnv(customs=customs)
+
+    add(env, [custom_item(name="Nuevo")], user_id=USER)
+
+    assert len(env.customs.created) == 1
+
+
+# SDD: 028 REQ-003 AC-003.1
+def test_add_items_by_custom_food_id_copies_the_name_and_values_of_the_own_food():
+    """250 g de «Gallo pinto» (180/6/30/4): `source` custom, su nombre, su
+    `custom_food_id`, sin catálogo ni FDC y nutrientes 450 / 15 / 75 / 10."""
+    env = LibraryEnv(customs=[own_gallo(3)])
+
+    item = add(env, [{"custom_food_id": 3, "grams": 250}]).meal.meal.items[0]
+
+    assert (item.source, item.name, item.custom_food_id) == ("custom", "Gallo pinto", 3)
+    assert (item.catalog_id, item.fdc_id, item.data_type) == (None, None, None)
+    assert item.grams == Decimal("250.0")
+    assert (
+        item.per_100g_calories_kcal,
+        item.per_100g_protein_g,
+        item.per_100g_carbs_g,
+        item.per_100g_fat_g,
+    ) == (180.0, 6.0, 30.0, 4.0)
+    assert item.calories_kcal == Decimal("450.00")
+    assert item.protein_g == Decimal("15.00")
+    assert item.carbs_g == Decimal("75.00")
+    assert item.fat_g == Decimal("10.00")
+    assert env.customs.created == []
+
+
+# SDD: 028 REQ-003 AC-003.2
+@pytest.mark.parametrize("food_id", [99, 0, -1, 2_147_483_648, "3", "abc", 1.5])
+def test_add_items_with_an_unknown_or_invalid_custom_food_id_is_a_400_and_saves_nothing(food_id):
+    """Un `custom_food_id` que no existe o no es un entero válido: «No encontramos ese alimento.»."""
+    env = LibraryEnv(customs=[own_gallo(3)])
+
+    message = expect_error(ValidationError, add, env, [{"custom_food_id": food_id, "grams": 100}])
+
+    assert message == FOOD_NOT_FOUND
+    assert env.uow.committed is False
+    assert env.customs.created == []
+
+
+# SDD: 028 REQ-003 AC-003.2
+def test_add_items_with_the_custom_food_id_of_another_user_is_a_400_and_saves_nothing():
+    """El alimento propio de otro usuario no se puede añadir."""
+    env = LibraryEnv(customs=[own_gallo(3, user_id=OTHER)])
+
+    message = expect_error(ValidationError, add, env, [{"custom_food_id": 3, "grams": 100}])
+
+    assert message == FOOD_NOT_FOUND
+    assert env.uow.committed is False
+    assert env.uow.rolled_back is True
+
+
+# SDD: 028 REQ-003 AC-003.2
+def test_add_items_without_a_library_repository_cannot_add_by_custom_food_id():
+    """Sin repositorio de la biblioteca, un `custom_food_id` no se encuentra."""
+    env = LibraryEnv(with_repository=False)
+
+    message = expect_error(ValidationError, add, env, [{"custom_food_id": 3, "grams": 100}])
+
+    assert message == FOOD_NOT_FOUND
+
+
+# SDD: 028 REQ-003 AC-003.3
+@pytest.mark.parametrize(
+    "extra",
+    [{"name": "Gallo pinto"}, {"catalog_id": "banano"}, {"fdc_id": 171477}],
+)
+def test_add_items_with_a_custom_food_id_and_another_source_is_a_400(extra):
+    """`custom_food_id` junto con `name`, `catalog_id` o `fdc_id`: el 400 de origen."""
+    env = LibraryEnv(customs=[own_gallo(3)])
+
+    message = expect_error(
+        ValidationError, add, env, [{"custom_food_id": 3, "grams": 100, **extra}]
+    )
+
+    assert message == ITEM_SOURCE
+    assert env.meals.created == []
+
+
+# SDD: 028 REQ-003 AC-003.5
+@pytest.mark.parametrize("grams", [0, 2001, "100", None])
+def test_add_items_with_a_custom_food_id_and_invalid_grams_gives_the_grams_message(grams):
+    """Gramos no válidos con `custom_food_id`: el mismo 400 de gramos de la 022."""
+    env = LibraryEnv(customs=[own_gallo(3)])
+
+    message = expect_error(ValidationError, add, env, [{"custom_food_id": 3, "grams": grams}])
+
+    assert message == GRAMS_RANGE
+
+
+# SDD: 028 REQ-003 AC-003.4
+def test_a_registered_own_food_keeps_its_copied_values_when_the_library_changes():
+    """Tras actualizar el alimento propio, el registrado conserva los valores
+    copiados y al cambiar sus gramos se recalcula con ellos."""
+    env = LibraryEnv(customs=[own_gallo(3)])
+    meal = add(env, [{"custom_food_id": 3, "grams": 250}]).meal.meal
+    item = meal.items[0]
+    item.id = 99
+
+    add(env, [custom_item(name="Gallo pinto", calories=500, protein=1, carbs=1, fat=1)], meal_type="dinner")
+    summary = env.service.update_item_grams(USER, meal.id, 99, {"grams": 100})
+
+    assert env.customs.foods[0].calories_kcal == 500
+    assert item.per_100g_calories_kcal == 180.0
+    assert summary.meal.items[0].calories_kcal == Decimal("180.00")
+
+
+# SDD: 028 REQ-003 AC-003.1
+def test_add_items_copies_the_values_of_an_own_food_before_updating_the_library_in_the_same_request():
+    """Un `custom_food_id` y un personalizado del mismo nombre en una petición:
+    el primero copia los valores de antes; la biblioteca queda con los nuevos."""
+    env = LibraryEnv(customs=[own_gallo(1)])
+
+    items = add(
+        env,
+        [{"custom_food_id": 1, "grams": 100}, custom_item(grams=100, calories=170)],
+    ).meal.meal.items
+
+    assert [item.per_100g_calories_kcal for item in items] == [180.0, 170]
+    assert env.customs.foods[0].calories_kcal == 170
+
+
+# SDD: 028 REQ-003 AC-003.1
+def test_add_items_keeps_the_order_of_a_mix_of_the_four_origins():
+    """Catálogo, USDA, personalizado nuevo y alimento propio, en el orden de la
+    petición, y a USDA solo se le piden sus propios FDC ID."""
+    env = LibraryEnv(customs=[own_gallo(1, name="Avena casera")])
+
+    meal = add(
+        env,
+        [
+            {"catalog_id": "banano", "grams": 100},
+            {"fdc_id": 171477, "grams": 100},
+            custom_item(name="Nuevo"),
+            {"custom_food_id": 1, "grams": 100},
+        ],
+    ).meal.meal
+
+    assert [item.source for item in meal.items] == ["catalog", "usda", "custom", "custom"]
+    assert [item.name for item in meal.items] == [
+        "Banano",
+        CHICKEN.description,
+        "Nuevo",
+        "Avena casera",
+    ]
+    assert [item.position for item in meal.items] == [0, 1, 2, 3]
+    assert env.foods.get_calls == [[171477]]
+
+
+# SDD: 028 REQ-003 AC-003.1
+def test_add_items_by_custom_food_id_alone_does_not_ask_usda_for_anything():
+    """Solo un alimento propio por id: no se consulta la base de USDA."""
+    env = LibraryEnv(customs=[own_gallo(1)])
+
+    add(env, [{"custom_food_id": 1, "grams": 100}])
+
+    assert env.foods.get_calls == []
+
+
+def custom_meal_item(item_id, custom_food_id, position=0, **overrides):
+    """Alimento personalizado precargado, vinculado (o no) a un alimento propio."""
+    fields = dict(
+        source="custom",
+        fdc_id=None,
+        data_type=None,
+        name="Gallo pinto",
+        grams="250",
+        per_100g_calories_kcal=160.0,
+        per_100g_protein_g=5.5,
+        per_100g_carbs_g=27.0,
+        per_100g_fat_g=3.2,
+        custom_food_id=custom_food_id,
+    )
+    fields.update(overrides)
+    return make_item(item_id, position, **fields)
+
+
+def meal_with_custom(custom_food_id):
+    return make_meal(
+        meal_id=1,
+        meal_type="breakfast",
+        items=[custom_meal_item(31, custom_food_id), make_item(32, position=1)],
+    )
+
+
+# SDD: 028 REQ-012 AC-012.1
+def test_restore_item_keeps_the_link_when_the_own_food_is_still_in_the_library():
+    """Quitar y restaurar un alimento propio devuelve el mismo `custom_food_id`."""
+    meal = meal_with_custom(7)
+    env = LibraryEnv(customs=[own_gallo(7)], meals=[meal])
+    token = env.service.remove_item(USER, 1, 31)
+
+    restore(env, token)
+
+    restored = meal.items[0]
+    assert restored.custom_food_id == 7
+    assert (restored.source, restored.name) == ("custom", "Gallo pinto")
+
+
+# SDD: 028 REQ-012 AC-012.2
+def test_restore_item_drops_the_link_when_the_own_food_was_deleted_meanwhile():
+    """Si el alimento propio se borró, vuelve con su nombre, valores y nutrientes
+    y `custom_food_id` nulo."""
+    meal = meal_with_custom(7)
+    env = LibraryEnv(customs=[own_gallo(7)], meals=[meal])
+    token = env.service.remove_item(USER, 1, 31)
+    env.customs.foods.clear()
+
+    restore(env, token)
+
+    restored = meal.items[0]
+    assert restored.custom_food_id is None
+    assert (restored.source, restored.name) == ("custom", "Gallo pinto")
+    assert restored.per_100g_calories_kcal == 160.0
+    assert restored.calories_kcal == Decimal("400.00")
+
+
+# SDD: 028 REQ-012 AC-012.2
+def test_restore_item_does_not_link_to_an_own_food_of_another_user():
+    """Si el id ahora es de un alimento de otro usuario, no se vincula."""
+    meal = meal_with_custom(7)
+    env = LibraryEnv(customs=[own_gallo(7)], meals=[meal])
+    token = env.service.remove_item(USER, 1, 31)
+    env.customs.foods[0].user_id = OTHER
+
+    restore(env, token)
+
+    assert meal.items[0].custom_food_id is None
+
+
+# SDD: 028 REQ-012 AC-012.1
+def test_restore_item_without_a_library_repository_restores_without_a_link():
+    """Sin repositorio de la biblioteca, restaura sin vínculo y sin fallar."""
+    meal = meal_with_custom(7)
+    env = LibraryEnv(meals=[meal], with_repository=False)
+    token = env.service.remove_item(USER, 1, 31)
+
+    restore(env, token)
+
+    assert meal.items[0].custom_food_id is None
+    assert meal.items[0].name == "Gallo pinto"
+    # Contraste: con el repositorio, el mismo token conserva el vinculo (028).
+    linked_meal = meal_with_custom(7)
+    linked = LibraryEnv(customs=[own_gallo(7)], meals=[linked_meal])
+    restore(linked, linked.service.remove_item(USER, 1, 31))
+    assert linked_meal.items[0].custom_food_id == 7
+
+
+# SDD: 028 REQ-012 AC-012.1
+def test_remove_item_puts_the_link_in_the_token_only_for_a_linked_own_food():
+    """El token de un alimento propio vinculado lleva `cf`; el de uno de USDA o
+    uno personalizado sin vínculo, no."""
+    meal = make_meal(
+        meal_id=1,
+        items=[custom_meal_item(31, 7), custom_meal_item(32, None, position=1), make_item(33, position=2)],
+    )
+    env = LibraryEnv(customs=[own_gallo(7)], meals=[meal])
+    signer = RestoreTokenSigner(SIGNING_KEY)
+
+    linked = signer.verify(USER, env.service.remove_item(USER, 1, 31))
+    unlinked = signer.verify(USER, env.service.remove_item(USER, 1, 32))
+    usda = signer.verify(USER, env.service.remove_item(USER, 1, 33))
+
+    assert linked["cf"] == 7
+    assert "cf" not in unlinked
+    assert "cf" not in usda
+
+
+# SDD: 028 REQ-012 AC-012.1
+def test_restore_item_of_an_unlinked_custom_item_stays_unlinked():
+    """Un personalizado sin vínculo (de antes de la 028) vuelve sin vínculo."""
+    meal = meal_with_custom(None)
+    env = LibraryEnv(customs=[own_gallo(7)], meals=[meal])
+    token = env.service.remove_item(USER, 1, 31)
+
+    restore(env, token)
+
+    assert meal.items[0].custom_food_id is None

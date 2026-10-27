@@ -30,6 +30,13 @@ vi.mock("@/features/diary/api", () => ({
 vi.mock("@/features/foods/api", () => ({
   searchFoods: vi.fn(),
 }))
+vi.mock("@/features/food-library/api", () => ({
+  searchFoodLibrary: vi.fn(),
+  getRecentFoods: vi.fn(async () => []),
+  getFavoriteFoods: vi.fn(async () => []),
+  setFoodFavorite: vi.fn(),
+  deleteCustomFood: vi.fn(),
+}))
 vi.mock("@/features/profile/api", () => ({
   getProfile: vi.fn(),
   saveProfile: vi.fn(),

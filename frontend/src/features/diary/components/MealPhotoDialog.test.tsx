@@ -8,10 +8,20 @@ import userEvent from "@testing-library/user-event"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ApiError } from "@/lib/apiClient"
 import { addMealItems, analyzeMealPhoto, getDiary } from "@/features/diary/api"
+import {
+  getFavoriteFoods,
+  getRecentFoods,
+  searchFoodLibrary,
+} from "@/features/food-library/api"
 import { searchCatalog } from "@/features/catalog/api"
 import { CHICKEN, RICE, TOMATO_SAUCE, makeAnalysis } from "@/test/analysisFixtures"
-import { makeCatalogFood } from "@/test/catalogFixtures"
 import { makeMeal } from "@/test/diaryFixtures"
+import {
+  makeBananaFood,
+  makeCustomLibraryFood,
+  makeLibraryFood,
+  makeRecentFood,
+} from "@/test/foodLibraryFixtures"
 import { FakePhotoProcessor, makePhotoFile } from "@/test/photoFixtures"
 import { useDiary } from "../hooks"
 import type { Meal, MealPhotoAnalysis } from "../types"
@@ -26,6 +36,13 @@ vi.mock("@/features/diary/api", () => ({
   restoreMealItem: vi.fn(),
   deleteMeal: vi.fn(),
 }))
+vi.mock("@/features/food-library/api", () => ({
+  searchFoodLibrary: vi.fn(),
+  getRecentFoods: vi.fn(),
+  getFavoriteFoods: vi.fn(),
+  setFoodFavorite: vi.fn(),
+  deleteCustomFood: vi.fn(),
+}))
 vi.mock("@/features/catalog/api", () => ({
   searchCatalog: vi.fn(),
 }))
@@ -33,7 +50,10 @@ vi.mock("@/features/catalog/api", () => ({
 const addMock = vi.mocked(addMealItems)
 const analyzeMock = vi.mocked(analyzeMealPhoto)
 const getDiaryMock = vi.mocked(getDiary)
-const searchMock = vi.mocked(searchCatalog)
+const searchMock = vi.mocked(searchFoodLibrary)
+const recentMock = vi.mocked(getRecentFoods)
+const favoritesMock = vi.mocked(getFavoriteFoods)
+const catalogSearchMock = vi.mocked(searchCatalog)
 
 const MB = 1024 * 1024
 const RICE_PREVIEW = "195 kcal · 4,0 g proteína · 42,3 g carbohidratos · 0,4 g grasa"
@@ -50,17 +70,19 @@ const UNMATCHED_NOTICE =
 const NO_SAVABLE_NOTICE = "Añade al menos un alimento para guardar."
 const SEARCH_HELP = "Busca un alimento para ver sus calorías y macros por 100 g."
 
-const AGUACATE = makeCatalogFood({
+const AGUACATE = makeLibraryFood({
   id: "aguacate",
   name: "Aguacate",
   per_100g: { calories_kcal: 160, protein_g: 2, carbs_g: 8.5, fat_g: 14.7 },
 })
-const TOMATE = makeCatalogFood({
+const TOMATE = makeLibraryFood({
   id: "tomate",
   name: "Tomate",
   per_100g: { calories_kcal: 18, protein_g: 0.88, carbs_g: 3.89, fat_g: 0.2 },
 })
-const PECHUGA = makeCatalogFood()
+const PECHUGA = makeLibraryFood()
+const BANANO = makeBananaFood()
+const GALLO_PROPIO = makeCustomLibraryFood()
 
 const RICE_CHICKEN_SAUCE = makeAnalysis({ items: [RICE, CHICKEN], unmatched: [TOMATO_SAUCE] })
 const GALLO_UNMATCHED = { name: "Gallo pinto", grams: 200, confidence: "medium" as const }
@@ -177,9 +199,12 @@ async function setGrams(user: User, name: string, text: string) {
   if (text) await user.type(field, text)
 }
 
+// Busca con Intro: la búsqueda es inmediata y no depende del retardo de 300 ms.
 async function search(user: User, text: string) {
-  await user.type(within(dialog()).getByRole("searchbox", { name: "Buscar alimento" }), text)
-  await user.click(button("Buscar"))
+  await user.type(
+    within(dialog()).getByRole("searchbox", { name: "Buscar alimento" }),
+    `${text}{Enter}`
+  )
 }
 
 async function chooseFood(user: User, name: string) {
@@ -219,7 +244,13 @@ function resetMocks() {
   analyzeMock.mockReset()
   getDiaryMock.mockReset()
   searchMock.mockReset()
-  searchMock.mockResolvedValue({ results: [] })
+  recentMock.mockReset()
+  favoritesMock.mockReset()
+  catalogSearchMock.mockReset()
+  searchMock.mockResolvedValue([])
+  recentMock.mockResolvedValue([])
+  favoritesMock.mockResolvedValue([])
+  catalogSearchMock.mockResolvedValue({ results: [] })
   addMock.mockResolvedValue(makeMeal({ meal_type: "lunch" }) as Meal)
   getDiaryMock.mockResolvedValue({
     date: "2026-10-22",
@@ -865,33 +896,78 @@ describe("MealPhotoDialog - añadir y resolver alimentos", () => {
   beforeEach(resetMocks)
 
   // SDD: 025 REQ-009 AC-009.1
-  it("«Añadir otro alimento» muestra la búsqueda del catálogo con su ayuda y «Volver a la propuesta»", async () => {
+  // SDD: 028 REQ-013 AC-013.9
+  it("«Añadir otro alimento» muestra la búsqueda compartida con su ayuda, sin botón «Buscar» y con «Volver a la propuesta»", async () => {
     const user = userEvent.setup()
     renderDialog()
     await reachProposal(user, makeAnalysis({ items: [RICE] }))
 
     await user.click(button("Añadir otro alimento"))
 
-    expect(within(dialog()).getByRole("searchbox", { name: "Buscar alimento" })).toBeInTheDocument()
-    expect(button("Buscar")).toBeInTheDocument()
-    expect(within(dialog()).getByText(SEARCH_HELP)).toBeInTheDocument()
+    const box = within(dialog()).getByRole("searchbox", { name: "Buscar alimento" })
+    expect(box).toHaveAttribute("placeholder", "Ej.: arroz blanco cocido, banano")
+    expect(within(dialog()).queryByRole("button", { name: "Buscar" })).not.toBeInTheDocument()
+    expect(await within(dialog()).findByText(SEARCH_HELP)).toBeInTheDocument()
     expect(button("Volver a la propuesta")).toBeInTheDocument()
     expect(searchMock).not.toHaveBeenCalled()
   })
 
   // SDD: 025 REQ-009 AC-009.1
+  // SDD: 028 REQ-013 AC-013.9
   it("la búsqueda desde la propuesta valida igual que «Añadir a {sección}»", async () => {
     const user = userEvent.setup()
     renderDialog()
     await reachProposal(user, makeAnalysis({ items: [RICE] }))
     await user.click(button("Añadir otro alimento"))
 
-    await user.click(button("Buscar"))
+    await user.type(within(dialog()).getByRole("searchbox", { name: "Buscar alimento" }), "{Enter}")
 
     expect(
       await within(dialog()).findByText("Escribe qué alimento quieres buscar.")
     ).toBeInTheDocument()
     expect(searchMock).not.toHaveBeenCalled()
+    // Y una busqueda valida despues va a la biblioteca compartida (028).
+    searchMock.mockResolvedValue([AGUACATE])
+    await user.type(within(dialog()).getByRole("searchbox", { name: "Buscar alimento" }), "aguacate{Enter}")
+    expect(await within(dialog()).findByRole("button", { name: "Elegir Aguacate" })).toBeInTheDocument()
+    expect(searchMock).toHaveBeenCalledWith("aguacate")
+  })
+
+  // SDD: 028 REQ-013 AC-013.9
+  it("busca sola, 300 ms después de escribir, y usa la biblioteca y no el catálogo de la 023", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+    searchMock.mockResolvedValue([AGUACATE])
+
+    await user.type(within(dialog()).getByRole("searchbox", { name: "Buscar alimento" }), "aguacate")
+
+    expect(await within(dialog()).findByRole("button", { name: "Elegir Aguacate" })).toBeInTheDocument()
+    expect(searchMock).toHaveBeenCalledTimes(1)
+    expect(searchMock).toHaveBeenCalledWith("aguacate")
+    expect(catalogSearchMock).not.toHaveBeenCalled()
+  })
+
+  // SDD: 028 REQ-013 AC-013.9
+  it("los estados de la búsqueda son los mismos que en «Añadir a {sección}»: buscando, sin resultados y error con «Reintentar»", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+    const box = within(dialog()).getByRole("searchbox", { name: "Buscar alimento" })
+
+    await user.type(box, "gallo pinto{Enter}")
+    expect(
+      await within(dialog()).findByText("No encontramos alimentos para «gallo pinto».")
+    ).toBeInTheDocument()
+    expect(button("Crear alimento personalizado")).toBeInTheDocument()
+
+    searchMock.mockRejectedValue(new ApiError(500, "boom"))
+    await user.clear(box)
+    await user.type(box, "pollo{Enter}")
+    expect(await within(dialog()).findByText("No se pudo completar la búsqueda.")).toBeInTheDocument()
+    expect(button("Reintentar")).toBeInTheDocument()
   })
 
   // SDD: 025 REQ-009 AC-009.2
@@ -900,7 +976,7 @@ describe("MealPhotoDialog - añadir y resolver alimentos", () => {
     renderDialog()
     await reachProposal(user, makeAnalysis({ items: [RICE] }))
     await user.click(button("Añadir otro alimento"))
-    searchMock.mockResolvedValue({ results: [AGUACATE] })
+    searchMock.mockResolvedValue([AGUACATE])
 
     await search(user, "aguacate")
     await chooseFood(user, "Aguacate")
@@ -943,7 +1019,7 @@ describe("MealPhotoDialog - añadir y resolver alimentos", () => {
     renderDialog()
     await reachProposal(user, makeAnalysis({ items: [RICE, CHICKEN] }))
     await user.click(button("Añadir otro alimento"))
-    searchMock.mockResolvedValue({ results: [PECHUGA] })
+    searchMock.mockResolvedValue([PECHUGA])
 
     await search(user, "pollo")
     await chooseFood(user, "Pechuga de pollo a la plancha")
@@ -958,7 +1034,7 @@ describe("MealPhotoDialog - añadir y resolver alimentos", () => {
     renderDialog()
     await reachProposal(user, makeAnalysis({ items: [RICE, CHICKEN] }))
     await user.click(button("Añadir otro alimento"))
-    searchMock.mockResolvedValue({ results: [PECHUGA] })
+    searchMock.mockResolvedValue([PECHUGA])
     await search(user, "pollo")
     await chooseFood(user, "Pechuga de pollo a la plancha")
 
@@ -980,7 +1056,7 @@ describe("MealPhotoDialog - añadir y resolver alimentos", () => {
       user,
       makeAnalysis({ items: [RICE, CHICKEN], unmatched: [TOMATO_SAUCE] })
     )
-    searchMock.mockResolvedValue({ results: [TOMATE] })
+    searchMock.mockResolvedValue([TOMATE])
 
     await user.click(button("Buscar Salsa de tomate en el catálogo"))
 
@@ -1013,7 +1089,7 @@ describe("MealPhotoDialog - añadir y resolver alimentos", () => {
         unmatched: [TOMATO_SAUCE, GALLO_UNMATCHED],
       })
     )
-    searchMock.mockResolvedValue({ results: [TOMATE] })
+    searchMock.mockResolvedValue([TOMATE])
 
     await user.click(button("Buscar Salsa de tomate en el catálogo"))
     await chooseFood(user, "Tomate")
@@ -1030,7 +1106,7 @@ describe("MealPhotoDialog - añadir y resolver alimentos", () => {
     const user = userEvent.setup()
     renderDialog()
     await reachProposal(user, makeAnalysis({ items: [RICE], unmatched: [TOMATO_SAUCE] }))
-    searchMock.mockResolvedValue({ results: [TOMATE] })
+    searchMock.mockResolvedValue([TOMATE])
 
     await user.click(button("Buscar Salsa de tomate en el catálogo"))
     await chooseFood(user, "Tomate")
@@ -1134,6 +1210,484 @@ describe("MealPhotoDialog - añadir y resolver alimentos", () => {
     expect(items).toHaveLength(2)
     expect(items[1]).toHaveTextContent("Gallo pinto")
     expect(items[1]).toHaveTextContent("Sin coincidencia en el catálogo")
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Spec 028 · REQ-018: alimentos propios, recientes y favoritos en la propuesta
+// ---------------------------------------------------------------------------
+
+const BANANO_100_PREVIEW = "89 kcal · 1,1 g proteína · 22,8 g carbohidratos · 0,3 g grasa"
+const BANANO_200_PREVIEW = "178 kcal · 2,2 g proteína · 45,7 g carbohidratos · 0,7 g grasa"
+const TOMATE_150_PREVIEW = "27 kcal · 1,3 g proteína · 5,8 g carbohidratos · 0,3 g grasa"
+const TOMATE_200_PREVIEW = "36 kcal · 1,8 g proteína · 7,8 g carbohidratos · 0,4 g grasa"
+const SAUCE_150 = { name: "Salsa de tomate", grams: 150, confidence: "low" as const }
+
+// Rellena el formulario personalizado completo (nombre, gramos y los cuatro valores).
+async function fillCustomAll(
+  user: User,
+  values: Partial<Record<"name" | "grams" | "calories" | "protein" | "carbs" | "fat", string>> = {}
+) {
+  const all = {
+    name: "Gallo pinto",
+    grams: "200",
+    calories: "160",
+    protein: "5,5",
+    carbs: "27",
+    fat: "3,2",
+    ...values,
+  }
+  const labels = {
+    name: "Nombre",
+    grams: "Gramos",
+    calories: "Calorías por 100 g (kcal)",
+    protein: "Proteína por 100 g (g)",
+    carbs: "Carbohidratos por 100 g (g)",
+    fat: "Grasa por 100 g (g)",
+  } as const
+  for (const key of Object.keys(labels) as (keyof typeof labels)[]) {
+    const field = within(dialog()).getByLabelText(labels[key])
+    await user.clear(field)
+    if (all[key]) await user.type(field, all[key])
+  }
+}
+
+describe("MealPhotoDialog - biblioteca de alimentos en la propuesta", () => {
+  beforeEach(resetMocks)
+
+  // SDD: 028 REQ-018 AC-018.1
+  it("«Añadir otro alimento» muestra la búsqueda con «Favoritos» y «Recientes» y el botón «Crear alimento personalizado»", async () => {
+    const user = userEvent.setup()
+    favoritesMock.mockResolvedValue([{ ...TOMATE, favorite: true }])
+    recentMock.mockResolvedValue([makeRecentFood(BANANO, 150)])
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+
+    await user.click(button("Añadir otro alimento"))
+
+    const favorites = await within(dialog()).findByRole("list", { name: "Favoritos" })
+    const recents = await within(dialog()).findByRole("list", { name: "Recientes" })
+    expect(within(favorites).getByText("Tomate")).toBeInTheDocument()
+    expect(within(recents).getByText("Banano")).toBeInTheDocument()
+    expect(button("Crear alimento personalizado")).toBeInTheDocument()
+    expect(button("Volver a la propuesta")).toBeInTheDocument()
+  })
+
+  // SDD: 028 REQ-018 AC-018.2
+  it("«Crear alimento personalizado» desde «Añadir otro alimento» abre el formulario con «Añadir a la propuesta» y deja «Gallo pinto» al final con 200 g y «Personalizado»", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+
+    await user.click(button("Crear alimento personalizado"))
+    expect(within(dialog()).getByLabelText("Nombre")).toHaveValue("")
+    expect(button("Añadir a la propuesta")).toBeInTheDocument()
+    await fillCustomAll(user)
+    await user.click(button("Añadir a la propuesta"))
+
+    const items = rows()
+    expect(items).toHaveLength(2)
+    expect(items[1]).toHaveTextContent("Gallo pinto")
+    expect(items[1]).toHaveTextContent("Personalizado")
+    expect(gramsField("Gallo pinto")).toHaveValue("200")
+    expect(within(items[1]).getByText(GALLO_PREVIEW)).toBeInTheDocument()
+    expect(addMock).not.toHaveBeenCalled()
+  })
+
+  // SDD: 028 REQ-018 AC-018.2
+  it("desde una búsqueda sin resultados, «Crear alimento personalizado» abre el formulario con el nombre buscado", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+    await search(user, "gallo pinto")
+    await within(dialog()).findByText("No encontramos alimentos para «gallo pinto».")
+
+    await user.click(button("Crear alimento personalizado"))
+
+    expect(within(dialog()).getByLabelText("Nombre")).toHaveValue("gallo pinto")
+    expect(within(dialog()).getByLabelText("Gramos")).toHaveValue("")
+    expect(within(dialog()).getByText(
+      "Se guardará en tus alimentos para usarlo otro día. Si ya tienes uno con el mismo nombre, se actualizarán sus valores."
+    )).toBeInTheDocument()
+  })
+
+  // SDD: 028 REQ-018 AC-018.2
+  it("«Volver a la propuesta» desde el formulario personalizado de «Añadir otro alimento» deja la propuesta igual", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+    await user.click(button("Crear alimento personalizado"))
+
+    await user.click(button("Volver a la propuesta"))
+
+    expect(rows()).toHaveLength(1)
+  })
+
+  // SDD: 028 REQ-018 AC-018.3
+  it("«Buscar» en un alimento sin coincidencia y elegir el propio «Gallo pinto» lo resuelve en su sitio con 180 g y «Personalizado»", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(
+      user,
+      makeAnalysis({
+        items: [RICE],
+        unmatched: [{ name: "Gallo pinto", grams: 180, confidence: "medium" }],
+      })
+    )
+    searchMock.mockResolvedValue([GALLO_PROPIO])
+
+    await user.click(button("Buscar Gallo pinto en el catálogo"))
+    expect(within(dialog()).getByRole("searchbox", { name: "Buscar alimento" })).toHaveValue(
+      "Gallo pinto"
+    )
+    await chooseFood(user, "Gallo pinto")
+
+    const items = rows()
+    expect(items).toHaveLength(2)
+    expect(items[1]).toHaveTextContent("Gallo pinto")
+    expect(items[1]).toHaveTextContent("Personalizado")
+    expect(items[1]).not.toHaveTextContent("Sin coincidencia en el catálogo")
+    expect(gramsField("Gallo pinto")).toHaveValue("180")
+  })
+
+  // SDD: 028 REQ-018 AC-018.4
+  it("«Guardar» envía una sola petición: el propio elegido (250 g) con custom_food_id y el personalizado creado con name y per_100g", async () => {
+    const user = userEvent.setup()
+    const { onClose } = renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+    searchMock.mockResolvedValue([GALLO_PROPIO])
+    await search(user, "gallo")
+    await chooseFood(user, "Gallo pinto")
+    await setGrams(user, "Gallo pinto", "250")
+    await user.click(button("Añadir otro alimento"))
+    await user.click(button("Crear alimento personalizado"))
+    await fillCustomAll(user, { name: "Avena casera", grams: "100", calories: "70", protein: "2,5", carbs: "12", fat: "1,5" })
+    await user.click(button("Añadir a la propuesta"))
+
+    await save(user)
+
+    await waitFor(() => expect(addMock).toHaveBeenCalledTimes(1))
+    expect(addMock).toHaveBeenCalledWith({
+      date: "2026-10-22",
+      meal_type: "lunch",
+      items: [
+        { catalog_id: "arroz-blanco-cocido", grams: 150 },
+        { custom_food_id: 12, grams: 250 },
+        {
+          name: "Avena casera",
+          grams: 100,
+          per_100g: { calories_kcal: 70, protein_g: 2.5, carbs_g: 12, fat_g: 1.5 },
+        },
+      ],
+    })
+    await waitFor(() => expect(onClose).toHaveBeenCalled())
+  })
+
+  // SDD: 028 REQ-018 AC-018.4
+  it("un propio elegido no lleva nombre ni valores en la petición, y uno resuelto desde «Buscar» tampoco", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(
+      user,
+      makeAnalysis({ items: [], unmatched: [{ name: "Gallo pinto", grams: 180, confidence: "medium" }] })
+    )
+    searchMock.mockResolvedValue([GALLO_PROPIO])
+    await user.click(button("Buscar Gallo pinto en el catálogo"))
+    await chooseFood(user, "Gallo pinto")
+
+    await save(user)
+
+    await waitFor(() => expect(addMock).toHaveBeenCalledTimes(1))
+    expect(addMock.mock.calls[0][0].items).toEqual([{ custom_food_id: 12, grams: 180 }])
+  })
+
+  // SDD: 028 REQ-018 AC-018.5
+  it("elegir «Banano» en «Recientes» lo mete en la propuesta con sus gramos del último registro", async () => {
+    const user = userEvent.setup()
+    recentMock.mockResolvedValue([makeRecentFood(BANANO, 150)])
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+    const recents = await within(dialog()).findByRole("list", { name: "Recientes" })
+
+    await user.click(within(recents).getByRole("button", { name: "Elegir Banano" }))
+
+    const items = rows()
+    expect(items).toHaveLength(2)
+    expect(items[1]).toHaveTextContent("Banano")
+    expect(items[1]).toHaveTextContent("Añadido por ti")
+    expect(gramsField("Banano")).toHaveValue("150")
+  })
+
+  // SDD: 028 REQ-018 AC-018.5
+  it("elegir un alimento de «Favoritos» lo mete en la propuesta con 100 g", async () => {
+    const user = userEvent.setup()
+    favoritesMock.mockResolvedValue([{ ...BANANO, favorite: true }])
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+    const favorites = await within(dialog()).findByRole("list", { name: "Favoritos" })
+
+    await user.click(within(favorites).getByRole("button", { name: "Elegir Banano" }))
+
+    expect(gramsField("Banano")).toHaveValue("100")
+  })
+
+  // SDD: 028 REQ-018 AC-018.5
+  it("un alimento propio elegido entra al final con la etiqueta «Personalizado» y 100 g", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+    searchMock.mockResolvedValue([GALLO_PROPIO])
+    await search(user, "gallo")
+
+    await chooseFood(user, "Gallo pinto")
+
+    const items = rows()
+    expect(items[1]).toHaveTextContent("Gallo pinto")
+    expect(items[1]).toHaveTextContent("Personalizado")
+    expect(gramsField("Gallo pinto")).toHaveValue("100")
+  })
+
+  // SDD: 028 REQ-018 AC-018.6
+  it("en un alimento sin coincidencia sin resultados, «Crear alimento personalizado» abre el formulario con su nombre y sus gramos", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE], unmatched: [TOMATO_SAUCE] }))
+    await user.click(button("Buscar Salsa de tomate en el catálogo"))
+    await within(dialog()).findByText("No encontramos alimentos para «Salsa de tomate».")
+
+    await user.click(button("Crear alimento personalizado"))
+
+    expect(within(dialog()).getByLabelText("Nombre")).toHaveValue("Salsa de tomate")
+    expect(within(dialog()).getByLabelText("Gramos")).toHaveValue("30")
+  })
+
+  // SDD: 028 REQ-018 AC-018.6
+  it("el personalizado creado desde la búsqueda de un sin coincidencia lo sustituye en su posición", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(
+      user,
+      makeAnalysis({ items: [RICE], unmatched: [TOMATO_SAUCE, GALLO_UNMATCHED] })
+    )
+    await user.click(button("Buscar Salsa de tomate en el catálogo"))
+    await within(dialog()).findByText("No encontramos alimentos para «Salsa de tomate».")
+    await user.click(button("Crear alimento personalizado"))
+    await fillCustom(user)
+
+    await user.click(button("Añadir a la propuesta"))
+
+    const items = rows()
+    expect(items).toHaveLength(3)
+    expect(items[1]).toHaveTextContent("Salsa de tomate")
+    expect(items[1]).toHaveTextContent("Personalizado")
+    expect(items[2]).toHaveTextContent("Gallo pinto")
+    expect(items[2]).toHaveTextContent("Sin coincidencia en el catálogo")
+    expect(gramsField("Salsa de tomate")).toHaveValue("30")
+  })
+
+  // SDD: 028 REQ-018 AC-018.1
+  it("«Cancelar» de la confirmación de borrar un alimento propio no cierra la propuesta ni pide descartarla", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+    searchMock.mockResolvedValue([GALLO_PROPIO])
+    await search(user, "gallo")
+    await user.click(
+      await within(dialog()).findByRole("button", { name: "Borrar Gallo pinto de tus alimentos" })
+    )
+    const confirmation = await screen.findByRole("alertdialog", {
+      name: "¿Borrar «Gallo pinto» de tus alimentos?",
+    })
+
+    await user.click(within(confirmation).getByRole("button", { name: "Cancelar" }))
+
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument())
+    expect(dialog()).toBeInTheDocument()
+    expect(within(dialog()).getByRole("searchbox", { name: "Buscar alimento" })).toBeInTheDocument()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Spec 028 · REQ-019: totales de la propuesta siempre al día
+// ---------------------------------------------------------------------------
+
+describe("MealPhotoDialog - totales siempre al día", () => {
+  beforeEach(resetMocks)
+
+  // SDD: 028 REQ-019 AC-019.1
+  it("cambiar los gramos de «Banano» de 100 a 200 deja 178 kcal en su fila y en el total sin otra acción", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Quitar Arroz blanco cocido"))
+    await user.click(button("Añadir otro alimento"))
+    searchMock.mockResolvedValue([BANANO])
+    await search(user, "banano")
+    await chooseFood(user, "Banano")
+    expect(within(dialog()).getByText(BANANO_100_PREVIEW)).toBeInTheDocument()
+
+    await setGrams(user, "Banano", "200")
+
+    expect(within(rows()[0]).getByText(BANANO_200_PREVIEW)).toBeInTheDocument()
+    expect(within(dialog()).getByText(`Total: ${BANANO_200_PREVIEW}`)).toBeInTheDocument()
+  })
+
+  // SDD: 028 REQ-019 AC-019.2
+  it("resolver un sin coincidencia de 150 g con un alimento del catálogo muestra en su fila los nutrientes de 150 g y el total los incluye", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [], unmatched: [SAUCE_150] }))
+    searchMock.mockResolvedValue([TOMATE])
+
+    await user.click(button("Buscar Salsa de tomate en el catálogo"))
+    await chooseFood(user, "Tomate")
+
+    expect(gramsField("Tomate")).toHaveValue("150")
+    expect(within(rows()[0]).getByText(TOMATE_150_PREVIEW)).toBeInTheDocument()
+    expect(within(dialog()).getByText(`Total: ${TOMATE_150_PREVIEW}`)).toBeInTheDocument()
+  })
+
+  // SDD: 028 REQ-019 AC-019.2
+  it("resolver con un alimento propio también deja la fila y el total al día", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(
+      user,
+      makeAnalysis({ items: [], unmatched: [{ name: "Gallo pinto", grams: 250, confidence: "medium" }] })
+    )
+    searchMock.mockResolvedValue([GALLO_PROPIO])
+
+    await user.click(button("Buscar Gallo pinto en el catálogo"))
+    await chooseFood(user, "Gallo pinto")
+
+    const preview = "450 kcal · 15,0 g proteína · 75,0 g carbohidratos · 10,0 g grasa"
+    expect(within(rows()[0]).getByText(preview)).toBeInTheDocument()
+    expect(within(dialog()).getByText(`Total: ${preview}`)).toBeInTheDocument()
+  })
+
+  // SDD: 028 REQ-019 AC-019.3
+  it("tras resolver y cambiar los gramos, volver de «Añadir otro alimento» sin elegir nada conserva los gramos editados en la fila y el total", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [], unmatched: [SAUCE_150] }))
+    searchMock.mockResolvedValue([TOMATE])
+    await user.click(button("Buscar Salsa de tomate en el catálogo"))
+    await chooseFood(user, "Tomate")
+    await setGrams(user, "Tomate", "200")
+    expect(within(dialog()).getByText(TOMATE_200_PREVIEW)).toBeInTheDocument()
+
+    await user.click(button("Añadir otro alimento"))
+    await user.click(button("Volver a la propuesta"))
+
+    expect(gramsField("Tomate")).toHaveValue("200")
+    expect(within(rows()[0]).getByText(TOMATE_200_PREVIEW)).toBeInTheDocument()
+    expect(within(dialog()).getByText(`Total: ${TOMATE_200_PREVIEW}`)).toBeInTheDocument()
+  })
+
+  // SDD: 028 REQ-019 AC-019.4
+  it("con dos alimentos, quitar uno deja en el total solo el otro", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE, CHICKEN] }))
+
+    await user.click(button("Quitar Arroz blanco cocido"))
+
+    expect(rows()).toHaveLength(1)
+    expect(
+      within(dialog()).getByText("Total: 165 kcal · 31,0 g proteína · 0,0 g carbohidratos · 3,6 g grasa")
+    ).toBeInTheDocument()
+    // Y la fila que queda sigue emparejada tras añadir otro con la busqueda compartida (028).
+    await user.click(button("Añadir otro alimento"))
+    searchMock.mockResolvedValue([BANANO])
+    await search(user, "banano")
+    await chooseFood(user, "Banano")
+    expect(rows()).toHaveLength(2)
+    expect(gramsField("Banano")).toHaveValue("100")
+  })
+
+  // SDD: 028 REQ-019 AC-019.4
+  it("quitar el primer alimento no traslada sus gramos editados a otra fila", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE, CHICKEN] }))
+    await setGrams(user, "Arroz blanco cocido", "300")
+    await setGrams(user, "Pechuga de pollo a la plancha", "200")
+
+    await user.click(button("Quitar Arroz blanco cocido"))
+
+    expect(gramsField("Pechuga de pollo a la plancha")).toHaveValue("200")
+    expect(
+      within(dialog()).getByText("Total: 330 kcal · 62,0 g proteína · 0,0 g carbohidratos · 7,1 g grasa")
+    ).toBeInTheDocument()
+    // Tras añadir otro con la busqueda compartida, la pechuga conserva sus 200 g (028).
+    await user.click(button("Añadir otro alimento"))
+    searchMock.mockResolvedValue([BANANO])
+    await search(user, "banano")
+    await chooseFood(user, "Banano")
+    expect(gramsField("Pechuga de pollo a la plancha")).toHaveValue("200")
+    expect(gramsField("Banano")).toHaveValue("100")
+  })
+
+  // SDD: 028 REQ-019 AC-019.1
+  it("resolver o añadir un alimento no deshace los gramos editados en las demás filas", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE], unmatched: [SAUCE_150] }))
+    await setGrams(user, "Arroz blanco cocido", "200")
+    searchMock.mockResolvedValue([TOMATE])
+
+    await user.click(button("Buscar Salsa de tomate en el catálogo"))
+    await chooseFood(user, "Tomate")
+
+    expect(gramsField("Arroz blanco cocido")).toHaveValue("200")
+    expect(within(dialog()).getByText(RICE_200_PREVIEW)).toBeInTheDocument()
+    expect(gramsField("Tomate")).toHaveValue("150")
+  })
+
+  // SDD: 028 REQ-019 AC-019.1
+  it("añadir otro alimento no deshace los gramos editados de los que ya estaban", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await setGrams(user, "Arroz blanco cocido", "200")
+    await user.click(button("Añadir otro alimento"))
+    searchMock.mockResolvedValue([BANANO])
+    await search(user, "banano")
+
+    await chooseFood(user, "Banano")
+
+    expect(gramsField("Arroz blanco cocido")).toHaveValue("200")
+    expect(gramsField("Banano")).toHaveValue("100")
+    expect(rows()).toHaveLength(2)
+  })
+
+  // SDD: 028 REQ-019 AC-019.1
+  it("los gramos editados llegan al guardar sin pulsar nada más", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE, CHICKEN] }))
+    await setGrams(user, "Arroz blanco cocido", "200")
+    await user.click(button("Quitar Pechuga de pollo a la plancha"))
+    await user.click(button("Añadir otro alimento"))
+    searchMock.mockResolvedValue([BANANO])
+    await search(user, "banano")
+    await chooseFood(user, "Banano")
+
+    await save(user)
+
+    await waitFor(() => expect(addMock).toHaveBeenCalledTimes(1))
+    expect(addMock.mock.calls[0][0].items).toEqual([
+      { catalog_id: "arroz-blanco-cocido", grams: 200 },
+      { catalog_id: "banano", grams: 100 },
+    ])
   })
 })
 
