@@ -52,3 +52,7 @@
 
 ## implement (corrección de review F1) · implementer
 - [ ] Comprobación manual en navegador (escritorio y móvil, lista desplazada) de la confirmación «¿Descartar la propuesta?». El diálogo de la foto ya no usa transform: se coloca a `top: 5vh` en escritorio.
+
+## review (iteración 2, APPROVED) · reviewer
+- [ ] F8 NIT (implementer): en escritorio, el diálogo de foto con poco contenido queda arriba (5vh) en vez de centrado en vertical; se podría centrar sin transform.
+- [ ] Comprobación manual en navegador (escritorio y móvil, lista desplazada hasta abajo) de la confirmación «¿Descartar la propuesta?» (AC-009.1, AC-009.3 y AC-009.4) antes del gate de close.

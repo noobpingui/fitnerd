@@ -10,7 +10,7 @@
   "branch": "feat/026-diary-days-and-editing",
   "base_branch": "main",
   "created_at": "2026-10-27T01:22:43.361Z",
-  "stage": "verify",
+  "stage": "docs",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -33,8 +33,14 @@
       "at": "2026-10-27T04:00:20.149Z",
       "note": "auto (gate_mode=flow): corrección F1"
     },
-    "verify": null,
-    "review": null,
+    "verify": {
+      "at": "2026-10-27T04:04:44.911Z",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    "review": {
+      "at": "2026-10-27T04:40:10.350Z",
+      "note": "Aprobado."
+    },
     "docs": null,
     "close": null
   },
@@ -43,7 +49,7 @@
     "plan": "3545129",
     "tasks": "f500114",
     "tests": "0b17e2a",
-    "implement": "0dfdddf"
+    "implement": "16215b2"
   },
   "iterations": {
     "tests": 4,
@@ -56,12 +62,12 @@
     "at": "2026-10-27T03:22:58.151Z"
   },
   "verify": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-27T04:04:35.978Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-10-27T04:07:15.600Z"
   },
   "tests_snapshot": {
     "at": "2026-10-27T03:45:24.649Z",
@@ -406,6 +412,60 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): corrección F1"
+    },
+    {
+      "at": "2026-10-27T04:00:20.409Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 16215b2"
+    },
+    {
+      "at": "2026-10-27T04:00:20.507Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "verify full tras F1"
+    },
+    {
+      "at": "2026-10-27T04:04:35.978Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify full tras F1 (iteración 2): backend 2108 passed + ratchet OK; frontend 1388 passed, lint 0 errores (1 warning previo), tsc OK, build OK (index 384,64 kB); trazabilidad 60/60 AC con test SDD verde, REQ/NFR en tareas, 50/50 tareas [x], sin skip/only nuevos. AC manuales: AC-009.1/3/4 (posición visual de la confirmación, F1), AC-008.1..3, AC-002.6, AC-005.2, AC-007.6"
+    },
+    {
+      "at": "2026-10-27T04:04:44.818Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS tras F1"
+    },
+    {
+      "at": "2026-10-27T04:04:44.911Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-27T04:04:45.003Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review iteración 2"
+    },
+    {
+      "at": "2026-10-27T04:07:15.600Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-27T04:07:15.694Z",
+      "stage": "review",
+      "event": "done",
+      "note": "Review APPROVED: 0 BLOQUEANTE, 0 MAYOR, 2 MENOR, 5 NIT"
+    },
+    {
+      "at": "2026-10-27T04:40:10.350Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Aprobado."
     }
   ]
 }
