@@ -9,8 +9,8 @@
   "branch": "fix/027-restore-token-hardening",
   "base_branch": "main",
   "created_at": "2026-10-27T05:55:23.138Z",
-  "stage": "close",
-  "status": "in_progress",
+  "stage": "done",
+  "status": "done",
   "approvals": {
     "spec": {
       "at": "2026-10-27T06:20:20.134Z",
@@ -44,7 +44,10 @@
       "at": "2026-10-27T07:51:54.591Z",
       "note": "auto (gate_mode=flow): docs actualizados"
     },
-    "close": null
+    "close": {
+      "at": "2026-10-27T07:53:19.921Z",
+      "note": "Aprobado, ejecuta los 5 pasos"
+    }
   },
   "commits": {
     "spec": "8c13d6f",
@@ -52,7 +55,8 @@
     "tasks": "02c325f",
     "tests": "9127597",
     "implement": "84b4921",
-    "review": "b788082"
+    "review": "b788082",
+    "docs": "41c701c"
   },
   "iterations": {
     "tests": 3,
@@ -563,6 +567,36 @@
       "stage": "docs",
       "event": "approved",
       "note": "auto (gate_mode=flow): docs actualizados"
+    },
+    {
+      "at": "2026-10-27T07:51:54.856Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: 41c701c"
+    },
+    {
+      "at": "2026-10-27T07:51:54.971Z",
+      "stage": "close",
+      "event": "started",
+      "note": ""
+    },
+    {
+      "at": "2026-10-27T07:52:08.932Z",
+      "stage": "close",
+      "event": "done",
+      "note": ""
+    },
+    {
+      "at": "2026-10-27T07:53:19.921Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Aprobado, ejecuta los 5 pasos"
+    },
+    {
+      "at": "2026-10-27T07:53:19.921Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
     }
   ]
 }

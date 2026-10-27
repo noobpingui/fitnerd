@@ -452,3 +452,12 @@ Feature: [specs/026-diary-days-and-editing/](../specs/026-diary-days-and-editing
 - [ ] Comprobación manual en navegador (escritorio y móvil, lista desplazada) de la confirmación «¿Descartar la propuesta?». El diálogo de la foto ya no usa transform: se coloca a `top: 5vh` en escritorio.
 - [ ] F8 NIT (implementer): en escritorio, el diálogo de foto con poco contenido queda arriba (5vh) en vez de centrado en vertical; se podría centrar sin transform.
 - [ ] Comprobación manual en navegador (escritorio y móvil, lista desplazada hasta abajo) de la confirmación «¿Descartar la propuesta?» (AC-009.1, AC-009.3 y AC-009.4) antes del gate de close.
+
+## 027-restore-token-hardening · Endurecer SECRET_KEY en producción y la validación del snapshot del token de restauración (2026-10-27)
+
+Feature: [specs/027-restore-token-hardening/](../specs/027-restore-token-hardening/)
+
+- [ ] Validar la longitud del nombre, del `catalog_id` y del `data_type` dentro del snapshot del `restore_token`, para que un token anómalo no provoque un 500.
+- [ ] Exigir una longitud mínima a `SECRET_KEY` en producción (Q3, p. ej. 32 caracteres) en una spec posterior.
+- [ ] Confirmar en el CI de GitHub (sin `SECRET_KEY` en el entorno) que los tests de producción de la 020 pasan (AC-N002.1); en local, `backend/.env` define `SECRET_KEY` y lo oculta.
+- [ ] Añadir la fila de la 027 al historial de despliegues del runbook cuando se despliegue.
