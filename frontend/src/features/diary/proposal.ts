@@ -1,4 +1,3 @@
-import type { CatalogFood } from "@/features/catalog/types"
 import type { LibraryFood } from "@/features/food-library/types"
 import { formatPortionPreview } from "./format"
 import { portionNutrients } from "./nutrition"
@@ -47,17 +46,6 @@ export function proposalFromAnalysis(analysis: MealPhotoAnalysis): ProposalEntry
   ]
 }
 
-export function catalogEntry(food: CatalogFood, grams: string): ProposalEntry {
-  return {
-    kind: "catalog",
-    catalogId: food.id,
-    name: food.name,
-    per100g: food.per_100g,
-    grams,
-    tag: "user",
-  }
-}
-
 export function libraryEntry(food: LibraryFood, grams: string): ProposalEntry {
   if (food.kind === "custom") {
     return {
@@ -102,8 +90,9 @@ export function mergeProposalEntries(
 }
 
 // Si la entrada es el alimento propio borrado, la misma entrada sin `customFoodId` (y sin `key`); si no, null.
-export function unlinkCustomFood(_entry: ProposalEntry, _customFoodId: number): ProposalEntry | null {
-  throw new Error("not implemented")
+export function unlinkCustomFood(entry: ProposalEntry, customFoodId: number): ProposalEntry | null {
+  if (entry.kind !== "custom" || entry.customFoodId !== customFoodId) return null
+  return { kind: "custom", name: entry.name, per100g: entry.per100g, grams: entry.grams }
 }
 
 export function customEntry(payload: CustomItemPayload): ProposalEntry {

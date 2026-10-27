@@ -151,17 +151,17 @@ migración nueva. Los tests que se adaptan conservan su marcador y el motivo est
 ### Fase B (iteración 2) — Implementación (implementer)
 
 #### backend
-- [ ] T-160 [NFR-004, AC-N004.1, AC-N004.2, AC-N004.3] (impl) `TypoDistances` con memoria por pareja, `typo_comparison_bound`, resolución sin cálculo de formas y palabras cortas, y `TypoSearchStats` en la segunda pasada, sin cambiar resultados ni orden — `backend/services/catalog_search_service.py`
-- [ ] T-161 [REQ-009, AC-009.6, AC-009.7, AC-009.8, NFR-004] (impl) Límite de 100 que solo cuenta favoritos visibles, `remove_favorite` de un favorito retirado, `stats` en `search`, y quitar `count_by_user` — `backend/services/food_library_service.py`, `backend/repositories/food_favorite_repository.py`
+- [x] T-160 [NFR-004, AC-N004.1, AC-N004.2, AC-N004.3] (impl) `TypoDistances` con memoria por pareja, `typo_comparison_bound`, resolución sin cálculo de formas y palabras cortas, y `TypoSearchStats` en la segunda pasada, sin cambiar resultados ni orden — `backend/services/catalog_search_service.py`
+- [x] T-161 [REQ-009, AC-009.6, AC-009.7, AC-009.8, NFR-004] (impl) Límite de 100 que solo cuenta favoritos visibles, `remove_favorite` de un favorito retirado, `stats` en `search`, y quitar `count_by_user` — `backend/services/food_library_service.py`, `backend/repositories/food_favorite_repository.py`
 
 #### frontend
-- [ ] T-162 [REQ-017, AC-017.5, AC-017.6] (impl) `useEscapeCapture`: listener de `keydown` en `window` en fase de captura mientras está activo, con `preventDefault` y `stopPropagation` — `frontend/src/lib/useEscapeCapture.ts`
-- [ ] T-163 [REQ-017, AC-017.7, NFR-002] (impl) `LibraryFoodList`: `renderInline` en el elemento de la lista y `onDelete` con el botón pulsado — `frontend/src/features/diary/components/LibraryFoodList.tsx`
-- [ ] T-164 [REQ-017, AC-017.3, AC-017.5, AC-017.7, NFR-002, AC-N002.3, AC-N002.4, AC-N002.5] (impl) `FoodSearchPanel`: confirmación en línea (`alertdialog`) sin `ConfirmDialog`, Escape con `useEscapeCapture`, gestión del foco con `isConnected` y `onCustomFoodDeleted` — `frontend/src/features/diary/components/FoodSearchPanel.tsx`
-- [ ] T-165 [REQ-018, AC-018.7, REQ-020] (impl) `unlinkCustomFood`, `proposalReviewSchema` completo con variantes y `superRefine` compartidos, y quitar `catalogEntry` — `frontend/src/features/diary/proposal.ts`, `frontend/src/features/diary/schemas.ts`
-- [ ] T-166 [REQ-017, AC-017.6, REQ-018, AC-018.7, AC-018.8, NFR-003, AC-N003.1] (impl) `PhotoReview`: `proposalReviewSchema` sin `as never` ni `as unknown as`, `unlinkCustomFood` vía `onCustomFoodDeleted` y error 400 sin perder la propuesta — `frontend/src/features/diary/components/PhotoReview.tsx`
-- [ ] T-167 [REQ-020, AC-020.1] (impl) Borrar `features/catalog/` entero (`api.ts`, `hooks.ts`, `schemas.ts`, `types.ts` y `components/CatalogResultList.tsx`) — `frontend/src/features/catalog/api.ts`
-- [ ] T-168 [REQ-020, AC-020.1] (impl) Borrar `features/foods/api.ts`, quitar `foodSearchResponseSchema` y los tipos `FoodPer100g`, `Food` y `FoodSearchResponse` — `frontend/src/features/foods/api.ts`, `frontend/src/features/foods/schemas.ts`, `frontend/src/features/foods/types.ts`
+- [x] T-162 [REQ-017, AC-017.5, AC-017.6] (impl) `useEscapeCapture`: listener de `keydown` en `window` en fase de captura mientras está activo, con `preventDefault` y `stopPropagation` — `frontend/src/lib/useEscapeCapture.ts`
+- [x] T-163 [REQ-017, AC-017.7, NFR-002] (impl) `LibraryFoodList`: `renderInline` en el elemento de la lista y `onDelete` con el botón pulsado — `frontend/src/features/diary/components/LibraryFoodList.tsx`
+- [x] T-164 [REQ-017, AC-017.3, AC-017.5, AC-017.7, NFR-002, AC-N002.3, AC-N002.4, AC-N002.5] (impl) `FoodSearchPanel`: confirmación en línea (`alertdialog`) sin `ConfirmDialog`, Escape con `useEscapeCapture`, gestión del foco con `isConnected` y `onCustomFoodDeleted` — `frontend/src/features/diary/components/FoodSearchPanel.tsx`
+- [x] T-165 [REQ-018, AC-018.7, REQ-020] (impl) `unlinkCustomFood`, `proposalReviewSchema` completo con variantes y `superRefine` compartidos, y quitar `catalogEntry` — `frontend/src/features/diary/proposal.ts`, `frontend/src/features/diary/schemas.ts`
+- [x] T-166 [REQ-017, AC-017.6, REQ-018, AC-018.7, AC-018.8, NFR-003, AC-N003.1] (impl) `PhotoReview`: `proposalReviewSchema` sin `as never` ni `as unknown as`, `unlinkCustomFood` vía `onCustomFoodDeleted` y error 400 sin perder la propuesta — `frontend/src/features/diary/components/PhotoReview.tsx`
+- [x] T-167 [REQ-020, AC-020.1] (impl) Borrar `features/catalog/` entero (`api.ts`, `hooks.ts`, `schemas.ts`, `types.ts` y `components/CatalogResultList.tsx`) — `frontend/src/features/catalog/api.ts`
+- [x] T-168 [REQ-020, AC-020.1] (impl) Borrar `features/foods/api.ts`, quitar `foodSearchResponseSchema` y los tipos `FoodPer100g`, `Food` y `FoodSearchResponse` — `frontend/src/features/foods/api.ts`, `frontend/src/features/foods/schemas.ts`, `frontend/src/features/foods/types.ts`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

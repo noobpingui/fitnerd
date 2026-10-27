@@ -83,3 +83,7 @@
 ## tests (red check PASS, iteración 2) · verifier
 - [ ] Excepción ratificada por el usuario a Art. B5.2 y B5.6: `proposalReviewSchema` se entregó completo en el scaffold (declarativo, con `superRefine`), y sus 5 tests (9 casos) de `schemas.test.ts` son guardas de regresión marcadas `SDD: 028 regression guard`. T-165 debe conservar la lógica compartida de gramos.
 - [ ] `tasks.md`: T-134 escribe `useEscapeCapture(active, onEscape)`, pero la firma de test y plan es `(onEscape, active)`. T-137 dice «sin uso» de `count_by_user`, pero `food_library_service.py:132` aún lo llama (lo quita T-161). Las frases de T-145 siguen el plan, no la spec (AC-017.3).
+
+## implement (iteración 2) · implementer
+- [ ] Los tests de `/body-metrics` (`router.test.tsx` y `lazyRoutes.test.tsx`) rozan el timeout de 5 s cuando la suite corre completa (pasan solos, 26/26): considerar subir su timeout o precargar el chunk.
+- [ ] `features/foods/types.ts` ahora solo contiene `FoodDataType`; valorar moverlo a `diary/` en otra tarea.

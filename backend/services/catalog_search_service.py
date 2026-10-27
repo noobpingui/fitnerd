@@ -99,8 +99,12 @@ def typo_tolerance(form: str) -> int:
 
 
 def typo_distance(
-    name: str, synonyms: Sequence[str], query: list[tuple[str, ...]]
+    name: str,
+    synonyms: Sequence[str],
+    query: list[tuple[str, ...]],
+    distances: "TypoDistances | None" = None,
 ) -> int | None:
+    distances = distances or TypoDistances()
     best: int | None = None
     for term in [name, *synonyms]:
         term_words = words(term)
@@ -111,7 +115,7 @@ def typo_distance(
                     distance
                     for form in forms
                     for word in term_words
-                    if (distance := prefix_edit_distance(form, word)) <= typo_tolerance(form)
+                    if (distance := distances.within_tolerance(form, word)) is not None
                 ),
                 default=None,
             )
@@ -146,13 +150,36 @@ class TypoDistances:
 
     def __init__(self, stats: TypoSearchStats | None = None):
         self.stats = stats
+        self._memory: dict[tuple[str, str], int] = {}
 
-    def within_tolerance(self, _form: str, _word: str) -> int | None:
-        raise NotImplementedError("not implemented")
+    def within_tolerance(self, form: str, word: str) -> int | None:
+        tolerance = typo_tolerance(form)
+        if tolerance == 0:
+            return 0 if word.startswith(form) else None
+        if len(word) < len(form) - tolerance:
+            return None
+        key = (form, word)
+        distance = self._memory.get(key)
+        if distance is None:
+            distance = prefix_edit_distance(form, word)
+            self._memory[key] = distance
+            if self.stats is not None:
+                self.stats.comparisons += 1
+        return distance if distance <= tolerance else None
 
 
-def typo_comparison_bound(_candidates: Iterable[SearchCandidate], _query: str) -> int:
-    raise NotImplementedError("not implemented")
+def typo_comparison_bound(candidates: Iterable[SearchCandidate], query: str) -> int:
+    query_forms_ = {
+        form
+        for forms in query_forms(query)
+        for form in forms
+        if len(form) >= TYPO_MIN_FORM_LENGTH
+    }
+    candidate_words: set[str] = set()
+    for candidate in candidates:
+        for term in [candidate.name, *candidate.synonyms]:
+            candidate_words.update(words(term))
+    return len(query_forms_) * len(candidate_words)
 
 
 def rank_candidates(
@@ -165,6 +192,7 @@ def rank_candidates(
     if not forms:
         return []
     candidates = list(candidates)
+    distances = TypoDistances(stats)
     exact = []
     for candidate in candidates:
         group = match_group(candidate.name, candidate.synonyms, forms)
@@ -178,7 +206,7 @@ def rank_candidates(
     else:
         ranked = []
         for candidate in candidates:
-            distance = typo_distance(candidate.name, candidate.synonyms, forms)
+            distance = typo_distance(candidate.name, candidate.synonyms, forms, distances)
             if distance is not None:
                 ranked.append(
                     (distance, fold(candidate.name), candidate.source_order, candidate.name,
@@ -194,7 +222,7 @@ def rank_catalog(
     candidates = (
         SearchCandidate(food.name, food.synonyms, 0, str(food.id), food) for food in foods
     )
-    return rank_candidates(candidates, query, limit)
+    return rank_candidates(candidates, query, limit, stats)
 
 
 class CatalogSearchService:
@@ -206,4 +234,4 @@ class CatalogSearchService:
         self, raw_query: str | None, stats: TypoSearchStats | None = None
     ) -> list[CatalogFood]:
         query = normalize_query(raw_query)
-        return rank_catalog(self.catalog_repository.list_all(), query)
+        return rank_catalog(self.catalog_repository.list_all(), query, stats=stats)

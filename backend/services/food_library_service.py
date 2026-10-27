@@ -74,7 +74,7 @@ class FoodLibraryService:
             )
             for food in self.custom_food_repository.list_by_user(user_id)
         )
-        return rank_candidates(candidates, query, MAX_RESULTS)
+        return rank_candidates(candidates, query, MAX_RESULTS, stats)
 
     def recent(self, user_id) -> list[LibraryFood]:
         rows = self.meal_repository.list_recent_foods(user_id, MAX_RECENT_FOODS)
@@ -129,7 +129,7 @@ class FoodLibraryService:
                 user_id, catalog_id=catalog_id, custom_food_id=custom_food_id
             )
             if existing is None:
-                if self.favorite_repository.count_by_user(user_id) >= MAX_FAVORITES:
+                if self._visible_favorite_count(user_id) >= MAX_FAVORITES:
                     raise ValidationError(FAVORITES_LIMIT_MESSAGE)
                 self.favorite_repository.create(
                     FoodFavorite(
@@ -145,12 +145,14 @@ class FoodLibraryService:
         catalog_id, custom_food_id = self._parse_target(kind, food_id)
         try:
             self._lock_user(user_id)
-            self._require_food(user_id, catalog_id, custom_food_id)
             existing = self.favorite_repository.get_for_food(
                 user_id, catalog_id=catalog_id, custom_food_id=custom_food_id
             )
             if existing is not None:
+                # Se puede quitar aunque el alimento ya no esté en el catálogo (AC-009.7).
                 self.favorite_repository.delete(existing)
+            else:
+                self._require_food(user_id, catalog_id, custom_food_id)
             self.unit_of_work.commit()
         except Exception:
             self.unit_of_work.rollback()
@@ -176,6 +178,15 @@ class FoodLibraryService:
         # Serializa las escrituras del usuario (patrón de ADR-0020).
         if self.user_repository.get_by_id_for_update(user_id) is None:
             raise ResourceNotFoundError(USER_NOT_FOUND_MESSAGE)
+
+    def _visible_favorite_count(self, user_id) -> int:
+        rows = self.favorite_repository.list_by_user(user_id)
+        catalog_ids = [row.catalog_id for row in rows if row.catalog_id is not None]
+        visible_customs = sum(1 for row in rows if row.custom_food_id is not None)
+        if not catalog_ids:
+            return visible_customs
+        found = self.catalog_repository.get_by_ids(list(dict.fromkeys(catalog_ids)))
+        return visible_customs + len({food.id for food in found})
 
     def _favorite_keys(self, user_id) -> set[tuple[str, object]]:
         keys: set[tuple[str, object]] = set()

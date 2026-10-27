@@ -18,7 +18,7 @@ import {
   useRecentFoods,
   useSetFoodFavorite,
 } from "@/features/food-library/hooks"
-import type { LibraryFood } from "@/features/food-library/types"
+import type { CustomLibraryFood, LibraryFood } from "@/features/food-library/types"
 import {
   FOOD_QUERY_MAX_LENGTH,
   foodSearchFormSchema,
@@ -26,6 +26,7 @@ import {
 } from "@/features/foods/schemas"
 import { searchErrorView } from "@/features/foods/searchError"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
+import { useEscapeCapture } from "@/lib/useEscapeCapture"
 import { SEARCH_DEBOUNCE_MS } from "../constants"
 import {
   DELETE_CUSTOM_FOOD_FAILED_MESSAGE,
@@ -39,6 +40,9 @@ const MIN_QUERY_LENGTH = 2
 const DEFAULT_GRAMS = "100"
 const INITIAL_TEXT = "Busca un alimento para ver sus calorías y macros por 100 g."
 
+type ListLabel = "Resultados" | "Favoritos" | "Recientes"
+type DeleteTarget = { food: CustomLibraryFood; list: ListLabel; trigger: HTMLButtonElement }
+
 // Búsqueda compartida del diario: busca mientras se escribe (con retardo), ofrece
 // «Favoritos» y «Recientes» con la caja vacía y deja marcar favoritos y borrar
 // alimentos propios.
@@ -47,6 +51,7 @@ export function FoodSearchPanel({
   onQueryChange,
   onSelect,
   onCreateCustom,
+  onCustomFoodDeleted,
   actions,
 }: {
   initialQuery?: string
@@ -82,7 +87,8 @@ export function FoodSearchPanel({
   const recents = useRecentFoods()
   const setFavorite = useSetFoodFavorite()
   const deleteFood = useDeleteCustomFood()
-  const [toDelete, setToDelete] = useState<LibraryFood | null>(null)
+  const [target, setTarget] = useState<DeleteTarget | null>(null)
+  const [confirming, setConfirming] = useState(false)
 
   function handleSubmit(values: FoodSearchFormValues) {
     flush(values.query)
@@ -93,23 +99,80 @@ export function FoodSearchPanel({
     setFavorite.mutate({ food, favorite: !food.favorite })
   }
 
+  // El foco vuelve al botón «Borrar» pulsado o, si ya no está, a la caja de búsqueda.
+  function focusTrigger(current: DeleteTarget) {
+    if (current.trigger.isConnected) current.trigger.focus()
+    else form.setFocus("query")
+  }
+
   function confirmDelete() {
-    if (!toDelete || deleteFood.isPending) return
-    deleteFood.mutate(toDelete.id as number, { onSuccess: () => setToDelete(null) })
+    if (!target || !confirming || deleteFood.isPending) return
+    const current = target
+    deleteFood.mutate(current.food.id, {
+      onSuccess: () => {
+        onCustomFoodDeleted?.(current.food.id)
+        form.setFocus("query")
+        setConfirming(false)
+        setTarget(null)
+      },
+      onError: () => {
+        setConfirming(false)
+        focusTrigger(current)
+      },
+    })
   }
 
   function cancelDelete() {
-    setToDelete(null)
+    if (!target || deleteFood.isPending) return
+    const current = target
+    setConfirming(false)
+    setTarget(null)
     deleteFood.reset()
+    focusTrigger(current)
   }
 
-  const listProps = {
-    onToggleFavorite: toggleFavorite,
-    onDelete: (food: LibraryFood) => {
+  function startDelete(list: ListLabel) {
+    return (food: CustomLibraryFood, trigger: HTMLButtonElement) => {
       deleteFood.reset()
-      setToDelete(food)
-    },
-    disabled: setFavorite.isPending,
+      setTarget({ food, list, trigger })
+      setConfirming(true)
+    }
+  }
+
+  // Dentro del elemento donde se pulsó «Borrar»: la confirmación, o el error del borrado.
+  function renderInline(list: ListLabel) {
+    return (food: LibraryFood): ReactNode => {
+      if (!target || target.list !== list) return null
+      if (target.food.kind !== food.kind || target.food.id !== food.id) return null
+      if (confirming) {
+        return (
+          <DeleteConfirmation
+            title={`¿Borrar «${target.food.name}» de tus alimentos?`}
+            description="Las comidas ya registradas no cambian."
+            isPending={deleteFood.isPending}
+            onConfirm={confirmDelete}
+            onCancel={cancelDelete}
+          />
+        )
+      }
+      if (deleteFood.isError) {
+        return (
+          <p role="alert" className="mt-3 text-sm text-destructive">
+            {DELETE_CUSTOM_FOOD_FAILED_MESSAGE}
+          </p>
+        )
+      }
+      return null
+    }
+  }
+
+  function listProps(list: ListLabel) {
+    return {
+      onToggleFavorite: toggleFavorite,
+      onDelete: startDelete(list),
+      renderInline: renderInline(list),
+      disabled: setFavorite.isPending,
+    }
   }
 
   const createButton = (name: string, small: boolean) => (
@@ -226,7 +289,7 @@ export function FoodSearchPanel({
             label="Favoritos"
             foods={favoriteFoods}
             onSelect={(food) => onSelect(food, DEFAULT_GRAMS)}
-            {...listProps}
+            {...listProps("Favoritos")}
           />
         </section>
       )}
@@ -241,7 +304,7 @@ export function FoodSearchPanel({
               const recent = recentFoods.find((item) => item.kind === food.kind && item.id === food.id)
               onSelect(food, recent ? gramsText(recent.last_grams) : DEFAULT_GRAMS)
             }}
-            {...listProps}
+            {...listProps("Recientes")}
           />
         </section>
       )}
@@ -251,7 +314,7 @@ export function FoodSearchPanel({
           label="Resultados"
           foods={search.data ?? []}
           onSelect={(food) => onSelect(food, DEFAULT_GRAMS)}
-          {...listProps}
+          {...listProps("Resultados")}
         />
       )}
 
@@ -259,17 +322,6 @@ export function FoodSearchPanel({
         {!noResults && createButton("", false)}
         {actions}
       </div>
-
-      {toDelete && (
-        <DeleteConfirmation
-          title={`¿Borrar «${toDelete.name}» de tus alimentos?`}
-          description="Las comidas ya registradas no cambian."
-          isPending={deleteFood.isPending}
-          error={deleteFood.isError ? DELETE_CUSTOM_FOOD_FAILED_MESSAGE : null}
-          onConfirm={confirmDelete}
-          onCancel={cancelDelete}
-        />
-      )}
     </div>
   )
 }
@@ -279,14 +331,12 @@ function DeleteConfirmation({
   title,
   description,
   isPending,
-  error,
   onConfirm,
   onCancel,
 }: {
   title: string
   description: string
   isPending: boolean
-  error: string | null
   onConfirm: () => void
   onCancel: () => void
 }): ReactElement {
@@ -298,15 +348,15 @@ function DeleteConfirmation({
     cancelRef.current?.focus()
   }, [])
 
+  // Escape cancela la confirmación (con el borrado en curso se consume sin hacer nada).
+  useEscapeCapture(onCancel, true)
+
   return (
     <div
       role="alertdialog"
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
-      className="mt-4 space-y-3 rounded-lg border border-destructive/40 p-4"
-      onKeyDown={(event) => {
-        if (event.key === "Escape" && !isPending) onCancel()
-      }}
+      className="mt-3 space-y-3 rounded-lg border border-destructive/40 p-4"
     >
       <p id={titleId} className="font-medium">
         {title}
@@ -314,11 +364,6 @@ function DeleteConfirmation({
       <p id={descriptionId} className="text-sm text-muted-foreground">
         {description}
       </p>
-      {error && (
-        <p role="alert" className="text-sm text-destructive">
-          {error}
-        </p>
-      )}
       <div className="flex flex-wrap gap-2">
         <Button type="button" variant="destructive" disabled={isPending} onClick={onConfirm}>
           Borrar

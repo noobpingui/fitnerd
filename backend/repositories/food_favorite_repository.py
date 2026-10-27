@@ -1,4 +1,4 @@
-from sqlalchemy import func, select
+from sqlalchemy import select
 
 from models import FoodFavorite
 from repositories.base_repository import BaseRepository
@@ -24,7 +24,3 @@ class FoodFavoriteRepository(BaseRepository):
         else:
             return None
         return self.session.scalars(stmt).first()
-
-    def count_by_user(self, user_id) -> int:
-        stmt = select(func.count()).select_from(FoodFavorite).where(FoodFavorite.user_id == user_id)
-        return int(self.session.scalar(stmt) or 0)

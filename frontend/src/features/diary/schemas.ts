@@ -184,80 +184,54 @@ export const mealPhotoAnalysisSchema = z.object({
   totals,
 })
 
-const proposalEntrySchema = z.discriminatedUnion("kind", [
-  z.object({
-    kind: z.literal("catalog"),
-    catalogId: z.string(),
-    name: z.string(),
-    per100g,
-    grams: z.string(),
-    tag: z.enum(["high", "medium", "low", "user"]),
-    key: z.string().optional(),
-  }),
-  z.object({
-    kind: z.literal("custom"),
-    name: z.string(),
-    per100g,
-    grams: z.string(),
-    customFoodId: z.number().optional(),
-    key: z.string().optional(),
-  }),
-  z.object({
-    kind: z.literal("unmatched"),
-    name: z.string(),
-    grams: z.number(),
-    confidence,
-    key: z.string().optional(),
-  }),
-])
+function proposalEntryUnion<Key extends z.ZodType<string | undefined>>(key: Key) {
+  return z.discriminatedUnion("kind", [
+    z.object({
+      kind: z.literal("catalog"),
+      catalogId: z.string(),
+      name: z.string(),
+      per100g,
+      grams: z.string(),
+      tag: z.enum(["high", "medium", "low", "user"]),
+      key,
+    }),
+    z.object({
+      kind: z.literal("custom"),
+      name: z.string(),
+      per100g,
+      grams: z.string(),
+      customFoodId: z.number().optional(),
+      key,
+    }),
+    z.object({
+      kind: z.literal("unmatched"),
+      name: z.string(),
+      grams: z.number(),
+      confidence,
+      key,
+    }),
+  ])
+}
 
 // Valida los gramos de las entradas que se guardan; las «unmatched» no se validan.
-export const proposalFormSchema = z
-  .object({ entries: z.array(proposalEntrySchema) })
-  .superRefine((values, ctx) => {
-    values.entries.forEach((entry, index) => {
-      if (entry.kind === "unmatched") return
-      const message = gramsError(entry.grams)
-      if (message) ctx.addIssue({ code: "custom", path: ["entries", index, "grams"], message })
-    })
+function validateProposalGrams(
+  values: { entries: { kind: string; grams: string | number }[] },
+  ctx: z.RefinementCtx
+) {
+  values.entries.forEach((entry, index) => {
+    if (entry.kind === "unmatched") return
+    const message = gramsError(String(entry.grams))
+    if (message) ctx.addIssue({ code: "custom", path: ["entries", index, "grams"], message })
   })
+}
 
-const reviewEntrySchema = z.discriminatedUnion("kind", [
-  z.object({
-    kind: z.literal("catalog"),
-    catalogId: z.string(),
-    name: z.string(),
-    per100g,
-    grams: z.string(),
-    tag: z.enum(["high", "medium", "low", "user"]),
-    key: z.string(),
-  }),
-  z.object({
-    kind: z.literal("custom"),
-    name: z.string(),
-    per100g,
-    grams: z.string(),
-    customFoodId: z.number().optional(),
-    key: z.string(),
-  }),
-  z.object({
-    kind: z.literal("unmatched"),
-    name: z.string(),
-    grams: z.number(),
-    confidence,
-    key: z.string(),
-  }),
-])
+export const proposalFormSchema = z
+  .object({ entries: z.array(proposalEntryUnion(z.string().optional())) })
+  .superRefine(validateProposalGrams)
 
 // Como proposalFormSchema pero con `key` obligatoria (PhotoReview).
 export const proposalReviewSchema: z.ZodType<ProposalFormValues, ProposalFormValues> = z
-  .object({ entries: z.array(reviewEntrySchema) })
-  .superRefine((values, ctx) => {
-    values.entries.forEach((entry, index) => {
-      if (entry.kind === "unmatched") return
-      const message = gramsError(entry.grams)
-      if (message) ctx.addIssue({ code: "custom", path: ["entries", index, "grams"], message })
-    })
-  })
+  .object({ entries: z.array(proposalEntryUnion(z.string())) })
+  .superRefine(validateProposalGrams)
 
 export const removalResponseSchema = z.object({ restore_token: z.string().min(1) })

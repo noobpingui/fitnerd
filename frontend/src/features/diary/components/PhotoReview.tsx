@@ -11,9 +11,10 @@ import {
   mergeProposalEntries,
   proposalItems,
   proposalTotals,
+  unlinkCustomFood,
   withEntryKey,
 } from "../proposal"
-import { proposalFormSchema } from "../schemas"
+import { proposalReviewSchema } from "../schemas"
 import type {
   ProposalEntry,
   ProposalFormEntry,
@@ -55,19 +56,29 @@ export function PhotoReview({
     entries: initialEntries.map(withEntryKey),
   }))
   const form = useForm<ProposalFormValues>({
-    resolver: zodResolver(proposalFormSchema) as never,
+    resolver: zodResolver(proposalReviewSchema),
     defaultValues,
   })
-  const { fields, append, update, remove } = useFieldArray({
+  const { fields, append, update, remove, replace } = useFieldArray({
     control: form.control,
     name: "entries",
   })
   // Los gramos de cada fila se leen por su clave, nunca por su posición.
   const watched = useWatch({ control: form.control, name: "entries" })
-  const entries = mergeProposalEntries(fields as unknown as ProposalFormEntry[], watched)
+  const entries = mergeProposalEntries(fields, watched)
 
   const hasUnmatched = entries.some((entry) => entry.kind === "unmatched")
   const canSave = entries.some(isSavable)
+
+  // Un alimento propio borrado de la biblioteca deja de estar vinculado, pero la fila se conserva.
+  function unlinkDeleted(customFoodId: number) {
+    replace(
+      entries.map((entry): ProposalFormEntry => {
+        const unlinked = unlinkCustomFood(entry, customFoodId)
+        return unlinked ? withEntryKey(unlinked) : entry
+      })
+    )
+  }
 
   function backToList() {
     setView({ name: "list" })
@@ -92,6 +103,7 @@ export function PhotoReview({
           }
           backToList()
         }}
+        onCustomFoodDeleted={unlinkDeleted}
         onCreateCustom={(name) =>
           setView({
             name: "custom",

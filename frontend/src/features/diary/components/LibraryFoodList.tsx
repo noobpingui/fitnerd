@@ -2,7 +2,7 @@ import type { ReactElement, ReactNode } from "react"
 import { Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { formatCalories, formatGrams } from "@/features/foods/format"
-import type { LibraryFood } from "@/features/food-library/types"
+import type { CustomLibraryFood, LibraryFood } from "@/features/food-library/types"
 
 // Lista de alimentos de la biblioteca (resultados, favoritos o recientes).
 export function LibraryFoodList({
@@ -11,13 +11,14 @@ export function LibraryFoodList({
   onSelect,
   onToggleFavorite,
   onDelete,
+  renderInline,
   disabled = false,
 }: {
   label: string
   foods: LibraryFood[]
   onSelect: (food: LibraryFood) => void
   onToggleFavorite: (food: LibraryFood) => void
-  onDelete: (food: LibraryFood) => void
+  onDelete: (food: CustomLibraryFood, trigger: HTMLButtonElement) => void
   renderInline?: (food: LibraryFood) => ReactNode
   disabled?: boolean
 }): ReactElement {
@@ -69,12 +70,13 @@ export function LibraryFoodList({
                 size="sm"
                 aria-label={`Borrar ${food.name} de tus alimentos`}
                 disabled={disabled}
-                onClick={() => onDelete(food)}
+                onClick={(event) => onDelete(food, event.currentTarget)}
               >
                 Borrar
               </Button>
             )}
           </div>
+          {renderInline?.(food)}
         </li>
       ))}
     </ul>

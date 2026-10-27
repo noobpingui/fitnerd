@@ -10,7 +10,7 @@
   "branch": "feat/028-diary-food-library",
   "base_branch": "main",
   "created_at": "2026-10-27T08:34:57.517Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,7 +29,10 @@
       "at": "2026-10-27T22:58:13.002Z",
       "note": "auto (gate_mode=flow): red check PASS; excepción B5.2/B5.6 ratificada por el usuario con «si»"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-27T23:05:26.787Z",
+      "note": "auto (gate_mode=flow): suites completas en verde"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -39,7 +42,7 @@
     "spec": "66a0bff",
     "plan": "3b4ddaa",
     "tasks": "0e8f5c2",
-    "tests": "20960b4",
+    "tests": "1f2bed0",
     "implement": "56a780a"
   },
   "iterations": {
@@ -545,6 +548,36 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS; excepción B5.2/B5.6 ratificada por el usuario con «si»"
+    },
+    {
+      "at": "2026-10-27T22:58:21.717Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 1f2bed0"
+    },
+    {
+      "at": "2026-10-27T22:58:21.924Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar iteración 2 (T-160 a T-168)"
+    },
+    {
+      "at": "2026-10-27T23:05:26.680Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "implement it.2: backend 2580 y frontend 1560 en verde, tsc, lint y build limpios"
+    },
+    {
+      "at": "2026-10-27T23:05:26.787Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): suites completas en verde"
+    },
+    {
+      "at": "2026-10-27T23:05:26.875Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "Decisiones: key nueva tras desvincular; replace único en PhotoReview; Escape consumido con borrado en curso; CustomFoodRepository.count_by_user se conserva"
     }
   ]
 }
