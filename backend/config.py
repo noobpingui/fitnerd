@@ -41,7 +41,7 @@ SECRET_KEY_REQUIRED_MESSAGE = (
 )
 
 
-def resolve_secret_key(value, *, required):
+def resolve_secret_key(value: str | None, *, required: bool) -> str:
     """Clave de firma: en producción es obligatoria y no puede ser un valor por defecto conocido."""
     if not required:
         return DEFAULT_SECRET_KEY if value is None else value

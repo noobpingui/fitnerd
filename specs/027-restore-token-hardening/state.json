@@ -9,7 +9,7 @@
   "branch": "fix/027-restore-token-hardening",
   "base_branch": "main",
   "created_at": "2026-10-27T05:55:23.138Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -28,7 +28,10 @@
       "at": "2026-10-27T07:28:34.592Z",
       "note": "auto (gate_mode=flow): F1 y F2 de la review"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-27T07:31:19.005Z",
+      "note": "auto (gate_mode=flow): F3 y F4"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -38,13 +41,13 @@
     "spec": "8c13d6f",
     "plan": "b424cca",
     "tasks": "02c325f",
-    "tests": "39c9116",
+    "tests": "9127597",
     "implement": "36d017b"
   },
   "iterations": {
     "tests": 3,
     "implement": 0,
-    "review": 1
+    "review": 2
   },
   "max_iterations": 4,
   "red_check": {
@@ -394,6 +397,30 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): F1 y F2 de la review"
+    },
+    {
+      "at": "2026-10-27T07:28:34.858Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 9127597"
+    },
+    {
+      "at": "2026-10-27T07:28:35.066Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "Review F3 y F4: anotaciones de tipo de resolve_secret_key y reutilizar is_db_id para fdc_id · review 2/4"
+    },
+    {
+      "at": "2026-10-27T07:31:18.889Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F3 y F4: anotaciones de tipo e is_db_id; 2182 passed"
+    },
+    {
+      "at": "2026-10-27T07:31:19.005Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F3 y F4"
     }
   ]
 }
