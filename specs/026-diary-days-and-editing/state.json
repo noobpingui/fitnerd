@@ -10,8 +10,8 @@
   "branch": "feat/026-diary-days-and-editing",
   "base_branch": "main",
   "created_at": "2026-10-27T01:22:43.361Z",
-  "stage": "close",
-  "status": "in_progress",
+  "stage": "done",
+  "status": "done",
   "approvals": {
     "spec": {
       "at": "2026-10-27T01:44:24.057Z",
@@ -45,7 +45,10 @@
       "at": "2026-10-27T04:41:18.453Z",
       "note": "auto (gate_mode=flow): docs actualizadas"
     },
-    "close": null
+    "close": {
+      "at": "2026-10-27T04:43:01.292Z",
+      "note": "Aprobado, ejecuta los 5 pasos"
+    }
   },
   "commits": {
     "spec": "756db4f",
@@ -53,7 +56,8 @@
     "tasks": "f500114",
     "tests": "0b17e2a",
     "implement": "16215b2",
-    "review": "1e2a0b7"
+    "review": "1e2a0b7",
+    "docs": "c410300"
   },
   "iterations": {
     "tests": 4,
@@ -494,6 +498,36 @@
       "stage": "docs",
       "event": "approved",
       "note": "auto (gate_mode=flow): docs actualizadas"
+    },
+    {
+      "at": "2026-10-27T04:41:18.732Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: c410300"
+    },
+    {
+      "at": "2026-10-27T04:41:22.278Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Cierre de 026"
+    },
+    {
+      "at": "2026-10-27T04:41:33.376Z",
+      "stage": "close",
+      "event": "done",
+      "note": "Checklist de hecho completa; backlog global actualizado"
+    },
+    {
+      "at": "2026-10-27T04:43:01.292Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Aprobado, ejecuta los 5 pasos"
+    },
+    {
+      "at": "2026-10-27T04:43:01.292Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
     }
   ]
 }
