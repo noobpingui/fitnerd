@@ -1,7 +1,10 @@
 # Plan 028 — Biblioteca de alimentos del diario: personalizados reutilizables, recientes y favoritos, con búsqueda compartida
 
-- **Spec:** [spec.md](spec.md) (aprobada el 2026-10-27)
+- **Spec:** [spec.md](spec.md) (aprobada el 2026-10-27; iteración 2 aprobada el mismo día)
 - **Ámbitos:** `backend`, `frontend`
+- **Iteración 2 (hallazgos F1 a F8 de la review):** lo nuevo o cambiado se marca con «(iteración 2)». Resumen en la
+  sección 1; el diseño, en 3.2 y 3.3; los tests que cambian y los nuevos, en la sección 5 («Iteración 2»). **No hay migración nueva**: la
+  `e6a8c0d2f4b7` no cambia.
 
 ## 1. Resumen de la solución
 - **Backend:** dos tablas nuevas, `custom_foods` (biblioteca por usuario) y `food_favorites`, y la columna
@@ -16,6 +19,25 @@
   `FoodSearchPanel` compartido por `AddFoodDialog` y `PhotoReview`, con búsqueda mientras se escribe (300 ms),
   «Favoritos», «Recientes», favoritos y borrado. `PhotoReview` deja `form.watch` y lee los gramos con `useWatch`
   emparejados por clave. Se retira el código de `FoodsPage` y se actualiza la Política de privacidad.
+- **(iteración 2)**
+  - **F1 y F2 (REQ-017, NFR-002):** la confirmación de borrado es en línea (`role="alertdialog"`), dentro del elemento
+    de la lista donde se pulsó «Borrar»; Escape la cancela con un hook nuevo, `useEscapeCapture`, que escucha en
+    `window` en fase de captura (antes que Radix) mientras está abierta; el foco va a «Cancelar» al abrir, vuelve a
+    «Borrar» al cancelar o si el borrado falla (la confirmación se cierra y el error queda en el elemento) y pasa a la
+    caja de búsqueda tras un borrado correcto. `AddFoodDialog` y `MealPhotoDialog` no cambian.
+  - **F3 (REQ-009):** el límite de 100 cuenta solo los favoritos visibles y `DELETE …/favorites/catalog/{id}` borra un
+    favorito cuyo alimento ya no está en el catálogo. Solo cambia `FoodLibraryService`.
+  - **F4 (NFR-004):** la segunda pasada de `catalog_search_service` memoriza las distancias por pareja (forma, palabra)
+    en una búsqueda, resuelve sin calcular las formas cortas y las palabras demasiado cortas, y cuenta los cálculos en
+    un `TypoSearchStats` opcional: como mucho F × P, sin cambiar resultados ni orden.
+  - **F5 (REQ-020):** se borran `features/catalog/` entero, `features/foods/api.ts`, `catalogEntry`, el esquema y los
+    tipos de la respuesta de USDA del frontend y `src/test/catalogFixtures.ts`, y se quitan sus mocks de los tests.
+  - **F6:** `PhotoReview` usa un esquema nuevo, `proposalReviewSchema`, con `key` obligatoria; sin `as never` ni
+    `as unknown as`.
+  - **F7 (REQ-018):** al borrar desde la búsqueda de la propuesta un alimento propio que ya está en ella, sus filas
+    pierden el vínculo (`unlinkCustomFood`) y se guardan como personalizados con `name` y `per_100g`.
+  - **F8:** el plan y la ADR-0036 describen la confirmación en línea; ya no hay `ConfirmDialog` ni `confirmContainer`
+    en esta feature.
 
 ## 2. Impacto en la arquitectura
 | Ámbito | Capa / área | Archivos nuevos | Archivos modificados | Motivo |
@@ -29,14 +51,23 @@
 | backend | tests | `backend/tests/test_services/test_food_library_rules.py`, `backend/tests/test_services/test_food_library_service.py`, `backend/tests/test_services/test_food_library_migration.py`, `backend/tests/test_routes/test_food_library_routes.py`, `backend/tests/test_routes/test_meal_library_routes.py` | `backend/tests/fakes.py`, `backend/tests/test_services/test_catalog_search_service.py`, `backend/tests/test_services/test_meal_service.py`, `backend/tests/test_services/test_meal_rules.py`, `backend/tests/test_routes/test_catalog_routes.py`, `backend/tests/test_routes/test_meal_routes.py` | Ver sección 5 |
 | frontend | feature `food-library` (datos) | `frontend/src/features/food-library/api.ts`, `hooks.ts`, `types.ts`, `schemas.ts` | — | Llamadas, claves de TanStack Query y validación de `/api/food-library` |
 | frontend | lib | `frontend/src/lib/useDebouncedValue.ts` | — | Retardo de 300 ms con «disparo inmediato» para Intro (REQ-013) |
-| frontend | diary · componentes | `frontend/src/features/diary/components/FoodSearchPanel.tsx`, `frontend/src/features/diary/components/LibraryFoodList.tsx` | `AddFoodDialog.tsx`, `PhotoReview.tsx`, `ProposalEntryRow.tsx`, `CustomFoodForm.tsx`, `MealPhotoDialog.tsx` | Búsqueda compartida (REQ-013 a REQ-018), totales al día (REQ-019), aviso del formulario (AC-016.2) |
+| frontend | diary · componentes | `frontend/src/features/diary/components/FoodSearchPanel.tsx`, `frontend/src/features/diary/components/LibraryFoodList.tsx` | `AddFoodDialog.tsx`, `PhotoReview.tsx`, `CustomFoodForm.tsx` (`ProposalEntryRow.tsx` y `MealPhotoDialog.tsx` no hizo falta cambiarlos: las filas propias usan la variante `custom` existente y sin `confirmContainer` no hay nada que pasar) | Búsqueda compartida (REQ-013 a REQ-018), totales al día (REQ-019), aviso del formulario (AC-016.2) |
+| frontend | diary · componentes (iteración 2) | — | `FoodSearchPanel.tsx` (confirmación en línea, Escape, foco, `onCustomFoodDeleted`), `LibraryFoodList.tsx` (`renderInline`, `onDelete` con el botón), `PhotoReview.tsx` (`proposalReviewSchema` sin `as never`, `unlinkCustomFood`) | F1, F2, F6, F7 (REQ-017, REQ-018, NFR-002) |
+| frontend | lib (iteración 2) | `frontend/src/lib/useEscapeCapture.ts` | — | Escape en captura sobre `window` mientras la confirmación está abierta (F1, AC-017.5, AC-017.6) |
+| frontend | diary · lógica (iteración 2) | — | `frontend/src/features/diary/proposal.ts` (quita `catalogEntry`, añade `unlinkCustomFood`), `frontend/src/features/diary/schemas.ts` (`proposalReviewSchema`) | F5, F6, F7 |
+| frontend | retirada (iteración 2) | — | se borran `frontend/src/features/catalog/api.ts`, `hooks.ts`, `schemas.ts`, `schemas.test.ts`, `types.ts`, `components/CatalogResultList.tsx`, `components/CatalogResultList.test.tsx` (la carpeta `features/catalog/` desaparece), `frontend/src/features/foods/api.ts` y `frontend/src/test/catalogFixtures.ts`; en `frontend/src/features/foods/schemas.ts` se quita `foodSearchResponseSchema` y en `frontend/src/features/foods/types.ts`, `FoodPer100g`, `Food` y `FoodSearchResponse` | REQ-020 ampliado (F5): código que solo usaban la pantalla de la 021 o la búsqueda de la 023 |
+| backend | services (iteración 2) | — | `backend/services/catalog_search_service.py` (`TypoSearchStats`, `TypoDistances`, `typo_comparison_bound`, `stats` en `rank_candidates`, `rank_catalog` y `CatalogSearchService.search`), `backend/services/food_library_service.py` (favoritos visibles, `remove_favorite` de un favorito retirado, `stats` en `search`) | F3 (REQ-009), F4 (NFR-004) |
+| backend y frontend | tests (iteración 2) | `frontend/src/lib/useEscapeCapture.test.ts` | backend: `tests/fakes.py`, `test_catalog_search_service.py`, `test_food_library_service.py`, `test_food_library_routes.py`, `test_catalog_routes.py`; frontend: `FoodSearchPanel.test.tsx`, `AddFoodDialog.test.tsx`, `MealPhotoDialog.test.tsx`, `proposal.test.ts`, `schemas.test.ts` (diary), `PhotoReview.source.test.ts`, `foodsRoute.test.tsx`, `mealPhotoRoute.test.tsx`, `diaryRoute.test.tsx`; se borran `features/catalog/components/CatalogResultList.test.tsx`, `features/catalog/schemas.test.ts` y `src/test/catalogFixtures.ts` | Sección 5, «Iteración 2» |
+| backend | repositories (iteración 2) | — | `backend/repositories/food_favorite_repository.py` (se quita `count_by_user`, sin uso) | F3 |
 | frontend | diary · lógica | — | `frontend/src/features/diary/proposal.ts`, `types.ts`, `schemas.ts`, `format.ts`, `errors.ts`, `constants.ts`, `hooks.ts` | Entradas con clave y alimento propio, `custom_food_id`, mensajes, invalidar la biblioteca al añadir |
 | frontend | retirada | — | se borran `frontend/src/features/diary/components/ProposalSearchStep.tsx`, `frontend/src/features/foods/pages/FoodsPage.tsx`, `frontend/src/features/foods/pages/FoodsPage.test.tsx`, `frontend/src/features/foods/components/FoodResultList.tsx`, `frontend/src/features/foods/components/FoodSearchForm.tsx`, `frontend/src/features/foods/hooks.ts` | REQ-020 y Q7; sustituidos por `FoodSearchPanel` |
 | frontend | legal | — | `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx` | REQ-021 |
 | frontend | tests | `frontend/src/features/food-library/api.test.ts`, `frontend/src/lib/useDebouncedValue.test.ts`, `frontend/src/features/diary/components/FoodSearchPanel.test.tsx`, `frontend/src/features/diary/components/PhotoReview.source.test.ts` | `AddFoodDialog.test.tsx`, `MealPhotoDialog.test.tsx`, `DiaryPage.test.tsx`, `proposal.test.ts`, `schemas.test.ts`, `api.test.ts` (diary), `PrivacyPolicyPage.test.tsx`, `foodsRoute.test.tsx`, `mealPhotoRoute.test.tsx` | Ver sección 5 |
 | docs | ADR | `docs/sdd/decisions/ADR-0036-biblioteca-de-alimentos-propios.md` | `docs/sdd/decisions/README.md` | Decisión nueva (sección 8) |
 
-Sin dependencias nuevas, sin variables de entorno nuevas y sin cambios en `config.py`, `extensions.py` ni Caddy.
+Sin dependencias nuevas, sin variables de entorno nuevas y sin cambios en `config.py`, `extensions.py` ni Caddy. La
+iteración 2 no cambia modelos ni migraciones, ni las rutas HTTP (`food_library_routes.py` y `catalog_routes.py` siguen
+igual: no pasan `stats`).
 
 ## 3. Diseño
 ### 3.1 Datos y migraciones
@@ -174,17 +205,46 @@ class SearchCandidate:
 def rank_candidates(candidates: Iterable[SearchCandidate], query: str, limit: int = MAX_RESULTS) -> list: ...
 ```
 
+**(iteración 2, F4, NFR-004)** en el mismo módulo (las firmas anteriores ganan un último parámetro opcional; con
+`None` se comportan igual que hoy, así los tests existentes siguen valiendo):
+```python
+TYPO_MIN_FORM_LENGTH = 4    # formas más cortas: tolerancia 0, sin cálculo de distancia
+
+@dataclass
+class TypoSearchStats:
+    comparisons: int = 0    # cálculos de prefix_edit_distance hechos en la pasada con tolerancia
+
+class TypoDistances:
+    """Memoria de distancias de una búsqueda, por pareja (forma, palabra), con contador."""
+    def __init__(self, stats: TypoSearchStats | None = None): ...
+    def within_tolerance(self, form: str, word: str) -> int | None: ...   # distancia si ≤ typo_tolerance(form); si no, None
+
+def typo_distance(name: str, synonyms: Sequence[str], query: list[tuple[str, ...]],
+                  distances: TypoDistances | None = None) -> int | None: ...
+def typo_comparison_bound(candidates: Iterable[SearchCandidate], query: str) -> int: ...   # F × P (sección 3.3)
+def rank_candidates(candidates: Iterable[SearchCandidate], query: str, limit: int = MAX_RESULTS,
+                    stats: TypoSearchStats | None = None) -> list: ...
+def rank_catalog(foods: Iterable, query: str, limit: int = MAX_RESULTS,
+                 stats: TypoSearchStats | None = None) -> list: ...
+
+class CatalogSearchService:
+    def __init__(self, catalog_repository): ...                        # sin cambios
+    def search(self, raw_query: str | None, stats: TypoSearchStats | None = None) -> list[CatalogFood]: ...
+```
+
 `backend/services/food_library_service.py`:
 ```python
 class FoodLibraryService:
     def __init__(self, catalog_repository, custom_food_repository, favorite_repository,
                  meal_repository, user_repository, unit_of_work): ...
-    def search(self, user_id, raw_query: str | None) -> list[LibraryFood]: ...
+    def search(self, user_id, raw_query: str | None,
+               stats: TypoSearchStats | None = None) -> list[LibraryFood]: ...   # stats: iteración 2
     def recent(self, user_id) -> list[LibraryFood]: ...
     def favorites(self, user_id) -> list[LibraryFood]: ...
     def add_favorite(self, user_id, kind: str, food_id: object) -> None: ...
     def remove_favorite(self, user_id, kind: str, food_id: object) -> None: ...
     def delete_custom_food(self, user_id, custom_food_id: object) -> None: ...
+    def _visible_favorite_count(self, user_id) -> int: ...   # iteración 2 (F3), privado
 ```
 
 `backend/services/meal_rules.py` (añadidos):
@@ -222,7 +282,7 @@ class FoodFavoriteRepository(BaseRepository):
     def list_by_user(self, user_id) -> list[FoodFavorite]: ...
     def get_for_food(self, user_id, catalog_id: str | None = None,
                      custom_food_id: int | None = None) -> FoodFavorite | None: ...
-    def count_by_user(self, user_id) -> int: ...
+    # (iteración 2, F3) se quita `count_by_user`: el límite cuenta los visibles en el servicio.
 ```
 
 `backend/repositories/meal_repository.py`: `def list_recent_foods(self, user_id, limit: int) -> list[RecentFoodRow]`.
@@ -276,28 +336,38 @@ export function useDeleteCustomFood(): UseMutationResult<void, Error, number>
 export function useDebouncedValue<T>(value: T, delayMs: number): [T, (next: T) => void]
 ```
 
-`frontend/src/features/diary/components/FoodSearchPanel.tsx`:
+`frontend/src/features/diary/components/FoodSearchPanel.tsx` (iteración 2: sin `confirmContainer`, que nunca se
+implementó, y con `onCustomFoodDeleted`):
 ```ts
 export function FoodSearchPanel(props: {
   initialQuery?: string
   onQueryChange?: (query: string) => void
   onSelect: (food: LibraryFood, defaultGrams: string) => void
   onCreateCustom: (name: string) => void
+  onCustomFoodDeleted?: (customFoodId: number) => void   // tras un borrado correcto (también el 404)
   actions?: ReactNode
-  confirmContainer?: HTMLElement | null
 }): ReactElement
 ```
+La confirmación sigue siendo un componente interno, no exportado, de `FoodSearchPanel.tsx`
+(`DeleteConfirmation({ title, description, isPending, onConfirm, onCancel })`, sin la prop `error` de la iteración 1).
 
-`frontend/src/features/diary/components/LibraryFoodList.tsx`:
+`frontend/src/features/diary/components/LibraryFoodList.tsx` (iteración 2: `onDelete` recibe el alimento propio y su
+botón, y `renderInline` pinta contenido dentro del elemento de un alimento):
 ```ts
 export function LibraryFoodList(props: {
   label: string
   foods: LibraryFood[]
   onSelect: (food: LibraryFood) => void
   onToggleFavorite: (food: LibraryFood) => void
-  onDelete: (food: LibraryFood) => void
+  onDelete: (food: CustomLibraryFood, trigger: HTMLButtonElement) => void
+  renderInline?: (food: LibraryFood) => ReactNode
   disabled?: boolean
 }): ReactElement
+```
+
+`frontend/src/lib/useEscapeCapture.ts` (iteración 2, F1):
+```ts
+export function useEscapeCapture(onEscape: () => void, active: boolean): void
 ```
 
 `frontend/src/features/diary`:
@@ -319,6 +389,21 @@ export function LibraryFoodList(props: {
   ): ProposalFormEntry[]
   ```
   (`proposalItems` convierte un `custom` con `customFoodId` en `{ custom_food_id, grams }`.)
+  (iteración 2) Se quita `export function catalogEntry(food: CatalogFood, grams: string)` (F5; `libraryEntry` cubre el
+  caso del catálogo con la misma etiqueta «Añadido por ti») y se añade (F7):
+  ```ts
+  // Si la entrada es el alimento propio borrado, la misma entrada sin `customFoodId` (y sin `key`); si no, null.
+  export function unlinkCustomFood(entry: ProposalEntry, customFoodId: number): ProposalEntry | null
+  ```
+- `schemas.ts` (iteración 2, F6): las tres variantes de la propuesta y la validación de gramos se definen una vez y se
+  combinan en dos esquemas:
+  ```ts
+  export const proposalFormSchema            // el de la 025 y la 028: `key` opcional (sin cambios de comportamiento)
+  export const proposalReviewSchema: z.ZodType<ProposalFormValues, ProposalFormValues>   // `key` obligatoria
+  ```
+  `PhotoReview` usa `useForm<ProposalFormValues>({ resolver: zodResolver(proposalReviewSchema), defaultValues })` y
+  `mergeProposalEntries(fields, watched)`, sin `as never` ni `as unknown as`. La anotación de tipo hace que `tsc` falle
+  si el esquema y `ProposalFormValues` se desalinean.
 - `format.ts`: `export function gramsText(value: number): string` (150 → `"150"`, 12.5 → `"12,5"`).
 - `errors.ts`: `FAVORITE_FAILED_MESSAGE = "No se pudo actualizar tus favoritos."`,
   `export function favoriteErrorMessage(error: unknown): string` (400 → mensaje del servidor),
@@ -326,8 +411,8 @@ export function LibraryFoodList(props: {
   `LIBRARY_LOAD_FAILED_MESSAGE = "No se pudieron cargar tus alimentos."`.
 - `constants.ts`: `SEARCH_DEBOUNCE_MS = 300` y `CUSTOM_FOOD_LIBRARY_NOTICE = "Se guardará en tus alimentos para usarlo
   otro día. Si ya tienes uno con el mismo nombre, se actualizarán sus valores."`.
-- `PhotoReview`: prop nueva opcional `confirmContainer?: HTMLElement | null` (la pasa `MealPhotoDialog` con su
-  `contentElement`).
+- `PhotoReview`: sin props nuevas (iteración 2, F8: la prop `confirmContainer` del primer plan no existe; la
+  confirmación en línea no la necesita y `MealPhotoDialog` no cambia).
 
 ### 3.3 Lógica
 
@@ -372,8 +457,21 @@ token no es válido (404, como la 027). Al restaurar con `cf`, se vincula solo s
 - `add_favorite` / `remove_favorite`: `kind` fuera de `LIBRARY_KINDS` → 404. Valida el id (`is_catalog_id` o
   `parse_custom_food_id`) y la existencia (`catalog_repository.get_by_ids([id])` o `get_by_id_and_user`); si no →
   `ResourceNotFoundError(FOOD_NOT_FOUND_MESSAGE)`. `add`: bloquea la fila del usuario; si ya es favorito, no hace nada
-  (204); si `count_by_user >= MAX_FAVORITES` → `ValidationError(FAVORITES_LIMIT_MESSAGE)`; si no, crea y `commit`.
-  `remove`: borra si existe y `commit`.
+  (204); si los favoritos visibles son `>= MAX_FAVORITES` → `ValidationError(FAVORITES_LIMIT_MESSAGE)`; si no, crea y
+  `commit`. `remove`: borra si existe y `commit`. (La iteración 1 contaba con `count_by_user` y exigía la existencia
+  también al quitar; la iteración 2 lo cambia, ver el punto siguiente.)
+- **(iteración 2, F3, Q11)** cambios en los favoritos:
+  - `add_favorite` usa `_visible_favorite_count(user_id)` en lugar de `count_by_user`: `favorite_repository.list_by_user`
+    → los propios cuentan todos (el `CASCADE` no deja huérfanos) y los del catálogo solo si
+    `catalog_repository.get_by_ids(ids)` los devuelve (se reutiliza `_load`, la misma regla que `favorites()`). Si ya
+    es favorito, 204 sin contar (AC-009.4). Si un alimento retirado vuelve sin haberlo quitado y deja más de 100
+    visibles, marcar uno nuevo da el 400 hasta bajar de 100 (Q11).
+  - `remove_favorite` con `kind == "catalog"`, tras validar el id y bloquear la fila del usuario:
+    `existing = get_for_food(user_id, catalog_id=…)`; si existe, se borra (aunque el alimento ya no esté en el
+    catálogo, AC-009.7) y `commit`; si no existe, se exige el alimento en el catálogo (`_require_food`): si está, 204
+    sin cambios (AC-009.2); si no, 404 `FOOD_NOT_FOUND_MESSAGE` (AC-009.8; `get_for_food` filtra por usuario, así el
+    favorito de otro usuario no cuenta y no se toca). Con `kind == "custom"` no cambia.
+  - `FoodFavoriteRepository.count_by_user` deja de usarse y se quita.
 - `delete_custom_food`: `parse_custom_food_id` → bloquea la fila del usuario → `get_by_id_and_user` (si no, 404) →
   `delete` → `commit`. La base pone `meal_items.custom_food_id` a `NULL` y borra sus favoritos.
 - Ningún método llama a proveedores externos ni usa `rate_limiter` (NFR-001).
@@ -399,6 +497,37 @@ fila nueva (AC-012.1).
 Comprobación con los AC: «arorz»/«arroz» = 1 (intercambio); «ijol» frente a «frijoles» > 1 (AC-006.8); «huevi» frente a
 «hueso» = 2 > 1 (AC-006.9); «pam» no tiene tolerancia (AC-006.7); «nueces» → forma «nuez» (AC-006.10).
 
+**(iteración 2, F4, NFR-004) Cota determinista de la pasada con tolerancia:**
+1. `rank_candidates(…, stats)` crea **un** `TypoDistances(stats)` por búsqueda y lo pasa a `typo_distance` de cada
+   candidato. La pasada exacta no lo usa: con coincidencias exactas `stats.comparisons` queda en 0 (AC-N004.3).
+2. `TypoDistances.within_tolerance(form, word)`:
+   - `tol = typo_tolerance(form)`; si `tol == 0` (forma de menos de `TYPO_MIN_FORM_LENGTH`) → `0` si
+     `word.startswith(form)`, si no `None`. **No** cuenta como comparación (equivale a la distancia 0 frente a un
+     inicio). Así `q=pam` no hace ninguna (AC-N004.3).
+   - si `len(word) < len(form) - tol` → `None` sin calcular: la distancia frente a cualquier inicio de la palabra es al
+     menos `len(form) - len(word)`. No cuenta.
+   - si la pareja `(form, word)` ya está en la memoria, se usa; si no, `prefix_edit_distance(form, word)`, se guarda y
+     `stats.comparisons += 1` (si hay `stats`).
+   - devuelve la distancia si es `≤ tol`; si no, `None`.
+3. `typo_distance` usa `within_tolerance` en lugar de llamar a `prefix_edit_distance` directamente. Sigue recorriendo
+   las palabras de la consulta en su orden, **con repeticiones** (la suma de distancias y por tanto el orden de
+   REQ-006 no cambian), y corta el término en la primera palabra sin coincidencia, como hoy. Las repeticiones solo
+   encuentran parejas ya calculadas: repetir palabras no añade comparaciones, y como el orden de aparición de las
+   palabras distintas es el mismo, `"arroces " * 12 + "qzxw"` y `arroces qzxw` hacen exactamente las mismas (AC-N004.1).
+   Sin `distances`, `typo_distance` crea una memoria propia (los tests unitarios de la iteración 1 siguen valiendo).
+4. Cada pareja se calcula como mucho una vez y solo con formas de 4 o más caracteres y palabras de los términos
+   candidatos, así que `stats.comparisons ≤ F × P`.
+5. `typo_comparison_bound(candidates, query)`: **F** = número de formas distintas con `len ≥ TYPO_MIN_FORM_LENGTH` del
+   conjunto de `query_forms(query)` (palabras repetidas una vez); **P** = número de palabras distintas de
+   `words(name)` y `words(synonym)` de todos los candidatos. Devuelve `F * P`. Lo usan los tests y documenta la cota;
+   el código de producción no lo necesita.
+6. `rank_catalog(…, stats)`, `CatalogSearchService.search(raw_query, stats=None)` y
+   `FoodLibraryService.search(user_id, raw_query, stats=None)` solo reenvían `stats`. Las rutas no lo pasan y los
+   contratos HTTP no cambian (AC-006.12).
+
+Ejemplo de AC-N004.1: «arroces» tiene las formas `arroces`, `arroce`, `arroc` y `arroz` (todas de 4 o más caracteres)
+y «qzxw», una: F = 5 en las dos consultas.
+
 **Frontend · `FoodSearchPanel` (REQ-013 a REQ-017):**
 - Formulario react-hook-form con `foodSearchFormSchema` de `features/foods/schemas.ts` (se conserva), `mode` y
   `reValidateMode` `"onSubmit"` (sin avisos mientras se escribe, Q6). El texto se lee con `useWatch`.
@@ -422,15 +551,50 @@ Comprobación con los AC: «arorz»/«arroz» = 1 (intercambio); «ijol» frente
   `foodLibraryKeys.all`, así el botón cambia cuando llegan los datos nuevos). Error → `favoriteErrorMessage` en un
   `role="alert"`; el botón no cambia (AC-015.4 y AC-015.5). Los botones de favorito se deshabilitan mientras hay una
   petición en curso.
-- Borrar: `ConfirmDialog` (`diary/components/ConfirmDialog.tsx`, reutilizado) con título `¿Borrar «{nombre}» de tus
-  alimentos?`, texto, «Borrar» (destructivo) y «Cancelar», `container={confirmContainer}`. `useDeleteCustomFood`
-  (`onSuccess` invalida `foodLibraryKeys.all`; un 404 cuenta como éxito, igual que `useDeleteMeal`); error →
-  `DELETE_CUSTOM_FOOD_FAILED_MESSAGE` dentro de la confirmación, que sigue abierta.
+- Borrar **(iteración 2, F1, F2 y F8; sustituye al `ConfirmDialog` con `confirmContainer` del primer plan, que la
+  implementación ya cambió por una confirmación en línea porque un modal de Radix oculta la búsqueda con
+  `aria-hidden`)**:
+  - Estado del panel: `target: { food: CustomLibraryFood; list: "Resultados" | "Favoritos" | "Recientes"; trigger:
+    HTMLButtonElement } | null` y `confirming: boolean`. Al ser `CustomLibraryFood`, el id ya es `number` y desaparece
+    el `toDelete.id as number` de la iteración 1.
+  - `onDelete(food, trigger)` de cada lista: `deleteFood.reset()`, `target = { food, list: <su etiqueta>, trigger }`,
+    `confirming = true`.
+  - Cada `LibraryFoodList` recibe `renderInline`: para el alimento de `target` en la lista de `target.list` (misma
+    `kind` e `id`), pinta `DeleteConfirmation` si `confirming`; si no y `deleteFood.isError`, un
+    `<p role="alert">No se pudo borrar el alimento.</p>`. En el resto, nada. Así la confirmación sale **dentro del
+    `<li>`** donde se pulsó «Borrar» y no en otra lista con el mismo alimento (AC-017.7). No es modal: las listas
+    siguen accesibles por rol, sin `aria-hidden` (AC-017.3, AC-017.7).
+  - `DeleteConfirmation`: `role="alertdialog"` con `aria-labelledby` (título `¿Borrar «{nombre}» de tus alimentos?`) y
+    `aria-describedby` («Las comidas ya registradas no cambian.»), «Borrar» (destructivo) y «Cancelar»; el foco va a
+    «Cancelar» al montarse (AC-N002.3). Llama a `useEscapeCapture(cancelar, true)` y se quita el `onKeyDown` de
+    Escape, que nunca se ejecutaba (F1). Con el borrado en curso, Escape se consume sin hacer nada (no hay cancelación
+    a medias).
+  - Cancelar (botón o Escape; ignorado si `isPending`): `confirming = false`, `target = null`, `deleteFood.reset()` y
+    foco al `trigger` (AC-N002.4).
+  - Confirmar: `deleteFood.mutate(food.id, { onSuccess, onError })` (el hook ya invalida `foodLibraryKeys.all` y toma
+    el 404 como éxito):
+    - `onSuccess`: `onCustomFoodDeleted?.(food.id)`, `form.setFocus("query")` (AC-N002.5), `confirming = false`,
+      `target = null`. Como TanStack Query espera la invalidación del hook antes de llamar a este `onSuccess`, el
+      alimento ya ha desaparecido cuando se mueve el foco.
+    - `onError`: `confirming = false` (se conserva `target` para pintar el error en su elemento, AC-017.3) y foco al
+      `trigger` (AC-N002.4).
+  - Foco de vuelta (`focusTrigger`): `trigger.focus()` si `trigger.isConnected`; si no (la lista se desmontó),
+    `form.setFocus("query")`. El foco nunca queda en `body`.
+- **`useEscapeCapture(onEscape, active)` (iteración 2, F1):** con `active`, en un `useEffect` registra
+  `window.addEventListener("keydown", handler, { capture: true })` y lo quita al limpiar. `handler`: si
+  `event.key === "Escape"`, `event.preventDefault()`, `event.stopPropagation()` y `onEscape()` (leído de una ref para
+  no volver a registrar el listener en cada render). Motivo: Radix (`DismissableLayer`, `useEscapeKeydown`) escucha
+  `keydown` en `document` en captura, y la captura en `window` va antes; al detener la propagación, ni el diálogo
+  «Añadir a {sección}» se cierra ni `MealPhotoDialog` abre la confirmación de descartar (026), y React tampoco recibe
+  el evento. Al cerrar la confirmación el listener se quita y el siguiente Escape vuelve a llegar a Radix (segunda
+  parte de AC-017.5). Solo hay una confirmación abierta a la vez (un único `target`).
 - `LibraryFoodList`: `<ul aria-label={label}>`; por alimento: nombre; «Personalizado» si `kind === "custom"`; macros con
   `formatCalories`/`formatGrams` de `features/foods/format.ts`; «Elegir» (`aria-label="Elegir {nombre}"`); favorito
   (`aria-pressed`, `aria-label` «Añadir {nombre} a favoritos» o «Quitar {nombre} de favoritos», icono `Star` de
   `lucide-react`, ya instalado); en los propios, «Borrar» (`aria-label="Borrar {nombre} de tus alimentos"`). Clave
-  React `${kind}:${id}`.
+  React `${kind}:${id}`. (iteración 2) «Borrar» llama a `onDelete(food, event.currentTarget)` (solo existe con
+  `kind === "custom"`, así el tipo se estrecha a `CustomLibraryFood`) y, al final de cada `<li>`, se pinta
+  `renderInline?.(food)`.
 
 **Frontend · `AddFoodDialog` (REQ-013 a REQ-017):** paso `search` = `FoodSearchPanel` con `actions` = «Cancelar»; el
 diálogo guarda la última consulta (`onQueryChange`) para que «Volver a la búsqueda» la recupere (la caché de TanStack
@@ -448,19 +612,47 @@ del límite ya sale como mensaje del servidor con `saveErrorMessage`, y el formu
   observado con la misma `key`, toma sus `grams`; si no, los del `field`. Toda entrada que se añade o sustituye pasa
   por `withEntryKey` (clave nueva), así un valor obsoleto de `useWatch` nunca se aplica a otra fila. La clave sale de un
   contador del módulo (`proposal.ts`).
-- Vistas: `list`; `search` (`{ mode: "add" } | { mode: "resolve", index }`) con `FoodSearchPanel` (`initialQuery` = nombre
-  del alimento sin coincidencia o vacío, `actions` = «Volver a la propuesta», `confirmContainer`); `custom`
+- Vistas: `list`; `search` (`{ name: "search", index: number | null }`, `null` = añadir) con `FoodSearchPanel`
+  (`initialQuery` = nombre del alimento sin coincidencia o vacío, `actions` = «Volver a la propuesta» y, desde la
+  iteración 2, `onCustomFoodDeleted`); `custom`
   (`{ index: number | null, name, grams }`). Elegir: al resolver, `update(index, withEntryKey(libraryEntry(food,
   String(current.grams))))`; al añadir, `append(withEntryKey(libraryEntry(food, defaultGrams)))`. Crear desde la
   búsqueda: al añadir, formulario con el nombre buscado y gramos vacíos; al resolver, con el nombre y los gramos del
   alimento sin coincidencia (AC-018.6). «Añadir a la propuesta» hace `append` o `update` con `customEntry`.
-- `libraryEntry`: catálogo → igual que `catalogEntry` (etiqueta «Añadido por ti»); propio → `{ kind: "custom",
-  customFoodId: id, name, per100g, grams }` (etiqueta «Personalizado»).
+- `libraryEntry`: catálogo → `{ kind: "catalog", catalogId, name, per100g, grams, tag: "user" }` (etiqueta «Añadido
+  por ti», lo que hacía `catalogEntry`, que se retira en la iteración 2); propio → `{ kind: "custom", customFoodId: id,
+  name, per100g, grams }` (etiqueta «Personalizado»).
+- **(iteración 2, F6)** `useForm<ProposalFormValues>({ resolver: zodResolver(proposalReviewSchema), defaultValues })` y
+  `mergeProposalEntries(fields, watched)`: `fields` ya es `ProposalFormEntry & { id }`, así que sobran `as never` y
+  `as unknown as`.
+- **(iteración 2, F7, Q12)** la vista `search` pasa a `FoodSearchPanel`
+  `onCustomFoodDeleted={(id) => forgetCustomFood(id)}`; `forgetCustomFood` lee `form.getValues("entries")` (valores
+  actuales, gramos incluidos; `getValues` no es `watch` y no suscribe a nada) y, por cada índice en que
+  `unlinkCustomFood(entry, id)` devuelve una entrada, hace `update(index, withEntryKey(unlinked))`. La fila conserva
+  nombre, valores, gramos y «Personalizado» y, sin `customFoodId`, `proposalItems` la envía con `name`, `grams` y
+  `per_100g` (AC-018.7); `POST /api/meals` la vuelve a guardar en la biblioteca (REQ-001). Si el borrado se hizo en
+  otro sitio, el 400 «No encontramos ese alimento.» ya sale con `saveErrorMessage` en `MealPhotoDialog` y la propuesta
+  se conserva, como cualquier error de guardado de la 025 (AC-018.8; sin cambios de código, solo test nuevo).
 
 **Frontend · retirada (REQ-020):** se borran `FoodsPage.tsx` y su test, `FoodResultList.tsx`, `FoodSearchForm.tsx`
-(sustituido por la caja del panel), `foods/hooks.ts` y `ProposalSearchStep.tsx`. Se conservan `foods/api.ts`,
+(sustituido por la caja del panel), `foods/hooks.ts` y `ProposalSearchStep.tsx`. En la iteración 1 se conservaban
+`foods/api.ts` (en la iteración 2 se borra, ver el párrafo siguiente),
 `foods/schemas.ts`, `foods/format.ts`, `foods/searchError.ts` y `foods/types.ts` (los usan el diario o los mocks de las
 pruebas de rutas). `router.tsx` no cambia: `/foods` sigue redirigiendo a `/diary`.
+
+**Frontend · retirada ampliada (iteración 2, F5, REQ-020):** el diario ya solo busca con `FoodSearchPanel`, así que
+quedan sin uso, salvo en tests, y se borran:
+- `features/catalog/` entero: `api.ts` (`searchCatalog`), `hooks.ts` (`useCatalogSearch`), `components/CatalogResultList.tsx`
+  y su test, y también `schemas.ts` (con su test) y `types.ts`, que solo usaban `api.ts`, `catalogEntry` y
+  `src/test/catalogFixtures.ts`.
+- `features/foods/api.ts` (`searchFoods`); de `features/foods/schemas.ts`, `foodSearchResponseSchema`; de
+  `features/foods/types.ts`, `FoodPer100g`, `Food` y `FoodSearchResponse`. Se conservan `foodSearchFormSchema` y los
+  mensajes de la consulta (los usa el panel), `FoodDataType` (lo usan `diary/types.ts` y `foods/format.ts`),
+  `foods/format.ts` y `foods/searchError.ts`.
+- `catalogEntry` de `diary/proposal.ts` y `src/test/catalogFixtures.ts` (`makeCatalogFood`).
+- Los `vi.mock("@/features/catalog/api", …)` y `vi.mock("@/features/foods/api", …)` de los tests y sus aserciones
+  «no se llamó» (ver la sección 5, «Iteración 2»).
+El backend no cambia: `GET /api/foods/search` y `GET /api/catalog/search` se conservan («Fuera de alcance» y REQ-006).
 
 **Frontend · Política de privacidad (REQ-021):** solo el `<li>` «Diario de comidas:» añade «los alimentos
 personalizados que guardas para reutilizarlos y los que marcas como favoritos»; `updatedAt="27 de octubre de 2026"`.
@@ -474,7 +666,10 @@ prohíben).
 - **Propuesta de foto:** «Añadir otro alimento» y «Buscar» de un alimento sin coincidencia abren el mismo panel con
   «Volver a la propuesta»; «Crear alimento personalizado» abre el formulario con «Añadir a la propuesta». Las filas y el
   total se recalculan en cada cambio.
-- **Confirmación de borrado:** diálogo de alerta con los textos de la sección 6 de la spec.
+- **Confirmación de borrado (iteración 2):** en línea, dentro del elemento del alimento en la lista donde se pulsó
+  «Borrar», con borde destructivo, el título, el texto, «Borrar» y «Cancelar» de la sección 6 de la spec; no tapa ni
+  oculta el resto de la búsqueda. Escape la cierra como «Cancelar». Si el borrado falla, se cierra y el elemento muestra
+  «No se pudo borrar el alimento.».
 - Validación: zod para la consulta (`foodSearchFormSchema`), para las respuestas (`food-library/schemas.ts`) y para los
   formularios existentes (Art. P3.2).
 
@@ -489,7 +684,7 @@ prohíben).
 | REQ-006 | `query_forms` («-ces»), `edit_distance`, `prefix_edit_distance`, `typo_tolerance`, `typo_distance`, `rank_candidates`; `rank_catalog` (y así `GET /api/catalog/search`) |
 | REQ-007 | `FoodLibraryService.search`; `GET /api/food-library/search`; `library_food_to_json` |
 | REQ-008 | `MealRepository.list_recent_foods`; `FoodLibraryService.recent`; `GET /api/food-library/recent` |
-| REQ-009 | `FoodLibraryService.add_favorite` / `remove_favorite`; `food_favorites`; rutas `PUT`/`DELETE …/favorites/{catalog,custom}/<id>` |
+| REQ-009 | `FoodLibraryService.add_favorite` / `remove_favorite`; `food_favorites`; rutas `PUT`/`DELETE …/favorites/{catalog,custom}/<id>`; (iteración 2) `_visible_favorite_count` y `remove_favorite` de un favorito retirado (AC-009.6 a AC-009.8) |
 | REQ-010 | `FoodLibraryService.favorites`; `GET /api/food-library/favorites` |
 | REQ-011 | `@require_auth` en todas las rutas de `food_library_routes.py` |
 | REQ-012 | `RemovedItemSnapshot.custom_food_id`, `snapshot_payload`/`parse_snapshot_payload` con `cf`, `MealService.restore_item` |
@@ -497,14 +692,16 @@ prohíben).
 | REQ-014 | `FoodSearchPanel` (listas con la caja vacía), `useRecentFoods`, `useFavoriteFoods`, `gramsText`; invalidación en `useAddMealItems` |
 | REQ-015 | `LibraryFoodList` (etiqueta, botón de favorito), `useSetFoodFavorite`, `favoriteErrorMessage` |
 | REQ-016 | `AddFoodDialog` (paso `portion` con `custom_food_id`), `CustomFoodForm` (`CUSTOM_FOOD_LIBRARY_NOTICE`), `saveErrorMessage` |
-| REQ-017 | `LibraryFoodList` («Borrar»), `ConfirmDialog`, `useDeleteCustomFood`, `DELETE_CUSTOM_FOOD_FAILED_MESSAGE` |
-| REQ-018 | `PhotoReview` (vistas `search` y `custom`), `libraryEntry`, `proposalItems` con `customFoodId` |
+| REQ-017 | `LibraryFoodList` («Borrar», `renderInline`), `DeleteConfirmation` en línea de `FoodSearchPanel`, `useEscapeCapture` (iteración 2: AC-017.5, AC-017.6), confirmación dentro del `<li>` de su lista (AC-017.7), `useDeleteCustomFood`, `DELETE_CUSTOM_FOOD_FAILED_MESSAGE` |
+| REQ-018 | `PhotoReview` (vistas `search` y `custom`), `libraryEntry`, `proposalItems` con `customFoodId`; (iteración 2) `onCustomFoodDeleted` + `unlinkCustomFood` (AC-018.7) y `saveErrorMessage` de `MealPhotoDialog` sin cambios (AC-018.8) |
 | REQ-019 | `PhotoReview` con `useWatch` + `mergeProposalEntries` + `withEntryKey` |
-| REQ-020 | Retirada de `FoodsPage`, `FoodResultList`, `FoodSearchForm`, `foods/hooks.ts`; `router.tsx` sin cambios |
+| REQ-020 | Retirada de `FoodsPage`, `FoodResultList`, `FoodSearchForm`, `foods/hooks.ts`; `router.tsx` sin cambios; (iteración 2) retirada de `features/catalog/`, `foods/api.ts`, `foodSearchResponseSchema`, los tipos de la respuesta de USDA, `catalogEntry` y `catalogFixtures.ts` |
 | REQ-021 | `PrivacyPolicyPage.tsx` |
 | NFR-001 | `FoodLibraryService` sin `embedding_client` ni `rate_limiter` |
-| NFR-002 | Región `role="status"` del panel, `aria-label` de las listas y botones, `aria-pressed` del favorito |
+| NFR-002 | Región `role="status"` del panel, `aria-label` de las listas y botones, `aria-pressed` del favorito; (iteración 2) foco de la confirmación: «Cancelar» al abrir, `focusTrigger` al cancelar, con Escape o tras un fallo, `form.setFocus("query")` tras un borrado correcto (AC-N002.3 a AC-N002.5) |
 | NFR-003 | `PhotoReview.tsx` sin `form.watch` (`useWatch`) |
+| NFR-004 (iteración 2) | `TypoDistances` (memoria por pareja, formas cortas con `startswith`, descarte por longitud), `TypoSearchStats`, `typo_comparison_bound`, `stats` en `rank_candidates`, `rank_catalog`, `CatalogSearchService.search` y `FoodLibraryService.search` |
+| F6 y F8 (internos, sin REQ) | `proposalReviewSchema` sin `as never` (F6); este plan y la ADR-0036 con la confirmación en línea (F8) |
 
 ## 5. Estrategia de pruebas
 
@@ -518,7 +715,8 @@ backend; Vitest con jsdom para el frontend. Ningún test llama a servicios exter
     `name_key` calculada con `custom_food_name_key`);
   - `FakeCustomFoodRepository` (en memoria, filtra por usuario; `create` asigna id creciente; `deleted` y `created` para
     las aserciones; implementa todos los métodos de la sección 3.2);
-  - `FakeFoodFavoriteRepository` (`list_by_user`, `get_for_food`, `count_by_user`, `create`, `delete`);
+  - `FakeFoodFavoriteRepository` (`list_by_user`, `get_for_food`, `create`, `delete`; `count_by_user` se quita en la
+    iteración 2);
   - `FakeMealRepository.list_recent_foods(user_id, limit)` que devuelve las filas precargadas en `recent_rows`.
   Se reutilizan `FakeUnitOfWork`, `FakeLockingUserRepository`, `FakeCatalogFoodRepository`, `make_catalog_food`,
   `FakeClock` y `RestoreTokenSigner` real.
@@ -591,6 +789,100 @@ backend; Vitest con jsdom para el frontend. Ningún test llama a servicios exter
   pantalla; Art. B5.3 no aplica a tests de código retirado por la spec).
 - **Marcadores:** `// SDD: 028 REQ-… AC-…`; nombres en español (Art. P1.frontend.3).
 
+### Iteración 2: tests que cambian y tests nuevos
+Mismo entorno y mismo aislamiento que arriba (fakes a mano en el backend; `vi.mock` de los `api.ts` en el frontend). Sin
+dobles nuevos: en el backend bastan `FakeCatalogFoodRepository`, `FakeCustomFoodRepository`, `FakeFoodFavoriteRepository`,
+`make_catalog_food`, `make_custom_food` y `make_favorite`; en el frontend, los mocks de `@/features/food-library/api` y
+`@/features/diary/api` y las fábricas de `src/test/foodLibraryFixtures.ts`. El catálogo de la 023 que piden los AC de
+NFR-004 se lee, solo para leer, con `read_catalog_csv` (`services/catalog_csv_reader.py`) de
+`backend/scripts/data/food_catalog.csv` y se convierte con `make_catalog_food`; los 500 alimentos propios se generan en
+el test con nombres deterministas de 2 a 5 palabras.
+
+**Tests existentes de la 028 que cambian porque la spec cambió en la iteración 2** (Art. B5.3: se adaptan, no se
+debilitan; conservan su marcador y añaden el del AC nuevo si aplica):
+- backend:
+  - `test_food_library_service.py`: `hundred_favorites()` y los dos tests que lo usan con el catálogo de solo «Banano»
+    o «Fruta 000» (`test_add_favorite_with_100_favorites_is_rejected_with_the_limit_message` y
+    `test_add_favorite_that_already_is_a_favorite_works_with_100_favorites`): las 100 frutas deben estar **en el
+    catálogo** del `Env`, porque desde AC-009.6 los favoritos retirados no cuentan.
+  - `test_food_library_routes.py`: `test_marking_a_new_food_with_100_favorites_is_400_and_an_existing_one_is_204` y
+    `test_a_favorite_can_be_marked_again_after_removing_one_at_the_limit` siembran con `seed(app, …)` las 100 frutas,
+    no solo «fruta-000», por el mismo motivo.
+  - `tests/fakes.py`: `FakeFoodFavoriteRepository.count_by_user` se quita, como el método real.
+- frontend:
+  - `FoodSearchPanel.test.tsx`, «si el borrado falla muestra «No se pudo borrar el alimento.» y el alimento sigue en la
+    lista» (AC-017.3): tras el fallo ya **no** hay `alertdialog` (AC-N002.4: el borrado que falla cierra la
+    confirmación); el mensaje se busca dentro del elemento de «Gallo pinto» de «Resultados», que sigue en la lista.
+  - `AddFoodDialog.test.tsx`: se quitan `import { searchCatalog }`, `import { searchFoods }`, sus `vi.mock`, los
+    `catalogSearchMock`/`usdaSearchMock` y las dos aserciones «no se llamó» del test que comprueba la búsqueda nueva
+    (sigue comprobando `searchFoodLibrary`). Motivo: REQ-020 ampliado borra esos módulos.
+  - `MealPhotoDialog.test.tsx`: igual con `searchCatalog`, `catalogSearchMock` y su aserción «no se llamó».
+  - `foodsRoute.test.tsx` y `mealPhotoRoute.test.tsx` (028): se quitan los `vi.mock` de `@/features/catalog/api` y
+    `@/features/foods/api`, y el comentario de `foodsRoute.test.tsx` que decía que `foods/api.ts` se conservaba.
+  - `proposal.test.ts`: los tests de la 025 sobre `catalogEntry` («catalogEntry y customEntry», la etiqueta «Añadido
+    por ti» y el que vuelve a añadir «Arroz blanco cocido») pasan a `libraryEntry` con un alimento del catálogo de
+    `makeLibraryFood`, con el mismo resultado esperado; se quita el import de `catalogFixtures`. Conservan su marcador
+    de la 025 y añaden `// SDD: 028 REQ-020`.
+- Otro test existente que cambia sin ser de la 028: `src/app/diaryRoute.test.tsx` quita el `vi.mock` de
+  `@/features/foods/api` (el módulo deja de existir; ninguna aserción cambia).
+- **Se borran** con su código (REQ-020; Art. B5.3 no aplica a tests de código retirado por la spec):
+  `features/catalog/components/CatalogResultList.test.tsx` y `features/catalog/schemas.test.ts`, y la fábrica
+  `src/test/catalogFixtures.ts`.
+
+**Tests nuevos (iteración 2):**
+- backend · unitarios:
+  - `test_catalog_search_service.py`: `TypoDistances.within_tolerance` (forma de 3 caracteres: `startswith` y 0
+    comparaciones; palabra demasiado corta: `None` y 0 comparaciones; la misma pareja dos veces: 1 comparación;
+    distancia por encima de la tolerancia: `None`); `typo_comparison_bound` con un catálogo pequeño y un valor
+    calculado a mano; con el catálogo de la 023 (`rank_catalog` y `stats`): la consulta de AC-N004.1 da `[]`,
+    `comparisons ≤ typo_comparison_bound` e igual que con `arroces qzxw` (AC-N004.2, parte de `GET /api/catalog/search`),
+    `arroces integrale` incluye «Arroz integral cocido» dentro de la cota y `arroz` y `pam` hacen 0 comparaciones
+    (AC-N004.3). Los tests de REQ-006 de la iteración 1 siguen igual y prueban que el orden no cambia.
+  - `test_food_library_service.py`: AC-009.6 (99 visibles más uno retirado: marcar uno nuevo crea el favorito y
+    `favorites()` devuelve 100 con el nuevo); AC-009.7 (quitar un favorito retirado lo borra y confirma; con el
+    alimento de vuelta en el catálogo del fake, `favorites()` no lo trae); AC-009.8 (id válido que no está en el
+    catálogo ni en los favoritos del usuario, aunque sí en los de otro: 404 y los del otro intactos); AC-N004.1 a
+    AC-N004.3 en la búsqueda conjunta (`search(USER, q, stats=…)`, catálogo de la 023 y 500 propios).
+- backend · integración:
+  - `test_food_library_routes.py`: AC-009.6 a AC-009.8 por HTTP (retirar con `delete(CatalogFood)` en la sesión y
+    devolver con `seed`, como el test existente de AC-010.2); AC-N004.1 por HTTP: la consulta de 100 caracteres
+    responde 200 con `results` vacío.
+  - `test_catalog_routes.py`: AC-N004.2 por HTTP: la misma consulta en `GET /api/catalog/search` responde 200 con
+    `results` vacío y el formato de la 023.
+- frontend · unitarios:
+  - `src/lib/useEscapeCapture.test.ts` (nuevo, con `renderHook`): activo, Escape llama a `onEscape`, marca
+    `defaultPrevented` y no llega a un listener de captura en `document` (como el de Radix); otras teclas pasan;
+    inactivo o desmontado, no hace nada (AC-017.5, AC-017.6).
+  - `proposal.test.ts`: `unlinkCustomFood` (la fila del id borrado sin `customFoodId` ni `key`, con nombre, valores y
+    gramos; otro id, una fila del catálogo o una sin coincidencia → `null`) y `proposalItems` de la fila desvinculada
+    con `name` y `per_100g` (AC-018.7).
+  - `schemas.test.ts`: `proposalReviewSchema` rechaza una entrada sin `key`, conserva `key` y `customFoodId` y da los
+    mismos mensajes de gramos que `proposalFormSchema` (F6).
+  - `PhotoReview.source.test.ts`: `PhotoReview.tsx` no contiene `as never` ni `as unknown as` y usa
+    `proposalReviewSchema` (F6; el `verifier` además ejecuta `npx tsc -b`). Marcador `// SDD: 028 NFR-003 AC-N003.1`
+    (es el archivo de la propuesta y la deuda que dejó la 025).
+- frontend · componentes:
+  - `FoodSearchPanel.test.tsx`: Escape con la confirmación abierta la cierra sin petición, conserva el texto y el
+    alimento (AC-017.5, parte del panel); con «Gallo pinto» en «Favoritos» y «Recientes», «Borrar» de «Recientes» pinta
+    el `alertdialog` dentro del elemento de «Recientes» y no en «Favoritos», y las dos listas siguen accesibles por rol
+    (AC-017.7); foco en «Cancelar» al abrir (AC-N002.3); foco en «Borrar Gallo pinto de tus alimentos» de «Recientes»
+    tras «Cancelar», tras Escape y tras un borrado que falla (AC-N002.4); foco en «Buscar alimento» tras un 204
+    (AC-N002.5); `onCustomFoodDeleted` con el id tras un 204 o un 404 y no tras un fallo.
+  - `AddFoodDialog.test.tsx`: AC-017.5 completo: con «gallo» y la confirmación abierta, Escape deja el diálogo «Añadir a
+    {sección}» abierto con «gallo» y «Gallo pinto»; un segundo Escape lo cierra (`onClose`).
+  - `MealPhotoDialog.test.tsx`: AC-017.6 (Escape en la búsqueda de «Añadir otro alimento» con la confirmación abierta:
+    sin borrado, sin la confirmación de descartar de la 026 y con la búsqueda y su texto visibles); AC-018.7 (elegir
+    «Gallo pinto» propio con 250 g, borrarlo desde «Añadir otro alimento», volver y guardar: la fila sigue con
+    «Personalizado» y se envía `{name, grams: 250, per_100g}` sin `custom_food_id`); AC-018.8 (guardar con 400 «No
+    encontramos ese alimento.»: se ve el mensaje y la propuesta conserva sus dos filas, gramos y total).
+  - `foodsRoute.test.tsx`: `// SDD: 028 REQ-020` «el código sin uso de la búsqueda de la 023 y de USDA ya no existe»
+    (`import.meta.glob` de `features/catalog/**`, `features/foods/api.ts` y `src/test/catalogFixtures.ts` vacío) y
+    escaneo `?raw` de `diary/proposal.ts` (sin `catalogEntry`), `foods/schemas.ts` (sin `foodSearchResponseSchema`) y
+    `foods/types.ts` (sin `FoodSearchResponse`).
+- **Cobertura de los AC nuevos:** AC-009.6 a AC-009.8, AC-017.5 a AC-017.7, AC-018.7, AC-018.8, AC-N002.3 a AC-N002.5 y
+  AC-N004.1 a AC-N004.3 tienen al menos un test; REQ-020 ampliado, el suyo de `foodsRoute.test.tsx`; F6, el escaneo y
+  `tsc`.
+
 ## 6. Riesgos y mitigaciones
 | Riesgo | Probabilidad | Impacto | Mitigación |
 |---|---|---|---|
@@ -601,6 +893,11 @@ backend; Vitest con jsdom para el frontend. Ningún test llama a servicios exter
 | Tests existentes que abren el diálogo de añadir sin mock de `food-library` hacen peticiones reales o fallan | Alta | Medio | Lista de archivos en la sección 5; el `test-author` añade el mock |
 | Pruebas con temporizadores falsos y `userEvent` inestables | Media | Bajo | `shouldAdvanceTime` y `advanceTimers` de `userEvent`; sin esperas reales |
 | Despliegue sin aplicar la migración: `POST /api/meals` falla por la columna `custom_food_id` | Media | Alto | Paso manual antes del merge en `docs/deploy-runbook.md` (doc-keeper), como la 022 y la 023 |
+| (iteración 2) El listener de Escape en captura sobre `window` se queda registrado o se traga Escape fuera de la confirmación | Baja | Medio | Solo existe mientras `DeleteConfirmation` está montada (limpieza del `useEffect`); tests de `useEscapeCapture` (desmontado e inactivo) y la segunda parte de AC-017.5 (el segundo Escape cierra el diálogo) |
+| (iteración 2) El descarte por longitud o la memoria de distancias cambian resultados u orden de REQ-006 | Baja | Alto | El descarte es una cota inferior exacta de la distancia; la memoria devuelve el mismo valor; la suma recorre las palabras con repeticiones como hoy. Los tests de AC-006.x de la iteración 1 siguen sin cambios |
+| (iteración 2) Los tests congelados que se adaptan se debilitan sin querer | Media | Medio | Lista cerrada en la sección 5 («Iteración 2») con el motivo de cada cambio; solo se cambia lo que la spec cambió (límite de favoritos visibles, error de borrado fuera de la confirmación, módulos retirados) |
+| (iteración 2) `proposalReviewSchema` y `proposalFormSchema` divergen en la validación de gramos | Baja | Medio | Comparten variantes y `superRefine`; test de `schemas.test.ts` con los mismos mensajes en los dos |
+| (iteración 2) El foco de vuelta apunta a un botón que ya no está (la lista cambió mientras la confirmación estaba abierta) | Baja | Bajo | `focusTrigger` comprueba `isConnected` y, si no, enfoca la caja de búsqueda |
 
 ## 7. Cumplimiento de la constitución
 - **Art. B1/B4/B5:** todos los REQ y NFR mapeados (sección 4) y todos los AC con test previsto (sección 5). Tests antes
@@ -623,9 +920,28 @@ backend; Vitest con jsdom para el frontend. Ningún test llama a servicios exter
   variables nuevas.
 - **Art. P4:** migración incluida; paso manual de producción a documentar en `docs/deploy-runbook.md`.
 - **Art. P5:** la ADR-0036 queda «Propuesta»; la acepta la sesión principal con la aprobación del usuario.
+- **Iteración 2:**
+  - Art. B5.3: los tests congelados de la 028 que cambian lo hacen porque la spec aprobada en la iteración 2 cambió
+    ese comportamiento (AC-009.6, AC-N002.4, REQ-020 ampliado); la lista y el motivo están en la sección 5. Los tests
+    borrados acompañan al código que REQ-020 retira.
+  - Art. P1.backend.3: la cota de NFR-004 se observa con un contador que reciben las funciones puras y los servicios
+    (`stats`), sin `mock` ni `monkeypatch` ni medir tiempos.
+  - Art. P2.backend.1 y P2.backend.2: la regla de favoritos visibles vive en el servicio, con los repositorios que ya
+    recibe por constructor; las rutas no cambian. Se quita `FoodFavoriteRepository.count_by_user`, sin uso.
+  - Art. P2.frontend.1: `useEscapeCapture` es un hook genérico sin dependencia de ninguna feature y va a `src/lib`, como
+    `useDebouncedValue`. `features/catalog/` desaparece entera porque ya no tiene código en uso.
+  - Art. P2.frontend.5 y B5.7: sin errores de lint nuevos; F6 quita dos aserciones de tipo.
+  - Art. P3.1: sin endpoints nuevos; `DELETE …/favorites/catalog/{id}` sigue filtrando por el `user_id` del token y no
+    toca favoritos de otros usuarios (AC-009.8).
+  - Art. P4: sin cambios de modelo ni migración nueva; el paso manual de la `e6a8c0d2f4b7` sigue pendiente de la etapa
+    docs.
 - Ningún «DEBERÍA» queda sin cumplir.
 
 ## 8. ADRs
 - [ADR-0036](../../docs/sdd/decisions/ADR-0036-biblioteca-de-alimentos-propios.md): biblioteca de alimentos propios,
   vínculo con `ON DELETE SET NULL`, favoritos, recientes sin estado, búsqueda en dos pasadas con distancia OSA,
-  migración con relleno y propuesta de foto con `useWatch` emparejado por clave (Propuesta).
+  migración con relleno y propuesta de foto con `useWatch` emparejado por clave (Propuesta). En la iteración 2 se
+  revisa (sigue «Propuesta»): límite de favoritos que solo cuenta los visibles y `DELETE` de favoritos retirados
+  (decisión 3), cota determinista F × P con memoria y contador (decisión 5), `proposalReviewSchema` y filas que
+  pierden el vínculo al borrar el alimento propio (decisión 7) y confirmación de borrado en línea con Escape en
+  captura sobre `window` y foco gestionado, en lugar de `ConfirmDialog`/`confirmContainer` (decisión 9, nueva).

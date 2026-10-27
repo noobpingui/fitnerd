@@ -64,3 +64,8 @@
 - [ ] F8 (planner, NIT): el plan y la ADR-0036 siguen describiendo `ConfirmDialog`/`confirmContainer`; reflejar la confirmación en línea en la etapa docs.
 - [ ] Etapa docs: documentar en `docs/deploy-runbook.md` el paso manual de la migración `e6a8c0d2f4b7` (Art. P4).
 - [ ] Prueba manual de AC-N002.2 con lector de pantalla, aún pendiente.
+
+## plan (iteración 2) · planner
+- [ ] Si los favoritos huérfanos del catálogo se acumulan, contar los visibles en una sola consulta SQL (`count_visible_by_user`) en lugar de en el servicio.
+- [ ] Prueba manual pendiente con lector de pantalla: AC-N002.2 y la nueva confirmación en línea (anuncio del `alertdialog` dentro del elemento y vuelta del foco).
+- [ ] Valorar mover `useEscapeCapture` a otros diálogos en línea si aparecen más (por ahora solo lo usa la confirmación de borrado).
