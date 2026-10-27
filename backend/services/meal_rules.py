@@ -133,7 +133,10 @@ def _parse_snapshot_per_100g(value: object) -> dict[str, float | None] | None:
 
 
 def parse_snapshot_payload(payload: object) -> RemovedItemSnapshot | None:
-    if not isinstance(payload, dict) or payload.get("v") != 1 or payload.get("v") is True:
+    if not isinstance(payload, dict):
+        return None
+    version = payload.get("v")
+    if not is_int(version) or version != 1:
         return None
 
     raw_date = payload.get("d")
@@ -154,13 +157,13 @@ def parse_snapshot_payload(payload: object) -> RemovedItemSnapshot | None:
     expires_at = payload.get("exp")
     if meal_type not in MEAL_TYPES or source not in MEAL_ITEM_SOURCES:
         return None
-    if not is_int(position) or position < 0 or not is_int(expires_at):
+    if not is_int(position) or not 0 <= position <= MAX_DB_INTEGER or not is_int(expires_at):
         return None
     if not isinstance(name, str) or not name:
         return None
     if not _optional_text(catalog_id) or not _optional_text(data_type):
         return None
-    if fdc_id is not None and not is_int(fdc_id):
+    if fdc_id is not None and (not is_int(fdc_id) or not 1 <= fdc_id <= MAX_DB_INTEGER):
         return None
     if source == "catalog" and not catalog_id:
         return None

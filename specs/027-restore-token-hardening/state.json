@@ -9,7 +9,7 @@
   "branch": "fix/027-restore-token-hardening",
   "base_branch": "main",
   "created_at": "2026-10-27T05:55:23.138Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -28,7 +28,10 @@
       "at": "2026-10-27T06:56:51.744Z",
       "note": "auto (gate_mode=flow): red check PASS"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-27T07:00:07.641Z",
+      "note": "auto (gate_mode=flow): 2182 passed"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -37,7 +40,8 @@
   "commits": {
     "spec": "8c13d6f",
     "plan": "b424cca",
-    "tasks": "02c325f"
+    "tasks": "02c325f",
+    "tests": "fd0d315"
   },
   "iterations": {
     "tests": 2,
@@ -230,6 +234,36 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS"
+    },
+    {
+      "at": "2026-10-27T06:56:52.044Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: fd0d315"
+    },
+    {
+      "at": "2026-10-27T06:56:52.252Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar T-030 a T-032"
+    },
+    {
+      "at": "2026-10-27T07:00:07.400Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "resolve_secret_key con required=False devuelve el valor tal cual; ratchet: 1 violación I001 en un test (test_meal_routes.py L8)"
+    },
+    {
+      "at": "2026-10-27T07:00:07.526Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "Implementación 027: config.py, app.py y meal_rules.py; suite 2182 passed"
+    },
+    {
+      "at": "2026-10-27T07:00:07.641Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 2182 passed"
     }
   ]
 }

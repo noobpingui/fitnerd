@@ -36,9 +36,9 @@ Solo `config.py` tiene símbolos nuevos que los tests importan. `parse_snapshot_
 - [x] T-023 [REQ-002, AC-002.3] (test) En una app de producción con `SECRET_KEY` propia, quitar un alimento con `?undo=1` y restaurar con el `restore_token` devuelve el alimento a su comida y posición — `backend/tests/test_routes/test_meal_routes.py`
 
 ## Fase B — Implementación (implementer)
-- [ ] T-030 [REQ-001, REQ-002, REQ-003] (impl) Implementar `resolve_secret_key` según la tabla del plan (sin recortar la clave devuelta), usar `DEFAULT_SECRET_KEY` en `Config.SECRET_KEY` y añadir `SECRET_KEY_REQUIRED` (`False` en `Config`, `True` en `ProductionConfig`) — `backend/config.py`
-- [ ] T-031 [REQ-001, REQ-002, REQ-003] (impl) Llamar a `resolve_secret_key` en `create_app()` tras resolver `FRONTEND_BASE_URL` y guardar el resultado en `app.config["SECRET_KEY"]` — `backend/app.py`
-- [ ] T-032 [REQ-004, REQ-005, REQ-006] (impl) Endurecer `parse_snapshot_payload`: versión entera `1`, posición entera en `0..MAX_DB_INTEGER` y `fdc_id` entero en `1..MAX_DB_INTEGER` cuando exista, reutilizando `is_int` y `MAX_DB_INTEGER` — `backend/services/meal_rules.py`
+- [x] T-030 [REQ-001, REQ-002, REQ-003] (impl) Implementar `resolve_secret_key` según la tabla del plan (sin recortar la clave devuelta), usar `DEFAULT_SECRET_KEY` en `Config.SECRET_KEY` y añadir `SECRET_KEY_REQUIRED` (`False` en `Config`, `True` en `ProductionConfig`) — `backend/config.py`
+- [x] T-031 [REQ-001, REQ-002, REQ-003] (impl) Llamar a `resolve_secret_key` en `create_app()` tras resolver `FRONTEND_BASE_URL` y guardar el resultado en `app.config["SECRET_KEY"]` — `backend/app.py`
+- [x] T-032 [REQ-004, REQ-005, REQ-006] (impl) Endurecer `parse_snapshot_payload`: versión entera `1`, posición entera en `0..MAX_DB_INTEGER` y `fdc_id` entero en `1..MAX_DB_INTEGER` cuando exista, reutilizando `is_int` y `MAX_DB_INTEGER` — `backend/services/meal_rules.py`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

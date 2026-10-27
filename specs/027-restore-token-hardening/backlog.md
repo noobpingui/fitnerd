@@ -23,3 +23,6 @@
 - [ ] AC-N002.1: no reproducible en local porque backend/.env define SECRET_KEY (load_dotenv); confirmar en CI que la suite de la 020 pasa sin SECRET_KEY en el entorno.
 - [ ] Esqueleto resolve_secret_key con _value sin anotaciones de tipo frente a value: str | None del plan (cosmético).
 - [ ] Ejecutar en verify la suite completa del backend, incluida la 026, para cerrar AC-N001.2 y lint_ratchet.
+
+## implement · implementer
+- [ ] El test-author debe corregir el orden de imports (I001) en backend/tests/test_routes/test_meal_routes.py L8, o el verifier debe decidir cómo tratarlo, porque hace fallar el ratchet.
