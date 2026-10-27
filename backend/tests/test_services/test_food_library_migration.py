@@ -136,8 +136,12 @@ def test_upgrade_creates_one_own_food_per_name_with_the_values_of_the_latest_rec
         user_id = add_user(db_session, "ana@example.com")
         first_meal = add_meal(db_session, user_id, date(2026, 10, 1))
         second_meal = add_meal(db_session, user_id, date(2026, 10, 5))
-        first = add_item(db_session, first_meal, "Gallo pinto", GALLO_OCT_1, datetime(2026, 10, 1, 12, 0))
-        second = add_item(db_session, second_meal, "gallo pinto", GALLO_OCT_5, datetime(2026, 10, 5, 12, 0))
+        first = add_item(
+            db_session, first_meal, "Gallo pinto", GALLO_OCT_1, datetime(2026, 10, 1, 12, 0)
+        )
+        second = add_item(
+            db_session, second_meal, "gallo pinto", GALLO_OCT_5, datetime(2026, 10, 5, 12, 0)
+        )
 
         run_upgrade(db_session.connection(), MIGRATION)
 
@@ -186,7 +190,9 @@ def test_upgrade_groups_names_ignoring_case_accents_and_repeated_spaces(db_sessi
         ids = []
         for day, name in enumerate(["Piña colada", "Pina  COLADA", " pina colada "], start=1):
             meal_id = add_meal(db_session, user_id, date(2026, 10, day))
-            ids.append(add_item(db_session, meal_id, name, created_at=datetime(2026, 10, day, 9, 0)))
+            ids.append(
+                add_item(db_session, meal_id, name, created_at=datetime(2026, 10, day, 9, 0))
+            )
 
         run_upgrade(db_session.connection(), MIGRATION)
 
@@ -209,7 +215,8 @@ def test_upgrade_creates_a_separate_own_food_for_each_distinct_name(db_session):
 
         run_upgrade(db_session.connection(), MIGRATION)
 
-        assert [row[1] for row in library_of(db_session, user_id)] == ["Gallo pinto", "Avena casera"]
+        names = [row[1] for row in library_of(db_session, user_id)]
+        assert names == ["Gallo pinto", "Avena casera"]
     finally:
         db_session.rollback()
 
@@ -222,8 +229,10 @@ def test_upgrade_gives_each_user_their_own_food_with_the_same_name(db_session):
         downgraded(db_session)
         ana = add_user(db_session, "ana@example.com")
         luis = add_user(db_session, "luis@example.com")
-        ana_item = add_item(db_session, add_meal(db_session, ana, date(2026, 10, 1)), "Gallo pinto", GALLO_OCT_1)
-        luis_item = add_item(db_session, add_meal(db_session, luis, date(2026, 10, 1)), "Gallo pinto", GALLO_OCT_5)
+        ana_meal = add_meal(db_session, ana, date(2026, 10, 1))
+        ana_item = add_item(db_session, ana_meal, "Gallo pinto", GALLO_OCT_1)
+        luis_meal = add_meal(db_session, luis, date(2026, 10, 1))
+        luis_item = add_item(db_session, luis_meal, "Gallo pinto", GALLO_OCT_5)
 
         run_upgrade(db_session.connection(), MIGRATION)
 

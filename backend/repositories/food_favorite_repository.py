@@ -1,3 +1,5 @@
+from sqlalchemy import func, select
+
 from models import FoodFavorite
 from repositories.base_repository import BaseRepository
 
@@ -7,13 +9,22 @@ class FoodFavoriteRepository(BaseRepository):
     def __init__(self, session):
         super().__init__(session, FoodFavorite)
 
-    def list_by_user(self, _user_id) -> list[FoodFavorite]:
-        raise NotImplementedError("not implemented")
+    def list_by_user(self, user_id) -> list[FoodFavorite]:
+        stmt = select(FoodFavorite).where(FoodFavorite.user_id == user_id).order_by(FoodFavorite.id)
+        return list(self.session.scalars(stmt).all())
 
     def get_for_food(
-        self, _user_id, _catalog_id: str | None = None, _custom_food_id: int | None = None
+        self, user_id, catalog_id: str | None = None, custom_food_id: int | None = None
     ) -> FoodFavorite | None:
-        raise NotImplementedError("not implemented")
+        stmt = select(FoodFavorite).where(FoodFavorite.user_id == user_id)
+        if catalog_id is not None:
+            stmt = stmt.where(FoodFavorite.catalog_id == catalog_id)
+        elif custom_food_id is not None:
+            stmt = stmt.where(FoodFavorite.custom_food_id == custom_food_id)
+        else:
+            return None
+        return self.session.scalars(stmt).first()
 
-    def count_by_user(self, _user_id) -> int:
-        raise NotImplementedError("not implemented")
+    def count_by_user(self, user_id) -> int:
+        stmt = select(func.count()).select_from(FoodFavorite).where(FoodFavorite.user_id == user_id)
+        return int(self.session.scalar(stmt) or 0)

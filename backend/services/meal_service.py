@@ -3,8 +3,14 @@ from datetime import date
 from decimal import Decimal
 
 from exceptions.custom_exceptions import ResourceNotFoundError, ValidationError
+from models.custom_food import CustomFood
 from models.meal import MEAL_TYPES, Meal, MealItem
 from services.auth_input_rules import require_json_object
+from services.food_library_rules import (
+    CUSTOM_FOODS_LIMIT_MESSAGE,
+    MAX_CUSTOM_FOODS,
+    custom_food_name_key,
+)
 from services.meal_rules import (
     FOOD_NOT_FOUND_MESSAGE,
     ITEM_NOT_FOUND_MESSAGE,
@@ -15,7 +21,9 @@ from services.meal_rules import (
     TOO_MANY_ITEMS_MESSAGE,
     CatalogItemInput,
     CustomItemInput,
+    LibraryItemInput,
     RemovedItemSnapshot,
+    UsdaItemInput,
     check_add_window,
     epoch_seconds,
     is_db_id,
@@ -124,6 +132,9 @@ class MealService:
             self._lock_user(user_id)
             foods = self._load_foods(inputs)
             catalog_foods = self._load_catalog_foods(inputs)
+            # Los valores de los alimentos propios se copian antes de tocar la biblioteca.
+            library_foods = self._load_library_foods(user_id, inputs)
+            saved_foods = self._save_custom_foods(user_id, inputs)
 
             meal = self.meal_repository.get_by_user_date_and_type(
                 user_id, meal_date, meal_type
@@ -141,6 +152,7 @@ class MealService:
             position = max((item.position for item in meal.items), default=-1) + 1
             for entry in inputs:
                 if isinstance(entry, CustomItemInput):
+                    saved = saved_foods.get(custom_food_name_key(entry.name))
                     item = _new_item(
                         position,
                         entry.grams,
@@ -150,6 +162,20 @@ class MealService:
                         fdc_id=None,
                         name=entry.name,
                         data_type=None,
+                        custom_food_id=None if saved is None else saved.id,
+                    )
+                elif isinstance(entry, LibraryItemInput):
+                    name, custom_food_id, per_100g = library_foods[entry.custom_food_id]
+                    item = _new_item(
+                        position,
+                        entry.grams,
+                        per_100g,
+                        source="custom",
+                        catalog_id=None,
+                        fdc_id=None,
+                        name=name,
+                        data_type=None,
+                        custom_food_id=custom_food_id,
                     )
                 elif isinstance(entry, CatalogItemInput):
                     catalog_food = catalog_foods[entry.catalog_id]
@@ -222,6 +248,7 @@ class MealService:
                 grams=item.grams,
                 per_100g=_per_100g(item),
                 expires_at=epoch_seconds(self.clock()) + RESTORE_TOKEN_TTL_SECONDS,
+                custom_food_id=item.custom_food_id,
             )
             meal.items.remove(item)
             if not meal.items:
@@ -272,6 +299,7 @@ class MealService:
                 fdc_id=snapshot.fdc_id,
                 name=snapshot.name,
                 data_type=snapshot.data_type,
+                custom_food_id=self._still_linked(user_id, snapshot.custom_food_id),
             )
             index = next(
                 (i for i, other in enumerate(meal.items) if other.position > snapshot.position),
@@ -303,11 +331,7 @@ class MealService:
             raise ResourceNotFoundError(USER_NOT_FOUND_MESSAGE)
 
     def _load_foods(self, inputs) -> dict:
-        fdc_ids = [
-            entry.fdc_id
-            for entry in inputs
-            if not isinstance(entry, (CustomItemInput, CatalogItemInput))
-        ]
+        fdc_ids = [entry.fdc_id for entry in inputs if isinstance(entry, UsdaItemInput)]
         if not fdc_ids:
             return {}
         found = self.food_repository.get_by_fdc_ids(list(dict.fromkeys(fdc_ids)))
@@ -327,6 +351,62 @@ class MealService:
         if any(catalog_id not in foods for catalog_id in catalog_ids):
             raise ValidationError(FOOD_NOT_FOUND_MESSAGE)
         return foods
+
+    def _load_library_foods(self, user_id, inputs) -> dict:
+        ids = [entry.custom_food_id for entry in inputs if isinstance(entry, LibraryItemInput)]
+        if not ids:
+            return {}
+        if self.custom_food_repository is None:
+            raise ValidationError(FOOD_NOT_FOUND_MESSAGE)
+        found = self.custom_food_repository.get_by_ids_and_user(list(dict.fromkeys(ids)), user_id)
+        # Copia: más adelante la biblioteca puede actualizarse en la misma petición.
+        foods = {
+            food.id: (food.name, food.id, {key: getattr(food, key) for key in NUTRIENT_KEYS})
+            for food in found
+        }
+        if any(food_id not in foods for food_id in ids):
+            raise ValidationError(FOOD_NOT_FOUND_MESSAGE)
+        return foods
+
+    def _save_custom_foods(self, user_id, inputs) -> dict:
+        # Crea o actualiza los alimentos propios; gana el último de cada nombre (clave).
+        if self.custom_food_repository is None:
+            return {}
+        latest: dict[str, CustomItemInput] = {}
+        for entry in inputs:
+            if isinstance(entry, CustomItemInput):
+                latest[custom_food_name_key(entry.name)] = entry
+        if not latest:
+            return {}
+        existing = {
+            food.name_key: food
+            for food in self.custom_food_repository.get_by_name_keys(user_id, list(latest))
+        }
+        new_count = sum(1 for key in latest if key not in existing)
+        if (
+            new_count
+            and self.custom_food_repository.count_by_user(user_id) + new_count > MAX_CUSTOM_FOODS
+        ):
+            raise ValidationError(CUSTOM_FOODS_LIMIT_MESSAGE)
+        saved = {}
+        for key, entry in latest.items():
+            food = existing.get(key)
+            if food is None:
+                food = self.custom_food_repository.create(
+                    CustomFood(user_id=user_id, name=entry.name, name_key=key, **entry.per_100g)
+                )
+            else:
+                food.name = entry.name
+                for nutrient, value in entry.per_100g.items():
+                    setattr(food, nutrient, value)
+            saved[key] = food
+        return saved
+
+    def _still_linked(self, user_id, custom_food_id: int | None) -> int | None:
+        if custom_food_id is None or self.custom_food_repository is None:
+            return None
+        food = self.custom_food_repository.get_by_id_and_user(custom_food_id, user_id)
+        return None if food is None else food.id
 
     def _find_meal(self, user_id, meal_id: int) -> Meal:
         meal = None

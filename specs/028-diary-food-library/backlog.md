@@ -38,3 +38,10 @@
 - [ ] 51 tests previos de frontend (`AddFoodDialog`, `MealPhotoDialog`, `DiaryPage`) y 1 de backend (`test_post_response_has_the_full_contract_shape`) fallan por la spec 028 y deben volver a verde en implement sin debilitarse (Art. B5.3).
 - [ ] Las dos guardas de `foodsRoute.test.tsx` deben seguir en verde tras T-130.
 - [ ] B3 (desempaquetados `(saved,) = ...`): ya resuelto con `assert len(...) == 1`; la nota del verifier estaba obsoleta.
+
+## implement · implementer
+- [ ] Corregir los 27 E501 de los archivos de tests nuevos (test-author) para que el ratchet de ruff quede en verde: `test_food_library_routes.py` (2), `test_meal_library_routes.py` (3), `test_food_library_migration.py` (6), `test_food_library_service.py` (5), `test_meal_rules.py` (1) y `test_meal_service.py` (7).
+- [ ] Quitar el código del catálogo que queda sin uso en el frontend (`CatalogResultList`, `useCatalogSearch`, `searchCatalog`, `foods/api.ts`), ya anotado por el planner.
+- [ ] El fixture `src/test/diaryFixtures.ts` podría traer `custom_food_id: null` para volver a hacerlo obligatorio en `MealItem`.
+- [ ] `AddFoodDialog` no pasa contenedor a la confirmación de borrado: hoy es en línea y no lo necesita.
+- [ ] Decisión del implementer a revisar en review: la confirmación de borrar un alimento propio es en línea (`role="alertdialog"`), no con `ConfirmDialog`, porque el modal marca la lista «Resultados» como `aria-hidden` y AC-017.3 la exige accesible; se quitó la prop `confirmContainer`.

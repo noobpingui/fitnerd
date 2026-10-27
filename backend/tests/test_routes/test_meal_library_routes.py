@@ -260,7 +260,10 @@ def test_post_with_an_invalid_custom_item_is_400_and_the_library_does_not_change
     response = post(
         client,
         headers,
-        [custom_item("Nuevo"), custom_item("Existente", calories=900, protein=60, carbs=50, fat=10)],
+        [
+            custom_item("Nuevo"),
+            custom_item("Existente", calories=900, protein=60, carbs=50, fat=10),
+        ],
     )
 
     assert response.status_code == 400
@@ -432,7 +435,8 @@ def test_two_simultaneous_posts_of_a_new_custom_item_leave_one_own_food(client, 
 
 # SDD: 028 REQ-002 AC-002.1
 def test_post_of_a_new_name_with_500_own_foods_is_400_and_changes_nothing(client, app, headers):
-    """Con 500 alimentos propios, un nombre nuevo da el 400 de la spec; ni la comida ni la biblioteca cambian."""
+    """Con 500 alimentos propios, un nombre nuevo da el 400 de la spec;
+    ni la comida ni la biblioteca cambian."""
     seed_many_customs(app, "ana@example.com", 500)
 
     response = post(client, headers, [custom_item("Nombre nuevo")])
@@ -641,7 +645,9 @@ def restore(client, headers, token):
 def test_restore_of_an_own_food_keeps_its_id_and_counts_again_in_the_recents(client, app, headers):
     """Quitar con `undo=1` y restaurar: el alimento vuelve con el mismo
     `custom_food_id` y vuelve a aparecer en los recientes."""
-    meal = post(client, headers, [custom_item("Gallo pinto"), custom_item("Avena casera")]).get_json()
+    meal = post(
+        client, headers, [custom_item("Gallo pinto"), custom_item("Avena casera")]
+    ).get_json()
     own_id = meal["items"][0]["custom_food_id"]
     token = remove_with_undo(client, headers, meal, 0)
 

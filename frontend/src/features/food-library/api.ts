@@ -1,24 +1,34 @@
+import { apiFetch } from "@/lib/apiClient"
+import { libraryResultsSchema, recentResultsSchema } from "./schemas"
 import type { LibraryFood, RecentFood } from "./types"
 
-export async function searchFoodLibrary(_query: string): Promise<LibraryFood[]> {
-  throw new Error("not implemented")
+const BASE = "/api/food-library"
+
+export async function searchFoodLibrary(query: string): Promise<LibraryFood[]> {
+  const params = new URLSearchParams({ q: query })
+  const data = await apiFetch<unknown>(`${BASE}/search?${params}`)
+  return libraryResultsSchema.parse(data).results
 }
 
 export async function getRecentFoods(): Promise<RecentFood[]> {
-  throw new Error("not implemented")
+  const data = await apiFetch<unknown>(`${BASE}/recent`)
+  return recentResultsSchema.parse(data).results
 }
 
 export async function getFavoriteFoods(): Promise<LibraryFood[]> {
-  throw new Error("not implemented")
+  const data = await apiFetch<unknown>(`${BASE}/favorites`)
+  return libraryResultsSchema.parse(data).results
 }
 
 export async function setFoodFavorite(
-  _food: Pick<LibraryFood, "kind" | "id">,
-  _favorite: boolean
+  food: Pick<LibraryFood, "kind" | "id">,
+  favorite: boolean
 ): Promise<void> {
-  throw new Error("not implemented")
+  await apiFetch<unknown>(`${BASE}/favorites/${food.kind}/${encodeURIComponent(String(food.id))}`, {
+    method: favorite ? "PUT" : "DELETE",
+  })
 }
 
-export async function deleteCustomFood(_customFoodId: number): Promise<void> {
-  throw new Error("not implemented")
+export async function deleteCustomFood(customFoodId: number): Promise<void> {
+  await apiFetch<unknown>(`${BASE}/custom/${customFoodId}`, { method: "DELETE" })
 }

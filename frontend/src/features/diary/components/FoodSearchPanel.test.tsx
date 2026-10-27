@@ -171,9 +171,11 @@ describe("FoodSearchPanel - buscar mientras se escribe", () => {
     renderPanel()
 
     await type(user, "arr")
-    await advance(299)
+    // `type` termina unos ms de reloj simulado después de la última tecla: se mide
+    // con margen por debajo (250 ms) y por encima (310 ms) de los 300 ms.
+    await advance(250)
     expect(searchMock).not.toHaveBeenCalled()
-    await advance(1)
+    await advance(60)
 
     await waitFor(() => expect(searchMock).toHaveBeenCalledTimes(1))
     expect(searchMock).toHaveBeenCalledWith("arr")

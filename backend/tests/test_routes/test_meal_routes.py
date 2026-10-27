@@ -1234,6 +1234,7 @@ def test_post_saves_a_catalog_item_with_a_copy_of_the_catalog_data(client, heade
         "source": "catalog",
         "catalog_id": "pechuga-de-pollo-a-la-plancha",
         "fdc_id": None,
+        "custom_food_id": None,
         "data_type": None,
         "name": "Pechuga de pollo a la plancha",
         "grams": 150,

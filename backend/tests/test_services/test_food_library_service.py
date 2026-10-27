@@ -263,7 +263,8 @@ def test_search_recent_and_favorites_work_with_only_database_data():
 
 # SDD: 028 REQ-008 AC-008.1
 def test_recent_keeps_the_order_of_the_rows_and_gives_the_last_grams():
-    """«Banano» (150 g) primero y «Gallo pinto» propio (200 g) después, cada uno con su `last_grams`."""
+    """«Banano» (150 g) primero y «Gallo pinto» propio (200 g) después,
+    cada uno con su `last_grams`."""
     env = Env(
         catalog=[BANANA],
         customs=[gallo(8)],
@@ -339,7 +340,10 @@ def test_recent_gives_the_current_values_of_a_catalog_food_and_its_favorite_flag
     env = Env(
         catalog=[BANANA, RICE],
         favorites=[make_favorite(USER, catalog_id="banano")],
-        recent_rows=[row(catalog_id="banano", grams="120.5"), row(catalog_id="arroz-blanco-cocido")],
+        recent_rows=[
+            row(catalog_id="banano", grams="120.5"),
+            row(catalog_id="arroz-blanco-cocido"),
+        ],
     )
 
     banana, rice = env.service.recent(USER)
@@ -414,7 +418,8 @@ def test_favorites_give_the_current_values():
 
 # SDD: 028 REQ-010 AC-010.2
 def test_favorites_omit_a_catalog_food_that_is_no_longer_in_the_catalog_and_bring_it_back():
-    """Un favorito quitado del catálogo no aparece y vuelve a aparecer si el catálogo lo recupera."""
+    """Un favorito quitado del catálogo no aparece y vuelve a aparecer
+    si el catálogo lo recupera."""
     env = Env(catalog=[OATS], favorites=[make_favorite(USER, catalog_id="yogur-natural")])
     assert env.service.favorites(USER) == []
 
@@ -444,7 +449,8 @@ def test_favorites_do_not_include_the_ones_of_another_user():
 
 # SDD: 028 REQ-009 AC-009.1
 def test_add_favorite_of_a_catalog_food_saves_it_and_commits():
-    """Marcar «banano»: queda un favorito con ese `catalog_id`, se confirma y se bloquea al usuario."""
+    """Marcar «banano»: queda un favorito con ese `catalog_id`, se confirma
+    y se bloquea al usuario."""
     env = Env(catalog=[BANANA])
 
     env.service.add_favorite(USER, "catalog", "banano")
@@ -537,7 +543,9 @@ def test_add_and_remove_favorite_with_an_unknown_kind_is_not_found(kind):
     """Un tipo distinto de `catalog` y `custom` da 404."""
     env = Env(catalog=[BANANA])
 
-    add_message = expect_error(ResourceNotFoundError, env.service.add_favorite, USER, kind, "banano")
+    add_message = expect_error(
+        ResourceNotFoundError, env.service.add_favorite, USER, kind, "banano"
+    )
     remove_message = expect_error(
         ResourceNotFoundError, env.service.remove_favorite, USER, kind, "banano"
     )

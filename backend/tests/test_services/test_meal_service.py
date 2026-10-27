@@ -1612,7 +1612,9 @@ def test_add_items_still_registers_the_custom_item_as_before():
     """El alimento de la comida lleva el nombre, los valores y los nutrientes de siempre."""
     env = LibraryEnv()
 
-    item = add(env, [custom_item(grams=250, calories=160, protein=5.5, carbs=27, fat=3.2)]).meal.meal.items[0]
+    item = add(
+        env, [custom_item(grams=250, calories=160, protein=5.5, carbs=27, fat=3.2)]
+    ).meal.meal.items[0]
 
     assert item.name == "Gallo pinto"
     assert item.per_100g_calories_kcal == 160
@@ -1630,7 +1632,8 @@ def test_add_items_updates_the_existing_own_food_with_the_same_name():
     env = LibraryEnv(customs=[own_gallo(1)])
 
     item = add(
-        env, [custom_item(name="  gallo PINTO ", grams=150, calories=170, protein=7, carbs=28, fat=3)]
+        env,
+        [custom_item(name="  gallo PINTO ", grams=150, calories=170, protein=7, carbs=28, fat=3)],
     ).meal.meal.items[0]
 
     assert env.customs.created == []
@@ -1730,7 +1733,8 @@ def test_add_items_locks_the_user_row_before_touching_the_library():
 
 # SDD: 028 REQ-001 AC-001.9
 def test_add_items_of_usda_and_catalog_foods_do_not_create_own_foods():
-    """Los alimentos de USDA y del catálogo no tocan la biblioteca y llevan `custom_food_id` nulo."""
+    """Los alimentos de USDA y del catálogo no tocan la biblioteca
+    y llevan `custom_food_id` nulo."""
     env = LibraryEnv()
 
     items = add(
@@ -1857,7 +1861,8 @@ def test_add_items_by_custom_food_id_copies_the_name_and_values_of_the_own_food(
 # SDD: 028 REQ-003 AC-003.2
 @pytest.mark.parametrize("food_id", [99, 0, -1, 2_147_483_648, "3", "abc", 1.5])
 def test_add_items_with_an_unknown_or_invalid_custom_food_id_is_a_400_and_saves_nothing(food_id):
-    """Un `custom_food_id` que no existe o no es un entero válido: «No encontramos ese alimento.»."""
+    """Un `custom_food_id` que no existe o no es un entero válido:
+    «No encontramos ese alimento.»."""
     env = LibraryEnv(customs=[own_gallo(3)])
 
     message = expect_error(ValidationError, add, env, [{"custom_food_id": food_id, "grams": 100}])
@@ -1926,7 +1931,11 @@ def test_a_registered_own_food_keeps_its_copied_values_when_the_library_changes(
     item = meal.items[0]
     item.id = 99
 
-    add(env, [custom_item(name="Gallo pinto", calories=500, protein=1, carbs=1, fat=1)], meal_type="dinner")
+    add(
+        env,
+        [custom_item(name="Gallo pinto", calories=500, protein=1, carbs=1, fat=1)],
+        meal_type="dinner",
+    )
     summary = env.service.update_item_grams(USER, meal.id, 99, {"grams": 100})
 
     assert env.customs.foods[0].calories_kcal == 500
@@ -1935,7 +1944,7 @@ def test_a_registered_own_food_keeps_its_copied_values_when_the_library_changes(
 
 
 # SDD: 028 REQ-003 AC-003.1
-def test_add_items_copies_the_values_of_an_own_food_before_updating_the_library_in_the_same_request():
+def test_add_items_copies_own_food_values_before_updating_the_library_in_the_request():
     """Un `custom_food_id` y un personalizado del mismo nombre en una petición:
     el primero copia los valores de antes; la biblioteca queda con los nuevos."""
     env = LibraryEnv(customs=[own_gallo(1)])
@@ -2081,7 +2090,11 @@ def test_remove_item_puts_the_link_in_the_token_only_for_a_linked_own_food():
     uno personalizado sin vínculo, no."""
     meal = make_meal(
         meal_id=1,
-        items=[custom_meal_item(31, 7), custom_meal_item(32, None, position=1), make_item(33, position=2)],
+        items=[
+            custom_meal_item(31, 7),
+            custom_meal_item(32, None, position=1),
+            make_item(33, position=2),
+        ],
     )
     env = LibraryEnv(customs=[own_gallo(7)], meals=[meal])
     signer = RestoreTokenSigner(SIGNING_KEY)

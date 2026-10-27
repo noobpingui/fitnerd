@@ -141,6 +141,7 @@ export const mealResponseSchema = z.object({
       id: z.number(),
       source: z.enum(["catalog", "usda", "custom"]),
       catalog_id: z.string().nullable().default(null),
+      custom_food_id: z.number().nullable().default(null),
       fdc_id: z.number().nullable(),
       name: z.string(),
       data_type: z.enum(["foundation", "sr_legacy"]).nullable(),
@@ -191,18 +192,22 @@ const proposalEntrySchema = z.discriminatedUnion("kind", [
     per100g,
     grams: z.string(),
     tag: z.enum(["high", "medium", "low", "user"]),
+    key: z.string().optional(),
   }),
   z.object({
     kind: z.literal("custom"),
     name: z.string(),
     per100g,
     grams: z.string(),
+    customFoodId: z.number().optional(),
+    key: z.string().optional(),
   }),
   z.object({
     kind: z.literal("unmatched"),
     name: z.string(),
     grams: z.number(),
     confidence,
+    key: z.string().optional(),
   }),
 ])
 

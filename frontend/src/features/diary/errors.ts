@@ -12,8 +12,9 @@ export const FAVORITE_FAILED_MESSAGE = "No se pudo actualizar tus favoritos."
 export const DELETE_CUSTOM_FOOD_FAILED_MESSAGE = "No se pudo borrar el alimento."
 export const LIBRARY_LOAD_FAILED_MESSAGE = "No se pudieron cargar tus alimentos."
 
-export function favoriteErrorMessage(_error: unknown): string {
-  throw new Error("not implemented")
+export function favoriteErrorMessage(error: unknown): string {
+  if (error instanceof ApiError && error.status === 400) return error.message
+  return FAVORITE_FAILED_MESSAGE
 }
 
 export const ANALYSIS_FAILED_MESSAGE = "No se pudo analizar la foto. Vuelve a intentarlo."

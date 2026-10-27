@@ -39,7 +39,7 @@ export type CustomItemPayload = {
   per_100g: Record<NutrientKey, number>
 }
 export type LibraryItemPayload = { custom_food_id: number; grams: number }
-export type AnalysisConfidence ="high" | "medium" | "low"
+export type AnalysisConfidence = "high" | "medium" | "low"
 export type ProposedFood = {
   catalog_id: string
   name: string
@@ -72,7 +72,7 @@ export type ProposalEntry =
       customFoodId?: number // solo los alimentos propios ya guardados
     }
   | { kind: "unmatched"; name: string; grams: number; confidence: AnalysisConfidence }
-export type ProposalFormEntry = ProposalEntry & { key?: string }
+export type ProposalFormEntry = ProposalEntry & { key: string }
 export type ProposalFormValues = { entries: ProposalFormEntry[] }
 export type SavableItemPayload = CatalogItemPayload | CustomItemPayload | LibraryItemPayload
 export type AddMealItemsPayload = {

@@ -960,7 +960,8 @@ def test_parse_items_accepts_the_limits_of_the_custom_food_id(food_id):
 # SDD: 028 REQ-003 AC-003.2
 @pytest.mark.parametrize("food_id", [0, -1, 2_147_483_648, "3", "abc", 1.5, 1.0, True, [], {}])
 def test_parse_items_rejects_a_custom_food_id_that_is_not_an_integer_in_range(food_id):
-    """Cero, negativo, fuera del rango de la base, texto, decimal o bool: «No encontramos ese alimento.»."""
+    """Cero, negativo, fuera del rango de la base, texto, decimal o bool:
+    «No encontramos ese alimento.»."""
     assert message_of(parse_items, [{"custom_food_id": food_id, "grams": 100}]) == FOOD_NOT_FOUND
 
 

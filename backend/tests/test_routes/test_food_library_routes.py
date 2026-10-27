@@ -361,7 +361,8 @@ def test_search_never_shows_the_own_foods_of_another_user(client, app, headers, 
 def test_search_puts_the_catalog_food_first_when_an_own_food_has_the_same_name(
     client, app, headers
 ):
-    """Un propio «Arroz blanco cocido» y el del catálogo: aparecen los dos, el del catálogo primero."""
+    """Un propio «Arroz blanco cocido» y el del catálogo: aparecen los dos,
+    el del catálogo primero."""
     seed(app, WHITE_RICE)
     seed_custom(app, "ana@example.com", "Arroz blanco cocido")
 
@@ -606,7 +607,8 @@ def test_recent_marks_the_favorites_of_the_user(client, app, headers):
 
 # SDD: 028 REQ-010 AC-010.1
 def test_favorites_are_ordered_by_name_with_kind_and_favorite_true(client, app, headers):
-    """«Avena cocida», «Gallo pinto» y «Yogur natural», cada uno con su `kind` y `favorite: true`."""
+    """«Avena cocida», «Gallo pinto» y «Yogur natural», cada uno con su `kind`
+    y `favorite: true`."""
     seed(app, YOGURT, OATS)
     own_id = seed_custom(app, "ana@example.com", "Gallo pinto")
     seed_favorite(app, "ana@example.com", catalog_id="yogur-natural")

@@ -5,6 +5,7 @@ import {
   useQueryClient,
   type UseMutationResult,
 } from "@tanstack/react-query"
+import { foodLibraryKeys } from "@/features/food-library/hooks"
 import { ApiError } from "@/lib/apiClient"
 import { todayIsoDate } from "@/lib/dates"
 import {
@@ -32,7 +33,11 @@ export function useAddMealItems(date: string) {
   const queryClient = useQueryClient()
   return useMutation<Meal, Error, AddMealItemsPayload>({
     mutationFn: (payload) => addMealItems(payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: diaryKeys.day(date) }),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: diaryKeys.day(date) }),
+        queryClient.invalidateQueries({ queryKey: foodLibraryKeys.all }),
+      ]),
   })
 }
 

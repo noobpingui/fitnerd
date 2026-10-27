@@ -5,6 +5,7 @@ from decorators import require_auth
 from exceptions.custom_exceptions import PayloadTooLargeError
 from extensions import db, rate_limiter, tracer, vision_client
 from repositories.catalog_food_repository import CatalogFoodRepository
+from repositories.custom_food_repository import CustomFoodRepository
 from repositories.food_repository import FoodRepository
 from repositories.meal_repository import MealRepository
 from repositories.user_repository import UserRepository
@@ -61,6 +62,7 @@ def _build_meal_service() -> MealService:
         clock=current_clock(),
         catalog_repository=CatalogFoodRepository(db.session),
         restore_signer=RestoreTokenSigner(current_app.config["SECRET_KEY"]),
+        custom_food_repository=CustomFoodRepository(db.session),
     )
 
 
@@ -78,6 +80,7 @@ def _serialize_item(item) -> dict:
         "source": item.source,
         "fdc_id": item.fdc_id,
         "catalog_id": item.catalog_id,
+        "custom_food_id": item.custom_food_id,
         "name": item.name,
         "data_type": item.data_type,
         "grams": float(item.grams),

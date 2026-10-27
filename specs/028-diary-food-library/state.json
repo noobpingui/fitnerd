@@ -10,7 +10,7 @@
   "branch": "feat/028-diary-food-library",
   "base_branch": "main",
   "created_at": "2026-10-27T08:34:57.517Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -26,10 +26,13 @@
       "note": "auto (gate_mode=flow): 73 tareas, cobertura de 21 REQ y 3 NFR"
     },
     "tests": {
-      "at": "2026-10-27T16:59:34.273Z",
-      "note": "auto (gate_mode=flow): red check PASS, 382 backend y 178 frontend en rojo legítimo"
+      "at": "2026-10-27T17:36:50.716Z",
+      "note": "auto (gate_mode=flow): 2 tests corregidos con aprobación del usuario; sin red check"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-27T17:36:59.134Z",
+      "note": "auto (gate_mode=flow): suite completa en verde"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -38,10 +41,11 @@
   "commits": {
     "spec": "4538f39",
     "plan": "12aaa4c",
-    "tasks": "e3203f3"
+    "tasks": "e3203f3",
+    "tests": "20960b4"
   },
   "iterations": {
-    "tests": 3,
+    "tests": 4,
     "implement": 0,
     "review": 0
   },
@@ -59,24 +63,24 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-27T16:59:34.111Z",
-    "reason": "tests 028 tras red check PASS",
+    "at": "2026-10-27T17:36:50.537Z",
+    "reason": "tests 028 corregidos tras implement (claves exactas y debounce)",
     "sha256": {
       "backend/tests/fakes.py": "40f6eda0a3aa1bd7419a6d7e08923d051dfc488d35e07fb14319cc418927b06d",
       "backend/tests/test_routes/test_catalog_routes.py": "739711485e5358ac672af02c4579364068b83533afdaa5788cb9dd7a93357fcc",
-      "backend/tests/test_routes/test_food_library_routes.py": "a917388ceec390529816b4fb42069a5ca25a9bcafbe31e8a3ab62ec33a774436",
-      "backend/tests/test_routes/test_meal_library_routes.py": "417e198c195efd4e77b48a5bea79e4a0d939a965f30020de661a3a411a7cc6a9",
-      "backend/tests/test_routes/test_meal_routes.py": "ce13e670449957ab06149942c45d9b3df3023ec9b885f1a6bc13ccf5d258f941",
+      "backend/tests/test_routes/test_food_library_routes.py": "feaa0954bd84c680d247f7630c37cc87f7506502493e6184efb1857d82689f67",
+      "backend/tests/test_routes/test_meal_library_routes.py": "02bb30f672795ff47fad78694acbde56f0bb9403f7d912c51923b5f3c0b05be8",
+      "backend/tests/test_routes/test_meal_routes.py": "76036750692adcd6b19d305045201e71a4ec1e6bbcf2a8006a6388f724d79e56",
       "backend/tests/test_services/test_catalog_search_service.py": "6b263caafc3dd5f33c3f2cbfd261e7cff747a839c3577cbdcdc6777688adc0cc",
-      "backend/tests/test_services/test_food_library_migration.py": "b07629323782607e2714798490529ac6329feabc75ff3aa2ecb7074442ecc1d5",
+      "backend/tests/test_services/test_food_library_migration.py": "a085ef87a79b7032208615489863f68320769b85b69a733e060e6208f4959dfc",
       "backend/tests/test_services/test_food_library_rules.py": "677cd843d7ad560cda54cf3bd2b8800dfdc2baee94c7456852fdf514a3e2d576",
-      "backend/tests/test_services/test_food_library_service.py": "e8ff7aea3182c4f166e38d9158b79c988f5c14b5e260fae71bb0b3210a86ead2",
-      "backend/tests/test_services/test_meal_rules.py": "994440bb830f7a0e869379981ed2d03f4ada737a91c29a0fe853764f8f270b5d",
-      "backend/tests/test_services/test_meal_service.py": "67c4a8303870786e05834d0c63b26f409239e38eee434f6e948cbca2e0161773",
+      "backend/tests/test_services/test_food_library_service.py": "c3f1dc39e3f2a78acd32a107fc0ca600068a40bd999f13e177e8f8d87ab2c194",
+      "backend/tests/test_services/test_meal_rules.py": "e4b26b3672ac372845c2112707e22149fb2dbee9dde69da064e3b0e9504cc9c6",
+      "backend/tests/test_services/test_meal_service.py": "03113b7b9d75b818a8c484c05d20ca6eb17b23eb9724a077bc175e60ce589cf4",
       "frontend/src/app/foodsRoute.test.tsx": "dd9dfdb960903773177685ed749a6e5157020dc02378896d3d846ebc96d4a285",
       "frontend/src/app/mealPhotoRoute.test.tsx": "ed3254bb890504867f597eece19a9a238856e9d04ced311231d63135e868d0d9",
       "frontend/src/features/diary/components/AddFoodDialog.test.tsx": "2bdc70c21dc072383aca7b25a9644615efbac3794f337c7fa1affd77686246db",
-      "frontend/src/features/diary/components/FoodSearchPanel.test.tsx": "192f2402d180360f887c9145af6bc2c869ba1c689ad635e9f3ee5e1c2da3335d",
+      "frontend/src/features/diary/components/FoodSearchPanel.test.tsx": "a7568f2c25189082d4fe2f3dc041c8134c8a9a6d5f7a2fe2734ec55ef3322c11",
       "frontend/src/features/diary/components/MealPhotoDialog.test.tsx": "ef57484bf887e8fb23dee7d633f889f1fd89cf9f3c6e4cf17c93bd4f3f882ad4",
       "frontend/src/features/diary/components/PhotoReview.source.test.ts": "fe3e55042dda09eb5dceff1a770ad44a8b7c0f60f32d7350f0b36d1f11333033",
       "frontend/src/features/diary/errors.test.ts": "0e51a08c1ac6af2c40bad36f6e9572dd07b6292b21c0be380a1669ba61811fff",
@@ -265,6 +269,66 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS, 382 backend y 178 frontend en rojo legítimo"
+    },
+    {
+      "at": "2026-10-27T16:59:42.443Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 20960b4"
+    },
+    {
+      "at": "2026-10-27T16:59:42.652Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar tareas impl y migración de 028"
+    },
+    {
+      "at": "2026-10-27T17:25:10.830Z",
+      "stage": "implement",
+      "event": "needs_input",
+      "note": "2 tests rojos que el implementer atribuye a los tests (claves exactas en test_meal_routes; 299 ms en FoodSearchPanel.test)"
+    },
+    {
+      "at": "2026-10-27T17:28:56.472Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "usuario aprueba devolver al test-author: claves exactas sin custom_food_id (test_meal_routes) y 299 ms en FoodSearchPanel.test · tests 4/4"
+    },
+    {
+      "at": "2026-10-27T17:36:50.416Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "corrección de 2 tests y 27 E501; suite en verde"
+    },
+    {
+      "at": "2026-10-27T17:36:50.537Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "26 archivo(s) de test: tests 028 corregidos tras implement (claves exactas y debounce)"
+    },
+    {
+      "at": "2026-10-27T17:36:50.716Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 2 tests corregidos con aprobación del usuario; sin red check"
+    },
+    {
+      "at": "2026-10-27T17:36:59.028Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "implement 028: backend 2561 y frontend 1547 en verde, tsc y lint limpios"
+    },
+    {
+      "at": "2026-10-27T17:36:59.134Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): suite completa en verde"
+    },
+    {
+      "at": "2026-10-27T17:36:59.274Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "Decisiones: confirmación de borrado en línea (alertdialog) en vez de ConfirmDialog por AC-017.3; RecentFoodRow en repositories; custom_food_id opcional en MealItem; migración e6a8c0d2f4b7 solo creada; 2 tests corregidos con aprobación del usuario"
     }
   ]
 }

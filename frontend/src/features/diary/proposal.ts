@@ -58,19 +58,47 @@ export function catalogEntry(food: CatalogFood, grams: string): ProposalEntry {
   }
 }
 
-export function libraryEntry(_food: LibraryFood, _grams: string): ProposalEntry {
-  throw new Error("not implemented")
+export function libraryEntry(food: LibraryFood, grams: string): ProposalEntry {
+  if (food.kind === "custom") {
+    return {
+      kind: "custom",
+      customFoodId: food.id,
+      name: food.name,
+      per100g: food.per_100g,
+      grams,
+    }
+  }
+  return {
+    kind: "catalog",
+    catalogId: food.id,
+    name: food.name,
+    per100g: food.per_100g,
+    grams,
+    tag: "user",
+  }
 }
 
-export function withEntryKey(_entry: ProposalEntry): ProposalFormEntry {
-  throw new Error("not implemented")
+let entryKeyCounter = 0
+
+// Cada entrada del formulario lleva una clave propia: los gramos observados se
+// emparejan por clave y nunca por posición.
+export function withEntryKey(entry: ProposalEntry): ProposalFormEntry {
+  entryKeyCounter += 1
+  return { ...entry, key: `entry-${entryKeyCounter}` }
 }
 
+// Los gramos observados de la entrada con la misma clave pisan los del campo.
 export function mergeProposalEntries(
-  _fields: ProposalFormEntry[],
-  _watched: readonly (Partial<ProposalFormEntry> | undefined)[] | undefined
+  fields: ProposalFormEntry[],
+  watched: readonly (Partial<ProposalFormEntry> | undefined)[] | undefined
 ): ProposalFormEntry[] {
-  throw new Error("not implemented")
+  if (!watched) return fields
+  return fields.map((field) => {
+    if (field.kind === "unmatched") return field
+    const seen = watched.find((value) => value?.key === field.key)
+    const grams = seen?.grams
+    return typeof grams === "string" ? { ...field, grams } : field
+  })
 }
 
 export function customEntry(payload: CustomItemPayload): ProposalEntry {
@@ -107,6 +135,11 @@ export function proposalItems(entries: ProposalEntry[]): SavableItemPayload[] {
   for (const entry of entries) {
     if (entry.kind === "catalog") {
       items.push({ catalog_id: entry.catalogId, grams: parseDecimalText(entry.grams) as number })
+    } else if (entry.kind === "custom" && entry.customFoodId !== undefined) {
+      items.push({
+        custom_food_id: entry.customFoodId,
+        grams: parseDecimalText(entry.grams) as number,
+      })
     } else if (entry.kind === "custom") {
       items.push({
         name: entry.name,

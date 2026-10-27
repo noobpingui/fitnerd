@@ -85,31 +85,31 @@ Reglas:
 ## Fase B — Implementación (implementer)
 
 ### backend
-- [ ] T-100 [REQ-005, REQ-001, REQ-004, REQ-009] (migration) Migración `e6a8c0d2f4b7` (`down_revision = 'd4f6a8c0e2b5'`): tablas `custom_foods` y `food_favorites`, columna/FK/índice/CHECK de `meal_items`, relleno con SQL enlazado y `downgrade` — `backend/migrations/versions/e6a8c0d2f4b7_create_food_library.py`
-- [ ] T-101 [REQ-001, REQ-003, REQ-004, REQ-007, REQ-009] (impl) `custom_food_name_key` y `parse_custom_food_id` — `backend/services/food_library_rules.py`
-- [ ] T-102 [REQ-006, REQ-007] (impl) Forma «-ces», OSA, tolerancia, `typo_distance`, `rank_candidates` y `rank_catalog` sobre ellos (también para `/api/catalog/search`) — `backend/services/catalog_search_service.py`
-- [ ] T-103 [REQ-001, REQ-002, REQ-004, REQ-009, REQ-010] (impl) `CustomFoodRepository` y `FoodFavoriteRepository` (solo `flush`, nunca commit) — `backend/repositories/custom_food_repository.py`, `backend/repositories/food_favorite_repository.py`
-- [ ] T-104 [REQ-008, REQ-012] (impl) `MealRepository.list_recent_foods` (ventana por clave, solo catálogo vigente o propios) — `backend/repositories/meal_repository.py`
-- [ ] T-105 [REQ-003, REQ-012] (impl) `parse_items` con `custom_food_id`, `snapshot_payload`/`parse_snapshot_payload` con `cf` opcional — `backend/services/meal_rules.py`
-- [ ] T-106 [REQ-001, REQ-002, REQ-003] (impl) `MealService.add_items`: `_load_foods` por `UsdaItemInput`, `_load_custom_foods`, `_save_custom_foods`, límite y rollback — `backend/services/meal_service.py`
-- [ ] T-107 [REQ-012] (impl) `MealService.remove_item` y `restore_item` con `custom_food_id` — `backend/services/meal_service.py`
-- [ ] T-108 [REQ-004, REQ-007, REQ-008, REQ-009, REQ-010, NFR-001] (impl) `FoodLibraryService` completo (sin embeddings ni rate limiter) — `backend/services/food_library_service.py`
-- [ ] T-109 [REQ-001, REQ-003, REQ-012] (impl) `custom_food_id` en las respuestas de `/api/meals` y `_build_meal_service` con el repositorio de la biblioteca — `backend/routes/meal_routes.py`
-- [ ] T-110 [REQ-004, REQ-007, REQ-008, REQ-009, REQ-010, REQ-011] (impl) Blueprint `/api/food-library` con las ocho rutas (`@require_auth`, parámetros de ruta como texto), `_build_food_library_service` y `library_food_to_json`; registro del blueprint — `backend/routes/food_library_routes.py`, `backend/routes/__init__.py`
+- [x] T-100 [REQ-005, REQ-001, REQ-004, REQ-009] (migration) Migración `e6a8c0d2f4b7` (`down_revision = 'd4f6a8c0e2b5'`): tablas `custom_foods` y `food_favorites`, columna/FK/índice/CHECK de `meal_items`, relleno con SQL enlazado y `downgrade` — `backend/migrations/versions/e6a8c0d2f4b7_create_food_library.py`
+- [x] T-101 [REQ-001, REQ-003, REQ-004, REQ-007, REQ-009] (impl) `custom_food_name_key` y `parse_custom_food_id` — `backend/services/food_library_rules.py`
+- [x] T-102 [REQ-006, REQ-007] (impl) Forma «-ces», OSA, tolerancia, `typo_distance`, `rank_candidates` y `rank_catalog` sobre ellos (también para `/api/catalog/search`) — `backend/services/catalog_search_service.py`
+- [x] T-103 [REQ-001, REQ-002, REQ-004, REQ-009, REQ-010] (impl) `CustomFoodRepository` y `FoodFavoriteRepository` (solo `flush`, nunca commit) — `backend/repositories/custom_food_repository.py`, `backend/repositories/food_favorite_repository.py`
+- [x] T-104 [REQ-008, REQ-012] (impl) `MealRepository.list_recent_foods` (ventana por clave, solo catálogo vigente o propios) — `backend/repositories/meal_repository.py`
+- [x] T-105 [REQ-003, REQ-012] (impl) `parse_items` con `custom_food_id`, `snapshot_payload`/`parse_snapshot_payload` con `cf` opcional — `backend/services/meal_rules.py`
+- [x] T-106 [REQ-001, REQ-002, REQ-003] (impl) `MealService.add_items`: `_load_foods` por `UsdaItemInput`, `_load_custom_foods`, `_save_custom_foods`, límite y rollback — `backend/services/meal_service.py`
+- [x] T-107 [REQ-012] (impl) `MealService.remove_item` y `restore_item` con `custom_food_id` — `backend/services/meal_service.py`
+- [x] T-108 [REQ-004, REQ-007, REQ-008, REQ-009, REQ-010, NFR-001] (impl) `FoodLibraryService` completo (sin embeddings ni rate limiter) — `backend/services/food_library_service.py`
+- [x] T-109 [REQ-001, REQ-003, REQ-012] (impl) `custom_food_id` en las respuestas de `/api/meals` y `_build_meal_service` con el repositorio de la biblioteca — `backend/routes/meal_routes.py`
+- [x] T-110 [REQ-004, REQ-007, REQ-008, REQ-009, REQ-010, REQ-011] (impl) Blueprint `/api/food-library` con las ocho rutas (`@require_auth`, parámetros de ruta como texto), `_build_food_library_service` y `library_food_to_json`; registro del blueprint — `backend/routes/food_library_routes.py`, `backend/routes/__init__.py`
 
 ### frontend
-- [ ] T-120 [REQ-004, REQ-007, REQ-009, REQ-014, REQ-015, REQ-017] (impl) `api.ts` y `hooks.ts` de `food-library` (claves, `staleTime`, invalidación de `foodLibraryKeys.all`, 404 de borrado como éxito) — `frontend/src/features/food-library/api.ts`, `frontend/src/features/food-library/hooks.ts`
-- [ ] T-121 [REQ-013] (impl) `useDebouncedValue` con `flush` — `frontend/src/lib/useDebouncedValue.ts`
-- [ ] T-122 [REQ-014, REQ-015, REQ-016, REQ-017] (impl) `gramsText`, `favoriteErrorMessage` (400 → mensaje del servidor) y constantes — `frontend/src/features/diary/format.ts`, `frontend/src/features/diary/errors.ts`, `frontend/src/features/diary/constants.ts`
-- [ ] T-123 [REQ-018, REQ-019] (impl) `libraryEntry`, `withEntryKey`, `mergeProposalEntries`, `proposalItems` con `customFoodId` y esquemas del diario con `custom_food_id` y `key` — `frontend/src/features/diary/proposal.ts`, `frontend/src/features/diary/schemas.ts`
-- [ ] T-124 [REQ-015, REQ-017, NFR-002] (impl) `LibraryFoodList`: lista con nombre, «Personalizado», macros, «Elegir», favorito con `aria-pressed` y «Borrar» — `frontend/src/features/diary/components/LibraryFoodList.tsx`
-- [ ] T-125 [REQ-013, REQ-014, REQ-015, REQ-017, NFR-002] (impl) `FoodSearchPanel`: caja, búsqueda a 300 ms, Intro, región `status`, favoritos, recientes, borrado con `ConfirmDialog` — `frontend/src/features/diary/components/FoodSearchPanel.tsx`
-- [ ] T-126 [REQ-016] (impl) Aviso `CUSTOM_FOOD_LIBRARY_NOTICE` y 400 del límite visible en el formulario personalizado — `frontend/src/features/diary/components/CustomFoodForm.tsx`
-- [ ] T-127 [REQ-013, REQ-014, REQ-016] (impl) `AddFoodDialog` sobre `FoodSearchPanel` y envío de `custom_food_id`; `useAddMealItems` invalida la biblioteca — `frontend/src/features/diary/components/AddFoodDialog.tsx`, `frontend/src/features/diary/hooks.ts`
-- [ ] T-128 [REQ-018, REQ-019, NFR-003] (impl) `PhotoReview` con `useWatch` y `mergeProposalEntries`, vistas `search` y `custom`, `confirmContainer`; sin `form.watch` — `frontend/src/features/diary/components/PhotoReview.tsx`
-- [ ] T-129 [REQ-018, REQ-019] (impl) `ProposalEntryRow` y `MealPhotoDialog` ajustados (etiqueta «Personalizado», `confirmContainer`, búsqueda compartida) — `frontend/src/features/diary/components/ProposalEntryRow.tsx`, `frontend/src/features/diary/components/MealPhotoDialog.tsx`
-- [ ] T-130 [REQ-020] (impl) Borrar `ProposalSearchStep.tsx`, `FoodsPage.tsx` y su test, `FoodResultList.tsx`, `FoodSearchForm.tsx` y `foods/hooks.ts`; `/foods` sigue redirigiendo a `/diary` — `frontend/src/features/foods/pages/FoodsPage.tsx`
-- [ ] T-131 [REQ-021] (impl) Punto «Diario de comidas:» con personalizados y favoritos y `updatedAt="27 de octubre de 2026"` — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
+- [x] T-120 [REQ-004, REQ-007, REQ-009, REQ-014, REQ-015, REQ-017] (impl) `api.ts` y `hooks.ts` de `food-library` (claves, `staleTime`, invalidación de `foodLibraryKeys.all`, 404 de borrado como éxito) — `frontend/src/features/food-library/api.ts`, `frontend/src/features/food-library/hooks.ts`
+- [x] T-121 [REQ-013] (impl) `useDebouncedValue` con `flush` — `frontend/src/lib/useDebouncedValue.ts`
+- [x] T-122 [REQ-014, REQ-015, REQ-016, REQ-017] (impl) `gramsText`, `favoriteErrorMessage` (400 → mensaje del servidor) y constantes — `frontend/src/features/diary/format.ts`, `frontend/src/features/diary/errors.ts`, `frontend/src/features/diary/constants.ts`
+- [x] T-123 [REQ-018, REQ-019] (impl) `libraryEntry`, `withEntryKey`, `mergeProposalEntries`, `proposalItems` con `customFoodId` y esquemas del diario con `custom_food_id` y `key` — `frontend/src/features/diary/proposal.ts`, `frontend/src/features/diary/schemas.ts`
+- [x] T-124 [REQ-015, REQ-017, NFR-002] (impl) `LibraryFoodList`: lista con nombre, «Personalizado», macros, «Elegir», favorito con `aria-pressed` y «Borrar» — `frontend/src/features/diary/components/LibraryFoodList.tsx`
+- [x] T-125 [REQ-013, REQ-014, REQ-015, REQ-017, NFR-002] (impl) `FoodSearchPanel`: caja, búsqueda a 300 ms, Intro, región `status`, favoritos, recientes, borrado con `ConfirmDialog` — `frontend/src/features/diary/components/FoodSearchPanel.tsx`
+- [x] T-126 [REQ-016] (impl) Aviso `CUSTOM_FOOD_LIBRARY_NOTICE` y 400 del límite visible en el formulario personalizado — `frontend/src/features/diary/components/CustomFoodForm.tsx`
+- [x] T-127 [REQ-013, REQ-014, REQ-016] (impl) `AddFoodDialog` sobre `FoodSearchPanel` y envío de `custom_food_id`; `useAddMealItems` invalida la biblioteca — `frontend/src/features/diary/components/AddFoodDialog.tsx`, `frontend/src/features/diary/hooks.ts`
+- [x] T-128 [REQ-018, REQ-019, NFR-003] (impl) `PhotoReview` con `useWatch` y `mergeProposalEntries`, vistas `search` y `custom`, `confirmContainer`; sin `form.watch` — `frontend/src/features/diary/components/PhotoReview.tsx`
+- [x] T-129 [REQ-018, REQ-019] (impl) `ProposalEntryRow` y `MealPhotoDialog` ajustados (etiqueta «Personalizado», `confirmContainer`, búsqueda compartida) — `frontend/src/features/diary/components/ProposalEntryRow.tsx`, `frontend/src/features/diary/components/MealPhotoDialog.tsx`
+- [x] T-130 [REQ-020] (impl) Borrar `ProposalSearchStep.tsx`, `FoodsPage.tsx` y su test, `FoodResultList.tsx`, `FoodSearchForm.tsx` y `foods/hooks.ts`; `/foods` sigue redirigiendo a `/diary` — `frontend/src/features/foods/pages/FoodsPage.tsx`
+- [x] T-131 [REQ-021] (impl) Punto «Diario de comidas:» con personalizados y favoritos y `updatedAt="27 de octubre de 2026"` — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

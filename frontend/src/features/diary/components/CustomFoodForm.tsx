@@ -11,6 +11,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import { CUSTOM_FOOD_LIBRARY_NOTICE } from "../constants"
 import { formatPortionPreview } from "../format"
 import { portionNutrients } from "../nutrition"
 import {
@@ -120,6 +121,7 @@ export function CustomFoodForm({
           </div>
         ))}
         {preview && <p className="text-sm text-muted-foreground">{preview}</p>}
+        <p className="text-sm text-muted-foreground">{CUSTOM_FOOD_LIBRARY_NOTICE}</p>
         <div className="flex flex-wrap gap-2">
           <Button type="submit" disabled={isSaving}>
             {isSaving ? "Guardando…" : submitLabel}
