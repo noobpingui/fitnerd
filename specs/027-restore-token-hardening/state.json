@@ -1,0 +1,602 @@
+{
+  "schema_version": 1,
+  "feature": "027-restore-token-hardening",
+  "title": "Endurecer SECRET_KEY en producción y la validación del snapshot del token de restauración",
+  "type": "fix",
+  "scope": [
+    "backend"
+  ],
+  "branch": "fix/027-restore-token-hardening",
+  "base_branch": "main",
+  "created_at": "2026-10-27T05:55:23.138Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-27T06:20:20.134Z",
+      "note": "Aprobado, sigue"
+    },
+    "plan": {
+      "at": "2026-10-27T06:23:45.638Z",
+      "note": "auto (gate_mode=flow): plan 027 sin ADR ni migración"
+    },
+    "tasks": {
+      "at": "2026-10-27T06:24:33.504Z",
+      "note": "auto (gate_mode=flow): 18 tareas, matriz completa"
+    },
+    "tests": {
+      "at": "2026-10-27T07:28:34.592Z",
+      "note": "auto (gate_mode=flow): F1 y F2 de la review"
+    },
+    "implement": {
+      "at": "2026-10-27T07:41:45.849Z",
+      "note": "auto (gate_mode=flow): F5"
+    },
+    "verify": {
+      "at": "2026-10-27T07:45:27.895Z",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    "review": {
+      "at": "2026-10-27T07:50:20.078Z",
+      "note": "Aprobado. Yo confirmé el SECRET_KEY en el EC2: no es DEFAULT_KEY ni change-me"
+    },
+    "docs": {
+      "at": "2026-10-27T07:51:54.591Z",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
+    "close": {
+      "at": "2026-10-27T07:53:19.921Z",
+      "note": "Aprobado, ejecuta los 5 pasos"
+    }
+  },
+  "commits": {
+    "spec": "8c13d6f",
+    "plan": "b424cca",
+    "tasks": "02c325f",
+    "tests": "9127597",
+    "implement": "84b4921",
+    "review": "b788082",
+    "docs": "41c701c"
+  },
+  "iterations": {
+    "tests": 3,
+    "implement": 0,
+    "review": 3
+  },
+  "max_iterations": 4,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-10-27T06:56:27.472Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-10-27T07:45:20.039Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-10-27T07:47:06.272Z"
+  },
+  "tests_snapshot": {
+    "at": "2026-10-27T07:28:34.437Z",
+    "reason": "Correcciones F1 y F2 de la review (renombrados)",
+    "sha256": {
+      "backend/tests/conftest.py": "59011481d856dc9983d98e9ef5b5d228c92f1e6be72ad2bab4d2d69fba280eb3",
+      "backend/tests/test_routes/test_meal_routes.py": "e249b9b70caac26e91e95b60d1b35c72a942ee48f038b32d0278878535ebc455",
+      "backend/tests/test_services/test_meal_rules.py": "54872725e2184a3b5ae890bc3c87450129fa3b4c903c4e791e375ee2648e9f6c",
+      "backend/tests/test_services/test_secret_key_config.py": "1bbe802f3bfab34cd6f15c118447015a75c60a15930a8652fd8fed76773db0c1"
+    }
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-27T05:55:23.138Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama fix/027-restore-token-hardening desde main"
+    },
+    {
+      "at": "2026-10-27T05:57:20.755Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Redactar la spec de 027-restore-token-hardening a partir de idea.md"
+    },
+    {
+      "at": "2026-10-27T05:59:39.781Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "Q1-Q3 de la spec 027 pendientes de respuesta del usuario"
+    },
+    {
+      "at": "2026-10-27T06:18:52.634Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "Spec 027: 6 REQ (26 AC) y 2 NFR (3 AC), Q1-Q3 resueltas"
+    },
+    {
+      "at": "2026-10-27T06:20:20.134Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Aprobado, sigue"
+    },
+    {
+      "at": "2026-10-27T06:20:20.405Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 8c13d6f"
+    },
+    {
+      "at": "2026-10-27T06:20:20.595Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Diseñar el plan de 027 a partir de la spec aprobada"
+    },
+    {
+      "at": "2026-10-27T06:23:45.436Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "Plan 027: resolve_secret_key en config.py/app.py y validación estricta en parse_snapshot_payload; sin ADR ni migración"
+    },
+    {
+      "at": "2026-10-27T06:23:45.537Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Decisiones: comprobación en create_app (como FRONTEND_BASE_URL); error de FRONTEND_BASE_URL primero si fallan ambas; rango de fdc_id para cualquier origen; make_app con SECRET_KEY de pruebas; sin ADR nueva"
+    },
+    {
+      "at": "2026-10-27T06:23:45.638Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan 027 sin ADR ni migración"
+    },
+    {
+      "at": "2026-10-27T06:23:45.854Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: b424cca"
+    },
+    {
+      "at": "2026-10-27T06:23:46.046Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Descomponer el plan de 027 en tareas"
+    },
+    {
+      "at": "2026-10-27T06:24:33.402Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "Tareas 027: 18 (1 scaffold, 14 test, 3 impl), 29 AC cubiertos"
+    },
+    {
+      "at": "2026-10-27T06:24:33.504Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 18 tareas, matriz completa"
+    },
+    {
+      "at": "2026-10-27T06:24:33.741Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 02c325f"
+    },
+    {
+      "at": "2026-10-27T06:24:33.938Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold de config.py (T-001)"
+    },
+    {
+      "at": "2026-10-27T06:25:02.065Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-27T06:27:56.978Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (verifier)"
+    },
+    {
+      "at": "2026-10-27T06:32:21.681Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Rojo: 35 fallos 027 con motivo legitimo; FAIL por 6 tests que pasan sin guarda de regresion (test-author) y AC-N002.1 sin marcador SDD (test-author)"
+    },
+    {
+      "at": "2026-10-27T06:32:36.631Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL: 7 tests sin guarda, guarda inválida en test_the_constants_match_the_spec y AC-N002.1 sin marcador · tests 1/4"
+    },
+    {
+      "at": "2026-10-27T06:51:37.835Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Red iteración 2: 35 fallos 027 legítimos y guardas corregidas; FAIL por monkeypatch en test_production_app_starts_in_tests_without_secret_key_in_the_environment (P1.3 y plan) y AC-N001.2 sin marcador SDD (test-author)"
+    },
+    {
+      "at": "2026-10-27T06:51:48.397Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL 2: monkeypatch.delenv sin justificar (P1.3) y AC-N001.2 sin marcador · tests 2/4"
+    },
+    {
+      "at": "2026-10-27T06:56:27.472Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red iteración 3: 35 fallos 027 legítimos (sin ilegítimos), 27 guardas con comentario, sin monkeypatch, AC-N001.2 marcado; regresión 026 y make_app 240 passed"
+    },
+    {
+      "at": "2026-10-27T06:56:51.366Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Red check PASS: 35 rojos legítimos, 27 guardas de regresión, 29 AC con marcador"
+    },
+    {
+      "at": "2026-10-27T06:56:51.482Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "4 archivo(s) de test: Tests 027 aprobados tras red check PASS (iteración 3)"
+    },
+    {
+      "at": "2026-10-27T06:56:51.636Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Decisión: AC-N002.1 se prueba sin override SECRET_KEY=None (con la 027 haría fallar el arranque); make_app aporta la clave de pruebas"
+    },
+    {
+      "at": "2026-10-27T06:56:51.744Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS"
+    },
+    {
+      "at": "2026-10-27T06:56:52.044Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: fd0d315"
+    },
+    {
+      "at": "2026-10-27T06:56:52.252Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar T-030 a T-032"
+    },
+    {
+      "at": "2026-10-27T07:00:07.400Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "resolve_secret_key con required=False devuelve el valor tal cual; ratchet: 1 violación I001 en un test (test_meal_routes.py L8)"
+    },
+    {
+      "at": "2026-10-27T07:00:07.526Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "Implementación 027: config.py, app.py y meal_rules.py; suite 2182 passed"
+    },
+    {
+      "at": "2026-10-27T07:00:07.641Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 2182 passed"
+    },
+    {
+      "at": "2026-10-27T07:00:07.972Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 36d017b"
+    },
+    {
+      "at": "2026-10-27T07:00:08.196Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa"
+    },
+    {
+      "at": "2026-10-27T07:03:28.152Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify FAIL: Verificación full 027: suite backend 2182 passed; lint_ratchet FAIL por 1 violación nueva I001 en backend/tests/test_routes/test_meal_routes.py L8 (test-author). Trazabilidad completa (29 AC, 9 REQ/NFR con tareas, 18 tareas [x], sin skip/xfail)."
+    },
+    {
+      "at": "2026-10-27T07:03:36.848Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Verify FAIL: ratchet I001 (imports sin ordenar) en test_meal_routes.py L8 · tests 3/4"
+    },
+    {
+      "at": "2026-10-27T07:04:55.216Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Corrección I001 en test_meal_routes.py (solo imports), 148 passed"
+    },
+    {
+      "at": "2026-10-27T07:04:55.342Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "4 archivo(s) de test: Corrección de orden de imports (I001) tras verify FAIL"
+    },
+    {
+      "at": "2026-10-27T07:04:55.496Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección I001"
+    },
+    {
+      "at": "2026-10-27T07:04:55.753Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 39c9116"
+    },
+    {
+      "at": "2026-10-27T07:04:55.967Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Sin cambios de producción: el fallo de verify era de un test"
+    },
+    {
+      "at": "2026-10-27T07:04:56.086Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "Sin cambios de código; suite sin tocar"
+    },
+    {
+      "at": "2026-10-27T07:04:56.204Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): sin cambios de producción"
+    },
+    {
+      "at": "2026-10-27T07:04:56.453Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa, iteración 2"
+    },
+    {
+      "at": "2026-10-27T07:07:51.470Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verificación full 027 (iteración 2): backend 2182 passed; lint_ratchet sin violaciones nuevas (I001 de test_meal_routes.py corregido en 39c9116); trazabilidad completa (29 AC, REQ/NFR con tareas, 18 tareas [x], sin skip/xfail nuevos)"
+    },
+    {
+      "at": "2026-10-27T07:07:58.966Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS: 2182 passed, ratchet limpio, 29 AC trazados"
+    },
+    {
+      "at": "2026-10-27T07:07:59.089Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-27T07:07:59.309Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review independiente de 027"
+    },
+    {
+      "at": "2026-10-27T07:10:59.052Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-27T07:10:59.164Z",
+      "stage": "review",
+      "event": "done",
+      "note": "Review APPROVED: 0 bloqueantes, 0 mayores, 1 menor, 3 nit"
+    },
+    {
+      "at": "2026-10-27T07:27:49.077Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Usuario pide corregir F1 y F2 de la review (tests); después F3 y F4 (implement) y docs P4 · review 1/4"
+    },
+    {
+      "at": "2026-10-27T07:28:34.328Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "F1 y F2: renombrados dos tests y docstring; 34 passed"
+    },
+    {
+      "at": "2026-10-27T07:28:34.437Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "4 archivo(s) de test: Correcciones F1 y F2 de la review (renombrados)"
+    },
+    {
+      "at": "2026-10-27T07:28:34.592Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F1 y F2 de la review"
+    },
+    {
+      "at": "2026-10-27T07:28:34.858Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 9127597"
+    },
+    {
+      "at": "2026-10-27T07:28:35.066Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "Review F3 y F4: anotaciones de tipo de resolve_secret_key y reutilizar is_db_id para fdc_id · review 2/4"
+    },
+    {
+      "at": "2026-10-27T07:31:18.889Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F3 y F4: anotaciones de tipo e is_db_id; 2182 passed"
+    },
+    {
+      "at": "2026-10-27T07:31:19.005Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F3 y F4"
+    },
+    {
+      "at": "2026-10-27T07:31:19.286Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 0986bed"
+    },
+    {
+      "at": "2026-10-27T07:31:19.497Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa tras correcciones de review"
+    },
+    {
+      "at": "2026-10-27T07:35:27.734Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verificación full 027 tras correcciones F1-F4: backend 2182 passed; lint_ratchet sin violaciones nuevas; snapshot de tests intacto; 29 AC trazados; 18 tareas [x]; sin skip/xfail nuevos"
+    },
+    {
+      "at": "2026-10-27T07:35:36.888Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS tras F1-F4: 2182 passed, ratchet limpio"
+    },
+    {
+      "at": "2026-10-27T07:35:37.002Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-27T07:35:37.218Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review 2 tras correcciones F1-F4"
+    },
+    {
+      "at": "2026-10-27T07:39:13.381Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "Review 2: F4 sin resolver (is_db_id aplicado en _parse_usda_item de la 022, no en parse_snapshot_payload:166) · review 3/4"
+    },
+    {
+      "at": "2026-10-27T07:41:45.740Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F5: is_db_id en parse_snapshot_payload y _parse_usda_item restaurado; 2182 passed"
+    },
+    {
+      "at": "2026-10-27T07:41:45.849Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F5"
+    },
+    {
+      "at": "2026-10-27T07:41:46.120Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 84b4921"
+    },
+    {
+      "at": "2026-10-27T07:41:46.239Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa tras F5"
+    },
+    {
+      "at": "2026-10-27T07:45:20.039Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify 027 iteración 3 tras F5: backend 2182 passed; lint_ratchet sin violaciones nuevas; F5 resuelto (is_db_id en parse_snapshot_payload, _parse_usda_item idéntico a main); snapshot de tests intacto; 29 AC trazados; 18 tareas [x]; sin skip/xfail nuevos; sin SECRET_KEY en proceso 393 passed (CI pendiente para AC-N002.1)"
+    },
+    {
+      "at": "2026-10-27T07:45:27.785Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS tras F5: 2182 passed, ratchet limpio"
+    },
+    {
+      "at": "2026-10-27T07:45:27.895Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-27T07:45:28.012Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review 3 tras F5"
+    },
+    {
+      "at": "2026-10-27T07:47:06.272Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-27T07:47:06.386Z",
+      "stage": "review",
+      "event": "done",
+      "note": "Review 3 APPROVED: F1-F5 resueltos, 0 hallazgos"
+    },
+    {
+      "at": "2026-10-27T07:50:20.078Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Aprobado. Yo confirmé el SECRET_KEY en el EC2: no es DEFAULT_KEY ni change-me"
+    },
+    {
+      "at": "2026-10-27T07:50:20.374Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: b788082"
+    },
+    {
+      "at": "2026-10-27T07:50:20.591Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Actualizar documentación de 027 (incluye P4)"
+    },
+    {
+      "at": "2026-10-27T07:51:54.488Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "Docs 027: runbook, CLAUDE.md, README, .env.example"
+    },
+    {
+      "at": "2026-10-27T07:51:54.591Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
+    {
+      "at": "2026-10-27T07:51:54.856Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: 41c701c"
+    },
+    {
+      "at": "2026-10-27T07:51:54.971Z",
+      "stage": "close",
+      "event": "started",
+      "note": ""
+    },
+    {
+      "at": "2026-10-27T07:52:08.932Z",
+      "stage": "close",
+      "event": "done",
+      "note": ""
+    },
+    {
+      "at": "2026-10-27T07:53:19.921Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Aprobado, ejecuta los 5 pasos"
+    },
+    {
+      "at": "2026-10-27T07:53:19.921Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
+    }
+  ]
+}

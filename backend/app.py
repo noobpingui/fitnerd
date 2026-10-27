@@ -3,7 +3,7 @@ import models
 
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
-from config import config_by_name, resolve_frontend_base_url
+from config import config_by_name, resolve_frontend_base_url, resolve_secret_key
 from utils.clock import install_clock
 from extensions import (
     db, migrate, cors, jwt_manager, embedding_client, rate_limiter, email_sender, tracer,
@@ -33,6 +33,12 @@ def create_app(config_name=None, config_overrides=None):
     app.config["FRONTEND_BASE_URL"] = resolve_frontend_base_url(
         app.config.get("FRONTEND_BASE_URL"),
         required=app.config.get("FRONTEND_BASE_URL_REQUIRED", False),
+    )
+
+    #En producción SECRET_KEY es obligatoria y no puede ser un valor por defecto (spec 027)
+    app.config["SECRET_KEY"] = resolve_secret_key(
+        app.config.get("SECRET_KEY"),
+        required=app.config.get("SECRET_KEY_REQUIRED", False),
     )
 
     #Reloj de la app: fijable solo con TESTING (ADR-0028)

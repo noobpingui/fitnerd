@@ -213,7 +213,10 @@ def make_app(app):
     para probar la configuración de producción, desarrollo o de correo real.
     Usa valores seguros por defecto (la base de datos de pruebas, Langfuse
     desactivado y correo en memoria) porque en CI no existen DEV_DATABASE_URL
-    ni PROD_DATABASE_URL y el .env local puede traer claves reales. Al
+    ni PROD_DATABASE_URL y el .env local puede traer claves reales. Spec 027:
+    también da por defecto una SECRET_KEY propia de pruebas, porque la
+    configuración de producción exige una y el CI no la define; un test la
+    sobrescribe con `SECRET_KEY=...` (o `None` para simular que falta). Al
     terminar repone el remitente y el transporte de correo de la app de
     sesión, porque crear una app reconfigura los singletons."""
     created = []
@@ -221,6 +224,7 @@ def make_app(app):
     def factory(config_name, **overrides):
         settings = {
             "SQLALCHEMY_DATABASE_URI": app.config["SQLALCHEMY_DATABASE_URI"],
+            "SECRET_KEY": "test-production-secret-key",
             "LANGFUSE_PUBLIC_KEY": None,
             "LANGFUSE_SECRET_KEY": None,
             "MAIL_BACKEND": "memory",

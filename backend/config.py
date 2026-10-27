@@ -34,6 +34,22 @@ def resolve_frontend_base_url(value, *, required):
     return cleaned
 
 
+DEFAULT_SECRET_KEY = "DEFAULT SECRET"
+KNOWN_DEFAULT_SECRET_KEYS = frozenset({"DEFAULT SECRET", "change-me"})
+SECRET_KEY_REQUIRED_MESSAGE = (
+    "SECRET_KEY es obligatoria en producción y no puede ser un valor por defecto"
+)
+
+
+def resolve_secret_key(value: str | None, *, required: bool) -> str:
+    """Clave de firma: en producción es obligatoria y no puede ser un valor por defecto conocido."""
+    if not required:
+        return DEFAULT_SECRET_KEY if value is None else value
+    if not isinstance(value, str) or value.strip() in KNOWN_DEFAULT_SECRET_KEYS | {""}:
+        raise ValueError(SECRET_KEY_REQUIRED_MESSAGE)
+    return value
+
+
 def observability_enabled(config):
     """La observabilidad solo se activa con ambas claves y fuera de los tests."""
     return bool(
@@ -44,7 +60,8 @@ def observability_enabled(config):
 
 
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "DEFAULT SECRET")
+    SECRET_KEY = os.getenv("SECRET_KEY", DEFAULT_SECRET_KEY)
+    SECRET_KEY_REQUIRED = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     #Origenes permitidos para CORS, separados por coma (ej: "http://localhost:5173,https://fitnerd.app")
@@ -104,6 +121,7 @@ class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.getenv("PROD_DATABASE_URL")
     MAIL_BACKEND = os.getenv("MAIL_BACKEND", "resend")
     FRONTEND_BASE_URL_REQUIRED = True
+    SECRET_KEY_REQUIRED = True
     #Un proxy de confianza: Caddy.
     PROXY_FIX_X_FOR = int(os.getenv("PROXY_FIX_X_FOR", "1"))
     OBSERVABILITY_ENVIRONMENT = "production"

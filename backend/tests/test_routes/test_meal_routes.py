@@ -5,18 +5,21 @@ usuarios se registran por `/api/auth/register` porque `meals.user_id` tiene
 FK a `users`. Los alimentos de USDA se siembran con `db.session.add(Food(...))`.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
+from decimal import Decimal
 
 import pytest
 
 from extensions import db, jwt_manager
-from models import CatalogFood, Food
+from models import CatalogFood, Food, User
 from models.meal import Meal, MealItem
 from repositories.catalog_food_repository import CatalogFoodRepository
 from repositories.food_repository import FoodRepository
 from services.catalog_load_service import CatalogLoadService
+from services.meal_rules import RemovedItemSnapshot, epoch_seconds, snapshot_payload
 from tests.catalog_samples import catalog_row, write_catalog_csv
 from unit_of_work.unit_of_work import UnitOfWork
+from utils.restore_token import RestoreTokenSigner
 
 URL = "/api/meals"
 NOW = datetime(2026, 10, 21, 3, 0)
@@ -1708,3 +1711,120 @@ def test_without_a_session_nothing_is_added_deleted_or_restored(client, app, hea
 
     assert [r.status_code for r in responses] == [401] * 5
     assert counts(app) == before
+
+
+# --------------------------------------------------------------------------
+# Spec 027: contenido anómalo del token de restauración y producción
+# --------------------------------------------------------------------------
+
+PROD_URL = "https://fitnerd.betofallas.dev"
+ANA_EMAIL = "ana@example.com"
+
+
+def forged_token(app, payload_changes, email=ANA_EMAIL):
+    """Token bien firmado para el usuario `email`, sin caducar respecto al reloj de la
+    app, con el contenido de un alimento válido y los cambios dados en el payload."""
+    with app.app_context():
+        user_id = db.session.query(User).filter_by(email=email).one().id
+    item = RemovedItemSnapshot(
+        meal_date=datetime(2026, 10, 21).date(),
+        meal_type="breakfast",
+        position=1,
+        source="custom",
+        catalog_id=None,
+        fdc_id=None,
+        name="Plátano",
+        data_type=None,
+        grams=Decimal("120.0"),
+        per_100g={"calories_kcal": 89.0, "protein_g": 1.1, "carbs_g": 22.8, "fat_g": 0.3},
+        expires_at=epoch_seconds(NOW) + 100,
+    )
+    payload = {**snapshot_payload(item), **payload_changes}
+    return RestoreTokenSigner(app.config["SECRET_KEY"]).sign(user_id, payload)
+
+
+def assert_rejected_and_unchanged(client, app, headers, token):
+    before_diary = diary(client, headers)
+    before_counts = counts(app)
+
+    response = restore(client, headers, token)
+
+    assert response.status_code == 404
+    assert response.get_json() == ITEM_NOT_FOUND
+    assert diary(client, headers) == before_diary
+    assert counts(app) == before_counts
+
+
+# SDD: 027 REQ-004 AC-004.4
+def test_restore_rejects_a_signed_token_with_version_1_0(client, app, headers):
+    """Un contenido con versión `1.0` (no el entero 1) da 404 y no cambia las comidas."""
+    three_item_breakfast(client, headers)
+
+    assert_rejected_and_unchanged(client, app, headers, forged_token(app, {"v": 1.0}))
+
+
+# SDD: 027 REQ-005 AC-005.5
+def test_restore_rejects_a_signed_token_with_a_position_beyond_the_integer_range(
+    client, app, headers
+):
+    """Posición 2147483648: 404 y no un 500 de la base de datos."""
+    three_item_breakfast(client, headers)
+
+    assert_rejected_and_unchanged(client, app, headers, forged_token(app, {"p": 2147483648}))
+
+
+# SDD: 027 REQ-006 AC-006.5
+def test_restore_rejects_a_signed_usda_token_with_an_id_beyond_the_integer_range(
+    client, app, headers
+):
+    """Identificador de USDA 2147483648: 404 y no un 500 de la base de datos."""
+    three_item_breakfast(client, headers)
+    changes = {"s": "usda", "f": 2147483648, "dt": "sr_legacy_food"}
+
+    assert_rejected_and_unchanged(client, app, headers, forged_token(app, changes))
+
+
+# Guarda de regresión de la 026: pasa sin implementar la 027.
+# SDD: 027 REQ-004 AC-004.3
+def test_restore_accepts_a_correctly_signed_token_with_a_valid_content(client, app, headers):
+    """El token fabricado sin alteraciones se restaura: valida que el helper es correcto."""
+    meal = three_item_breakfast(client, headers)
+
+    response = restore(client, headers, forged_token(app, {"p": 1}))
+
+    assert response.status_code == 200
+    assert response.get_json()["id"] == meal["id"]
+    assert [i["name"] for i in response.get_json()["items"]][1] == "Plátano"
+
+
+# Guarda de regresión de la 026: pasa sin implementar la 027.
+# SDD: 027 REQ-002 AC-002.3
+def test_undo_and_restore_work_in_a_production_app_with_its_own_secret_key(make_app):
+    """App de producción con `SECRET_KEY` propia: quitar con `?undo=1` y restaurar devuelve
+    el alimento a su comida y posición."""
+    prod_app = make_app(
+        "production", FRONTEND_BASE_URL=PROD_URL, SECRET_KEY="una-clave-propia-de-produccion"
+    )
+    prod_client = prod_app.test_client()
+    prod_headers = register(prod_client)
+    today = datetime.now(timezone.utc).date().isoformat()
+    names = ["Avena", "Plátano", "Leche"]
+    meal = post(
+        prod_client,
+        prod_headers,
+        [{**GALLO, "name": name} for name in names],
+        date=today,
+        meal_type="breakfast",
+    ).get_json()
+    removed = meal["items"][1]
+
+    token = delete_with_undo(prod_client, prod_headers, meal["id"], removed["id"]).get_json()[
+        "restore_token"
+    ]
+    response = restore(prod_client, prod_headers, token)
+
+    assert response.status_code == 200
+    body = response.get_json()
+    assert body["id"] == meal["id"]
+    assert [i["name"] for i in body["items"]] == names
+    assert body["items"][1]["grams"] == removed["grams"]

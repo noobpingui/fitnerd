@@ -206,6 +206,138 @@ def _payload_with(**changes):
 
 _REMOVE = object()
 
+MAX_INT = 2_147_483_647
+
+
+def _usda_payload(**changes):
+    """Payload válido de un alimento de USDA con los cambios dados."""
+    values = {"s": "usda", "c": None, "f": 171477, "dt": "sr_legacy_food", **changes}
+    return _payload_with(**values)
+
+
+# SDD: 027 REQ-004 AC-004.1
+def test_parse_snapshot_payload_rejects_version_1_0():
+    """`1.0` vale 1 en Python, pero no es el entero 1 que emite el servidor."""
+    assert parse_snapshot_payload(_payload_with(v=1.0)) is None
+
+
+# Guarda de regresión de la 026: pasa sin implementar la 027.
+# SDD: 027 REQ-004 AC-004.2
+def test_parse_snapshot_payload_rejects_version_true():
+    assert parse_snapshot_payload(_payload_with(v=True)) is None
+
+
+# Guarda de regresión de la 026: pasa sin implementar la 027.
+# SDD: 027 REQ-004 AC-004.2
+@pytest.mark.parametrize("version", ["1", 2, 0, None, _REMOVE])
+def test_parse_snapshot_payload_still_rejects_other_versions(version):
+    assert parse_snapshot_payload(_payload_with(v=version)) is None
+
+
+# Guarda de regresión de la 026: pasa sin implementar la 027.
+# SDD: 027 REQ-004 AC-004.3
+def test_parse_snapshot_payload_accepts_version_one_with_the_full_snapshot():
+    assert parse_snapshot_payload(_payload_with(v=1)) == snapshot()
+
+
+# Guarda de regresión de la 026: pasa sin implementar la 027.
+# SDD: 027 REQ-005 AC-005.1
+# SDD: 027 REQ-005 AC-005.4
+@pytest.mark.parametrize("position", [0, MAX_INT])
+def test_parse_snapshot_payload_accepts_the_position_limits(position):
+    result = parse_snapshot_payload(_payload_with(p=position))
+
+    assert result == snapshot(position=position)
+
+
+# SDD: 027 REQ-005 AC-005.2
+@pytest.mark.parametrize("position", [MAX_INT + 1, 10**20])
+def test_parse_snapshot_payload_rejects_a_position_beyond_the_database_range(position):
+    assert parse_snapshot_payload(_payload_with(p=position)) is None
+
+
+# Guarda de regresión de la 026: pasa sin implementar la 027.
+# SDD: 027 REQ-005 AC-005.3
+def test_parse_snapshot_payload_rejects_a_position_of_1_0():
+    assert parse_snapshot_payload(_payload_with(p=1.0)) is None
+
+
+# Guarda de regresión de la 026: pasa sin implementar la 027.
+# SDD: 027 REQ-005 AC-005.3
+def test_parse_snapshot_payload_rejects_a_position_of_true():
+    assert parse_snapshot_payload(_payload_with(p=True)) is None
+
+
+# Guarda de regresión de la 026: pasa sin implementar la 027.
+# SDD: 027 REQ-005 AC-005.3
+@pytest.mark.parametrize("position", [-1, "3", None, _REMOVE])
+def test_parse_snapshot_payload_still_rejects_other_invalid_positions(position):
+    assert parse_snapshot_payload(_payload_with(p=position)) is None
+
+
+# SDD: 027 REQ-006 AC-006.1
+# SDD: 027 REQ-006 AC-006.2
+@pytest.mark.parametrize("fdc_id", [MAX_INT + 1, 0, -5])
+def test_parse_snapshot_payload_rejects_a_usda_id_out_of_range(fdc_id):
+    assert parse_snapshot_payload(_usda_payload(f=fdc_id)) is None
+
+
+# Guarda de regresión de la 026: pasa sin implementar la 027.
+# SDD: 027 REQ-006 AC-006.2
+def test_parse_snapshot_payload_rejects_a_usda_id_of_1_0():
+    assert parse_snapshot_payload(_usda_payload(f=1.0)) is None
+
+
+# Guarda de regresión de la 026: pasa sin implementar la 027.
+# SDD: 027 REQ-006 AC-006.3
+@pytest.mark.parametrize("fdc_id", [1, MAX_INT])
+def test_parse_snapshot_payload_accepts_the_usda_id_limits(fdc_id):
+    result = parse_snapshot_payload(_usda_payload(f=fdc_id))
+
+    assert result is not None
+    assert result.source == "usda"
+    assert result.fdc_id == fdc_id
+
+
+# Guarda de regresión de la 026: pasa sin implementar la 027.
+# SDD: 027 REQ-006 AC-006.4
+@pytest.mark.parametrize(
+    "payload",
+    [
+        dict(_VALID_PAYLOAD),
+        _payload_with(s="custom", c=None, f=None),
+    ],
+)
+def test_parse_snapshot_payload_accepts_catalog_and_custom_without_a_usda_id(payload):
+    result = parse_snapshot_payload(payload)
+
+    assert result is not None
+    assert result.fdc_id is None
+
+
+# Guarda de regresión de la 026: pasa sin implementar la 027.
+# SDD: 027 NFR-001 AC-N001.1
+@pytest.mark.parametrize("position", [0, 1, MAX_INT])
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {},
+        {
+            "source": "usda",
+            "catalog_id": None,
+            "fdc_id": 171477,
+            "name": "Chicken",
+            "data_type": "sr_legacy_food",
+        },
+        {"source": "custom", "catalog_id": None, "name": "Gallo pinto"},
+    ],
+)
+def test_snapshot_payload_round_trips_by_source_and_position(overrides, position):
+    """Los snapshots que emite el servidor cumplen las reglas nuevas, en cualquier posición."""
+    item = snapshot(position=position, **overrides)
+
+    assert parse_snapshot_payload(snapshot_payload(item)) == item
+
 
 # SDD: 026 REQ-007 AC-007.4
 def test_parse_snapshot_payload_accepts_the_documented_payload():
