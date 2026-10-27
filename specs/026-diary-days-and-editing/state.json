@@ -10,14 +10,17 @@
   "branch": "feat/026-diary-days-and-editing",
   "base_branch": "main",
   "created_at": "2026-10-27T01:22:43.361Z",
-  "stage": "plan",
+  "stage": "tasks",
   "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-10-27T01:44:24.057Z",
       "note": "Aprobado, sigue"
     },
-    "plan": null,
+    "plan": {
+      "at": "2026-10-27T02:02:56.953Z",
+      "note": "Aprobado, acepto la ADR"
+    },
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -26,7 +29,9 @@
     "docs": null,
     "close": null
   },
-  "commits": {},
+  "commits": {
+    "spec": "756db4f"
+  },
   "iterations": {
     "tests": 0,
     "implement": 0,
@@ -83,6 +88,36 @@
       "stage": "spec",
       "event": "approved",
       "note": "Aprobado, sigue"
+    },
+    {
+      "at": "2026-10-27T01:44:24.351Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 756db4f"
+    },
+    {
+      "at": "2026-10-27T01:44:24.529Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Escribir plan.md de 026"
+    },
+    {
+      "at": "2026-10-27T01:54:36.659Z",
+      "stage": "plan",
+      "event": "needs_input",
+      "note": "Decisión mayor (seguridad/datos): ADR-0035, Deshacer con token firmado HMAC y nuevo POST /api/meals/restore"
+    },
+    {
+      "at": "2026-10-27T02:02:56.863Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "Plan 026 + ADR-0035 (token de restauración firmado)"
+    },
+    {
+      "at": "2026-10-27T02:02:56.953Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "Aprobado, acepto la ADR"
     }
   ]
 }
