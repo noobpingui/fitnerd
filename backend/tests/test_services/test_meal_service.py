@@ -13,7 +13,6 @@ import pytest
 from exceptions.custom_exceptions import ResourceNotFoundError, ValidationError
 from models.meal import Meal, MealItem
 from services.meal_service import MealService
-from utils.restore_token import RestoreTokenSigner
 from tests.fakes import (
     FakeCatalogFoodRepository,
     FakeClock,
@@ -24,6 +23,7 @@ from tests.fakes import (
     make_catalog_food,
     make_food,
 )
+from utils.restore_token import RestoreTokenSigner
 
 NOW = datetime(2026, 10, 21, 3, 0)
 TODAY = "2026-10-21"
@@ -1516,7 +1516,9 @@ def test_restore_item_without_a_signer_is_not_found():
     """Un servicio sin firmante no restaura nada."""
     env = Env()
 
-    message = expect_error(ResourceNotFoundError, env.service.restore_item, USER, {"restore_token": "a.b"})
+    message = expect_error(
+        ResourceNotFoundError, env.service.restore_item, USER, {"restore_token": "a.b"}
+    )
 
     assert message == ITEM_NOT_FOUND
 

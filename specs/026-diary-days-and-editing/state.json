@@ -26,8 +26,8 @@
       "note": "auto (gate_mode=flow): 50 tareas, cobertura completa"
     },
     "tests": {
-      "at": "2026-10-27T03:23:12.057Z",
-      "note": "auto (gate_mode=flow): red check PASS"
+      "at": "2026-10-27T03:45:24.778Z",
+      "note": "auto (gate_mode=flow): correccion autorizada de tests"
     },
     "implement": null,
     "verify": null,
@@ -38,10 +38,11 @@
   "commits": {
     "spec": "756db4f",
     "plan": "3545129",
-    "tasks": "f500114"
+    "tasks": "f500114",
+    "tests": "fde125d"
   },
   "iterations": {
-    "tests": 3,
+    "tests": 4,
     "implement": 0,
     "review": 0
   },
@@ -59,12 +60,12 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-27T03:23:11.927Z",
-    "reason": "Tests aprobados tras red check PASS",
+    "at": "2026-10-27T03:45:24.649Z",
+    "reason": "Correccion autorizada por el usuario: 2 tests de DiaryPage esperan datos (AC-002.10) y formato ruff",
     "sha256": {
-      "backend/tests/test_routes/test_meal_routes.py": "d2008e0325e4fbdf3a2f9dd9afc3f394aa52f6a5f5bdf5f3ccd132f6286059da",
+      "backend/tests/test_routes/test_meal_routes.py": "659895f82f205658c6ec30992efbfc08e1d467bd90cbb7e187e61baa69c154b7",
       "backend/tests/test_services/test_meal_rules.py": "64617c6d76bd7a37a8b0e6636b4977836e2d8a8723342ba5b6546944b99de5bb",
-      "backend/tests/test_services/test_meal_service.py": "1bac1237059d43b9096c7eeb8bf92a013467afd169a74d88ce69a0c8f2732957",
+      "backend/tests/test_services/test_meal_service.py": "507003248388803aa6ff4bf2372bf4897168ecff448670e654f24f373e669b0f",
       "backend/tests/test_services/test_restore_token.py": "56870bd8481cd027856988e68cd9e90f30973ae6d30f2b7bc6c3400c2b9adbfb",
       "frontend/src/features/diary/api.test.ts": "9d6faf35967f7a0830b498b6091bdd4e03a9fec045b90351c78facbae8cfd1ae",
       "frontend/src/features/diary/components/DeleteMealDialog.test.tsx": "24eadc2e406303e737f9a9ccbd482971cbfdccdf0f3c09ecb10dbe0a7f36fc70",
@@ -73,7 +74,7 @@
       "frontend/src/features/diary/days.test.ts": "1f06d8b5bf22d06483a8a97a7675b7068d5d57a043fd502bc7bfe523f09b9caa",
       "frontend/src/features/diary/format.test.ts": "e91e252def8e2abd1f154690d4f095c4525277c89f75302ddb074a8052d3c3e2",
       "frontend/src/features/diary/hooks.test.tsx": "ceedefbe3fa4e49f4aca178509d00789ef963a12b7a44ba4564c3d1454ffded0",
-      "frontend/src/features/diary/pages/DiaryPage.test.tsx": "63d34a557fd58f0c13412c40eedc789b48344207030b3c211e139c42cc8adb34"
+      "frontend/src/features/diary/pages/DiaryPage.test.tsx": "154febb96d512bd92534018dc0213d0b2360664f3f5e9f0ce2729cb707546b11"
     }
   },
   "bypass": false,
@@ -281,6 +282,48 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS"
+    },
+    {
+      "at": "2026-10-27T03:23:29.255Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: fde125d"
+    },
+    {
+      "at": "2026-10-27T03:23:29.437Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar T-050 a T-073"
+    },
+    {
+      "at": "2026-10-27T03:40:32.403Z",
+      "stage": "implement",
+      "event": "needs_input",
+      "note": "2 tests antiguos (022 AC-010.1, 025 AC-001.1) chocan con AC-002.10; 3 avisos de ruff en tests"
+    },
+    {
+      "at": "2026-10-27T03:44:45.485Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Usuario aprobó: 2 tests antiguos (022 AC-010.1, 025 AC-001.1) deben esperar datos por AC-002.10; 3 avisos de ruff en tests · tests 4/4"
+    },
+    {
+      "at": "2026-10-27T03:45:24.553Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "Correccion autorizada de 2 tests y formato ruff; sin red check"
+    },
+    {
+      "at": "2026-10-27T03:45:24.649Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "12 archivo(s) de test: Correccion autorizada por el usuario: 2 tests de DiaryPage esperan datos (AC-002.10) y formato ruff"
+    },
+    {
+      "at": "2026-10-27T03:45:24.778Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): correccion autorizada de tests"
     }
   ]
 }

@@ -628,7 +628,9 @@ def test_post_rejects_dates_outside_the_window(client, app, headers, date):
     response = post(client, headers, [GALLO], date=date)
 
     assert response.status_code == 400
-    assert response.get_json() == {"error": "Solo puedes registrar comidas de hoy o del último año."}
+    assert response.get_json() == {
+        "error": "Solo puedes registrar comidas de hoy o del último año."
+    }
     assert counts(app) == (0, 0)
 
 

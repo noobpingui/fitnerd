@@ -151,11 +151,13 @@ describe("DiaryPage", () => {
   // -------------------------------------------------------------------------
 
   // SDD: 022 REQ-010 AC-010.1
+  // SDD: 026 REQ-002 AC-002.10
   it("muestra el título, la fecha larga, las cuatro secciones en orden y el alimento del almuerzo", async () => {
     getDiaryMock.mockResolvedValue(lunchDiary())
     renderPage()
 
     expect(await screen.findByRole("heading", { level: 1, name: "Diario" })).toBeInTheDocument()
+    await screen.findByText(CHICKEN_NAME)
     expect(screen.getByText("martes, 20 de octubre")).toBeInTheDocument()
     const labels = ["Desayuno", "Almuerzo", "Cena", "Meriendas"].map((label) =>
       screen.getByText(label)
@@ -660,11 +662,13 @@ describe("DiaryPage - registro con foto", () => {
   })
 
   // SDD: 025 REQ-001 AC-001.1
+  // SDD: 026 REQ-002 AC-002.10
   it("cada una de las cuatro tarjetas tiene «Cargar imagen» además de «Añadir alimento», con su nombre accesible", async () => {
     getDiaryMock.mockResolvedValue(makeDiary())
     renderPage()
 
     await screen.findByRole("heading", { level: 1, name: "Diario" })
+    await screen.findByText("Desayuno")
 
     for (const label of ["Desayuno", "Almuerzo", "Cena", "Meriendas"]) {
       expect(screen.getByRole("button", { name: `Cargar imagen en ${label}` })).toBeInTheDocument()

@@ -32,3 +32,7 @@
 ## tests (red check PASS) · verifier
 - [ ] Alinear el marcador SDD (022 o 026) con el comentario de guarda en test_remove_item_without_a_signer_returns_none.
 - [ ] Alinear el marcador SDD (022 o 026) con el comentario de guarda en test_deleting_the_meal_of_another_user_is_a_404_and_leaves_it_intact.
+
+## implement · implementer
+- [ ] Cada `MealSection` pinta siempre una región `role="status"`, vacía cuando no hay aviso. Son cuatro regiones en vivo vacías, como pide el plan. Se podría unificar en una sola.
+- [ ] Con el diálogo de descarte dentro de `DialogContent`, en móvil (diálogo a pantalla completa) el posicionamiento `fixed` del overlay y del contenido depende del contenedor transformado. Conviene revisarlo a mano en un dispositivo.
