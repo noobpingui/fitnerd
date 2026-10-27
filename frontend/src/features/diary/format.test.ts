@@ -13,13 +13,32 @@ import {
 
 describe("formatDiaryDate", () => {
   // SDD: 022 REQ-010 AC-010.1
+  // SDD: 026 REQ-002 AC-002.7
   it("da la fecha larga en español: «martes, 20 de octubre»", () => {
-    expect(formatDiaryDate("2026-10-20")).toBe("martes, 20 de octubre")
+    expect(formatDiaryDate("2026-10-20", "2026-10-20")).toBe("martes, 20 de octubre")
   })
 
   // SDD: 022 REQ-010 AC-010.1
+  // SDD: 026 REQ-002 AC-002.7
   it("interpreta la fecha como local, sin desplazarla un día", () => {
-    expect(formatDiaryDate("2026-01-01")).toBe("jueves, 1 de enero")
+    expect(formatDiaryDate("2026-01-01", "2026-10-20")).toBe("jueves, 1 de enero")
+  })
+
+  // Guarda de regresión de la 022: pasa sin implementar la 026.
+  // SDD: 026 REQ-002 AC-002.1
+  it("un día del año en curso se muestra sin año: «domingo, 25 de octubre»", () => {
+    expect(formatDiaryDate("2026-10-25", "2026-10-26")).toBe("domingo, 25 de octubre")
+    expect(formatDiaryDate("2026-10-26", "2026-10-26")).toBe("lunes, 26 de octubre")
+  })
+
+  // SDD: 026 REQ-002 AC-002.7
+  it("un día de otro año lleva el año: «miércoles, 31 de diciembre de 2025»", () => {
+    expect(formatDiaryDate("2025-12-31", "2026-10-26")).toBe("miércoles, 31 de diciembre de 2025")
+  })
+
+  // SDD: 026 REQ-002 AC-002.7
+  it("el año se compara con el del «hoy» recibido, no con el del reloj", () => {
+    expect(formatDiaryDate("2026-12-31", "2027-01-02")).toBe("jueves, 31 de diciembre de 2026")
   })
 })
 

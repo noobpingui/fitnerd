@@ -13,6 +13,7 @@ import pytest
 from exceptions.custom_exceptions import ResourceNotFoundError, ValidationError
 from models.meal import Meal, MealItem
 from services.meal_service import MealService
+from utils.restore_token import RestoreTokenSigner
 from tests.fakes import (
     FakeCatalogFoodRepository,
     FakeClock,
@@ -31,7 +32,7 @@ OTHER = "user-2"
 
 INVALID_REQUEST = "La petición no es válida"
 DATE_INVALID = "La fecha no es válida."
-OUT_OF_WINDOW = "Solo puedes registrar comidas de hoy."
+OUT_OF_WINDOW = "Solo puedes registrar comidas de hoy o del último año."
 FOOD_NOT_FOUND = "No encontramos ese alimento."
 TOO_MANY = "Una comida no puede tener más de 50 alimentos."
 GRAMS_RANGE = "Los gramos deben estar entre 1 y 2000."
@@ -373,9 +374,23 @@ def test_add_items_rejects_a_missing_or_invalid_date(meal_date):
 # --------------------------------------------------------------------------
 
 
+# SDD: 026 REQ-001 AC-001.1
+@pytest.mark.parametrize("meal_date", ["2025-10-20", "2026-01-15"])
+def test_add_items_accepts_past_dates_up_to_366_days_back(meal_date):
+    """Con el reloj en 2026-10-21 03:00, se guarda en la comida de esa fecha pasada."""
+    env = Env()
+
+    meal = add(env, [GALLO_PINTO], meal_date=meal_date).meal.meal
+
+    assert meal.meal_date == date.fromisoformat(meal_date)
+    assert env.uow.committed is True
+
+
+# Guarda de regresión de la 022: pasa sin implementar la 026.
 # SDD: 022 REQ-004 AC-004.1
+# Ayer, hoy y mañana siguen aceptándose.
 @pytest.mark.parametrize("meal_date", ["2026-10-20", "2026-10-21", "2026-10-22"])
-def test_add_items_accepts_yesterday_today_and_tomorrow_of_the_server_clock(meal_date):
+def test_add_items_still_accepts_yesterday_today_and_tomorrow(meal_date):
     """Con el reloj en 2026-10-21 03:00, se guarda en la comida de esa fecha."""
     env = Env()
 
@@ -386,10 +401,11 @@ def test_add_items_accepts_yesterday_today_and_tomorrow_of_the_server_clock(meal
 
 
 # SDD: 022 REQ-004 AC-004.2
-@pytest.mark.parametrize("meal_date", ["2026-10-19", "2026-10-23"])
+# SDD: 026 REQ-001 AC-001.2
+@pytest.mark.parametrize("meal_date", ["2025-10-19", "2026-10-23"])
 def test_add_items_rejects_dates_outside_the_window(meal_date):
-    """Con el reloj en 2026-10-21, el 19 y el 23 dan «Solo puedes registrar
-    comidas de hoy.» y no se guarda nada."""
+    """Con el reloj en 2026-10-21, el 2025-10-19 y el 2026-10-23 dan «Solo puedes
+    registrar comidas de hoy o del último año.» y no se guarda nada."""
     env = Env()
 
     message = expect_error(ValidationError, add, env, [GALLO_PINTO], meal_date=meal_date)
@@ -1144,3 +1160,373 @@ def test_get_diary_returns_a_catalog_item_with_its_saved_values_even_if_the_cata
     assert diary.meals[0].meal.items[0].name == "Pechuga de pollo a la plancha"
     assert diary.totals["calories_kcal"] == Decimal("247.50")
     assert env.catalog.get_calls == [] and env.catalog.list_calls == []
+
+
+# --------------------------------------------------------------------------
+# Spec 026: quitar con token y restaurar (ADR-0035)
+# --------------------------------------------------------------------------
+
+SIGNING_KEY = "test-secret"
+
+
+class RestoreEnv:
+    """El servicio con un `RestoreTokenSigner` real (puro, sin red) y el
+    catálogo falso inyectados por constructor."""
+
+    def __init__(self, meals=None, catalog_foods=None, known_ids=None):
+        self.meals = FakeMealRepository(meals)
+        self.foods = FakeFoodRepository([CHICKEN, RICE])
+        self.users = FakeLockingUserRepository(known_ids)
+        self.uow = FakeUnitOfWork()
+        self.catalog = FakeCatalogFoodRepository(catalog_foods or [])
+        self.clock = FakeClock(NOW)
+        self.service = MealService(
+            self.meals,
+            self.foods,
+            self.users,
+            self.uow,
+            self.clock,
+            catalog_repository=self.catalog,
+            restore_signer=RestoreTokenSigner(SIGNING_KEY),
+        )
+
+    def reset_unit_of_work(self):
+        self.uow.committed = False
+        self.uow.rolled_back = False
+
+
+def breakfast_with_three(meal_id=1, user_id=USER):
+    """Desayuno con tres alimentos en las posiciones 0, 1 y 2 (ids 31, 32 y 33)."""
+    return make_meal(
+        meal_id=meal_id,
+        user_id=user_id,
+        meal_type="breakfast",
+        items=[
+            make_item(31, position=0, name="Avena cocida", grams="100"),
+            make_item(32, position=1, name="Plátano", grams="120.5"),
+            make_item(33, position=2, name="Leche entera", grams="200"),
+        ],
+    )
+
+
+def restore(env, token, user_id=USER):
+    return env.service.restore_item(user_id, {"restore_token": token})
+
+
+# SDD: 026 REQ-007 AC-007.2
+def test_remove_item_returns_a_token_and_really_removes_the_item():
+    """Quitar devuelve un texto no vacío y el alimento ya no está en la comida."""
+    meal = breakfast_with_three()
+    env = RestoreEnv(meals=[meal])
+
+    token = env.service.remove_item(USER, 1, 32)
+
+    assert isinstance(token, str) and token != ""
+    assert [item.id for item in meal.items] == [31, 33]
+    assert env.uow.committed is True
+
+
+# SDD: 026 REQ-007 AC-007.3
+def test_restore_item_puts_the_item_back_between_its_neighbours():
+    """El alimento vuelve entre sus vecinos, con mismos gramos, valores por 100 g y nutrientes."""
+    meal = breakfast_with_three()
+    env = RestoreEnv(meals=[meal])
+    token = env.service.remove_item(USER, 1, 32)
+
+    result = restore(env, token)
+
+    assert result.created is False
+    assert result.meal.meal is meal
+    assert [item.name for item in meal.items] == ["Avena cocida", "Plátano", "Leche entera"]
+    restored = meal.items[1]
+    assert restored.position == 1
+    assert restored.grams == Decimal("120.5")
+    assert restored.source == "usda"
+    assert restored.fdc_id == 171477
+    assert restored.data_type == "sr_legacy"
+    assert (
+        restored.per_100g_calories_kcal,
+        restored.per_100g_protein_g,
+        restored.per_100g_carbs_g,
+        restored.per_100g_fat_g,
+    ) == (165.0, 31.0, 0.0, 3.57)
+    assert restored.calories_kcal == Decimal("198.83")
+    assert restored.protein_g == Decimal("37.36")
+    assert restored.carbs_g == Decimal("0.00")
+    assert restored.fat_g == Decimal("4.30")
+    assert env.uow.committed is True
+
+
+# SDD: 026 REQ-007 AC-007.3
+def test_restore_item_returns_the_meal_summary_with_the_totals_back():
+    """El resumen devuelto suma de nuevo los tres alimentos."""
+    meal = breakfast_with_three()
+    env = RestoreEnv(meals=[meal])
+    token = env.service.remove_item(USER, 1, 32)
+
+    result = restore(env, token)
+
+    assert len(result.meal.meal.items) == 3
+    # Plátano restaurado: 120,5 g a 165 kcal por 100 g = 198,83; los otros dos, 247,50.
+    assert result.meal.totals["calories_kcal"] == Decimal("247.50") * 2 + Decimal("198.83")
+
+
+# SDD: 026 REQ-007 AC-007.4
+def test_restore_item_keeps_the_saved_values_even_if_the_catalog_changed():
+    """Un alimento del catálogo vuelve con los valores por 100 g que tenía guardados."""
+    banana = make_catalog_food(
+        "banano", "Banano", calories_kcal=89.0, protein_g=1.09, carbs_g=22.84, fat_g=0.33
+    )
+    meal = make_meal(
+        meal_id=1,
+        meal_type="breakfast",
+        items=[
+            make_item(
+                31,
+                position=0,
+                source="catalog",
+                catalog_id="banano",
+                fdc_id=None,
+                data_type=None,
+                name="Banano",
+                grams="100",
+                per_100g_calories_kcal=89.0,
+                per_100g_protein_g=1.09,
+                per_100g_carbs_g=22.84,
+                per_100g_fat_g=0.33,
+                calories_kcal=Decimal("89.00"),
+                protein_g=Decimal("1.09"),
+                carbs_g=Decimal("22.84"),
+                fat_g=Decimal("0.33"),
+            ),
+            make_item(32, position=1),
+        ],
+    )
+    env = RestoreEnv(meals=[meal], catalog_foods=[banana])
+    token = env.service.remove_item(USER, 1, 31)
+    banana.calories_kcal = 500.0
+    banana.name = "Banano renombrado"
+
+    restore(env, token)
+
+    restored = meal.items[0]
+    assert (restored.source, restored.catalog_id, restored.name) == ("catalog", "banano", "Banano")
+    assert restored.per_100g_calories_kcal == 89.0
+    assert restored.calories_kcal == Decimal("89.00")
+    assert env.catalog.get_calls == []
+
+
+# SDD: 026 REQ-007 AC-007.4
+def test_restore_item_keeps_a_nutrient_without_data_as_none():
+    """Un valor por 100 g `None` vuelve como `None`."""
+    meal = make_meal(
+        meal_id=1,
+        items=[
+            make_item(31, position=0, per_100g_carbs_g=None, carbs_g=None),
+            make_item(32, position=1),
+        ],
+    )
+    env = RestoreEnv(meals=[meal])
+    token = env.service.remove_item(USER, 1, 31)
+
+    restore(env, token)
+
+    assert meal.items[0].per_100g_carbs_g is None
+    assert meal.items[0].carbs_g is None
+
+
+# SDD: 026 REQ-007 AC-007.4
+def test_restore_item_returns_a_custom_item_with_its_values():
+    """Un alimento personalizado vuelve como `custom`, sin FDC ID ni identificador."""
+    meal = make_meal(
+        meal_id=1,
+        items=[
+            make_item(
+                31,
+                position=0,
+                source="custom",
+                fdc_id=None,
+                data_type=None,
+                name="Gallo pinto",
+                grams="250",
+                per_100g_calories_kcal=160.0,
+                per_100g_protein_g=5.5,
+                per_100g_carbs_g=27.0,
+                per_100g_fat_g=3.2,
+            ),
+            make_item(32, position=1),
+        ],
+    )
+    env = RestoreEnv(meals=[meal])
+    token = env.service.remove_item(USER, 1, 31)
+
+    restore(env, token)
+
+    restored = meal.items[0]
+    assert (restored.source, restored.fdc_id, restored.catalog_id) == ("custom", None, None)
+    assert restored.name == "Gallo pinto"
+    assert restored.calories_kcal == Decimal("400.00")
+    assert restored.protein_g == Decimal("13.75")
+
+
+# SDD: 026 REQ-007 AC-007.5
+def test_restore_item_recreates_the_meal_that_was_deleted_when_it_became_empty():
+    """Quitar el único alimento borra la comida; restaurar la crea otra del mismo
+    usuario, fecha y tipo (`created=True`)."""
+    meal = make_meal(
+        meal_id=1, meal_date=date(2026, 10, 20), meal_type="dinner", items=[make_item(31)]
+    )
+    env = RestoreEnv(meals=[meal])
+    token = env.service.remove_item(USER, 1, 31)
+    assert env.meals.meals == []
+
+    result = restore(env, token)
+
+    assert result.created is True
+    new_meal = result.meal.meal
+    assert env.meals.created == [new_meal]
+    assert (str(new_meal.user_id), new_meal.meal_date, new_meal.meal_type) == (
+        USER,
+        date(2026, 10, 20),
+        "dinner",
+    )
+    assert len(new_meal.items) == 1
+    assert new_meal.items[0].grams == Decimal("150")
+
+
+# SDD: 026 REQ-007 AC-007.10
+def test_restore_item_with_50_items_is_rejected_and_rolled_back():
+    """Si la comida ya llegó a 50 alimentos, 400 con el mensaje del tope y no cambia nada."""
+    meal = make_meal(
+        meal_id=1, items=[make_item(100 + n, position=n) for n in range(50)]
+    )
+    env = RestoreEnv(meals=[meal])
+    token = env.service.remove_item(USER, 1, 100 + 10)
+    meal.items.append(make_item(500, position=60))
+    assert len(meal.items) == 50
+    env.reset_unit_of_work()
+
+    message = expect_error(ValidationError, restore, env, token)
+
+    assert message == TOO_MANY
+    assert len(meal.items) == 50
+    assert env.uow.committed is False
+    assert env.uow.rolled_back is True
+
+
+# SDD: 026 REQ-007 AC-007.3
+def test_restore_item_locks_the_user_row():
+    """Restaurar bloquea la fila del usuario como el resto de escrituras."""
+    meal = breakfast_with_three()
+    env = RestoreEnv(meals=[meal])
+    token = env.service.remove_item(USER, 1, 32)
+
+    restore(env, token)
+
+    assert env.users.for_update_calls == [USER, USER]
+
+
+# SDD: 026 NFR-002 AC-N002.2
+def test_restore_item_with_the_token_of_another_user_is_not_found_and_writes_nothing():
+    """El token del usuario B no sirve para A: 404 y nada cambia."""
+    meal = breakfast_with_three(user_id=OTHER)
+    env = RestoreEnv(meals=[meal])
+    token = env.service.remove_item(OTHER, 1, 32)
+    env.reset_unit_of_work()
+
+    message = expect_error(ResourceNotFoundError, restore, env, token, USER)
+
+    assert message == ITEM_NOT_FOUND
+    assert len(meal.items) == 2
+    assert env.meals.created == []
+    assert env.uow.committed is False
+
+
+# SDD: 026 NFR-002 AC-N002.2
+def test_restore_item_with_a_tampered_token_is_not_found_and_writes_nothing():
+    """Un token alterado da 404 y no escribe."""
+    meal = breakfast_with_three()
+    env = RestoreEnv(meals=[meal])
+    token = env.service.remove_item(USER, 1, 32)
+    env.reset_unit_of_work()
+    payload, signature = token.split(".")
+    tampered = payload + "." + ("A" if signature[0] != "A" else "B") + signature[1:]
+
+    message = expect_error(ResourceNotFoundError, restore, env, tampered)
+
+    assert message == ITEM_NOT_FOUND
+    assert len(meal.items) == 2
+    assert env.uow.committed is False
+
+
+# SDD: 026 NFR-002 AC-N002.2
+@pytest.mark.parametrize("token", [None, "", "sin-punto", 42, ["a.b"], "a.b.c"])
+def test_restore_item_with_a_missing_or_malformed_token_is_not_found(token):
+    """Sin token, que no es texto o con otra forma: 404."""
+    env = RestoreEnv(meals=[breakfast_with_three()])
+
+    message = expect_error(ResourceNotFoundError, restore, env, token)
+
+    assert message == ITEM_NOT_FOUND
+    assert env.meals.created == []
+
+
+# SDD: 026 NFR-002 AC-N002.2
+def test_restore_item_with_an_expired_token_is_not_found_and_writes_nothing():
+    """Pasados 121 segundos el token ha caducado: 404 y no se restaura nada."""
+    meal = breakfast_with_three()
+    env = RestoreEnv(meals=[meal])
+    token = env.service.remove_item(USER, 1, 32)
+    env.reset_unit_of_work()
+    env.clock.advance(seconds=121)
+
+    message = expect_error(ResourceNotFoundError, restore, env, token)
+
+    assert message == ITEM_NOT_FOUND
+    assert len(meal.items) == 2
+    assert env.uow.committed is False
+
+
+# SDD: 026 REQ-007 AC-007.3
+def test_restore_item_within_the_ttl_still_works():
+    """A los 100 segundos el token sigue siendo válido."""
+    meal = breakfast_with_three()
+    env = RestoreEnv(meals=[meal])
+    token = env.service.remove_item(USER, 1, 32)
+    env.clock.advance(seconds=100)
+
+    restore(env, token)
+
+    assert len(meal.items) == 3
+
+
+# SDD: 026 REQ-007 AC-007.10
+@pytest.mark.parametrize("body", [None, [], "token", 5])
+def test_restore_item_rejects_a_body_that_is_not_an_object(body):
+    """Un cuerpo que no es objeto JSON: «La petición no es válida.»."""
+    env = RestoreEnv()
+
+    message = expect_error(ValidationError, env.service.restore_item, USER, body)
+
+    assert message.startswith(INVALID_REQUEST)
+
+
+# SDD: 026 NFR-002 AC-N002.2
+def test_restore_item_without_a_signer_is_not_found():
+    """Un servicio sin firmante no restaura nada."""
+    env = Env()
+
+    message = expect_error(ResourceNotFoundError, env.service.restore_item, USER, {"restore_token": "a.b"})
+
+    assert message == ITEM_NOT_FOUND
+
+
+# Guarda de regresión de la 022: pasa sin implementar la 026.
+# SDD: 026 REQ-007 AC-007.2
+def test_remove_item_without_a_signer_returns_none():
+    """Sin firmante, quitar sigue funcionando y no devuelve token."""
+    meal = make_meal(meal_id=1, items=[make_item(31), make_item(32)])
+    env = Env(meals=[meal])
+
+    assert env.service.remove_item(USER, 1, 31) is None
+    assert [item.id for item in meal.items] == [32]

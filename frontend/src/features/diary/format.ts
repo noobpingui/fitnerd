@@ -11,13 +11,15 @@ const loggedFormat = new Intl.NumberFormat("es-ES", {
   minimumFractionDigits: 0,
   maximumFractionDigits: 1,
 })
+
 const dateFormat = new Intl.DateTimeFormat("es-ES", {
   weekday: "long",
   day: "numeric",
   month: "long",
 })
 
-export function formatDiaryDate(isoDate: string): string {
+// La 026 añade `today` (año solo si no es el actual); aún no se usa: T-060.
+export function formatDiaryDate(isoDate: string, _today?: string): string {
   return dateFormat.format(parseLocalDate(isoDate))
 }
 

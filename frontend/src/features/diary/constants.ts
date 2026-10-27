@@ -13,3 +13,7 @@ export const NUTRIENT_LABELS: Record<NutrientKey, string> = {
   carbs_g: "Carbohidratos",
   fat_g: "Grasa",
 }
+
+export const DIARY_PAST_DAYS = 365
+export const UNDO_DURATION_MS = 10_000
+export const TODAY_CHECK_INTERVAL_MS = 30_000

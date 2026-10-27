@@ -26,8 +26,9 @@ export async function updateMealItemGrams(
   )
 }
 
-export async function removeMealItem(mealId: number, itemId: number): Promise<void> {
+export async function removeMealItem(mealId: number, itemId: number): Promise<string | null> {
   await apiFetch<void>(`/api/meals/${mealId}/items/${itemId}`, { method: "DELETE" })
+  return null
 }
 
 // Envía un único archivo en `image` y valida la respuesta.
@@ -37,4 +38,12 @@ export async function analyzeMealPhoto(image: Blob): Promise<MealPhotoAnalysis> 
   return mealPhotoAnalysisSchema.parse(
     await apiFetch<unknown>("/api/meals/analyze", { method: "POST", body: form })
   )
+}
+
+export async function restoreMealItem(_restoreToken: string): Promise<Meal> {
+  throw new Error("not implemented")
+}
+
+export async function deleteMeal(_mealId: number): Promise<void> {
+  throw new Error("not implemented")
 }

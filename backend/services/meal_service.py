@@ -85,7 +85,9 @@ class MealService:
         unit_of_work,
         clock=utc_now,
         catalog_repository=None,
+        restore_signer=None,
     ):
+        self.restore_signer = restore_signer
         self.catalog_repository = catalog_repository
         self.meal_repository = meal_repository
         self.food_repository = food_repository
@@ -210,6 +212,9 @@ class MealService:
         except Exception:
             self.unit_of_work.rollback()
             raise
+
+    def restore_item(self, _user_id, _data: object) -> AddItemsResult:
+        raise NotImplementedError("not implemented")
 
     def delete_meal(self, user_id, meal_id: int) -> None:
         try:

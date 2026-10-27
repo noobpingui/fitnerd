@@ -51,3 +51,10 @@ export function analysisErrorView(error: unknown): AnalysisErrorView {
     canRegisterManually: true,
   }
 }
+
+export const DELETE_MEAL_FAILED_MESSAGE = "No se pudo borrar la comida. Vuelve a intentarlo."
+export const UNDO_FAILED_MESSAGE = "No se pudo deshacer. Vuelve a intentarlo."
+
+export function undoErrorMessage(_error: unknown): string {
+  throw new Error("not implemented")
+}

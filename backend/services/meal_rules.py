@@ -1,6 +1,6 @@
 import re
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 
 from exceptions.custom_exceptions import ValidationError
@@ -36,6 +36,9 @@ GRAMS_RANGE = (1, 2000)
 CALORIES_PER_100G_RANGE = (0, 900)
 MACRO_PER_100G_RANGE = (0, 100)
 MAX_DB_INTEGER = 2_147_483_647
+ADD_WINDOW_PAST_DAYS = 366
+ADD_WINDOW_FUTURE_DAYS = 1
+RESTORE_TOKEN_TTL_SECONDS = 120
 
 
 @dataclass(frozen=True)
@@ -69,6 +72,33 @@ def parse_meal_date(value: object) -> date:
         return date.fromisoformat(value)
     except ValueError:
         raise ValidationError(INVALID_DATE_MESSAGE) from None
+
+
+@dataclass(frozen=True)
+class RemovedItemSnapshot:
+    meal_date: date
+    meal_type: str
+    position: int
+    source: str
+    catalog_id: str | None
+    fdc_id: int | None
+    name: str
+    data_type: str | None
+    grams: Decimal
+    per_100g: dict[str, float | None]
+    expires_at: int
+
+
+def epoch_seconds(_instant: datetime) -> int:
+    raise NotImplementedError("not implemented")
+
+
+def snapshot_payload(_snapshot: RemovedItemSnapshot) -> dict:
+    raise NotImplementedError("not implemented")
+
+
+def parse_snapshot_payload(_payload: object) -> RemovedItemSnapshot | None:
+    raise NotImplementedError("not implemented")
 
 
 def check_add_window(meal_date: date, today: date) -> None:

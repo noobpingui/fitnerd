@@ -11,7 +11,7 @@ import {
   removeMealItem,
   updateMealItemGrams,
 } from "./api"
-import type { AddMealItemsPayload, Meal, MealPhotoAnalysis } from "./types"
+import type { AddMealItemsPayload, Meal, MealPhotoAnalysis, RemovalUndo } from "./types"
 
 export const diaryKeys = { day: (date: string) => ["diary", date] as const }
 
@@ -47,8 +47,32 @@ export function useUpdateMealItemGrams(date: string) {
 
 export function useRemoveMealItem(date: string) {
   const queryClient = useQueryClient()
-  return useMutation<void, Error, { mealId: number; itemId: number }>({
+  return useMutation<string | null, Error, { mealId: number; itemId: number }>({
     mutationFn: ({ mealId, itemId }) => removeMealItem(mealId, itemId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: diaryKeys.day(date) }),
   })
+}
+
+export function useRestoreMealItem(_date: string): UseMutationResult<Meal, Error, string> {
+  throw new Error("not implemented")
+}
+
+export function useDeleteMeal(_date: string): UseMutationResult<void, Error, number> {
+  throw new Error("not implemented")
+}
+
+export function useToday(_paused?: boolean, _intervalMs?: number): string {
+  throw new Error("not implemented")
+}
+
+export type RemovalUndoState = {
+  notice: RemovalUndo | null
+  offer: (notice: RemovalUndo | null) => void
+  undo: () => void
+  isRestoring: boolean
+  error: string | null
+}
+
+export function useRemovalUndo(_date: string, _durationMs?: number): RemovalUndoState {
+  throw new Error("not implemented")
 }
