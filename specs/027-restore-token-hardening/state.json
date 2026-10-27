@@ -9,7 +9,7 @@
   "branch": "fix/027-restore-token-hardening",
   "base_branch": "main",
   "created_at": "2026-10-27T05:55:23.138Z",
-  "stage": "verify",
+  "stage": "docs",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -32,8 +32,14 @@
       "at": "2026-10-27T07:41:45.849Z",
       "note": "auto (gate_mode=flow): F5"
     },
-    "verify": null,
-    "review": null,
+    "verify": {
+      "at": "2026-10-27T07:45:27.895Z",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    "review": {
+      "at": "2026-10-27T07:50:20.078Z",
+      "note": "Aprobado. Yo confirmé el SECRET_KEY en el EC2: no es DEFAULT_KEY ni change-me"
+    },
     "docs": null,
     "close": null
   },
@@ -42,7 +48,7 @@
     "plan": "b424cca",
     "tasks": "02c325f",
     "tests": "9127597",
-    "implement": "0986bed"
+    "implement": "84b4921"
   },
   "iterations": {
     "tests": 3,
@@ -55,12 +61,12 @@
     "at": "2026-10-27T06:56:27.472Z"
   },
   "verify": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-27T07:45:20.039Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-10-27T07:47:06.272Z"
   },
   "tests_snapshot": {
     "at": "2026-10-27T07:28:34.437Z",
@@ -475,6 +481,60 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): F5"
+    },
+    {
+      "at": "2026-10-27T07:41:46.120Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 84b4921"
+    },
+    {
+      "at": "2026-10-27T07:41:46.239Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa tras F5"
+    },
+    {
+      "at": "2026-10-27T07:45:20.039Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify 027 iteración 3 tras F5: backend 2182 passed; lint_ratchet sin violaciones nuevas; F5 resuelto (is_db_id en parse_snapshot_payload, _parse_usda_item idéntico a main); snapshot de tests intacto; 29 AC trazados; 18 tareas [x]; sin skip/xfail nuevos; sin SECRET_KEY en proceso 393 passed (CI pendiente para AC-N002.1)"
+    },
+    {
+      "at": "2026-10-27T07:45:27.785Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "Verify PASS tras F5: 2182 passed, ratchet limpio"
+    },
+    {
+      "at": "2026-10-27T07:45:27.895Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-27T07:45:28.012Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review 3 tras F5"
+    },
+    {
+      "at": "2026-10-27T07:47:06.272Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-27T07:47:06.386Z",
+      "stage": "review",
+      "event": "done",
+      "note": "Review 3 APPROVED: F1-F5 resueltos, 0 hallazgos"
+    },
+    {
+      "at": "2026-10-27T07:50:20.078Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Aprobado. Yo confirmé el SECRET_KEY en el EC2: no es DEFAULT_KEY ni change-me"
     }
   ]
 }
