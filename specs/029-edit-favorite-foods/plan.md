@@ -98,6 +98,9 @@ No hay métodos de repositorio nuevos: se reutilizan `get_by_id_and_user`, `get_
 ```ts
 export type CustomFoodUpdatePayload = { name: string; per_100g: LibraryPer100g }
 ```
+Además se corrige la errata de formato que quedó del scaffold en la declaración de `RecentFood` (falta el espacio tras
+`=`: `export type RecentFood =LibraryFood & …` pasa a `export type RecentFood = LibraryFood & …`). Sin cambio de tipo
+(review F1).
 
 `frontend/src/features/food-library/schemas.ts`: se exporta la variante propia que ya existe dentro de
 `libraryFoodSchema`:
@@ -157,6 +160,8 @@ export function customFoodEditDefaults(food: CustomLibraryFood): CustomFoodEditV
 export function customFoodEditPayload(values: CustomFoodEditValues): CustomFoodUpdatePayload
 // REQ-008: true si el nombre recortado es idéntico y los cuatro campos son el mismo número; un campo no válido es un cambio.
 export function isCustomFoodEditUnchanged(values: CustomFoodEditValues, food: CustomLibraryFood): boolean
+// Review F4: texto de la región de estado de «Nombre» tras pulsar Intro mientras se comprueba el nombre.
+export const CUSTOM_FOOD_NAME_CHECKING_MESSAGE = "Comprobando el nombre…"
 ```
 
 `frontend/src/features/diary/errors.ts` (añadidos):
@@ -203,6 +208,9 @@ El botón lleva `data-edit-food-id={food.id}` para que el panel lo encuentre al 
 ```ts
 onCustomFoodEdited?: (food: CustomLibraryFood) => void   // tras una edición con 200, con el alimento devuelto
 ```
+La prop de la 028 `onCustomFoodDeleted?: (customFoodId: number) => void` no cambia de firma, pero amplía su
+significado: «ese alimento propio ya no existe en la biblioteca». El panel la llama tras un borrado con éxito (028) y,
+desde esta iteración, también tras un 404 al editar (review F2). Se actualiza su comentario en el tipo de props.
 
 ### 3.3 Lógica
 
@@ -277,6 +285,14 @@ no válido (`parseDecimalText` da `null`) cuenta como cambio (AC-008.5). (`food.
   AC-N001.1), los cinco campos con las etiquetas de la spec (las de `CustomFoodForm` sin «Gramos») y los botones
   «Guardar» (`type="submit"`, «Guardando…» mientras `isSaving`) y «Cancelar» (`type="button"`).
 - Al montar: `form.setFocus("name")` (AC-N001.1).
+- **Foco tras un guardado fallido, un único mecanismo (review F3):** el efecto del formulario que, cuando `isSaving` pasa
+  de `true` a `false` con el formulario aún montado, hace `form.setFocus("name")` (ref `wasSaving`). Es el único que
+  devuelve el foco a «Nombre» tras un 409, un 400 o un error genérico. Se elimina del panel el contador
+  `nameFocusTick`, su estado, sus `setNameFocusTick` en `saveEdit` y su efecto con `querySelector("form input[name='name']")`.
+  Motivo: el formulario conoce su campo por react-hook-form, sin buscar en el DOM, y el caso de éxito y el de 404
+  desmontan el formulario, así que ese efecto no actúa en ellos (y si llegara a actuar en el render intermedio, el
+  `pendingFocus` o el `focusTrigger` del panel se ejecutan después y fijan el foco final). Si al quitar el del panel
+  falla algún test de foco existente (AC-N001), se conserva el del panel y se quita el del formulario: nunca los dos.
 - `check = useCustomFoodNameCheck(food, nameValue, SEARCH_DEBOUNCE_MS)`;
   `takenByServer = nameTakenKey !== null && customFoodNameKey(nameValue.trim()) === nameTakenKey`;
   `showTaken = check.taken || takenByServer`.
@@ -286,8 +302,20 @@ no válido (`parseDecimalText` da `null`) cuenta como cambio (AC-008.5). (`food.
   compone los dos ids porque la prop del `Input` sustituye a la del `Slot`) (AC-N001.5).
 - «Guardar» deshabilitado si `isSaving || isCustomFoodEditUnchanged(values, food) || check.checking || showTaken`
   (REQ-008, REQ-009, AC-010.3). «Cancelar» deshabilitado mientras `isSaving`.
-- `handleSubmit(values)`: si `isSaving` no hace nada (AC-010.6, Intro en un campo); si no,
+- `handleSubmit(values)` (lo llama `form.handleSubmit` solo si la validación zod pasa; si no, salen los mensajes de
+  validación, como hoy): si `isSaving` o `blocked` por otro motivo no envía nada (AC-010.6, REQ-008, REQ-009); si no,
   `onSubmit(customFoodEditPayload(values))` (AC-010.1).
+- **Intro mientras se comprueba el nombre (review F4):** si al enviar (Intro en un campo) `check.checking` es `true` y
+  no hay guardado en curso, no se envía nada (REQ-009 sigue igual) pero se da una señal: el formulario guarda en un
+  estado `checkingNoticeFor = values.name` y la misma región `role="status"` de «Nombre» muestra
+  `CUSTOM_FOOD_NAME_CHECKING_MESSAGE` («Comprobando el nombre…») mientras
+  `!showTaken && check.checking && checkingNoticeFor === values.name` (valor derivado, sin efecto). Cuando la
+  comprobación termina, el texto desaparece solo: si el nombre está repetido, la región pasa a mostrar el aviso de
+  REQ-009; si no, queda vacía y «Guardar» se habilita, y el usuario vuelve a pulsar Intro o «Guardar» (**no** hay envío
+  automático al terminar la comprobación). Si el usuario cambia el nombre, el texto también desaparece. El campo
+  «Nombre» no añade `takenId` a `aria-describedby` por este texto (solo por el aviso, AC-N001.5); la región `aria-live`
+  ya lo anuncia. Intro con el formulario sin cambios o con el aviso de nombre repetido visible sigue sin hacer nada y
+  sin texto nuevo (el botón deshabilitado y el aviso ya son la señal). Con `isSaving`, Intro tampoco muestra este texto.
 - `useEscapeCapture(() => { if (!isSaving) onCancel() }, true)`: Escape cierra solo el formulario y no llega a Radix
   (no cierra «Añadir a {sección}» ni abre la confirmación de descartar la propuesta, AC-007.3 y AC-007.4); con el
   guardado en curso se consume sin hacer nada.
@@ -314,12 +342,18 @@ no válido (`parseDecimalText` da `null`) cuenta como cambio (AC-008.5). (`food.
     caja de búsqueda (AC-N001.4).
   - `onError(error)`: `updateCustomFoodErrorView(error)`:
     - `name_taken`: el formulario sigue abierto; `nameTakenKey = customFoodNameKey(payload.name)` (AC-010.3).
-    - `not_found`: cierra el formulario, muestra el mensaje en un `<p role="alert">` del panel (junto al de favoritos)
-      y devuelve el foco con `focusTrigger` (AC-010.4). El aviso se borra al abrir otro elemento en línea o al cambiar
-      el texto de la caja.
+    - `not_found`: llama a `onCustomFoodDeleted?.(current.food.id)` (review F2: el alimento ya no existe, así que las
+      filas de la propuesta de foto que lo usaban se desvinculan con el `unlinkDeleted`/`unlinkCustomFood` de la 028,
+      igual que tras borrarlo; conservan el nombre, los valores **anteriores** a la edición fallida y los gramos, pasan
+      a «Personalizado» sin `customFoodId` y al guardar se envían con `name` y `per_100g`, que vuelve a crear el
+      alimento propio con la regla de la 028). Después cierra el formulario, muestra el mensaje en un
+      `<p role="alert">` del panel (junto al de favoritos) y devuelve el foco con `focusTrigger` (AC-010.4). El aviso
+      se borra al abrir otro elemento en línea o al cambiar el texto de la caja. Con 409, 400 o error genérico no se
+      llama a `onCustomFoodDeleted` (el alimento sigue existiendo).
     - `message`: el formulario sigue abierto con `serverError = message` y lo escrito (AC-010.5).
     - En los dos casos en que el formulario sigue abierto, el foco va al campo «Nombre» (los botones estuvieron
-      deshabilitados durante el guardado y el foco no debe quedarse en el cuerpo, NFR-001).
+      deshabilitados durante el guardado y el foco no debe quedarse en el cuerpo, NFR-001). Lo hace solo el efecto
+      `wasSaving` de `CustomFoodEditForm` (review F3); `saveEdit` no gestiona ese foco.
 - `listProps(list)` añade `onEdit: startEdit(list)`.
 
 **Frontend · `LibraryFoodList` (REQ-006):** en los `custom`, tras la estrella y antes de «Borrar», un `Button`
@@ -331,6 +365,10 @@ búsqueda. `applyEdited(food)` hace `replace(entries.map(entry => applyCustomFoo
 `unlinkDeleted` de la 028. Conserva `key` y gramos, así `mergeProposalEntries` sigue emparejando los gramos por clave y
 los totales se recalculan con `proposalTotals` (AC-011.1). La fila sigue con `customFoodId`, así que al guardar va como
 `{ custom_food_id, grams }` (AC-011.2, `proposalItems` de la 028). Las filas de otros alimentos no cambian (AC-011.3).
+Si la edición responde 404, el panel llama a `onCustomFoodDeleted` y `PhotoReview` desvincula esas filas con el
+`unlinkDeleted` que ya existe (review F2); `PhotoReview.tsx` no necesita cambios para ello, ya pasa
+`onCustomFoodDeleted={unlinkDeleted}`. Así ninguna fila queda con un `customFoodId` que ya no existe, que el servidor
+rechazaría al guardar la propuesta.
 
 ### 3.4 Interfaz de usuario
 - **Botón «Editar»** en cada alimento propio de «Favoritos», «Recientes» y «Resultados», en este orden: «Elegir», la
@@ -344,7 +382,8 @@ los totales se recalculan con `proposalTotals` (AC-011.1). La fila sigue con `cu
   previa de la porción (no hay gramos) ni el aviso `CUSTOM_FOOD_LIBRARY_NOTICE`.
 - **Estados:** «Guardar» deshabilitado sin cambios, con el nombre repetido, mientras se comprueba el nombre y mientras
   se guarda («Guardando…», con «Cancelar» también deshabilitado). Mensajes del servidor y genérico bajo los botones;
-  «No encontramos ese alimento.» en el panel tras cerrar el formulario.
+  «No encontramos ese alimento.» en el panel tras cerrar el formulario. Si se pulsa Intro mientras se comprueba el
+  nombre, bajo «Nombre» sale «Comprobando el nombre…» hasta que termina la comprobación (review F4).
 - El resto de la búsqueda (caja, otras listas, otros alimentos) sigue visible y usable mientras el formulario está
   abierto.
 
@@ -361,8 +400,19 @@ los totales se recalculan con `proposalTotals` (AC-011.1). La fila sigue con `cu
 | REQ-008 | `isCustomFoodEditUnchanged` en `customFoodEdit.ts`, usado para deshabilitar «Guardar» |
 | REQ-009 | `useCustomFoodNameCheck` (búsqueda conjunta + `customFoodNameKey`) y aviso en `CustomFoodEditForm` |
 | REQ-010 | `useUpdateCustomFood` (invalidación de `foodLibraryKeys.all`), `customFoodEditPayload`, `updateCustomFoodErrorView` y `FoodSearchPanel.saveEdit` |
-| REQ-011 | `FoodSearchPanel.onCustomFoodEdited` → `PhotoReview.applyEdited` → `proposal.applyCustomFoodEdit` |
-| NFR-001 | `CustomFoodEditForm` (`aria-labelledby`, `setFocus("name")`, aviso con `role="status"` y `aria-describedby`) y `FoodSearchPanel` (`focusTrigger`, `pendingFocus` con `data-edit-food-id`, foco al campo tras un error) |
+| REQ-011 | `FoodSearchPanel.onCustomFoodEdited` → `PhotoReview.applyEdited` → `proposal.applyCustomFoodEdit`; con 404, `FoodSearchPanel.onCustomFoodDeleted` → `PhotoReview.unlinkDeleted` → `proposal.unlinkCustomFood` (review F2) |
+| NFR-001 | `CustomFoodEditForm` (`aria-labelledby`, `setFocus("name")`, aviso con `role="status"` y `aria-describedby`, único efecto de foco a «Nombre» tras un error, texto «Comprobando el nombre…» tras Intro durante la comprobación) y `FoodSearchPanel` (`focusTrigger`, `pendingFocus` con `data-edit-food-id`) |
+
+### Correcciones de la review (iteración 2)
+| Hallazgo | Resolución en el plan | Archivos |
+|---|---|---|
+| F1 (NIT) | Errata de formato en `RecentFood` (sección 3.2, `types.ts`) | `frontend/src/features/food-library/types.ts` |
+| F2 (MENOR) | Tras un 404 al editar, el panel llama a `onCustomFoodDeleted` y la propuesta desvincula sus filas (secciones 3.2 y 3.3) | `frontend/src/features/diary/components/FoodSearchPanel.tsx` (y sus tests y los de `MealPhotoDialog`) |
+| F3 (NIT) | Un único mecanismo de foco a «Nombre» tras un guardado fallido: el efecto `wasSaving` de `CustomFoodEditForm`; se quita `nameFocusTick` del panel (sección 3.3) | `FoodSearchPanel.tsx`, `CustomFoodEditForm.tsx` |
+| F4 (NIT) | Intro durante la comprobación del nombre: no envía, muestra «Comprobando el nombre…» en la región de estado, sin envío automático (sección 3.3) | `frontend/src/features/diary/customFoodEdit.ts`, `CustomFoodEditForm.tsx` |
+
+Ninguna cambia requisitos ni AC de la spec: F2 aplica a la edición la desvinculación que la 028 ya hace al borrar y
+mantiene AC-010.4; F4 añade una señal sin cambiar REQ-009 ni AC-010.6. No hay cambios en el backend.
 
 ## 5. Estrategia de pruebas
 Marcadores `# SDD: 029 REQ-… AC-…` y `// SDD: 029 REQ-… AC-…` (Art. P1.1). Ningún test llama a servicios externos
@@ -448,6 +498,33 @@ donde ya se hace, con los mocks de `@/features/diary/api` (Art. P1.frontend.4). 
   {sección}» con `custom_food_id`, y filas ajenas sin cambios).
 - Dobles nuevos: ninguno; se reutilizan los mocks de las APIs y las fábricas de alimentos de esos archivos.
 
+**Casos nuevos por las correcciones de la review (iteración 2).** Se añaden a los archivos de arriba, con marcador
+`SDD: 029` y el REQ/AC más cercano; los tests existentes no se modifican (Art. B5.3):
+- **F2 · `diary/components/FoodSearchPanel.test.tsx`** (`// SDD: 029 REQ-010 AC-010.4`): con `onCustomFoodDeleted`
+  espiado (como `renderWithDeletedCallback` de la 028), editar «Gallo pinto» (id 12) y que `updateCustomFood` rechace
+  con un `ApiError` 404 → `onCustomFoodDeleted` se llama una vez con `12`; con 409, 400 y 500 no se llama;
+  con 200 tampoco (solo `onCustomFoodEdited`).
+- **F2 · `diary/components/MealPhotoDialog.test.tsx`** (`// SDD: 029 REQ-011 AC-010.4`), siguiendo el test de la 028
+  «al borrar un propio que ya está en la propuesta…»: propuesta con el propio «Gallo pinto» (id 12) con 250 g,
+  «Añadir otro alimento», editar «Gallo pinto» a «Gallo pinto con huevo» con 200 kcal y que la edición responda 404,
+  «Volver a la propuesta» → la fila sigue con «Gallo pinto», 250 g, «Personalizado» y los valores anteriores (450 kcal
+  con 180 kcal por 100 g), y «Guardar en {sección}» la envía como `{ name: "Gallo pinto", grams: 250, per_100g: {…} }`
+  sin `custom_food_id`; las filas de otros alimentos no cambian.
+- **F3 · `diary/components/CustomFoodEditForm.test.tsx`** (`// SDD: 029 NFR-001`): renderizado con `isSaving: true`,
+  foco en otro elemento, y rerender con `isSaving: false` → el foco va a «Nombre». Los tests existentes de foco tras
+  409 y 500 en `FoodSearchPanel.test.tsx` deben seguir pasando sin cambios con el único mecanismo.
+- **F4 · `diary/components/CustomFoodEditForm.test.tsx`** (`// SDD: 029 REQ-009 AC-010.6`), con la búsqueda simulada
+  con una promesa que el test resuelve a mano:
+  - cambiar el nombre a uno nuevo y pulsar Intro en «Nombre» mientras la búsqueda está pendiente → `onSubmit` no se
+    llama y la región `role="status"` muestra «Comprobando el nombre…»; al resolver la búsqueda sin coincidencias,
+    el texto desaparece, `onSubmit` sigue sin llamarse y «Guardar» está habilitado; pulsar «Guardar» llama a
+    `onSubmit` una vez;
+  - lo mismo, pero la búsqueda devuelve otro propio con la misma clave → la región muestra el aviso «Ya tienes un
+    alimento con ese nombre.» y no «Comprobando el nombre…»;
+  - tras el Intro durante la comprobación, cambiar el nombre → el texto desaparece;
+  - Intro sin cambios o con `isSaving: true` → sin texto «Comprobando el nombre…» y sin `onSubmit`.
+- **F1:** sin test (solo formato); lo cubren `npm run lint` y `npx tsc -b`.
+
 ## 6. Riesgos y mitigaciones
 | Riesgo | Probabilidad | Impacto | Mitigación |
 |---|---|---|---|
@@ -456,6 +533,8 @@ donde ya se hace, con los mocks de `@/features/diary/api` (Art. P1.frontend.4). 
 | El foco se queda en el cuerpo al deshabilitar los botones durante el guardado o al reordenar las listas | Media | Medio | Foco explícito tras cada resultado (botón «Editar» por `data-edit-food-id`, caja de búsqueda o campo «Nombre»); tests de AC-N001.1 a AC-N001.4 |
 | Generalizar el estado de la confirmación de borrado rompe la 028 | Media | Medio | Mismo efecto de cierre y mismas funciones de foco; los tests existentes de `FoodSearchPanel` deben seguir pasando sin cambios (Art. B5.3) |
 | Extraer `parse_custom_food_fields` y la validación compartida del esquema cambia mensajes u orden de la 022 | Baja | Medio | Refactor sin cambio de comportamiento; los tests de la 022 y la 028 (`test_meal_rules.py`, `schemas.test.ts`) siguen pasando |
+| Quitar `nameFocusTick` deja el foco en el cuerpo en algún caso de error (F3) | Baja | Medio | El efecto `wasSaving` cubre 409, 400 y genérico; los tests de foco existentes deben pasar sin cambios y, si no, se conserva el mecanismo del panel en su lugar (nunca los dos) |
+| Un 404 de edición por un fallo transitorio desvincula filas de un alimento que sí existe (F2) | Muy baja | Bajo | El servidor solo da 404 si el id no es válido o el alimento no existe o no es del usuario; es el mismo trato que la 028 da al borrado, y la fila se sigue guardando con `name` y `per_100g` (regla de la 028) |
 
 ## 7. Cumplimiento de la constitución
 - **Art. B1, B4 y B5:** cambio funcional con spec aprobada; cada AC tiene test en la sección 5 con marcador `SDD: 029`;

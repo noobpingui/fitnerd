@@ -32,3 +32,17 @@
 ## verify · verifier
 - [ ] La nota de tasks en state.json dice «62 AC», pero la spec tiene 61 AC (AC-008.8 citado en REQ-005 es de la spec 028).
 - [ ] La aprobación de implement se dio con la nota «1 E501 nuevo» pendiente; la comprobación de ratchet debería exigirse antes de aprobar implement.
+
+## verify (iteración 2) · verifier
+- [ ] state.json, nota de implement: cita «62 AC»; la spec tiene 61 AC propios (el 62.º es AC-008.8, de la 028). Corregir la nota al cerrar.
+- [ ] Los marcadores `SDD: 029` de tests parametrizados van sobre el decorador (`@pytest.mark.parametrize`), no pegados a `def`. Es válido, pero conviene que el reviewer lo confirme.
+
+## review · reviewer
+- [ ] F1 (NIT, implementer): sigue sin corregir la errata del scaffold `RecentFood =LibraryFood` en frontend/src/features/food-library/types.ts:19.
+- [ ] F2 (MENOR, planner): si editar desde la propuesta de foto devuelve 404, las filas que usaban ese alimento se quedan con un customFoodId que ya no existe; habría que desvincularlas, como ya hace unlinkCustomFood al borrar (FoodSearchPanel.tsx:218-222).
+- [ ] F3 (NIT, implementer): hay dos mecanismos que devuelven el foco a «Nombre» tras un guardado fallido, nameFocusTick en FoodSearchPanel.tsx:232-236 y wasSaving en CustomFoodEditForm.tsx:79-86; conviene dejar solo uno.
+- [ ] F4 (NIT, implementer): mientras se comprueba el nombre, pulsar Intro no hace nada y no avisa de ninguna forma (CustomFoodEditForm.tsx:103-106).
+
+## plan (iteración 2) · planner
+- [ ] Envío automático al terminar la comprobación del nombre si el usuario pulsó Intro mientras se comprobaba (F4, mejora opcional de UX).
+- [ ] En la 028, un 404 al borrar un alimento propio tampoco desvincula las filas de la propuesta (`confirmDelete` en el `onError`); se podría tratar igual que en F2.
