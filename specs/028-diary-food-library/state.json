@@ -10,7 +10,7 @@
   "branch": "feat/028-diary-food-library",
   "base_branch": "main",
   "created_at": "2026-10-27T08:34:57.517Z",
-  "stage": "docs",
+  "stage": "close",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -41,7 +41,10 @@
       "at": "2026-10-28T00:56:37.071Z",
       "note": "aprobado, la review está bien"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-28T00:58:38.327Z",
+      "note": "auto (gate_mode=flow): docs actualizadas, README sin UTF-16"
+    },
     "close": null
   },
   "commits": {
@@ -49,7 +52,8 @@
     "plan": "1fcb034",
     "tasks": "7b952b1",
     "tests": "8dbf4e7",
-    "implement": "42d32da"
+    "implement": "42d32da",
+    "review": "b77a059"
   },
   "iterations": {
     "tests": 4,
@@ -812,6 +816,30 @@
       "stage": "review",
       "event": "approved",
       "note": "aprobado, la review está bien"
+    },
+    {
+      "at": "2026-10-28T00:56:37.389Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: b77a059"
+    },
+    {
+      "at": "2026-10-28T00:56:37.599Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "docs 028"
+    },
+    {
+      "at": "2026-10-28T00:58:38.209Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "docs 028: runbook (caso B con relleno), CLAUDE.md, README"
+    },
+    {
+      "at": "2026-10-28T00:58:38.327Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): docs actualizadas, README sin UTF-16"
     }
   ]
 }

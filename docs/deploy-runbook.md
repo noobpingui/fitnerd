@@ -284,6 +284,26 @@ La 027 (fix) hace que el backend de producción se niegue a arrancar sin una `SE
 3. **Después del CD:** `/api/health` da 200 y el «Deshacer» del diario sigue funcionando (quita un alimento y deshaz).
 4. **Marcha atrás:** revertir el merge basta. Si el contenedor no arranca por el error de `SECRET_KEY`, corrige el `backend/.env` y reinicia (`docker compose -f docker-compose.prod.yml up -d`); no hace falta revertir.
 
+### Caso B (aditiva) con relleno de datos: 028, biblioteca de alimentos propios
+
+Migración `e6a8c0d2f4b7` (ADR-0036): crea `public.custom_foods` y `public.food_favorites`, añade `meal_items.custom_food_id` (clave foránea a `custom_foods` con `ON DELETE SET NULL`, índice y una `CHECK` que solo lo admite en `source = 'custom'`) y **rellena la biblioteca** con los alimentos personalizados ya registrados en comidas: un alimento propio por usuario y nombre (nombre sin mayúsculas ni tildes y con espacios colapsados), con los valores del registro más reciente (por `created_at` e `id`). No aplica el límite de 500 por usuario. Es aditiva y **no se aplica sola**. No hay variables nuevas, ni cambios en Caddy ni en AWS. Orden: backup, migración, merge y CD.
+
+1. **Volcado completo** (paso 3) **verificado** en `C:/Users/alber/fitnerd-backups`. Anota antes el recuento de filas de `meal_items` con `source = 'custom'` y el de nombres distintos por usuario, para compararlos con lo rellenado.
+2. **Migración antes del merge** (caso B): `cd backend && FLASK_ENV=production .venv/Scripts/python.exe -m flask db upgrade`, con `FLASK_ENV` escrito a propósito (sin él, `flask` usa producción igualmente; en local se usa `development`). Si tu `.env` local trae `SECRET_KEY=change-me`, exporta una válida solo para ese comando (027). El código viejo sigue funcionando con el esquema nuevo.
+3. **Comprobación de solo lectura posterior:**
+   - `alembic_version` = `e6a8c0d2f4b7`.
+   - Existen `public.custom_foods` y `public.food_favorites` (`to_regclass`); `food_favorites` está vacía.
+   - Existe la columna `public.meal_items.custom_food_id`.
+   - Filas rellenadas: `count(*)` de `custom_foods` = número de parejas (usuario, nombre normalizado) de los personalizados que anotaste en el paso 1.
+4. **Merge y CD** (paso 6). Un frontend nuevo contra un backend antiguo no encontraría `/api/food-library/*`; espera al CD en verde y recarga las pestañas abiertas.
+5. **Comprobación manual en un navegador real**, con una cuenta real:
+   - En `/diary`, «Añadir a {sección}» muestra los recientes y los favoritos; la caja «Buscar alimento» busca a la vez en el catálogo y en tus alimentos propios y tolera una errata en una palabra de un alimento conocido.
+   - Crea un alimento personalizado con nombre: debe aparecer en la búsqueda y en los recientes. Márcalo como favorito y bórralo: la confirmación aparece dentro del propio elemento, Escape la cierra sin cerrar el diálogo, y las comidas ya registradas con él siguen intactas.
+   - Quita un alimento propio de una comida y pulsa «Deshacer»: vuelve a su sitio.
+   - En una propuesta de foto, un alimento sin coincidencia ofrece «Crear alimento personalizado».
+   - Con lector de pantalla (AC-N002.2): se anuncia la confirmación de borrado y el foco vuelve al botón «Borrar» al cancelar.
+6. **Marcha atrás:** revertir el merge basta para el código. `flask db downgrade` a `d4f6a8c0e2b5` quita la columna `meal_items.custom_food_id` (con su restricción, índice y `CHECK`) y borra `food_favorites` y `custom_foods`: **se pierden los favoritos y la biblioteca**, pero las comidas conservan la copia del nombre y de los valores por 100 g, así que no se pierde historial. Los alimentos propios se pueden regenerar con otro `upgrade` (el relleno los recrea desde las comidas); los favoritos no. Úsalo solo si la migración estorba de verdad y con el volcado a mano.
+
 ### Caso C (destructiva): migración después del CD
 
 1. Backup completo (paso 3) **verificado**, con el recuento de filas de lo que se va a borrar.

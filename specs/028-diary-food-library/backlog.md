@@ -112,3 +112,7 @@
 - [ ] F13 (NIT, implementer): el `eslint-disable` de `FoodSearchPanel.tsx:82` es de la iteración 1. Se puede evitar llamando a `onQueryChange` desde el `onChange` de la caja, tras comprobar que `MealPhotoDialog` no depende de la llamada al montar.
 - [ ] F14 (NIT, test-author): el test de F11 en `schemas.test.ts:616-617` lleva el marcador AC-018.7, pero es una guarda estructural; marcarlo como `regression guard` sin AC.
 - [ ] Caso límite sin hallazgo: si el texto cambia mientras el borrado está en curso y vuelve al valor original antes de que llegue el error, el foco salta al botón «Borrar».
+
+## docs · doc-keeper
+- [ ] Rellenar la fila de la 028 en «Historial de despliegues» del runbook tras el despliegue.
+- [ ] Corregir la firma de `useEscapeCapture` en T-134 de `tasks.md` y la nota «112 AC» (son 107 AC con marcador) en `state.json`: lo gestionan los artefactos SDD, no la documentación.
