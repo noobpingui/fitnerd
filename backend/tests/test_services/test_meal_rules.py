@@ -18,6 +18,7 @@ from services.meal_rules import (
     check_add_window,
     epoch_seconds,
     is_db_id,
+    parse_custom_food_fields,
     parse_items,
     parse_meal_date,
     parse_meal_type,
@@ -1070,3 +1071,153 @@ def test_parse_snapshot_payload_rejects_a_cf_that_is_not_a_valid_id(food_id):
 def test_parse_snapshot_payload_rejects_a_cf_in_a_source_other_than_custom(payload):
     """`cf` solo vale en alimentos `custom`: con `catalog` o `usda` el token no es válido."""
     assert parse_snapshot_payload(payload) is None
+
+
+# --------------------------------------------------------------------------
+# Spec 029: `parse_custom_food_fields` (nombre y valores por 100 g, sin gramos)
+# --------------------------------------------------------------------------
+
+
+def food_body(name="Gallo pinto", per_100g=None):
+    """Cuerpo de edición válido: sin `grams`; `per_100g` sustituye al de por defecto."""
+    return {
+        "name": name,
+        "per_100g": per_100g
+        if per_100g is not None
+        else {"calories_kcal": 200, "protein_g": 9, "carbs_g": 28, "fat_g": 6},
+    }
+
+
+# SDD: 029 REQ-002 AC-002.2
+def test_parse_custom_food_fields_returns_the_trimmed_name_and_the_four_floats():
+    """El nombre sale sin los espacios de los extremos y los valores como `float`."""
+    fields = parse_custom_food_fields(food_body(name="  Gallo pinto con huevo "))
+
+    assert fields.name == "Gallo pinto con huevo"
+    assert fields.per_100g == {
+        "calories_kcal": 200.0,
+        "protein_g": 9.0,
+        "carbs_g": 28.0,
+        "fat_g": 6.0,
+    }
+    assert all(isinstance(value, float) for value in fields.per_100g.values())
+
+
+# SDD: 029 REQ-002 AC-002.2
+@pytest.mark.parametrize("name", [None, "", "   ", 5, ["x"]])
+def test_parse_custom_food_fields_requires_the_name(name):
+    """Sin nombre, vacío o solo espacios: «Escribe el nombre del alimento.»."""
+    assert message_of(parse_custom_food_fields, food_body(name=name)) == NAME_REQUIRED
+
+
+# SDD: 029 REQ-002 AC-002.2
+def test_parse_custom_food_fields_requires_the_name_key_to_be_present():
+    """Un cuerpo sin la clave `name` da el mismo error."""
+    body = food_body()
+    del body["name"]
+
+    assert message_of(parse_custom_food_fields, body) == NAME_REQUIRED
+
+
+# SDD: 029 REQ-002 AC-002.3
+def test_parse_custom_food_fields_accepts_a_name_of_100_characters_after_trimming():
+    """100 caracteres válidos aunque lleve espacios en los extremos."""
+    fields = parse_custom_food_fields(food_body(name="  " + "a" * 100 + "  "))
+
+    assert fields.name == "a" * 100
+
+
+# SDD: 029 REQ-002 AC-002.3
+def test_parse_custom_food_fields_rejects_a_name_of_101_characters():
+    """101 caracteres tras recortar: «El nombre no puede superar los 100 caracteres.»."""
+    assert (
+        message_of(parse_custom_food_fields, food_body(name=" " + "a" * 101 + " ")) == NAME_TOO_LONG
+    )
+
+
+# SDD: 029 REQ-002 AC-002.4
+@pytest.mark.parametrize(
+    "per_100g",
+    [
+        "no es un objeto",
+        [],
+        {"calories_kcal": 100, "protein_g": 10, "carbs_g": 10},
+        {"calories_kcal": 100, "protein_g": 10, "carbs_g": 10, "fat_g": None},
+        {"calories_kcal": "100", "protein_g": 10, "carbs_g": 10, "fat_g": 10},
+        {"calories_kcal": True, "protein_g": 10, "carbs_g": 10, "fat_g": 10},
+    ],
+)
+def test_parse_custom_food_fields_requires_the_four_values(per_100g):
+    """`per_100g` incompleto o con tipos que no son números."""
+    body = food_body()
+    body["per_100g"] = per_100g
+
+    assert message_of(parse_custom_food_fields, body) == PER_100G_REQUIRED
+
+
+# SDD: 029 REQ-002 AC-002.4
+def test_parse_custom_food_fields_requires_per_100g_to_be_present():
+    """Un cuerpo sin la clave `per_100g`."""
+    body = food_body()
+    del body["per_100g"]
+
+    assert message_of(parse_custom_food_fields, body) == PER_100G_REQUIRED
+
+
+# SDD: 029 REQ-002 AC-002.5
+@pytest.mark.parametrize("calories", [-1, 901])
+def test_parse_custom_food_fields_rejects_calories_out_of_range(calories):
+    """Calorías de -1 y de 901."""
+    body = food_body(per_100g=macros(calories=calories, protein=0, carbs=0, fat=0))
+
+    assert message_of(parse_custom_food_fields, body) == CALORIES_RANGE
+
+
+# SDD: 029 REQ-002 AC-002.5
+@pytest.mark.parametrize("calories", [0, 900])
+def test_parse_custom_food_fields_accepts_the_calorie_limits(calories):
+    """0 y 900 kcal son válidas."""
+    fields = parse_custom_food_fields(
+        food_body(per_100g=macros(calories=calories, protein=0, carbs=0, fat=0))
+    )
+
+    assert fields.per_100g["calories_kcal"] == float(calories)
+
+
+# SDD: 029 REQ-002 AC-002.6
+@pytest.mark.parametrize(
+    "per_100g",
+    [
+        macros(protein=-1, carbs=0, fat=0),
+        macros(protein=0, carbs=-1, fat=0),
+        macros(protein=0, carbs=0, fat=101),
+        macros(protein=101, carbs=0, fat=0),
+    ],
+)
+def test_parse_custom_food_fields_rejects_macros_out_of_range(per_100g):
+    """Proteína -1 o grasa 101 (y los equivalentes de carbohidratos)."""
+    assert message_of(parse_custom_food_fields, food_body(per_100g=per_100g)) == MACROS_RANGE
+
+
+# SDD: 029 REQ-002 AC-002.7
+def test_parse_custom_food_fields_rejects_macros_that_add_up_to_more_than_100():
+    """40 + 40 + 30 supera los 100 g."""
+    body = food_body(per_100g=macros(calories=300, protein=40, carbs=40, fat=30))
+
+    assert message_of(parse_custom_food_fields, body) == MACROS_SUM
+
+
+# SDD: 029 REQ-002 AC-002.7
+def test_parse_custom_food_fields_accepts_macros_that_add_up_to_exactly_100():
+    """La suma de 100 g es válida (contraste con el caso de 110 g)."""
+    fields = parse_custom_food_fields(food_body(per_100g=macros(protein=40, carbs=40, fat=20)))
+
+    assert fields.per_100g["fat_g"] == 20.0
+
+
+# SDD: 029 REQ-002 AC-002.2
+def test_parse_custom_food_fields_checks_the_name_before_the_values():
+    """Con nombre y valores no válidos a la vez, gana el error del nombre (orden de la 022)."""
+    body = food_body(name="", per_100g=macros(calories=901))
+
+    assert message_of(parse_custom_food_fields, body) == NAME_REQUIRED

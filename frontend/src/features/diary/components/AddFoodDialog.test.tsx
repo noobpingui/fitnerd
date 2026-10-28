@@ -13,6 +13,7 @@ import {
   getFavoriteFoods,
   getRecentFoods,
   searchFoodLibrary,
+  updateCustomFood,
 } from "@/features/food-library/api"
 import type { LibraryFood } from "@/features/food-library/types"
 import { makeMeal } from "@/test/diaryFixtures"
@@ -37,9 +38,11 @@ vi.mock("@/features/food-library/api", () => ({
   getRecentFoods: vi.fn(),
   getFavoriteFoods: vi.fn(),
   setFoodFavorite: vi.fn(),
+  updateCustomFood: vi.fn(),
   deleteCustomFood: vi.fn(),
 }))
 
+const updateMock = vi.mocked(updateCustomFood)
 const addMock = vi.mocked(addMealItems)
 const getDiaryMock = vi.mocked(getDiary)
 const searchMock = vi.mocked(searchFoodLibrary)
@@ -151,6 +154,7 @@ function resetMocks() {
   recentMock.mockReset()
   favoritesMock.mockReset()
   deleteMock.mockReset()
+  updateMock.mockReset()
   searchMock.mockResolvedValue([])
   recentMock.mockResolvedValue([])
   favoritesMock.mockResolvedValue([])
@@ -755,6 +759,30 @@ describe("AddFoodDialog - guardar y cerrar", () => {
     expect(dialog()).toBeInTheDocument()
     expect(within(dialog()).getByRole("searchbox", { name: "Buscar alimento" })).toHaveValue("gallo")
     expect(within(dialog()).getByRole("list", { name: "Resultados" })).toHaveTextContent("Gallo pinto")
+
+    await user.keyboard("{Escape}")
+
+    expect(onClose).toHaveBeenCalled()
+  })
+
+  // SDD: 029 REQ-007 AC-007.3
+  it("con el formulario de edición abierto, Escape solo lo cierra; un segundo Escape cierra el diálogo", async () => {
+    const user = userEvent.setup()
+    const { onClose } = renderDialog()
+    searchMock.mockResolvedValue([GALLO_PROPIO])
+    await search(user, "gallo")
+    const results = await within(dialog()).findByRole("list", { name: "Resultados" })
+    await user.click(within(results).getByRole("button", { name: "Editar Gallo pinto" }))
+    const form = await within(results).findByRole("form", { name: "Editar «Gallo pinto»" })
+    expect(form.closest("li")).toHaveTextContent("Gallo pinto")
+
+    await user.keyboard("{Escape}")
+
+    await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument())
+    expect(onClose).not.toHaveBeenCalled()
+    expect(updateMock).not.toHaveBeenCalled()
+    expect(dialog()).toBeInTheDocument()
+    expect(within(dialog()).getByRole("searchbox", { name: "Buscar alimento" })).toHaveValue("gallo")
 
     await user.keyboard("{Escape}")
 

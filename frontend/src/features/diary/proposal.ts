@@ -1,4 +1,4 @@
-import type { LibraryFood } from "@/features/food-library/types"
+import type { CustomLibraryFood, LibraryFood } from "@/features/food-library/types"
 import { formatPortionPreview } from "./format"
 import { portionNutrients } from "./nutrition"
 import { parseDecimalText } from "./schemas"
@@ -93,6 +93,16 @@ export function mergeProposalEntries(
 export function unlinkCustomFood(entry: ProposalEntry, customFoodId: number): ProposalEntry | null {
   if (entry.kind !== "custom" || entry.customFoodId !== customFoodId) return null
   return { kind: "custom", name: entry.name, per100g: entry.per100g, grams: entry.grams }
+}
+
+// Si la entrada es ese alimento propio (custom con el mismo customFoodId), la misma entrada (misma key y gramos)
+// con el nombre y los valores por 100 g editados; si no, null.
+export function applyCustomFoodEdit(
+  entry: ProposalFormEntry,
+  food: CustomLibraryFood
+): ProposalFormEntry | null {
+  if (entry.kind !== "custom" || entry.customFoodId !== food.id) return null
+  return { ...entry, name: food.name, per100g: food.per_100g }
 }
 
 export function customEntry(payload: CustomItemPayload): ProposalEntry {

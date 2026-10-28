@@ -5,6 +5,7 @@ import { CHICKEN, RICE, TOMATO_SAUCE, makeAnalysis } from "@/test/analysisFixtur
 import { makeBananaFood, makeCustomLibraryFood, makeLibraryFood } from "@/test/foodLibraryFixtures"
 import { formatPortionPreview } from "./format"
 import {
+  applyCustomFoodEdit,
   confidenceLabel,
   customEntry,
   entryNutrients,
@@ -573,5 +574,72 @@ describe("unlinkCustomFood", () => {
 
     expect(items).toEqual([{ name: "Gallo pinto", grams: 250, per_100g: PER_100G }])
     expect(Object.keys(items[0]).sort()).toEqual(["grams", "name", "per_100g"])
+  })
+})
+
+describe("applyCustomFoodEdit", () => {
+  const EDITED = makeCustomLibraryFood({
+    name: "Gallo pinto con huevo",
+    per_100g: { calories_kcal: 200, protein_g: 9, carbs_g: 28, fat_g: 6 },
+    favorite: true,
+  })
+
+  // SDD: 029 REQ-011 AC-011.1
+  it("la fila del alimento editado conserva la clave, los gramos y el vínculo, con nombre y valores nuevos", () => {
+    const entry = withEntryKey(libraryEntry(GALLO_PROPIO, "250"))
+
+    const updated = applyCustomFoodEdit(entry, EDITED)
+
+    expect(updated).toEqual({
+      kind: "custom",
+      key: entry.key,
+      name: "Gallo pinto con huevo",
+      per100g: EDITED.per_100g,
+      grams: "250",
+      customFoodId: 12,
+    })
+  })
+
+  // SDD: 029 REQ-011 AC-011.1
+  it("los nutrientes de la fila se recalculan con los valores nuevos (250 g a 200 kcal = 500 kcal)", () => {
+    const entry = withEntryKey(libraryEntry(GALLO_PROPIO, "250"))
+
+    const updated = applyCustomFoodEdit(entry, EDITED) as ProposalFormEntry
+
+    expect(entryNutrients(updated)?.calories_kcal).toBe(500)
+    expect(proposalTotals([updated]).calories_kcal).toBe(500)
+    expect(entryTag(updated)).toBe("Personalizado")
+  })
+
+  // SDD: 029 REQ-011 AC-011.1
+  it("no modifica la entrada original", () => {
+    const entry = withEntryKey(libraryEntry(GALLO_PROPIO, "250"))
+    const before = JSON.parse(JSON.stringify(entry))
+
+    applyCustomFoodEdit(entry, EDITED)
+
+    expect(entry).toEqual(before)
+  })
+
+  // SDD: 029 REQ-011 AC-011.1
+  it("la fila editada se envía con custom_food_id y los gramos", () => {
+    const entry = withEntryKey(libraryEntry(GALLO_PROPIO, "250"))
+    const updated = applyCustomFoodEdit(entry, EDITED) as ProposalFormEntry
+
+    expect(proposalItems([updated])).toEqual([{ custom_food_id: 12, grams: 250 }])
+  })
+
+  // SDD: 029 REQ-011 AC-011.3
+  it("devuelve null para otro identificador, una fila del catálogo, una sin coincidencia o un personalizado creado en la propuesta", () => {
+    const [rice, , unmatched] = fullProposal().map(withEntryKey)
+
+    expect(applyCustomFoodEdit(withEntryKey(libraryEntry(makeCustomLibraryFood({ id: 99 }), "250")), EDITED)).toBeNull()
+    expect(applyCustomFoodEdit(rice, EDITED)).toBeNull()
+    expect(applyCustomFoodEdit(unmatched, EDITED)).toBeNull()
+    expect(applyCustomFoodEdit(withEntryKey(customEntry(GALLO)), EDITED)).toBeNull()
+    // Contraste: la fila vinculada con ese identificador sí se actualiza.
+    expect(
+      applyCustomFoodEdit(withEntryKey(libraryEntry(GALLO_PROPIO, "250")), EDITED)
+    ).not.toBeNull()
   })
 })

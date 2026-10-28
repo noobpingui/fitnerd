@@ -259,16 +259,25 @@ def _parse_per_100g(value: object) -> dict[str, float]:
     return {key: float(value[key]) for key in NUTRIENT_KEYS}
 
 
-def _parse_custom_item(item: dict, grams: Decimal) -> CustomItemInput:
+@dataclass(frozen=True)
+class CustomFoodFields:
+    name: str
+    per_100g: dict[str, float]
+
+
+def parse_custom_food_fields(item: dict) -> CustomFoodFields:
     name = item.get("name")
     cleaned = name.strip() if isinstance(name, str) else ""
     if cleaned == "":
         raise ValidationError(NAME_REQUIRED_MESSAGE)
     if len(cleaned) > MAX_NAME_CHARS:
         raise ValidationError(NAME_TOO_LONG_MESSAGE)
-    return CustomItemInput(
-        name=cleaned, grams=grams, per_100g=_parse_per_100g(item.get("per_100g"))
-    )
+    return CustomFoodFields(name=cleaned, per_100g=_parse_per_100g(item.get("per_100g")))
+
+
+def _parse_custom_item(item: dict, grams: Decimal) -> CustomItemInput:
+    fields = parse_custom_food_fields(item)
+    return CustomItemInput(name=fields.name, grams=grams, per_100g=fields.per_100g)
 
 
 def _parse_catalog_item(item: dict, grams: Decimal) -> CatalogItemInput:

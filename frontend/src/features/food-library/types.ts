@@ -15,4 +15,5 @@ export type CustomLibraryFood = {
   favorite: boolean
 }
 export type LibraryFood = CatalogLibraryFood | CustomLibraryFood
+export type CustomFoodUpdatePayload = { name: string; per_100g: LibraryPer100g }
 export type RecentFood = LibraryFood & { last_grams: number }

@@ -18,8 +18,14 @@ import {
   useFoodLibrarySearch,
   useRecentFoods,
   useSetFoodFavorite,
+  useUpdateCustomFood,
 } from "@/features/food-library/hooks"
-import type { CustomLibraryFood, LibraryFood } from "@/features/food-library/types"
+import { customFoodNameKey } from "@/features/food-library/names"
+import type {
+  CustomFoodUpdatePayload,
+  CustomLibraryFood,
+  LibraryFood,
+} from "@/features/food-library/types"
 import {
   FOOD_QUERY_MAX_LENGTH,
   foodSearchFormSchema,
@@ -33,8 +39,10 @@ import {
   DELETE_CUSTOM_FOOD_FAILED_MESSAGE,
   LIBRARY_LOAD_FAILED_MESSAGE,
   favoriteErrorMessage,
+  updateCustomFoodErrorView,
 } from "../errors"
 import { gramsText } from "../format"
+import { CustomFoodEditForm } from "./CustomFoodEditForm"
 import { LibraryFoodList } from "./LibraryFoodList"
 
 const MIN_QUERY_LENGTH = 2
@@ -42,11 +50,13 @@ const DEFAULT_GRAMS = "100"
 const INITIAL_TEXT = "Busca un alimento para ver sus calorías y macros por 100 g."
 
 type ListLabel = "Resultados" | "Favoritos" | "Recientes"
-type DeleteTarget = {
+// Elemento en línea abierto: la confirmación de borrado o el formulario de edición (uno solo a la vez).
+type InlineTarget = {
+  mode: "delete" | "edit"
   food: CustomLibraryFood
   list: ListLabel
   trigger: HTMLButtonElement
-  query: string // valor de la caja (sin recortar) al pulsar «Borrar»
+  query: string // valor de la caja (sin recortar) al pulsar «Borrar» o «Editar»
 }
 
 // Búsqueda compartida del diario: busca mientras se escribe (con retardo), ofrece
@@ -58,13 +68,16 @@ export function FoodSearchPanel({
   onSelect,
   onCreateCustom,
   onCustomFoodDeleted,
+  onCustomFoodEdited,
   actions,
 }: {
   initialQuery?: string
   onQueryChange?: (query: string) => void
   onSelect: (food: LibraryFood, defaultGrams: string) => void
   onCreateCustom: (name: string) => void
+  // Se llama al borrar un alimento propio y también cuando editarlo da 404 (ya no existe).
   onCustomFoodDeleted?: (customFoodId: number) => void
+  onCustomFoodEdited?: (food: CustomLibraryFood) => void
   actions?: ReactNode
 }): ReactElement {
   const form = useForm<FoodSearchFormValues>({
@@ -93,8 +106,14 @@ export function FoodSearchPanel({
   const recents = useRecentFoods()
   const setFavorite = useSetFoodFavorite()
   const deleteFood = useDeleteCustomFood()
-  const [target, setTarget] = useState<DeleteTarget | null>(null)
+  const updateFood = useUpdateCustomFood()
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [target, setTarget] = useState<InlineTarget | null>(null)
   const [confirming, setConfirming] = useState(false)
+  const [editError, setEditError] = useState<string | null>(null)
+  const [nameTakenKey, setNameTakenKey] = useState<string | null>(null)
+  const [notFound, setNotFound] = useState<string | null>(null)
+  const [pendingFocus, setPendingFocus] = useState<{ list: ListLabel; id: number } | null>(null)
   // «Favoritos» y «Recientes» arrancan plegadas para no saturar la vista.
   const [favoritesOpen, setFavoritesOpen] = useState(false)
   const [recentsOpen, setRecentsOpen] = useState(false)
@@ -109,7 +128,7 @@ export function FoodSearchPanel({
   }
 
   // El foco vuelve al botón «Borrar» pulsado o, si ya no está, a la caja de búsqueda.
-  function focusTrigger(current: DeleteTarget) {
+  function focusTrigger(current: InlineTarget) {
     if (current.trigger.isConnected) current.trigger.focus()
     else form.setFocus("query")
   }
@@ -144,17 +163,101 @@ export function FoodSearchPanel({
 
   function startDelete(list: ListLabel) {
     return (food: CustomLibraryFood, trigger: HTMLButtonElement) => {
+      if (deleteFood.isPending || updateFood.isPending) return
       deleteFood.reset()
-      setTarget({ food, list, trigger, query: form.getValues("query") })
+      updateFood.reset()
+      setEditError(null)
+      setNameTakenKey(null)
+      setNotFound(null)
+      setTarget({ mode: "delete", food, list, trigger, query: form.getValues("query") })
       setConfirming(true)
     }
   }
+
+  function startEdit(list: ListLabel) {
+    return (food: CustomLibraryFood, trigger: HTMLButtonElement) => {
+      if (deleteFood.isPending || updateFood.isPending) return
+      deleteFood.reset()
+      updateFood.reset()
+      setConfirming(false)
+      setEditError(null)
+      setNameTakenKey(null)
+      setNotFound(null)
+      setTarget({ mode: "edit", food, list, trigger, query: form.getValues("query") })
+    }
+  }
+
+  function cancelEdit() {
+    if (!target || target.mode !== "edit" || updateFood.isPending) return
+    const current = target
+    setTarget(null)
+    setEditError(null)
+    setNameTakenKey(null)
+    updateFood.reset()
+    focusTrigger(current)
+  }
+
+  function saveEdit(payload: CustomFoodUpdatePayload) {
+    if (!target || target.mode !== "edit" || updateFood.isPending) return
+    const current = target
+    setEditError(null)
+    updateFood.mutate(
+      { id: current.food.id, payload },
+      {
+        onSuccess: (food) => {
+          onCustomFoodEdited?.(food)
+          setTarget(null)
+          setNameTakenKey(null)
+          setPendingFocus({ list: current.list, id: food.id })
+        },
+        onError: (error) => {
+          const view = updateCustomFoodErrorView(error)
+          if (view.kind === "name_taken") {
+            setNameTakenKey(customFoodNameKey(payload.name))
+          } else if (view.kind === "not_found") {
+            onCustomFoodDeleted?.(current.food.id)
+            setTarget(null)
+            setNameTakenKey(null)
+            setNotFound(view.message)
+            focusTrigger(current)
+          } else {
+            setEditError(view.message)
+          }
+        },
+      }
+    )
+  }
+
+  // Tras guardar: foco al botón «Editar» del alimento ya actualizado o, si no sale, a la caja.
+  useEffect(() => {
+    if (!pendingFocus) return
+    const button = containerRef.current?.querySelector<HTMLButtonElement>(
+      `ul[aria-label="${pendingFocus.list}"] button[data-edit-food-id="${pendingFocus.id}"]`
+    )
+    if (button) button.focus()
+    else form.setFocus("query")
+    setPendingFocus(null)
+    // form es estable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingFocus])
 
   // Dentro del elemento donde se pulsó «Borrar»: la confirmación, o el error del borrado.
   function renderInline(list: ListLabel) {
     return (food: LibraryFood): ReactNode => {
       if (!target || target.list !== list) return null
       if (target.food.kind !== food.kind || target.food.id !== food.id) return null
+      if (target.mode === "edit") {
+        return (
+          <CustomFoodEditForm
+            food={target.food}
+            isSaving={updateFood.isPending}
+            serverError={editError}
+            nameTakenKey={nameTakenKey}
+            onSubmit={saveEdit}
+            onCancel={cancelEdit}
+          />
+        )
+      }
       if (confirming) {
         return (
           <DeleteConfirmation
@@ -180,6 +283,7 @@ export function FoodSearchPanel({
   function listProps(list: ListLabel) {
     return {
       onToggleFavorite: toggleFavorite,
+      onEdit: startEdit(list),
       onDelete: startDelete(list),
       renderInline: renderInline(list),
       disabled: setFavorite.isPending,
@@ -214,7 +318,7 @@ export function FoodSearchPanel({
   const noResults = !showLists && !waiting && search.isSuccess && search.data.length === 0
   const hasResults = !showLists && !waiting && search.isSuccess && search.data.length > 0
 
-  function isTargetShown(current: DeleteTarget): boolean {
+  function isTargetShown(current: InlineTarget): boolean {
     const same = (food: LibraryFood) =>
       food.kind === current.food.kind && food.id === current.food.id
     if (current.list === "Resultados") return hasResults && (search.data ?? []).some(same)
@@ -222,30 +326,35 @@ export function FoodSearchPanel({
     return showLists && recentsOpen && recentFoods.some(same)
   }
 
-  // Cierra la confirmación sin mover el foco a su botón (salvo que haya quedado en el cuerpo).
-  function dismissDelete() {
+  // Cierra el elemento en línea sin mover el foco a su botón (salvo que haya quedado en el cuerpo).
+  function dismissInline() {
     setConfirming(false)
     setTarget(null)
+    setEditError(null)
+    setNameTakenKey(null)
     deleteFood.reset()
+    updateFood.reset()
     const focused = document.activeElement
     if (focused === null || focused === document.body) form.setFocus("query")
   }
 
   const shown = target !== null && isTargetShown(target)
-  const isDeleting = deleteFood.isPending
-  const deleted = deleteFood.isSuccess
+  const busy =
+    target?.mode === "edit"
+      ? updateFood.isPending || updateFood.isSuccess
+      : deleteFood.isPending || deleteFood.isSuccess
 
-  // La confirmación pertenece a la vista donde se abrió: si cambia el texto o el
+  // El elemento en línea pertenece a la vista donde se abrió: si cambia el texto o el
   // alimento deja de mostrarse, se cierra en silencio.
   useEffect(() => {
-    if (!target || isDeleting || deleted) return
-    if (typed !== target.query || !shown) dismissDelete()
-    // dismissDelete solo usa referencias estables y setters.
+    if (!target || busy) return
+    if (typed !== target.query || !shown) dismissInline()
+    // dismissInline solo usa referencias estables y setters.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [target, typed, shown, isDeleting, deleted])
+  }, [target, typed, shown, busy])
 
   return (
-    <div>
+    <div ref={containerRef}>
       <Form {...form}>
         <form autoComplete="off" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3" noValidate>
           <FormField
@@ -263,6 +372,7 @@ export function FoodSearchPanel({
                     {...field}
                     onChange={(event) => {
                       field.onChange(event)
+                      setNotFound(null)
                       if (form.formState.errors.query) form.clearErrors("query")
                     }}
                   />
@@ -323,6 +433,12 @@ export function FoodSearchPanel({
           </>
         )}
       </div>
+
+      {notFound && (
+        <p role="alert" className="mb-3 text-sm text-destructive">
+          {notFound}
+        </p>
+      )}
 
       {setFavorite.isError && (
         <p role="alert" className="mb-3 text-sm text-destructive">

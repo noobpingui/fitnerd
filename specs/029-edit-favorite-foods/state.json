@@ -1,0 +1,1016 @@
+{
+  "schema_version": 1,
+  "feature": "029-edit-favorite-foods",
+  "title": "Editar alimentos propios desde «Favoritos» en el buscador de «Añadir alimento»",
+  "type": "feature",
+  "scope": [
+    "backend",
+    "frontend"
+  ],
+  "branch": "feat/029-edit-favorite-foods",
+  "base_branch": "main",
+  "created_at": "2026-10-28T08:05:41.152Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-28T08:58:47.895Z",
+      "note": "Si"
+    },
+    "plan": {
+      "at": "2026-10-28T18:50:05.336Z",
+      "note": "auto (gate_mode=flow): plan para R3-R5, solo documentación y comentarios de tests"
+    },
+    "tasks": {
+      "at": "2026-10-28T18:50:40.837Z",
+      "note": "auto (gate_mode=flow): T-080 alinea marcadores; R5 anotado"
+    },
+    "tests": {
+      "at": "2026-10-28T18:59:00.763Z",
+      "note": "auto (gate_mode=flow): T-080 solo comentarios; excepción aprobada por el usuario"
+    },
+    "implement": {
+      "at": "2026-10-28T18:59:10.929Z",
+      "note": "auto (gate_mode=flow): sin cambios de producción, implementación vigente (d0005f0)"
+    },
+    "verify": {
+      "at": "2026-10-28T19:05:43.008Z",
+      "note": "auto (gate_mode=flow): verify PASS, backend 2681, frontend 1730, 66/66 tareas, snapshot idéntico"
+    },
+    "review": {
+      "at": "2026-10-28T19:08:21.724Z",
+      "note": "Aprobado"
+    },
+    "docs": {
+      "at": "2026-10-28T19:08:56.365Z",
+      "note": "auto (gate_mode=flow): README y fila de CLAUDE.md, sin runbook ni .env"
+    },
+    "close": {
+      "at": "2026-10-28T19:10:10.089Z",
+      "note": "Si"
+    }
+  },
+  "commits": {
+    "spec": "afaf840",
+    "plan": "71d4998",
+    "tasks": "2d06efc",
+    "tests": "0642be1",
+    "implement": "d0005f0",
+    "review": "aa3c3b2",
+    "docs": "d4ce2db"
+  },
+  "iterations": {
+    "tests": 2,
+    "implement": 0,
+    "review": 3
+  },
+  "max_iterations": 5,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-10-28T18:59:00.386Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-10-28T19:05:27.767Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-10-28T19:07:23.905Z"
+  },
+  "tests_snapshot": {
+    "at": "2026-10-28T18:59:00.478Z",
+    "reason": "renovación tras T-080 (comentarios de marcador); el hash anterior no coincidía con el archivo",
+    "sha256": {
+      "backend/tests/test_routes/test_food_library_routes.py": "f89294abc2703fcdca79ec97e9159b1547efc84a365e5c299eaad08e62cfcf9b",
+      "backend/tests/test_routes/test_meal_library_routes.py": "3f0481d5bb1082539df6ede530746691db17dcb5814b29308dfefb2b4421432e",
+      "backend/tests/test_services/test_food_library_service.py": "5a394e683f37e699262cb486dcae3083b1f8db4fa9b196afb539582db6069ebc",
+      "backend/tests/test_services/test_meal_rules.py": "ca1490dd4c15d358a9e5d8743c58d3293056e0129117a2c02f900d797e53f272",
+      "frontend/src/features/diary/components/AddFoodDialog.test.tsx": "530a2692839b855f3d3edc3654d66cc5d73962ccda8d95f3e12f1fd8730ab9cc",
+      "frontend/src/features/diary/components/CustomFoodEditForm.test.tsx": "9f1c2d34a8717ac6da0d258e7a7390b5098d696f663b60fc17082662af7d00b1",
+      "frontend/src/features/diary/components/FoodSearchPanel.test.tsx": "b3649ef0a28075c67bdcce5efd66f468591cba5c95ea8d67135b2a12eaa7d910",
+      "frontend/src/features/diary/components/MealPhotoDialog.test.tsx": "90ad03df1efe6933ed4a8e9b4acbd6b90a33457bd5aedc787c3fc724dbe91214",
+      "frontend/src/features/diary/customFoodEdit.test.ts": "1186cebb1765bf3ebe29b68e8527767b9f978a489c513d8c3a91388fcb02b597",
+      "frontend/src/features/diary/errors.test.ts": "ec9f2f13b4aaca2dee7fd45e5ea31147655594ba488359b447e703259e1f1177",
+      "frontend/src/features/diary/proposal.test.ts": "6f7f118900f6de6335e9592c73a4e4ea06df65e78a92d2cde45197e19c9a8be7",
+      "frontend/src/features/diary/schemas.test.ts": "01556b41db0974213d42c64cd64b605ab6b13f553e564d8bc3a3d1cb2c592f0d",
+      "frontend/src/features/food-library/api.test.ts": "17d65592c57e61e88f0b307d4d624e7e475e6e39778bddea672f7a781d5f6e63",
+      "frontend/src/features/food-library/hooks.test.tsx": "4280f230791418ed2405722be7dbd20cc3e272a7503128d69a057b24579d21fc",
+      "frontend/src/features/food-library/names.test.ts": "1c430466664539a843b0c5f7f4f86816c7bb280a54387c575738921d0ab1f10f"
+    }
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-28T08:05:41.152Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama feat/029-edit-favorite-foods desde main"
+    },
+    {
+      "at": "2026-10-28T08:06:06.472Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegar en spec-writer"
+    },
+    {
+      "at": "2026-10-28T08:09:46.227Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "Q1-Q7 pendientes de respuesta del usuario (alcance de Editar, nombre repetido, cambios, propuesta de foto, cancelar, fallo de comprobación)"
+    },
+    {
+      "at": "2026-10-28T08:56:26.866Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec: 11 REQ, 62 AC, 1 NFR; Q1-Q7 resueltas"
+    },
+    {
+      "at": "2026-10-28T08:58:47.895Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Si"
+    },
+    {
+      "at": "2026-10-28T08:58:53.369Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: afaf840"
+    },
+    {
+      "at": "2026-10-28T08:58:53.550Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegar en planner"
+    },
+    {
+      "at": "2026-10-28T09:04:36.364Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan listo"
+    },
+    {
+      "at": "2026-10-28T09:04:36.453Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan sin migración, PATCH food-library/custom, sin ADR"
+    },
+    {
+      "at": "2026-10-28T09:04:36.555Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Orden backend 404 id, 400 cuerpo, 404 fila, 409 nombre; chequeo de nombre en cliente reutiliza search; sin actualización optimista; sin ADR ni migración"
+    },
+    {
+      "at": "2026-10-28T09:04:40.202Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: c9b7b82"
+    },
+    {
+      "at": "2026-10-28T09:04:40.385Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegar en task-breaker"
+    },
+    {
+      "at": "2026-10-28T09:05:52.088Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks listas: 11 scaffold, 25 test, 16 impl"
+    },
+    {
+      "at": "2026-10-28T09:05:52.182Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 52 tareas, 62 AC cubiertos"
+    },
+    {
+      "at": "2026-10-28T09:05:56.951Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: e2a207d"
+    },
+    {
+      "at": "2026-10-28T09:05:57.128Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Iniciar etapa tests"
+    },
+    {
+      "at": "2026-10-28T09:05:57.220Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (implementer)"
+    },
+    {
+      "at": "2026-10-28T09:07:20.968Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-28T09:18:01.501Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red"
+    },
+    {
+      "at": "2026-10-28T09:30:07.720Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Rojo: 239 fallos legítimos (not implemented, 405 por ruta inexistente, texto ausente). Fallan 6 tests nuevos que pasan sin implementación: backend test_editing_keeps_the_favorite_row_of_the_food; frontend api.test (rechaza una respuesta que no es un alimento propio), schemas.test (acepta los valores actuales; acepta suma 100 g; customFoodFormSchema sigue igual), FoodSearchPanel (un resultado del catálogo no tiene Editar). Responsable: test-author."
+    },
+    {
+      "at": "2026-10-28T09:30:34.039Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red FAIL: 6 tests nuevos pasan sin implementación (F1-F6) · tests 1/5"
+    },
+    {
+      "at": "2026-10-28T09:30:34.122Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "F5 (customFoodFormSchema sigue igual) es una regresión sobre código existente: se acepta como excepción, no hace falta ponerla en rojo"
+    },
+    {
+      "at": "2026-10-28T09:45:42.297Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "test-author (iteración 2) sin cambios en disco durante 14 min (último 03:31): detenido y relanzado por la revisión de atascos"
+    },
+    {
+      "at": "2026-10-28T09:46:10.649Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3 (iteración 2): verifier red"
+    },
+    {
+      "at": "2026-10-28T09:53:39.336Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red PASS: 101 fallos backend y 143 frontend legitimos (not implemented, 405, texto ausente, aserciones de valores ausentes). Unica excepcion aceptada: F5 customFoodFormSchema sigue igual (regresion sobre codigo existente)."
+    },
+    {
+      "at": "2026-10-28T09:53:55.482Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS"
+    },
+    {
+      "at": "2026-10-28T09:53:55.559Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "15 archivo(s) de test: tests aprobados tras red check PASS (iteración 2)"
+    },
+    {
+      "at": "2026-10-28T09:53:55.682Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 59 tests backend y todos los de frontend en rojo legítimo, F5 excepción"
+    },
+    {
+      "at": "2026-10-28T09:53:55.765Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Red check PASS en iteración 2; F5 aceptada como excepción de regresión; scaffold con customFoodEditSchema sin reglas (T-007)"
+    },
+    {
+      "at": "2026-10-28T09:53:59.902Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: f9af9cf"
+    },
+    {
+      "at": "2026-10-28T09:54:00.055Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegar en implementer"
+    },
+    {
+      "at": "2026-10-28T17:12:39.893Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "implementer (iteración 1) sin cambios en disco desde 03:59 (reloj del sistema: 11:12): detenido y relanzado por la revisión de atascos"
+    },
+    {
+      "at": "2026-10-28T17:18:56.729Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "implement listo"
+    },
+    {
+      "at": "2026-10-28T17:18:56.812Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): T-050..T-070 hechas, backend 2681 en verde, lint y tsc sin errores"
+    },
+    {
+      "at": "2026-10-28T17:18:56.900Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "Foco a Nombre tras error del servidor con contador de estado y efecto en FoodSearchPanel; ratchet backend: 1 E501 nuevo en un test (no tocable por implementer)"
+    },
+    {
+      "at": "2026-10-28T17:19:00.607Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 0d45818"
+    },
+    {
+      "at": "2026-10-28T17:19:00.766Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegar en verifier (full)"
+    },
+    {
+      "at": "2026-10-28T17:24:15.769Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify FAIL: full: backend 2681 passed; frontend test 1715 passed, lint, tsc y build OK; ratchet backend FAIL: 1 E501 nuevo en test_food_library_routes.py:1226 (responsable test-author); trazabilidad 61/61 AC, 52/52 tareas [x], sin skip nuevos"
+    },
+    {
+      "at": "2026-10-28T17:24:23.458Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "verify FAIL: E501 nuevo en test_food_library_routes.py:1226 · tests 2/5"
+    },
+    {
+      "at": "2026-10-28T17:25:12.935Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "E501 corregido en test"
+    },
+    {
+      "at": "2026-10-28T17:25:13.027Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "15 archivo(s) de test: corrección de formato E501 en test (verify FAIL), sin cambio de comportamiento"
+    },
+    {
+      "at": "2026-10-28T17:25:13.151Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección E501, tests pasan, sin red check"
+    },
+    {
+      "at": "2026-10-28T17:25:13.422Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 15c54d9"
+    },
+    {
+      "at": "2026-10-28T17:25:19.039Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "sin cambios de producción: la corrección era solo en el test"
+    },
+    {
+      "at": "2026-10-28T17:25:19.123Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): sin cambios de producción, implementación vigente (0d45818)"
+    },
+    {
+      "at": "2026-10-28T17:25:19.258Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegar en verifier (full), iteración tras corrección"
+    },
+    {
+      "at": "2026-10-28T17:30:06.992Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: full: backend 2681 passed, ratchet backend sin violaciones nuevas (E501 corregido en 15c54d9); frontend 1715 passed, lint, tsc y build OK; trazabilidad 61/61 AC, 52/52 tareas [x], sin skip nuevos"
+    },
+    {
+      "at": "2026-10-28T17:30:16.019Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS"
+    },
+    {
+      "at": "2026-10-28T17:30:16.109Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS, backend 2681, frontend 1715, ratchet limpio"
+    },
+    {
+      "at": "2026-10-28T17:30:16.257Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegar en reviewer"
+    },
+    {
+      "at": "2026-10-28T17:33:24.396Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-28T17:33:24.484Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED: 0 bloqueantes, 0 mayores, 1 menor, 3 NIT"
+    },
+    {
+      "at": "2026-10-28T17:35:35.043Z",
+      "stage": "plan",
+      "event": "rework",
+      "note": "usuario: «Vamos a corregir desde F1 hasta F4»; F2 afecta al plan · review 1/5"
+    },
+    {
+      "at": "2026-10-28T17:38:53.334Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan actualizado para F1-F4"
+    },
+    {
+      "at": "2026-10-28T17:38:53.436Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan para F1-F4, solo frontend, sin cambios de spec"
+    },
+    {
+      "at": "2026-10-28T17:38:53.539Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "F2 reutiliza onCustomFoodDeleted; F3 solo wasSaving; F4 Intro no envía y región status muestra Comprobando el nombre…; F1 solo formato"
+    },
+    {
+      "at": "2026-10-28T17:38:53.842Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: e378858"
+    },
+    {
+      "at": "2026-10-28T17:38:54.042Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegar en task-breaker (corrección F1-F4)"
+    },
+    {
+      "at": "2026-10-28T17:39:37.736Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "9 tareas nuevas: 4 test, 5 impl"
+    },
+    {
+      "at": "2026-10-28T17:39:37.822Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): T-046..T-049 test y T-071..T-075 impl para F1-F4"
+    },
+    {
+      "at": "2026-10-28T17:39:38.074Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 45309f2"
+    },
+    {
+      "at": "2026-10-28T17:39:38.239Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Corrección F1-F4: sin scaffold nuevo; test-author y red check"
+    },
+    {
+      "at": "2026-10-28T17:39:38.339Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (scaffold omitido: sin tareas scaffold nuevas)"
+    },
+    {
+      "at": "2026-10-28T17:41:33.714Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red (iteración 4)"
+    },
+    {
+      "at": "2026-10-28T17:43:44.751Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: red FAIL iteración 4 (T-046..T-049): 5 de 12 tests nuevos en rojo legítimo; 7 pasan con el código actual y no prueban la corrección: FoodSearchPanel F2 409/400/500/200 (4, responsable test-author), CustomFoodEditForm F4 Intro sin cambios e Intro con isSaving (2, test-author) y CustomFoodEditForm F3 foco al pasar isSaving a false (1, test-author; decisión de excepción pendiente del orquestador)"
+    },
+    {
+      "at": "2026-10-28T17:44:04.218Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Excepciones aceptadas por el orquestador en el red check de T-046..T-049: (1) FoodSearchPanel F2 409/400/500/200 no llaman a onCustomFoodDeleted, (2) CustomFoodEditForm F4 Intro sin cambios y con isSaving no muestran el texto, (3) CustomFoodEditForm F3 foco al pasar isSaving a false. Son guardas negativas o de regresión que protegen contra una sobreimplementación y no pueden estar en rojo; el comportamiento nuevo lo cubren los 5 tests en rojo (404 en panel y diálogo, 3 de F4)"
+    },
+    {
+      "at": "2026-10-28T17:44:04.318Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3 (repetido): verifier red con las excepciones anotadas"
+    },
+    {
+      "at": "2026-10-28T17:45:16.462Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red PASS iteración 4 (T-046..T-049): 5 de 12 tests nuevos en rojo legítimo (404 en FoodSearchPanel y MealPhotoDialog, 3 de F4). Los 7 que pasan son excepciones aceptadas por el orquestador: FoodSearchPanel F2 409/400/500/200 (4), CustomFoodEditForm F4 Intro sin cambios e Intro con isSaving (2) y CustomFoodEditForm F3 foco (1)"
+    },
+    {
+      "at": "2026-10-28T17:45:27.175Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS (T-046..T-049)"
+    },
+    {
+      "at": "2026-10-28T17:45:27.283Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "15 archivo(s) de test: tests nuevos T-046..T-049 para F2-F4 tras red check PASS"
+    },
+    {
+      "at": "2026-10-28T17:45:27.425Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 5 en rojo legítimo y 7 excepciones aceptadas"
+    },
+    {
+      "at": "2026-10-28T17:45:27.772Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 2f0542f"
+    },
+    {
+      "at": "2026-10-28T17:45:27.944Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegar en implementer (T-071..T-075, F1-F4)"
+    },
+    {
+      "at": "2026-10-28T17:50:54.846Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-071..T-075 hechas"
+    },
+    {
+      "at": "2026-10-28T17:50:54.940Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F1-F4 implementados, frontend 1727 en verde, lint y tsc limpios, ratchet backend OK"
+    },
+    {
+      "at": "2026-10-28T17:50:55.045Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "F3: el foco a Nombre vive solo en CustomFoodEditForm, pero con dos efectos (wasSaving y otro por serverError o nameTakenKey) porque el test del panel exigía foco tras un fallo; F4: onKeyDown en el form con Intro mientras se comprueba, porque Guardar deshabilitado impide el submit"
+    },
+    {
+      "at": "2026-10-28T17:50:55.455Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: c20acdb"
+    },
+    {
+      "at": "2026-10-28T17:50:55.630Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegar en verifier (full), tras F1-F4"
+    },
+    {
+      "at": "2026-10-28T17:57:13.557Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: full: backend 2681 passed, ratchet backend sin violaciones nuevas; frontend 1727 passed, lint, tsc y build OK; trazabilidad 61/61 AC con test SDD en verde, 61/61 tareas [x], sin skip nuevos, tests sin cambios desde el red check"
+    },
+    {
+      "at": "2026-10-28T17:57:22.532Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS tras F1-F4"
+    },
+    {
+      "at": "2026-10-28T17:57:22.638Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS, backend 2681, frontend 1727, ratchet limpio"
+    },
+    {
+      "at": "2026-10-28T17:57:22.817Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegar en reviewer (segunda review, tras F1-F4)"
+    },
+    {
+      "at": "2026-10-28T18:00:49.164Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-28T18:00:49.259Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review 2 APPROVED: 0 bloqueantes, 0 mayores, 1 menor (R1), 1 NIT (R2)"
+    },
+    {
+      "at": "2026-10-28T18:28:23.162Z",
+      "stage": "plan",
+      "event": "rework",
+      "note": "usuario: «Vamos a corregir R1 y R2 de una vez»; R1 es del planner · review 2/5"
+    },
+    {
+      "at": "2026-10-28T18:30:55.581Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan actualizado para R1 y R2"
+    },
+    {
+      "at": "2026-10-28T18:30:55.692Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan para R1 y R2, solo frontend, sin cambios de spec"
+    },
+    {
+      "at": "2026-10-28T18:30:55.799Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "R1: un solo efecto por [serverError, nameTakenKey], se retira wasSaving y T-048 se reescribe (tests autorizados por el usuario al pedir corregir R1); R2: quitar rama inalcanzable y limpiar checkingNoticeFor en onChange"
+    },
+    {
+      "at": "2026-10-28T18:30:56.097Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 4d3de4c"
+    },
+    {
+      "at": "2026-10-28T18:30:56.285Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegar en task-breaker (R1-R2)"
+    },
+    {
+      "at": "2026-10-28T18:31:39.131Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "4 tareas nuevas: 2 test, 2 impl"
+    },
+    {
+      "at": "2026-10-28T18:31:39.223Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): T-076..T-079 para R1 y R2"
+    },
+    {
+      "at": "2026-10-28T18:31:39.526Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 9ed91d6"
+    },
+    {
+      "at": "2026-10-28T18:31:39.703Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Corrección R1-R2: sin scaffold; test-author y red check"
+    },
+    {
+      "at": "2026-10-28T18:31:39.809Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (T-076, T-077; scaffold omitido)"
+    },
+    {
+      "at": "2026-10-28T18:32:43.607Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Excepciones aceptadas por el orquestador en el red check de T-076: los casos con serverError y con nameTakenKey (foco a Nombre tras isSaving true a false) son guardas de regresión que ya pasan hoy; el comportamiento nuevo lo cubren el caso sin error de T-076 y el de T-077, en rojo"
+    },
+    {
+      "at": "2026-10-28T18:32:43.701Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red (T-076, T-077)"
+    },
+    {
+      "at": "2026-10-28T18:34:00.108Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red PASS (T-076, T-077): 2 rojos legítimos (T-076 sin error por aserción de foco; T-077 texto antiguo tras volver al mismo nombre) y 2 guardas aceptadas que pasan (T-076 con serverError y con nameTakenKey). Sin rojo ilegítimo. tests_snapshot de CustomFoodEditForm.test.tsx desactualizado por diseño"
+    },
+    {
+      "at": "2026-10-28T18:34:13.441Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS (T-076, T-077)"
+    },
+    {
+      "at": "2026-10-28T18:34:13.553Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "15 archivo(s) de test: T-076 sustituye T-048 y T-077 nuevo, tras red check PASS (R1, R2)"
+    },
+    {
+      "at": "2026-10-28T18:34:13.694Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 2 en rojo legítimo y 2 guardas aceptadas"
+    },
+    {
+      "at": "2026-10-28T18:34:14.002Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: e210876"
+    },
+    {
+      "at": "2026-10-28T18:34:14.169Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegar en implementer (T-078, T-079; R1-R2)"
+    },
+    {
+      "at": "2026-10-28T18:36:10.501Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-078, T-079 hechas"
+    },
+    {
+      "at": "2026-10-28T18:36:10.599Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): R1-R2 implementados, frontend 1730 en verde, lint y tsc limpios, ratchet backend OK"
+    },
+    {
+      "at": "2026-10-28T18:36:10.912Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: d0005f0"
+    },
+    {
+      "at": "2026-10-28T18:36:11.106Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegar en verifier (full), tras R1-R2"
+    },
+    {
+      "at": "2026-10-28T18:41:38.764Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: verify full PASS iteración 4 (R1-R2): backend pytest 2681 passed, ratchet backend sin violaciones nuevas; frontend npm test 1730 passed (primera ejecución con un timeout ajeno en accountSwitch.test.tsx, pasa aislado y en la reejecución), lint, tsc y build OK; trazabilidad 61/61 AC con test SDD en verde, 11 REQ y NFR-001 en tareas, 61/61 tareas [x], sin skip nuevos"
+    },
+    {
+      "at": "2026-10-28T18:41:55.972Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS tras R1-R2"
+    },
+    {
+      "at": "2026-10-28T18:41:56.081Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS, backend 2681, frontend 1730, ratchet limpio"
+    },
+    {
+      "at": "2026-10-28T18:41:56.271Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegar en reviewer (tercera review, tras R1-R2)"
+    },
+    {
+      "at": "2026-10-28T18:44:59.490Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-28T18:44:59.584Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review 3 APPROVED: 0 bloqueantes, 0 mayores, 0 menores, 3 NIT"
+    },
+    {
+      "at": "2026-10-28T18:48:38.821Z",
+      "stage": "plan",
+      "event": "rework",
+      "note": "usuario: «Corrige R3, R4 Y R5»; R4 y R5 son del planner, R3 del test-author · review 3/5"
+    },
+    {
+      "at": "2026-10-28T18:50:05.232Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan actualizado para R3-R5"
+    },
+    {
+      "at": "2026-10-28T18:50:05.336Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan para R3-R5, solo documentación y comentarios de tests"
+    },
+    {
+      "at": "2026-10-28T18:50:05.432Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "R4: se corrige la frase en vez de añadir test; R3: marcadores de T-049 y T-077 pasan a REQ-009 (sin AC) y REQ-010 AC-010.6 para doble envío, solo comentarios, sin red check; R5: T-048 y T-075 anotadas como sustituidas por T-076 y T-078"
+    },
+    {
+      "at": "2026-10-28T18:50:05.703Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 71d4998"
+    },
+    {
+      "at": "2026-10-28T18:50:05.884Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegar en task-breaker (R3-R5)"
+    },
+    {
+      "at": "2026-10-28T18:50:40.740Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "T-080 nueva, anotaciones de sustitución"
+    },
+    {
+      "at": "2026-10-28T18:50:40.837Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): T-080 alinea marcadores; R5 anotado"
+    },
+    {
+      "at": "2026-10-28T18:50:41.125Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 2d06efc"
+    },
+    {
+      "at": "2026-10-28T18:50:41.309Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "T-080: solo comentarios de marcador, sin red check"
+    },
+    {
+      "at": "2026-10-28T18:50:41.408Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "T-080 solo cambia comentarios de marcador SDD: no hay comportamiento nuevo, por lo que no procede red check; se renueva el snapshot y verifica el verifier en verify"
+    },
+    {
+      "at": "2026-10-28T18:51:33.020Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "T-080: solo marcadores, 38 tests en verde"
+    },
+    {
+      "at": "2026-10-28T18:51:33.117Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "15 archivo(s) de test: T-080 solo cambia comentarios de marcador SDD (R3)"
+    },
+    {
+      "at": "2026-10-28T18:51:46.040Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red restringido a T-080 (el rework de plan puso red_check a null)"
+    },
+    {
+      "at": "2026-10-28T18:53:16.686Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: red FAIL (T-080, R3): solo cambian 5 marcadores SDD en CustomFoodEditForm.test.tsx; los marcadores coinciden con plan.md sección 5; AC-009.1 y AC-010.6 siguen trazados. El archivo carga y sus 38 tests pasan, pero ningún test nuevo está en rojo: T-080 no añade comportamiento, así que el modo red no puede dar PASS. Lo decide el orquestador."
+    },
+    {
+      "at": "2026-10-28T18:59:00.287Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Excepción aprobada por el usuario (AskUserQuestion, «Aceptar excepción»): el red check de T-080 se cierra sin rojo porque solo cambia 5 comentarios de marcador SDD; el verifier comprobó 6/6 marcadores y 38 tests en verde"
+    },
+    {
+      "at": "2026-10-28T18:59:00.386Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: excepción aprobada por el usuario: T-080 solo cambia comentarios, sin test en rojo; red checks anteriores PASS"
+    },
+    {
+      "at": "2026-10-28T18:59:00.478Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "15 archivo(s) de test: renovación tras T-080 (comentarios de marcador); el hash anterior no coincidía con el archivo"
+    },
+    {
+      "at": "2026-10-28T18:59:00.763Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): T-080 solo comentarios; excepción aprobada por el usuario"
+    },
+    {
+      "at": "2026-10-28T18:59:10.725Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 0642be1"
+    },
+    {
+      "at": "2026-10-28T18:59:10.831Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "sin cambios de producción"
+    },
+    {
+      "at": "2026-10-28T18:59:10.929Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): sin cambios de producción, implementación vigente (d0005f0)"
+    },
+    {
+      "at": "2026-10-28T18:59:11.126Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegar en verifier (full), tras R3-R5"
+    },
+    {
+      "at": "2026-10-28T19:05:27.767Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: verify full iteración 5 (tras R3-R5): backend pytest 2681 passed, ratchet backend sin violaciones nuevas; frontend test 1730 passed, lint sin errores, tsc -b y build OK; trazabilidad 61/61 AC con marcador SDD en verde, REQ-001 a REQ-011 y NFR-001 en tasks.md, 66/66 tareas [x], sin skip nuevos; snapshot identical"
+    },
+    {
+      "at": "2026-10-28T19:05:42.911Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS tras R3-R5"
+    },
+    {
+      "at": "2026-10-28T19:05:43.008Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS, backend 2681, frontend 1730, 66/66 tareas, snapshot idéntico"
+    },
+    {
+      "at": "2026-10-28T19:05:43.202Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegar en reviewer (cuarta review, tras R3-R5)"
+    },
+    {
+      "at": "2026-10-28T19:07:23.905Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-28T19:07:24.018Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review 4 APPROVED: 0 bloqueantes, 0 mayores, 0 menores, 1 NIT (R6)"
+    },
+    {
+      "at": "2026-10-28T19:08:21.724Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Aprobado"
+    },
+    {
+      "at": "2026-10-28T19:08:22.060Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: aa3c3b2"
+    },
+    {
+      "at": "2026-10-28T19:08:22.252Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegar en doc-keeper"
+    },
+    {
+      "at": "2026-10-28T19:08:56.246Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "docs actualizados: README y CLAUDE.md"
+    },
+    {
+      "at": "2026-10-28T19:08:56.365Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): README y fila de CLAUDE.md, sin runbook ni .env"
+    },
+    {
+      "at": "2026-10-28T19:08:56.781Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: d4ce2db"
+    },
+    {
+      "at": "2026-10-28T19:09:03.870Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Cierre: checklist, backlog global y gate"
+    },
+    {
+      "at": "2026-10-28T19:09:12.023Z",
+      "stage": "close",
+      "event": "done",
+      "note": "checklist de hecho completa; backlog global actualizado"
+    },
+    {
+      "at": "2026-10-28T19:10:10.089Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Si"
+    },
+    {
+      "at": "2026-10-28T19:10:10.089Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
+    }
+  ]
+}

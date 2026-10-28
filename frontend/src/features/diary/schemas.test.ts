@@ -10,6 +10,7 @@ import {
   MACROS_SUM_MESSAGE,
   NAME_REQUIRED_MESSAGE,
   PER_100G_REQUIRED_MESSAGE,
+  customFoodEditSchema,
   customFoodFormSchema,
   customItemPayload,
   diaryResponseSchema,
@@ -19,6 +20,7 @@ import {
   parseDecimalText,
   gramsError,
   proposalReviewSchema,
+  type CustomFoodEditValues,
   type CustomFoodFormValues,
 } from "./schemas"
 import * as diarySchemas from "./schemas"
@@ -165,6 +167,99 @@ describe("customFoodFormSchema", () => {
   // SDD: 022 REQ-012 AC-012.4
   it("acepta una suma de macros de exactamente 100 g (33,3 + 33,3 + 33,4)", () => {
     expect(customIssues({ protein: "33,3", carbs: "33,3", fat: "33,4" })).toEqual({})
+  })
+})
+
+const VALID_EDIT: CustomFoodEditValues = {
+  name: "Gallo pinto",
+  calories: "180",
+  protein: "6",
+  carbs: "30",
+  fat: "4",
+}
+
+// Mensajes de error por campo del formulario de edición (el primero de cada campo).
+function editIssues(overrides: Partial<CustomFoodEditValues>): Record<string, string> {
+  const result = customFoodEditSchema.safeParse({ ...VALID_EDIT, ...overrides })
+  if (result.success) return {}
+  const messages: Record<string, string> = {}
+  for (const issue of result.error.issues) {
+    const field = String(issue.path[0])
+    if (!(field in messages)) messages[field] = issue.message
+  }
+  return messages
+}
+
+describe("customFoodEditSchema", () => {
+  // SDD: 029 REQ-007 AC-007.5
+  it("acepta los valores actuales de «Gallo pinto»", () => {
+    expect(customFoodEditSchema.safeParse(VALID_EDIT).success).toBe(true)
+    expect(customFoodEditSchema.safeParse({ ...VALID_EDIT, name: "" }).success).toBe(false)
+  })
+
+  // SDD: 029 REQ-007 AC-007.5
+  it.each(["", "    "])("rechaza el nombre %j con «Escribe el nombre del alimento.»", (name) => {
+    expect(editIssues({ name }).name).toBe("Escribe el nombre del alimento.")
+  })
+
+  // SDD: 029 REQ-007 AC-007.5
+  it("rechaza un nombre de más de 100 caracteres y acepta uno de 100", () => {
+    expect(editIssues({ name: "x".repeat(101) }).name).toBe(
+      "El nombre no puede superar los 100 caracteres."
+    )
+    expect(editIssues({ name: "x".repeat(100) }).name).toBeUndefined()
+    expect(editIssues({ name: "  " + "x".repeat(100) + " " }).name).toBeUndefined()
+  })
+
+  // SDD: 029 REQ-008 AC-008.5
+  it.each(["calories", "protein", "carbs", "fat"] as const)(
+    "rechaza el valor vacío de %s con el mensaje de obligatorio",
+    (field) => {
+      expect(editIssues({ [field]: "" })[field]).toBe(
+        "Indica las calorías, proteína, carbohidratos y grasa por 100 g."
+      )
+    }
+  )
+
+  // SDD: 029 REQ-007 AC-007.5
+  it("rechaza calorías fuera de 0 a 900 y acepta los límites", () => {
+    expect(editIssues({ calories: "901" }).calories).toBe(
+      "Las calorías por 100 g deben estar entre 0 y 900."
+    )
+    expect(editIssues({ calories: "-1" }).calories).toBe(
+      "Las calorías por 100 g deben estar entre 0 y 900."
+    )
+    expect(editIssues({ calories: "0" }).calories).toBeUndefined()
+    expect(editIssues({ calories: "900" }).calories).toBeUndefined()
+  })
+
+  // SDD: 029 REQ-007 AC-007.5
+  it.each(["protein", "carbs", "fat"] as const)("rechaza %s por encima de 100 g", (field) => {
+    expect(editIssues({ [field]: "101" })[field]).toBe(
+      "Los macros por 100 g deben estar entre 0 y 100 g."
+    )
+  })
+
+  // SDD: 029 REQ-007 AC-007.5
+  it("rechaza proteína 40, carbohidratos 40 y grasa 30 con el error de suma", () => {
+    expect(editIssues({ protein: "40", carbs: "40", fat: "30" }).macroSum).toBe(
+      "La proteína, los carbohidratos y la grasa no pueden sumar más de 100 g por 100 g."
+    )
+  })
+
+  // SDD: 029 REQ-007 AC-007.5
+  it("acepta una suma de macros de exactamente 100 g (33,3 + 33,3 + 33,4)", () => {
+    expect(editIssues({ protein: "33,3", carbs: "33,3", fat: "33,4" })).toEqual({})
+    expect(editIssues({ protein: "33,4", carbs: "33,3", fat: "33,4" }).macroSum).toBeDefined()
+  })
+
+  // SDD: 029 REQ-007 AC-007.5
+  it("customFoodFormSchema sigue igual: mismos mensajes y los gramos siguen siendo obligatorios", () => {
+    expect(customIssues({ name: "" }).name).toBe("Escribe el nombre del alimento.")
+    expect(customIssues({ grams: "0" }).grams).toBe(GRAMS_RANGE_MESSAGE)
+    expect(customIssues({ calories: "901" }).calories).toBe(CALORIES_RANGE_MESSAGE)
+    expect(customIssues({ protein: "50", carbs: "50", fat: "1" }).macroSum).toBe(MACROS_SUM_MESSAGE)
+    expect(customFoodFormSchema.safeParse(VALID_CUSTOM).success).toBe(true)
   })
 })
 

@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from exceptions.custom_exceptions import ResourceNotFoundError, ValidationError
+from exceptions.custom_exceptions import ConflictError, ResourceNotFoundError, ValidationError
 from services.catalog_csv_reader import read_catalog_csv
 from services.catalog_search_service import (
     SearchCandidate,
@@ -723,6 +723,296 @@ def test_delete_custom_food_that_does_not_exist_or_is_not_valid_is_not_found(foo
 
     assert message == NOT_FOUND
     assert len(env.customs.foods) == 1
+
+
+# --------------------------------------------------------------------------
+# update_custom_food (spec 029, REQ-001 a REQ-004)
+# --------------------------------------------------------------------------
+
+NAME_REQUIRED = "Escribe el nombre del alimento."
+INVALID_REQUEST = "La petición no es válida"
+NAME_TAKEN = "Ya tienes un alimento con ese nombre."
+
+
+def edit_body(name="Gallo pinto con huevo", **values):
+    """Cuerpo de edición válido; `values` sustituye a los valores por 100 g."""
+    per_100g = {"calories_kcal": 200, "protein_g": 9, "carbs_g": 28, "fat_g": 6, **values}
+    return {"name": name, "per_100g": per_100g}
+
+
+def values_of(food):
+    return (food.name, food.calories_kcal, food.protein_g, food.carbs_g, food.fat_g)
+
+
+class OrderedLockingUsers(FakeLockingUserRepository):
+    """Anota en una lista compartida el momento del bloqueo de la fila del usuario."""
+
+    def __init__(self, log):
+        super().__init__()
+        self.log = log
+
+    def get_by_id_for_update(self, user_id):
+        self.log.append("lock")
+        return super().get_by_id_for_update(user_id)
+
+
+class OrderedCustomFoods(FakeCustomFoodRepository):
+    """Anota en la lista compartida cada lectura del alimento."""
+
+    def __init__(self, log, foods):
+        super().__init__(foods)
+        self.log = log
+
+    def get_by_id_and_user(self, custom_food_id, user_id):
+        self.log.append("read")
+        return super().get_by_id_and_user(custom_food_id, user_id)
+
+
+# SDD: 029 REQ-001 AC-001.1
+def test_update_custom_food_replaces_name_and_values_and_keeps_the_id():
+    """Edita nombre (recortado) y los cuatro valores en su sitio, sin cambiar el id."""
+    own = gallo(12)
+    env = Env(customs=[own], favorites=[make_favorite(USER, custom_food_id=12)])
+
+    result = env.service.update_custom_food(USER, 12, edit_body(name="  Gallo pinto con huevo "))
+
+    assert result == LibraryFood(
+        kind="custom",
+        id=12,
+        name="Gallo pinto con huevo",
+        per_100g={"calories_kcal": 200.0, "protein_g": 9.0, "carbs_g": 28.0, "fat_g": 6.0},
+        favorite=True,
+        last_grams=None,
+    )
+    assert values_of(own) == ("Gallo pinto con huevo", 200.0, 9.0, 28.0, 6.0)
+    assert own.id == 12
+    assert env.customs.created == []
+    assert env.uow.committed is True
+
+
+# SDD: 029 REQ-001 AC-001.1
+def test_update_custom_food_updates_the_name_key_used_to_find_duplicates():
+    """Tras renombrar, la clave de nombre es la del nombre nuevo."""
+    own = gallo(12)
+    env = Env(customs=[own])
+
+    env.service.update_custom_food(USER, 12, edit_body(name="Pinto  ÁGIL"))
+
+    assert own.name_key == "pinto agil"
+
+
+# SDD: 029 REQ-001 AC-001.1
+def test_update_custom_food_accepts_the_id_as_text():
+    """El parámetro de ruta llega como texto."""
+    env = Env(customs=[gallo(12)])
+
+    result = env.service.update_custom_food(USER, "12", edit_body())
+
+    assert result.id == 12
+
+
+# SDD: 029 REQ-001 AC-001.1
+def test_update_custom_food_keeps_the_favorite_without_touching_favorites():
+    """El favorito sigue siendo el mismo: no se crea ni se borra ninguno."""
+    favorite = make_favorite(USER, custom_food_id=12)
+    env = Env(customs=[gallo(12)], favorites=[favorite])
+
+    env.service.update_custom_food(USER, 12, edit_body())
+
+    assert env.favorites.favorites == [favorite]
+    assert env.favorites.created == [] and env.favorites.deleted == []
+
+
+# SDD: 029 REQ-001 AC-001.6
+def test_update_custom_food_of_a_non_favorite_answers_favorite_false():
+    """Sin favorito: `favorite: False` y no se crea ninguno."""
+    env = Env(customs=[gallo(12)], favorites=[make_favorite(USER, custom_food_id=99)])
+
+    result = env.service.update_custom_food(USER, 12, edit_body())
+
+    assert result.favorite is False
+    assert env.favorites.created == []
+
+
+# SDD: 029 REQ-001 AC-001.3
+def test_update_custom_food_allows_changing_only_the_case_of_its_own_name():
+    """«gallo PINTO» sobre «Gallo pinto» no es un nombre repetido."""
+    own = gallo(12)
+    env = Env(customs=[own])
+
+    result = env.service.update_custom_food(
+        USER, 12, edit_body(name="gallo PINTO", calories_kcal=180, protein_g=6, carbs_g=30, fat_g=4)
+    )
+
+    assert result.name == "gallo PINTO"
+    assert own.name == "gallo PINTO"
+    assert env.uow.committed is True
+
+
+# SDD: 029 REQ-001 AC-001.4
+def test_update_custom_food_with_the_same_name_and_values_succeeds_unchanged():
+    """Mismos nombre y valores: 200 con el alimento tal cual."""
+    own = gallo(12)
+    env = Env(customs=[own])
+    before = values_of(own)
+
+    result = env.service.update_custom_food(
+        USER, 12, edit_body(name="Gallo pinto", calories_kcal=180, protein_g=6, carbs_g=30, fat_g=4)
+    )
+
+    assert values_of(own) == before
+    assert result.name == "Gallo pinto" and result.per_100g["calories_kcal"] == 180.0
+
+
+# SDD: 029 REQ-001 AC-001.5
+def test_update_custom_food_may_take_the_name_of_a_catalog_food():
+    """Los nombres del catálogo no cuentan como repetidos."""
+    own = gallo(12, name="Arroz de la casa")
+    env = Env(catalog=[RICE], customs=[own])
+
+    result = env.service.update_custom_food(USER, 12, edit_body(name="Arroz blanco cocido"))
+
+    assert result.name == "Arroz blanco cocido"
+    assert env.uow.committed is True
+
+
+# SDD: 029 REQ-001 AC-001.1
+def test_update_custom_food_locks_the_user_row_before_reading_the_food():
+    """El bloqueo de la fila del usuario (ADR-0020) va antes de leer el alimento."""
+    log = []
+    users = OrderedLockingUsers(log)
+    customs = OrderedCustomFoods(log, [gallo(12)])
+    env = Env()
+    env.users = users
+    env.customs = customs
+    service = FoodLibraryService(
+        env.catalog, customs, env.favorites, env.meals, users, env.uow
+    )
+
+    service.update_custom_food(USER, 12, edit_body())
+
+    assert log[:2] == ["lock", "read"]
+    assert users.for_update_calls == [USER]
+
+
+# SDD: 029 REQ-002 AC-002.1
+@pytest.mark.parametrize("body", ["hola", None, [], [edit_body()], 5])
+def test_update_custom_food_rejects_a_body_that_is_not_an_object(body):
+    """Texto, `None`, lista o número: 400 «La petición no es válida» y nada cambia."""
+    own = gallo(12)
+    env = Env(customs=[own])
+
+    message = expect_error(ValidationError, env.service.update_custom_food, USER, 12, body)
+
+    assert message == INVALID_REQUEST
+    assert values_of(own) == ("Gallo pinto", 180.0, 6.0, 30.0, 4.0)
+    assert env.uow.committed is False
+
+
+# SDD: 029 REQ-002 AC-002.1
+def test_update_custom_food_reports_an_invalid_field_with_the_022_message_and_changes_nothing():
+    """Un campo no válido da el mensaje de la 022 y no se modifica ni se confirma nada."""
+    own = gallo(12)
+    env = Env(customs=[own])
+
+    message = expect_error(
+        ValidationError, env.service.update_custom_food, USER, 12, edit_body(name="  ")
+    )
+
+    assert message == NAME_REQUIRED
+    assert values_of(own) == ("Gallo pinto", 180.0, 6.0, 30.0, 4.0)
+    assert env.uow.committed is False
+
+
+# SDD: 029 REQ-003 AC-003.1
+def test_update_custom_food_with_the_name_of_another_own_food_is_a_conflict():
+    """«  ARROZ con   pollo de mama » choca con «Arroz con pollo de mamá» (otra mayúscula,
+    tilde y espacios repetidos): 409, rollback y ningún alimento cambia."""
+    own = gallo(12)
+    other = gallo(13, name="Arroz con pollo de mamá", calories_kcal=150.0)
+    env = Env(customs=[own, other])
+
+    message = expect_error(
+        ConflictError,
+        env.service.update_custom_food,
+        USER,
+        12,
+        edit_body(name="  ARROZ con   pollo de mama "),
+    )
+
+    assert message == NAME_TAKEN
+    assert values_of(own) == ("Gallo pinto", 180.0, 6.0, 30.0, 4.0)
+    assert values_of(other) == ("Arroz con pollo de mamá", 150.0, 6.0, 30.0, 4.0)
+    assert env.uow.rolled_back is True
+    assert env.uow.committed is False
+
+
+# SDD: 029 REQ-003 AC-003.2
+def test_update_custom_food_may_take_a_name_that_only_another_user_has():
+    """Los nombres de otros usuarios no cuentan."""
+    own = gallo(12)
+    env = Env(customs=[own, gallo(13, user_id=OTHER, name="Arroz con pollo de mamá")])
+
+    result = env.service.update_custom_food(USER, 12, edit_body(name="Arroz con pollo de mamá"))
+
+    assert result.name == "Arroz con pollo de mamá"
+    assert env.uow.committed is True
+
+
+# SDD: 029 REQ-004 AC-004.2
+@pytest.mark.parametrize("food_id", ["abc", "0", "2147483648", "", None, 1.5, -3])
+def test_update_custom_food_with_an_invalid_id_is_not_found(food_id):
+    """Un identificador que no es un entero entre 1 y 2.147.483.647: 404 y nada cambia."""
+    own = gallo(12)
+    env = Env(customs=[own])
+
+    message = expect_error(
+        ResourceNotFoundError, env.service.update_custom_food, USER, food_id, edit_body()
+    )
+
+    assert message == NOT_FOUND
+    assert values_of(own) == ("Gallo pinto", 180.0, 6.0, 30.0, 4.0)
+    assert env.uow.committed is False
+
+
+# SDD: 029 REQ-004 AC-004.2
+def test_update_custom_food_checks_the_id_before_the_body():
+    """Con un id no válido y un cuerpo no válido, gana el 404 (orden del plan 3.3)."""
+    env = Env(customs=[gallo(12)])
+
+    message = expect_error(
+        ResourceNotFoundError, env.service.update_custom_food, USER, "abc", "hola"
+    )
+
+    assert message == NOT_FOUND
+
+
+# SDD: 029 REQ-004 AC-004.1
+def test_update_custom_food_that_does_not_exist_is_not_found():
+    """Un id válido que no existe."""
+    env = Env(customs=[gallo(12)])
+
+    message = expect_error(
+        ResourceNotFoundError, env.service.update_custom_food, USER, 99, edit_body()
+    )
+
+    assert message == NOT_FOUND
+    assert env.uow.committed is False
+
+
+# SDD: 029 REQ-004 AC-004.1
+def test_update_custom_food_of_another_user_is_not_found_and_unchanged():
+    """El alimento de B no se edita desde la cuenta de A."""
+    other = gallo(12, user_id=OTHER)
+    env = Env(customs=[other])
+
+    message = expect_error(
+        ResourceNotFoundError, env.service.update_custom_food, USER, 12, edit_body()
+    )
+
+    assert message == NOT_FOUND
+    assert values_of(other) == ("Gallo pinto", 180.0, 6.0, 30.0, 4.0)
+    assert env.uow.committed is False
 
 
 # --------------------------------------------------------------------------

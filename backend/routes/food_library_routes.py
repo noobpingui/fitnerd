@@ -76,6 +76,15 @@ def remove_favorite(kind, food_id):
     return "", 204
 
 
+@food_library_bp.route("/custom/<custom_food_id>", methods=["PATCH"])
+@require_auth
+def update_custom_food(custom_food_id):
+    food = _build_food_library_service().update_custom_food(
+        g.decoded_token["id"], custom_food_id, request.get_json(silent=True)
+    )
+    return jsonify(library_food_to_json(food)), 200
+
+
 @food_library_bp.route("/custom/<custom_food_id>", methods=["DELETE"])
 @require_auth
 def delete_custom_food(custom_food_id):

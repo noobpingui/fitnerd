@@ -13,8 +13,9 @@ import {
   getRecentFoods,
   searchFoodLibrary,
   setFoodFavorite,
+  updateCustomFood,
 } from "@/features/food-library/api"
-import type { LibraryFood } from "@/features/food-library/types"
+import type { CustomLibraryFood, LibraryFood } from "@/features/food-library/types"
 import {
   makeBananaFood,
   makeCustomLibraryFood,
@@ -28,9 +29,11 @@ vi.mock("@/features/food-library/api", () => ({
   getRecentFoods: vi.fn(),
   getFavoriteFoods: vi.fn(),
   setFoodFavorite: vi.fn(),
+  updateCustomFood: vi.fn(),
   deleteCustomFood: vi.fn(),
 }))
 
+const updateMock = vi.mocked(updateCustomFood)
 const searchMock = vi.mocked(searchFoodLibrary)
 const recentMock = vi.mocked(getRecentFoods)
 const favoritesMock = vi.mocked(getFavoriteFoods)
@@ -107,6 +110,7 @@ function resetMocks() {
   favoritesMock.mockReset()
   setFavoriteMock.mockReset()
   deleteMock.mockReset()
+  updateMock.mockReset()
   searchMock.mockResolvedValue([])
   recentMock.mockResolvedValue([])
   favoritesMock.mockResolvedValue([])
@@ -1419,5 +1423,656 @@ describe("FoodSearchPanel - accesibilidad", () => {
     renderPanel()
 
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent(INITIAL_TEXT))
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Spec 029: editar un alimento propio
+// ---------------------------------------------------------------------------
+
+const FAV_GALLO: CustomLibraryFood = { ...GALLO, favorite: true }
+const AVENA_CASERA = makeCustomLibraryFood({ id: 13, name: "Avena casera", favorite: true })
+const EDIT_LABEL = "Editar Gallo pinto"
+const FORM_NAME = "Editar «Gallo pinto»"
+const NAME_TAKEN = "Ya tienes un alimento con ese nombre."
+const SAVE_FAILED = "No se pudo guardar el alimento."
+const NOT_FOUND = "No encontramos ese alimento."
+
+// Biblioteca en memoria: favoritos y recientes por nombre, búsqueda por texto y
+// edición que cambia el alimento y lo devuelve (como el servidor).
+function libraryBackend(initial: CustomLibraryFood[]) {
+  let foods = [...initial]
+  const byName = () => [...foods].sort((a, b) => a.name.localeCompare(b.name, "es"))
+  favoritesMock.mockImplementation(async () => byName().filter((food) => food.favorite))
+  recentMock.mockImplementation(async () => foods.map((food) => makeRecentFood(food, 200)))
+  searchMock.mockImplementation(async (query) =>
+    byName().filter((food) => food.name.toLowerCase().includes(query.toLowerCase()))
+  )
+  updateMock.mockImplementation(async (id, payload) => {
+    const edited: CustomLibraryFood = {
+      ...(foods.find((food) => food.id === id) as CustomLibraryFood),
+      name: payload.name,
+      per_100g: payload.per_100g,
+    }
+    foods = foods.map((food) => (food.id === id ? edited : food))
+    return edited
+  })
+}
+
+function nameInput(scope: { getByRole: typeof screen.getByRole } = screen) {
+  return scope.getByRole("textbox", { name: "Nombre" })
+}
+
+async function changeText(user: User, field: HTMLElement, text: string) {
+  await user.clear(field)
+  await user.type(field, text)
+}
+
+function buttonLabels(row: HTMLElement): string[] {
+  return within(row)
+    .getAllByRole("button")
+    .map((button) => button.getAttribute("aria-label") ?? button.textContent ?? "")
+}
+
+describe("FoodSearchPanel - botón «Editar»", () => {
+  beforeEach(resetMocks)
+
+  // SDD: 029 REQ-006 AC-006.1
+  it("en «Favoritos» el propio lleva «Elegir», la estrella, «Editar» y «Borrar», en ese orden, y el del catálogo no tiene «Editar»", async () => {
+    favoritesMock.mockResolvedValue([{ ...BANANA, favorite: true }, FAV_GALLO])
+    renderPanel()
+    const favorites = await openList("Favoritos")
+
+    const own = within(favorites).getByText("Gallo pinto").closest("li") as HTMLElement
+    const catalog = within(favorites).getByText("Banano").closest("li") as HTMLElement
+
+    expect(buttonLabels(own)).toEqual([
+      "Elegir Gallo pinto",
+      "Quitar Gallo pinto de favoritos",
+      "Editar Gallo pinto",
+      "Borrar Gallo pinto de tus alimentos",
+    ])
+    expect(within(catalog).queryByRole("button", { name: /^Editar/ })).not.toBeInTheDocument()
+  })
+
+  // SDD: 029 REQ-006 AC-006.2
+  it("también está en «Recientes»", async () => {
+    recentMock.mockResolvedValue([makeRecentFood(GALLO, 200)])
+    renderPanel()
+    const recent = await openList("Recientes")
+
+    expect(within(recent).getByRole("button", { name: EDIT_LABEL })).toBeInTheDocument()
+  })
+
+  // SDD: 029 REQ-006 AC-006.2
+  it("también está en los resultados de buscar «gallo»", async () => {
+    const user = userEvent.setup()
+    searchMock.mockResolvedValue([GALLO])
+    renderPanel()
+
+    await typeAndEnter(user, "gallo")
+
+    const results = await screen.findByRole("list", { name: "Resultados" })
+    expect(within(results).getByRole("button", { name: EDIT_LABEL })).toBeInTheDocument()
+  })
+
+  // SDD: 029 REQ-006 AC-006.1
+  it("un resultado del catálogo no tiene «Editar»", async () => {
+    const user = userEvent.setup()
+    searchMock.mockResolvedValue([RICE, GALLO])
+    renderPanel()
+
+    await typeAndEnter(user, "ar")
+
+    const results = await screen.findByRole("list", { name: "Resultados" })
+    const catalog = within(results).getByText("Arroz blanco cocido").closest("li") as HTMLElement
+    expect(within(results).getAllByRole("button", { name: /^Editar/ })).toHaveLength(1)
+    expect(within(catalog).queryByRole("button", { name: /^Editar/ })).not.toBeInTheDocument()
+  })
+
+  // SDD: 029 REQ-006 AC-006.1
+  it("pulsar «Editar» no elige el alimento", async () => {
+    const user = userEvent.setup()
+    favoritesMock.mockResolvedValue([FAV_GALLO])
+    const { onSelect } = renderPanel()
+    const favorites = await openList("Favoritos")
+
+    await user.click(within(favorites).getByRole("button", { name: EDIT_LABEL }))
+
+    expect(onSelect).not.toHaveBeenCalled()
+  })
+})
+
+describe("FoodSearchPanel - formulario de edición en línea", () => {
+  beforeEach(resetMocks)
+
+  // SDD: 029 REQ-007 AC-007.1
+  it("«Editar Gallo pinto» abre el formulario dentro del elemento de «Favoritos», con los valores actuales, y la lista sigue visible", async () => {
+    const user = userEvent.setup()
+    favoritesMock.mockResolvedValue([FAV_GALLO])
+    renderPanel()
+    const favorites = await openList("Favoritos")
+
+    await user.click(within(favorites).getByRole("button", { name: EDIT_LABEL }))
+
+    const form = await within(favorites).findByRole("form", { name: FORM_NAME })
+    expect(form.closest("li")).toBe(within(favorites).getByText("Gallo pinto", { selector: "p" }).closest("li"))
+    expect(nameInput(within(form))).toHaveValue("Gallo pinto")
+    expect(within(form).getByRole("textbox", { name: "Calorías por 100 g (kcal)" })).toHaveValue("180")
+    expect(within(form).getByRole("textbox", { name: "Proteína por 100 g (g)" })).toHaveValue("6")
+    expect(within(form).getByRole("textbox", { name: "Carbohidratos por 100 g (g)" })).toHaveValue("30")
+    expect(within(form).getByRole("textbox", { name: "Grasa por 100 g (g)" })).toHaveValue("4")
+    expect(within(form).getByRole("button", { name: "Guardar" })).toBeInTheDocument()
+    expect(within(form).getByRole("button", { name: "Cancelar" })).toBeInTheDocument()
+    expect(screen.getByRole("list", { name: "Favoritos" })).toBeInTheDocument()
+    expect(box()).toBeInTheDocument()
+  })
+
+  // SDD: 029 REQ-007 AC-007.7
+  it("«Editar» de «Recientes» pinta el formulario en «Recientes» y no en «Favoritos»", async () => {
+    const user = userEvent.setup()
+    favoritesMock.mockResolvedValue([FAV_GALLO])
+    recentMock.mockResolvedValue([makeRecentFood(FAV_GALLO, 200)])
+    renderPanel()
+    const recent = await openList("Recientes")
+    const favorites = await openList("Favoritos")
+
+    await user.click(within(recent).getByRole("button", { name: EDIT_LABEL }))
+
+    expect(await within(recent).findByRole("form", { name: FORM_NAME })).toBeInTheDocument()
+    expect(within(favorites).queryByRole("form")).not.toBeInTheDocument()
+  })
+
+  // SDD: 029 REQ-007 AC-007.1
+  it("en los resultados de la búsqueda el formulario sale en «Resultados»", async () => {
+    const user = userEvent.setup()
+    searchMock.mockResolvedValue([GALLO])
+    renderPanel()
+    await typeAndEnter(user, "gallo")
+    const results = await screen.findByRole("list", { name: "Resultados" })
+
+    await user.click(within(results).getByRole("button", { name: EDIT_LABEL }))
+
+    expect(await within(results).findByRole("form", { name: FORM_NAME })).toBeInTheDocument()
+  })
+
+  // SDD: 029 REQ-007 AC-007.2
+  it("«Cancelar» cierra el formulario sin ninguna petición y al reabrirlo muestra los valores actuales", async () => {
+    const user = userEvent.setup()
+    favoritesMock.mockResolvedValue([FAV_GALLO])
+    renderPanel()
+    const favorites = await openList("Favoritos")
+    await user.click(within(favorites).getByRole("button", { name: EDIT_LABEL }))
+    const form = await within(favorites).findByRole("form", { name: FORM_NAME })
+    await changeText(user, nameInput(within(form)), "Otro nombre")
+
+    await user.click(within(form).getByRole("button", { name: "Cancelar" }))
+
+    await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument())
+    expect(updateMock).not.toHaveBeenCalled()
+    expect(within(favorites).getByText("Gallo pinto", { selector: "p" })).toBeInTheDocument()
+    await user.click(within(favorites).getByRole("button", { name: EDIT_LABEL }))
+    const reopened = await within(favorites).findByRole("form", { name: FORM_NAME })
+    expect(nameInput(within(reopened))).toHaveValue("Gallo pinto")
+  })
+
+  // SDD: 029 REQ-007 AC-007.6
+  it("abrir «Borrar» en otro alimento cierra el formulario sin guardar, y «Editar» cierra la confirmación sin borrar", async () => {
+    const user = userEvent.setup()
+    favoritesMock.mockResolvedValue([AVENA_CASERA, FAV_GALLO])
+    renderPanel()
+    const favorites = await openList("Favoritos")
+    await user.click(within(favorites).getByRole("button", { name: EDIT_LABEL }))
+    await within(favorites).findByRole("form", { name: FORM_NAME })
+
+    await user.click(
+      within(favorites).getByRole("button", { name: "Borrar Avena casera de tus alimentos" })
+    )
+
+    expect(
+      await within(favorites).findByRole("alertdialog", {
+        name: "¿Borrar «Avena casera» de tus alimentos?",
+      })
+    ).toBeInTheDocument()
+    expect(screen.queryByRole("form")).not.toBeInTheDocument()
+    expect(updateMock).not.toHaveBeenCalled()
+
+    await user.click(within(favorites).getByRole("button", { name: EDIT_LABEL }))
+
+    expect(await within(favorites).findByRole("form", { name: FORM_NAME })).toBeInTheDocument()
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
+    expect(deleteMock).not.toHaveBeenCalled()
+  })
+
+  // SDD: 029 REQ-007 AC-007.6
+  it("solo hay un formulario o una confirmación abiertos: editar otro alimento cierra el primero", async () => {
+    const user = userEvent.setup()
+    favoritesMock.mockResolvedValue([AVENA_CASERA, FAV_GALLO])
+    renderPanel()
+    const favorites = await openList("Favoritos")
+    await user.click(within(favorites).getByRole("button", { name: EDIT_LABEL }))
+    await within(favorites).findByRole("form", { name: FORM_NAME })
+
+    await user.click(within(favorites).getByRole("button", { name: "Editar Avena casera" }))
+
+    expect(await within(favorites).findByRole("form", { name: "Editar «Avena casera»" })).toBeInTheDocument()
+    expect(screen.getAllByRole("form")).toHaveLength(1)
+  })
+
+  // SDD: 029 REQ-007 AC-007.8
+  it("escribir en la caja de búsqueda cierra el formulario sin petición", async () => {
+    const user = userEvent.setup()
+    favoritesMock.mockResolvedValue([FAV_GALLO])
+    renderPanel()
+    const favorites = await openList("Favoritos")
+    await user.click(within(favorites).getByRole("button", { name: EDIT_LABEL }))
+    await within(favorites).findByRole("form", { name: FORM_NAME })
+
+    await user.type(box(), "a")
+
+    await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument())
+    expect(updateMock).not.toHaveBeenCalled()
+  })
+
+  // SDD: 029 REQ-007 AC-007.8
+  it("plegar «Favoritos» cierra el formulario y al desplegar de nuevo no vuelve", async () => {
+    const user = userEvent.setup()
+    favoritesMock.mockResolvedValue([FAV_GALLO])
+    renderPanel()
+    const favorites = await openList("Favoritos")
+    await user.click(within(favorites).getByRole("button", { name: EDIT_LABEL }))
+    await within(favorites).findByRole("form", { name: FORM_NAME })
+
+    await user.click(screen.getByRole("button", { name: /^Favoritos/ }))
+
+    await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument())
+    await user.click(screen.getByRole("button", { name: /^Favoritos/ }))
+    await screen.findByRole("list", { name: "Favoritos" })
+    expect(screen.queryByRole("form")).not.toBeInTheDocument()
+    expect(updateMock).not.toHaveBeenCalled()
+  })
+})
+
+describe("FoodSearchPanel - guardar la edición", () => {
+  beforeEach(resetMocks)
+
+  // Abre el formulario de «Gallo pinto» en la lista indicada, con la biblioteca simulada.
+  async function openEditor(
+    user: User,
+    list: "Favoritos" | "Recientes" = "Favoritos",
+    props: Partial<ComponentProps<typeof FoodSearchPanel>> = {},
+    foods: CustomLibraryFood[] = [FAV_GALLO]
+  ) {
+    libraryBackend(foods)
+    const rendered = renderPanel(props)
+    const section = await openList(list)
+    await user.click(within(section).getByRole("button", { name: EDIT_LABEL }))
+    const form = await within(section).findByRole("form", { name: FORM_NAME })
+    return { ...rendered, section, form }
+  }
+
+  async function fillAndEnable(user: User, form: HTMLElement) {
+    await changeText(user, nameInput(within(form)), " Gallo pinto con huevo ")
+    await changeText(
+      user,
+      within(form).getByRole("textbox", { name: "Calorías por 100 g (kcal)" }),
+      "200"
+    )
+    await waitFor(() => expect(within(form).getByRole("button", { name: "Guardar" })).toBeEnabled())
+  }
+
+  // SDD: 029 REQ-010 AC-010.1
+  // SDD: 029 REQ-010 AC-010.2
+  it("«Guardar» envía el id y el cuerpo, muestra «Guardando…» y después las listas con el nombre y los valores nuevos", async () => {
+    const user = userEvent.setup()
+    const { form, section } = await openEditor(user, "Favoritos")
+    const real = updateMock.getMockImplementation() as NonNullable<ReturnType<typeof updateMock.getMockImplementation>>
+    const pending = deferred<CustomLibraryFood>()
+    updateMock.mockImplementation((id, payload) => pending.promise.then(() => real(id, payload)))
+    await fillAndEnable(user, form)
+
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+
+    await waitFor(() => expect(updateMock).toHaveBeenCalledTimes(1))
+    expect(updateMock).toHaveBeenCalledWith(12, {
+      name: "Gallo pinto con huevo",
+      per_100g: { calories_kcal: 200, protein_g: 6, carbs_g: 30, fat_g: 4 },
+    })
+    expect(within(form).getByRole("button", { name: "Guardando…" })).toBeDisabled()
+    expect(within(form).getByRole("button", { name: "Cancelar" })).toBeDisabled()
+
+    await act(async () => {
+      pending.resolve({} as CustomLibraryFood)
+    })
+
+    await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument())
+    const row = within(section).getByText("Gallo pinto con huevo").closest("li") as HTMLElement
+    expect(row).toHaveTextContent(/200 kcal/)
+    expect(within(section).queryByText("Gallo pinto", { selector: "p" })).not.toBeInTheDocument()
+  })
+
+  // SDD: 029 REQ-010 AC-010.2
+  it("«Recientes» también muestra el nombre y los valores nuevos", async () => {
+    const user = userEvent.setup()
+    const { form } = await openEditor(user, "Favoritos")
+    const recent = await openList("Recientes")
+    await fillAndEnable(user, form)
+
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+
+    await waitFor(() => expect(within(recent).getByText("Gallo pinto con huevo")).toBeInTheDocument())
+    expect(within(recent).getByText("Gallo pinto con huevo").closest("li")).toHaveTextContent(/200 kcal/)
+    expect(within(recent).queryByText("Gallo pinto", { selector: "p" })).not.toBeInTheDocument()
+  })
+
+  // SDD: 029 REQ-010 AC-010.7
+  it("renombrar «Gallo pinto» a «Arepa» lo pone antes de «Avena casera» en «Favoritos»", async () => {
+    const user = userEvent.setup()
+    const { form, section } = await openEditor(user, "Favoritos", {}, [AVENA_CASERA, FAV_GALLO])
+    expect(
+      within(section)
+        .getAllByRole("listitem")
+        .map((item) => within(item).getByText(/Gallo pinto|Avena casera/, { selector: "p" }).textContent)
+    ).toEqual(["Avena casera", "Gallo pinto"])
+    await changeText(user, nameInput(within(form)), "Arepa")
+    await waitFor(() => expect(within(form).getByRole("button", { name: "Guardar" })).toBeEnabled())
+
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+
+    await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument())
+    const names = within(section)
+      .getAllByRole("listitem")
+      .map((item) => within(item).getByText(/Arepa|Avena casera/, { selector: "p" }).textContent)
+    expect(names).toEqual(["Arepa", "Avena casera"])
+  })
+
+  // SDD: 029 REQ-010 AC-010.1
+  it("`onCustomFoodEdited` recibe el alimento devuelto por el servidor", async () => {
+    const user = userEvent.setup()
+    const onCustomFoodEdited = vi.fn()
+    // La prop `onCustomFoodEdited` aún no existe en el tipo del panel (la añade la tarea T-069).
+    const { form } = await openEditor(
+      user,
+      "Favoritos",
+      { onCustomFoodEdited } as unknown as Partial<ComponentProps<typeof FoodSearchPanel>>
+    )
+    await fillAndEnable(user, form)
+
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+
+    await waitFor(() => expect(onCustomFoodEdited).toHaveBeenCalledTimes(1))
+    expect(onCustomFoodEdited).toHaveBeenCalledWith({
+      ...FAV_GALLO,
+      name: "Gallo pinto con huevo",
+      per_100g: { calories_kcal: 200, protein_g: 6, carbs_g: 30, fat_g: 4 },
+    })
+  })
+
+  // SDD: 029 REQ-010 AC-010.3
+  it("un 409 deja el formulario con lo escrito, avisa «Ya tienes un alimento con ese nombre.» y deshabilita «Guardar» hasta cambiar el nombre", async () => {
+    const user = userEvent.setup()
+    const { form } = await openEditor(user, "Favoritos")
+    updateMock.mockRejectedValue(new ApiError(409, NAME_TAKEN))
+    await fillAndEnable(user, form)
+
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+
+    await waitFor(() => expect(within(form).getByRole("status")).toHaveTextContent(NAME_TAKEN))
+    expect(screen.getByRole("form", { name: FORM_NAME })).toBeInTheDocument()
+    expect(nameInput(within(form))).toHaveValue(" Gallo pinto con huevo ")
+    expect(within(form).getByRole("textbox", { name: "Calorías por 100 g (kcal)" })).toHaveValue("200")
+    expect(within(form).getByRole("button", { name: "Guardar" })).toBeDisabled()
+
+    await changeText(user, nameInput(within(form)), "Gallo pinto con queso")
+
+    await waitFor(() => expect(within(form).getByRole("button", { name: "Guardar" })).toBeEnabled())
+    expect(within(form).getByRole("status")).toHaveTextContent("")
+  })
+
+  // SDD: 029 REQ-010 AC-010.4
+  it("un 404 cierra el formulario, muestra «No encontramos ese alimento.» y vuelve a pedir favoritos y recientes", async () => {
+    const user = userEvent.setup()
+    const { form, section } = await openEditor(user, "Favoritos")
+    updateMock.mockRejectedValue(new ApiError(404, "No encontramos ese alimento."))
+    await fillAndEnable(user, form)
+    const favoriteCalls = favoritesMock.mock.calls.length
+    const recentCalls = recentMock.mock.calls.length
+
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+
+    expect(await screen.findByText(NOT_FOUND)).toBeInTheDocument()
+    expect(screen.queryByRole("form")).not.toBeInTheDocument()
+    await waitFor(() => expect(favoritesMock.mock.calls.length).toBeGreaterThan(favoriteCalls))
+    await waitFor(() => expect(recentMock.mock.calls.length).toBeGreaterThan(recentCalls))
+    expect(section).toBeInTheDocument()
+  })
+
+  // SDD: 029 REQ-010 AC-010.5
+  it("un 500 muestra «No se pudo guardar el alimento.», conserva lo escrito y deja «Guardar» habilitado", async () => {
+    const user = userEvent.setup()
+    const { form } = await openEditor(user, "Favoritos")
+    updateMock.mockRejectedValue(new ApiError(500, "boom"))
+    await fillAndEnable(user, form)
+
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+
+    expect(await within(form).findByText(SAVE_FAILED)).toBeInTheDocument()
+    expect(nameInput(within(form))).toHaveValue(" Gallo pinto con huevo ")
+    expect(within(form).getByRole("button", { name: "Guardar" })).toBeEnabled()
+  })
+
+  // SDD: 029 REQ-010 AC-010.5
+  it("un error de red muestra el mismo mensaje", async () => {
+    const user = userEvent.setup()
+    const { form } = await openEditor(user, "Favoritos")
+    updateMock.mockRejectedValue(new TypeError("Failed to fetch"))
+    await fillAndEnable(user, form)
+
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+
+    expect(await within(form).findByText(SAVE_FAILED)).toBeInTheDocument()
+    expect(within(form).getByRole("button", { name: "Guardar" })).toBeEnabled()
+  })
+
+  // SDD: 029 REQ-010 AC-010.5
+  it("un 400 muestra el mensaje del servidor y conserva lo escrito", async () => {
+    const user = userEvent.setup()
+    const { form } = await openEditor(user, "Favoritos")
+    updateMock.mockRejectedValue(new ApiError(400, "Las calorías por 100 g deben estar entre 0 y 900."))
+    await fillAndEnable(user, form)
+
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+
+    expect(
+      await within(form).findByText("Las calorías por 100 g deben estar entre 0 y 900.")
+    ).toBeInTheDocument()
+    expect(nameInput(within(form))).toHaveValue(" Gallo pinto con huevo ")
+  })
+
+  // SDD: 029 REQ-010 AC-010.6
+  it("con «Guardando…» en curso, pulsar «Guardar» otra vez o Intro no envía otra petición", async () => {
+    const user = userEvent.setup()
+    const { form } = await openEditor(user, "Favoritos")
+    const pending = deferred<CustomLibraryFood>()
+    updateMock.mockReturnValue(pending.promise)
+    await fillAndEnable(user, form)
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+    await waitFor(() => expect(updateMock).toHaveBeenCalledTimes(1))
+
+    await user.click(within(form).getByRole("button", { name: "Guardando…" }))
+    await user.type(nameInput(within(form)), "{Enter}")
+
+    expect(updateMock).toHaveBeenCalledTimes(1)
+    await act(async () => {
+      pending.resolve({ ...FAV_GALLO, name: "Gallo pinto con huevo" })
+    })
+  })
+})
+
+describe("FoodSearchPanel - foco al editar", () => {
+  beforeEach(resetMocks)
+
+  // SDD: 029 NFR-001 AC-N001.1
+  it("al abrir el formulario el foco está en «Nombre»", async () => {
+    const user = userEvent.setup()
+    libraryBackend([FAV_GALLO])
+    renderPanel()
+    const favorites = await openList("Favoritos")
+
+    await user.click(within(favorites).getByRole("button", { name: EDIT_LABEL }))
+
+    const form = await within(favorites).findByRole("form", { name: FORM_NAME })
+    await waitFor(() => expect(nameInput(within(form))).toHaveFocus())
+  })
+
+  // SDD: 029 NFR-001 AC-N001.2
+  it("«Cancelar» devuelve el foco a «Editar Gallo pinto» de «Recientes»", async () => {
+    const user = userEvent.setup()
+    libraryBackend([FAV_GALLO])
+    renderPanel()
+    const recent = await openList("Recientes")
+    await user.click(within(recent).getByRole("button", { name: EDIT_LABEL }))
+    const form = await within(recent).findByRole("form", { name: FORM_NAME })
+
+    await user.click(within(form).getByRole("button", { name: "Cancelar" }))
+
+    await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument())
+    await waitFor(() =>
+      expect(within(recent).getByRole("button", { name: EDIT_LABEL })).toHaveFocus()
+    )
+  })
+
+  // SDD: 029 NFR-001 AC-N001.2
+  it("Escape devuelve el foco a «Editar Gallo pinto» de «Recientes» y conserva la caja", async () => {
+    const user = userEvent.setup()
+    libraryBackend([FAV_GALLO])
+    renderPanel()
+    const recent = await openList("Recientes")
+    await user.click(within(recent).getByRole("button", { name: EDIT_LABEL }))
+    await within(recent).findByRole("form", { name: FORM_NAME })
+
+    await user.keyboard("{Escape}")
+
+    await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument())
+    await waitFor(() =>
+      expect(within(recent).getByRole("button", { name: EDIT_LABEL })).toHaveFocus()
+    )
+    expect(updateMock).not.toHaveBeenCalled()
+  })
+
+  // SDD: 029 NFR-001 AC-N001.3
+  it("tras guardar en «Favoritos» el foco está en «Editar Gallo pinto con huevo» de «Favoritos»", async () => {
+    const user = userEvent.setup()
+    libraryBackend([FAV_GALLO])
+    renderPanel()
+    const favorites = await openList("Favoritos")
+    await user.click(within(favorites).getByRole("button", { name: EDIT_LABEL }))
+    const form = await within(favorites).findByRole("form", { name: FORM_NAME })
+    await changeText(user, nameInput(within(form)), "Gallo pinto con huevo")
+    await waitFor(() => expect(within(form).getByRole("button", { name: "Guardar" })).toBeEnabled())
+
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole("list", { name: "Favoritos" })).getByRole("button", {
+          name: "Editar Gallo pinto con huevo",
+        })
+      ).toHaveFocus()
+    )
+  })
+
+  // SDD: 029 NFR-001 AC-N001.4
+  it("si el alimento ya no sale en «Resultados» tras guardar, el foco pasa a la caja «Buscar alimento»", async () => {
+    const user = userEvent.setup()
+    libraryBackend([GALLO])
+    renderPanel()
+    await typeAndEnter(user, "gallo")
+    const results = await screen.findByRole("list", { name: "Resultados" })
+    await user.click(within(results).getByRole("button", { name: EDIT_LABEL }))
+    const form = await within(results).findByRole("form", { name: FORM_NAME })
+    await changeText(user, nameInput(within(form)), "Pinto")
+    await waitFor(() => expect(within(form).getByRole("button", { name: "Guardar" })).toBeEnabled())
+
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+
+    await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument())
+    await waitFor(() => expect(box()).toHaveFocus())
+    expect(box()).toHaveValue("gallo")
+  })
+
+  // SDD: 029 NFR-001 AC-N001.1
+  it("tras un fallo al guardar el foco vuelve al campo «Nombre», no al cuerpo de la página", async () => {
+    const user = userEvent.setup()
+    libraryBackend([FAV_GALLO])
+    renderPanel()
+    const favorites = await openList("Favoritos")
+    await user.click(within(favorites).getByRole("button", { name: EDIT_LABEL }))
+    const form = await within(favorites).findByRole("form", { name: FORM_NAME })
+    await changeText(user, nameInput(within(form)), "Gallo pinto con huevo")
+    await waitFor(() => expect(within(form).getByRole("button", { name: "Guardar" })).toBeEnabled())
+    updateMock.mockRejectedValue(new ApiError(500, "boom"))
+
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+
+    expect(await within(form).findByText(SAVE_FAILED)).toBeInTheDocument()
+    await waitFor(() => expect(nameInput(within(form))).toHaveFocus())
+  })
+})
+
+describe("FoodSearchPanel - aviso al borrar un propio que ya no existe al editar (F2)", () => {
+  beforeEach(resetMocks)
+
+  async function editAndSave(onCustomFoodDeleted: () => void, onCustomFoodEdited = vi.fn()) {
+    const user = userEvent.setup()
+    libraryBackend([FAV_GALLO])
+    renderPanel({ onCustomFoodDeleted, onCustomFoodEdited })
+    const section = await openList("Favoritos")
+    await user.click(within(section).getByRole("button", { name: EDIT_LABEL }))
+    const form = await within(section).findByRole("form", { name: FORM_NAME })
+    await changeText(user, nameInput(within(form)), "Gallo pinto con huevo")
+    await waitFor(() => expect(within(form).getByRole("button", { name: "Guardar" })).toBeEnabled())
+    return { user, form, onCustomFoodEdited }
+  }
+
+  // SDD: 029 REQ-010 AC-010.4
+  it("un 404 al editar llama una vez a `onCustomFoodDeleted` con el id 12", async () => {
+    const onCustomFoodDeleted = vi.fn()
+    const { user, form } = await editAndSave(onCustomFoodDeleted)
+    updateMock.mockRejectedValue(new ApiError(404, NOT_FOUND))
+
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+
+    await waitFor(() => expect(onCustomFoodDeleted).toHaveBeenCalledTimes(1))
+    expect(onCustomFoodDeleted).toHaveBeenCalledWith(12)
+  })
+
+  // SDD: 029 REQ-010 AC-010.4
+  it.each([
+    ["409", new ApiError(409, NAME_TAKEN)],
+    ["400", new ApiError(400, "Las calorías por 100 g deben estar entre 0 y 900.")],
+    ["500", new ApiError(500, "boom")],
+  ])("un %s al editar no llama a `onCustomFoodDeleted`", async (_label, error) => {
+    const onCustomFoodDeleted = vi.fn()
+    const { user, form } = await editAndSave(onCustomFoodDeleted)
+    updateMock.mockRejectedValue(error)
+
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+
+    await waitFor(() => expect(updateMock).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(within(form).getByRole("button", { name: "Guardar" })).toBeInTheDocument())
+    expect(onCustomFoodDeleted).not.toHaveBeenCalled()
+  })
+
+  // SDD: 029 REQ-010 AC-010.4
+  it("un 200 solo llama a `onCustomFoodEdited`, no a `onCustomFoodDeleted`", async () => {
+    const onCustomFoodDeleted = vi.fn()
+    const { user, form, onCustomFoodEdited } = await editAndSave(onCustomFoodDeleted)
+
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+
+    await waitFor(() => expect(onCustomFoodEdited).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument())
+    expect(onCustomFoodDeleted).not.toHaveBeenCalled()
   })
 })

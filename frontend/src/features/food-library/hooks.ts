@@ -6,14 +6,22 @@ import {
   type UseQueryResult,
 } from "@tanstack/react-query"
 import { ApiError } from "@/lib/apiClient"
+import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import {
   deleteCustomFood,
   getFavoriteFoods,
   getRecentFoods,
   searchFoodLibrary,
   setFoodFavorite,
+  updateCustomFood,
 } from "./api"
-import type { LibraryFood, RecentFood } from "./types"
+import { customFoodNameKey } from "./names"
+import type {
+  CustomFoodUpdatePayload,
+  CustomLibraryFood,
+  LibraryFood,
+  RecentFood,
+} from "./types"
 
 export const foodLibraryKeys = {
   all: ["food-library"] as const,
@@ -66,6 +74,52 @@ export function useSetFoodFavorite(): UseMutationResult<
     mutationFn: ({ food, favorite }) => setFoodFavorite(food, favorite),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: foodLibraryKeys.all }),
   })
+}
+
+export type UpdateCustomFoodVariables = { id: number; payload: CustomFoodUpdatePayload }
+
+export function useUpdateCustomFood(): UseMutationResult<
+  CustomLibraryFood,
+  Error,
+  UpdateCustomFoodVariables
+> {
+  const queryClient = useQueryClient()
+  return useMutation<CustomLibraryFood, Error, UpdateCustomFoodVariables>({
+    mutationFn: ({ id, payload }) => updateCustomFood(id, payload),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: foodLibraryKeys.all }),
+    onError: (error) => {
+      if (error instanceof ApiError && error.status === 404) {
+        void queryClient.invalidateQueries({ queryKey: foodLibraryKeys.all })
+      }
+    },
+  })
+}
+
+export type CustomFoodNameCheck = { checking: boolean; taken: boolean }
+
+// Ayuda para el formulario: el servidor siempre decide con el 409.
+export function useCustomFoodNameCheck(
+  food: CustomLibraryFood,
+  name: string,
+  delayMs: number
+): CustomFoodNameCheck {
+  const trimmed = name.trim()
+  const key = customFoodNameKey(trimmed)
+  const checkable =
+    key !== customFoodNameKey(food.name) && trimmed.length >= 2 && trimmed.length <= 100
+  const [debounced] = useDebouncedValue(checkable ? trimmed : "", delayMs)
+  const query = checkable && debounced === trimmed ? trimmed : null
+  const search = useFoodLibrarySearch(query)
+
+  const checking = checkable && (debounced !== trimmed || (query !== null && search.isPending))
+  const taken =
+    checkable &&
+    search.isSuccess &&
+    search.data.some(
+      (result) =>
+        result.kind === "custom" && result.id !== food.id && customFoodNameKey(result.name) === key
+    )
+  return { checking, taken }
 }
 
 // Un 404 cuenta como éxito: el alimento ya no existe, que es lo que se pedía.
