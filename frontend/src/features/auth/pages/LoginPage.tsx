@@ -16,7 +16,7 @@ export function LoginPage() {
           <img src={logo} alt="" className="h-[70px] w-[70px] object-contain" />
         </div>
       }
-      description="Entrena de forma segura e inteligente"
+      description="Tu nutrición, con datos y sin mitos"
     >
       <LoginForm />
     </AuthLayout>

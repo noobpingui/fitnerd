@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
-import { Sparkles } from "lucide-react"
+import { Camera, Sparkles, UtensilsCrossed } from "lucide-react"
 
 const rotatingWords = [
   "con criterio",
@@ -9,6 +9,8 @@ const rotatingWords = [
 ]
 
 const features = [
+  { icon: UtensilsCrossed, label: "Diario de comidas" },
+  { icon: Camera, label: "Análisis de fotos" },
   { icon: Sparkles, label: "AI Coach online" },
 ]
 
@@ -32,7 +34,7 @@ export function AuthHero() {
         transition={{ duration: 0.3 }}
         className="text-2xl font-bold sm:text-3xl"
       >
-        Entrena{" "}
+        Come{" "}
         <AnimatePresence mode="wait">
           <motion.span
             key={rotatingWords[wordIndex]}
@@ -53,8 +55,8 @@ export function AuthHero() {
         transition={{ duration: 0.3, delay: 0.1 }}
         className="max-w-sm text-sm text-white"
       >
-        Resuelve tus dudas con un coach de IA online entrenado con información basada en ciencia - no más respuestas
-        genéricas o mitos de influencers fitness
+        Registra tus comidas, sigue tu progreso y resuelve tus dudas con un coach de IA basado en información real - no
+        más respuestas genéricas ni mitos de internet
       </motion.p>
 
       <div className="flex flex-wrap justify-center gap-2">
