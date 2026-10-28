@@ -1,20 +1,41 @@
 import type { CustomFoodUpdatePayload, CustomLibraryFood } from "@/features/food-library/types"
-import type { CustomFoodEditValues } from "./schemas"
+import { gramsText } from "./format"
+import { parseDecimalText, parseSignedDecimalText, type CustomFoodEditValues } from "./schemas"
 
 // Valores del formulario a partir del alimento (números con coma decimal, como gramsText).
-export function customFoodEditDefaults(_food: CustomLibraryFood): CustomFoodEditValues {
-  throw new Error("not implemented")
+export function customFoodEditDefaults(food: CustomLibraryFood): CustomFoodEditValues {
+  return {
+    name: food.name,
+    calories: gramsText(food.per_100g.calories_kcal),
+    protein: gramsText(food.per_100g.protein_g),
+    carbs: gramsText(food.per_100g.carbs_g),
+    fat: gramsText(food.per_100g.fat_g),
+  }
 }
 
 // Cuerpo del PATCH: nombre sin los espacios de los extremos y los cuatro números (solo con valores válidos).
-export function customFoodEditPayload(_values: CustomFoodEditValues): CustomFoodUpdatePayload {
-  throw new Error("not implemented")
+export function customFoodEditPayload(values: CustomFoodEditValues): CustomFoodUpdatePayload {
+  return {
+    name: values.name.trim(),
+    per_100g: {
+      calories_kcal: parseSignedDecimalText(values.calories) as number,
+      protein_g: parseSignedDecimalText(values.protein) as number,
+      carbs_g: parseSignedDecimalText(values.carbs) as number,
+      fat_g: parseSignedDecimalText(values.fat) as number,
+    },
+  }
 }
 
 // REQ-008: true si el nombre recortado es idéntico y los cuatro campos son el mismo número; un campo no válido es un cambio.
 export function isCustomFoodEditUnchanged(
-  _values: CustomFoodEditValues,
-  _food: CustomLibraryFood
+  values: CustomFoodEditValues,
+  food: CustomLibraryFood
 ): boolean {
-  throw new Error("not implemented")
+  if (values.name.trim() !== food.name) return false
+  return (
+    parseDecimalText(values.calories) === food.per_100g.calories_kcal &&
+    parseDecimalText(values.protein) === food.per_100g.protein_g &&
+    parseDecimalText(values.carbs) === food.per_100g.carbs_g &&
+    parseDecimalText(values.fat) === food.per_100g.fat_g
+  )
 }

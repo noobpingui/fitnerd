@@ -265,20 +265,19 @@ class CustomFoodFields:
     per_100g: dict[str, float]
 
 
-def parse_custom_food_fields(_item: dict) -> CustomFoodFields:
-    raise NotImplementedError("not implemented")
-
-
-def _parse_custom_item(item: dict, grams: Decimal) -> CustomItemInput:
+def parse_custom_food_fields(item: dict) -> CustomFoodFields:
     name = item.get("name")
     cleaned = name.strip() if isinstance(name, str) else ""
     if cleaned == "":
         raise ValidationError(NAME_REQUIRED_MESSAGE)
     if len(cleaned) > MAX_NAME_CHARS:
         raise ValidationError(NAME_TOO_LONG_MESSAGE)
-    return CustomItemInput(
-        name=cleaned, grams=grams, per_100g=_parse_per_100g(item.get("per_100g"))
-    )
+    return CustomFoodFields(name=cleaned, per_100g=_parse_per_100g(item.get("per_100g")))
+
+
+def _parse_custom_item(item: dict, grams: Decimal) -> CustomItemInput:
+    fields = parse_custom_food_fields(item)
+    return CustomItemInput(name=fields.name, grams=grams, per_100g=fields.per_100g)
 
 
 def _parse_catalog_item(item: dict, grams: Decimal) -> CatalogItemInput:

@@ -10,6 +10,7 @@ MAX_FAVORITES = 100
 MAX_RECENT_FOODS = 10
 CUSTOM_FOODS_LIMIT_MESSAGE = "Ya tienes 500 alimentos propios. Borra alguno para crear otro."
 FAVORITES_LIMIT_MESSAGE = "Ya tienes 100 favoritos. Quita alguno para añadir otro."
+CUSTOM_FOOD_NAME_TAKEN_MESSAGE = "Ya tienes un alimento con ese nombre."
 LIBRARY_KINDS: tuple[str, ...] = ("catalog", "custom")
 
 

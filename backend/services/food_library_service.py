@@ -1,5 +1,6 @@
-from exceptions.custom_exceptions import ResourceNotFoundError, ValidationError
+from exceptions.custom_exceptions import ConflictError, ResourceNotFoundError, ValidationError
 from models import FoodFavorite
+from services.auth_input_rules import require_json_object
 from services.catalog_rules import fold, is_catalog_id
 from services.catalog_search_service import (
     MAX_RESULTS,
@@ -8,15 +9,17 @@ from services.catalog_search_service import (
     rank_candidates,
 )
 from services.food_library_rules import (
+    CUSTOM_FOOD_NAME_TAKEN_MESSAGE,
     FAVORITES_LIMIT_MESSAGE,
     LIBRARY_KINDS,
     MAX_FAVORITES,
     MAX_RECENT_FOODS,
     LibraryFood,
+    custom_food_name_key,
     parse_custom_food_id,
 )
 from services.food_search_service import normalize_query
-from services.meal_rules import FOOD_NOT_FOUND_MESSAGE, NUTRIENT_KEYS
+from services.meal_rules import FOOD_NOT_FOUND_MESSAGE, NUTRIENT_KEYS, parse_custom_food_fields
 from services.profile_service import USER_NOT_FOUND_MESSAGE
 
 
@@ -49,8 +52,34 @@ class FoodLibraryService:
         self.user_repository = user_repository
         self.unit_of_work = unit_of_work
 
-    def update_custom_food(self, _user_id, _custom_food_id, _data):
-        raise NotImplementedError("not implemented")
+    def update_custom_food(self, user_id, custom_food_id: object, data: object) -> LibraryFood:
+        parsed = parse_custom_food_id(custom_food_id)
+        if parsed is None:
+            raise ResourceNotFoundError(FOOD_NOT_FOUND_MESSAGE)
+        body = require_json_object(data)
+        fields = parse_custom_food_fields(body)
+        try:
+            self._lock_user(user_id)
+            food = self.custom_food_repository.get_by_id_and_user(parsed, user_id)
+            if food is None:
+                raise ResourceNotFoundError(FOOD_NOT_FOUND_MESSAGE)
+            key = custom_food_name_key(fields.name)
+            for other in self.custom_food_repository.get_by_name_keys(user_id, [key]):
+                if other.id != food.id:
+                    raise ConflictError(CUSTOM_FOOD_NAME_TAKEN_MESSAGE)
+            food.name = fields.name
+            food.name_key = key
+            for nutrient in NUTRIENT_KEYS:
+                setattr(food, nutrient, float(fields.per_100g[nutrient]))
+            favorite = (
+                self.favorite_repository.get_for_food(user_id, custom_food_id=food.id)
+                is not None
+            )
+            self.unit_of_work.commit()
+            return _library_food("custom", food, favorite)
+        except Exception:
+            self.unit_of_work.rollback()
+            raise
 
     def search(
         self, user_id, raw_query: str | None, stats: TypoSearchStats | None = None

@@ -1,5 +1,5 @@
 import { apiFetch } from "@/lib/apiClient"
-import { libraryResultsSchema, recentResultsSchema } from "./schemas"
+import { customLibraryFoodSchema, libraryResultsSchema, recentResultsSchema } from "./schemas"
 import type { CustomFoodUpdatePayload, CustomLibraryFood, LibraryFood, RecentFood } from "./types"
 
 const BASE = "/api/food-library"
@@ -31,10 +31,14 @@ export async function setFoodFavorite(
 
 // PATCH /api/food-library/custom/{id}; valida la respuesta con customLibraryFoodSchema.
 export async function updateCustomFood(
-  _customFoodId: number,
-  _payload: CustomFoodUpdatePayload
+  customFoodId: number,
+  payload: CustomFoodUpdatePayload
 ): Promise<CustomLibraryFood> {
-  throw new Error("not implemented")
+  const data = await apiFetch<unknown>(`${BASE}/custom/${customFoodId}`, {
+    method: "PATCH",
+    body: payload,
+  })
+  return customLibraryFoodSchema.parse(data)
 }
 
 export async function deleteCustomFood(customFoodId: number): Promise<void> {

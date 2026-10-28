@@ -31,7 +31,7 @@ export function parseDecimalText(text: string): number | null {
 }
 
 // Como parseDecimalText pero admite signo, para dar el mensaje de rango en negativos.
-function parseSignedDecimalText(text: string): number | null {
+export function parseSignedDecimalText(text: string): number | null {
   const trimmed = text.trim()
   if (trimmed.startsWith("-")) {
     const value = parseDecimalText(trimmed.slice(1))
@@ -69,14 +69,62 @@ export type CustomFoodEditValues = {
   fat: string
 }
 
-// Esqueleto: sin reglas todavía.
-export const customFoodEditSchema = z.object({
-  name: z.string(),
-  calories: z.string(),
-  protein: z.string(),
-  carbs: z.string(),
-  fat: z.string(),
-})
+type CustomFoodIssueValues = {
+  name: string
+  grams?: string
+  calories: string
+  protein: string
+  carbs: string
+  fat: string
+}
+
+// Reglas compartidas por el formulario de la 022 (con gramos) y el de edición de la 029 (sin gramos).
+function addCustomFoodIssues(values: CustomFoodIssueValues, ctx: z.RefinementCtx) {
+  const issue = (path: string, message: string) =>
+    ctx.addIssue({ code: "custom", path: [path], message })
+
+  const name = values.name.trim()
+  if (name === "") issue("name", NAME_REQUIRED_MESSAGE)
+  else if (name.length > CUSTOM_NAME_MAX_LENGTH) issue("name", NAME_TOO_LONG_MESSAGE)
+
+  if (values.grams !== undefined) {
+    const gramsMessage = gramsError(values.grams)
+    if (gramsMessage) issue("grams", gramsMessage)
+  }
+
+  const calories = parseSignedDecimalText(values.calories)
+  if (calories === null) issue("calories", PER_100G_REQUIRED_MESSAGE)
+  else if (calories < 0 || calories > 900) issue("calories", CALORIES_RANGE_MESSAGE)
+
+  const macros: number[] = []
+  let macrosValid = true
+  for (const field of ["protein", "carbs", "fat"] as const) {
+    const value = parseSignedDecimalText(values[field])
+    if (value === null) {
+      issue(field, PER_100G_REQUIRED_MESSAGE)
+      macrosValid = false
+    } else if (value < 0 || value > 100) {
+      issue(field, MACROS_RANGE_MESSAGE)
+      macrosValid = false
+    } else {
+      macros.push(value)
+    }
+  }
+  if (macrosValid) {
+    const sum = Math.round(macros.reduce((a, b) => a + b, 0) * 1e6) / 1e6
+    if (sum > 100) issue("macroSum", MACROS_SUM_MESSAGE)
+  }
+}
+
+export const customFoodEditSchema = z
+  .object({
+    name: z.string(),
+    calories: z.string(),
+    protein: z.string(),
+    carbs: z.string(),
+    fat: z.string(),
+  })
+  .superRefine(addCustomFoodIssues)
 
 export const customFoodFormSchema = z
   .object({
@@ -87,40 +135,7 @@ export const customFoodFormSchema = z
     carbs: z.string(),
     fat: z.string(),
   })
-  .superRefine((values, ctx) => {
-    const issue = (path: string, message: string) =>
-      ctx.addIssue({ code: "custom", path: [path], message })
-
-    const name = values.name.trim()
-    if (name === "") issue("name", NAME_REQUIRED_MESSAGE)
-    else if (name.length > CUSTOM_NAME_MAX_LENGTH) issue("name", NAME_TOO_LONG_MESSAGE)
-
-    const gramsMessage = gramsError(values.grams)
-    if (gramsMessage) issue("grams", gramsMessage)
-
-    const calories = parseSignedDecimalText(values.calories)
-    if (calories === null) issue("calories", PER_100G_REQUIRED_MESSAGE)
-    else if (calories < 0 || calories > 900) issue("calories", CALORIES_RANGE_MESSAGE)
-
-    const macros: number[] = []
-    let macrosValid = true
-    for (const field of ["protein", "carbs", "fat"] as const) {
-      const value = parseSignedDecimalText(values[field])
-      if (value === null) {
-        issue(field, PER_100G_REQUIRED_MESSAGE)
-        macrosValid = false
-      } else if (value < 0 || value > 100) {
-        issue(field, MACROS_RANGE_MESSAGE)
-        macrosValid = false
-      } else {
-        macros.push(value)
-      }
-    }
-    if (macrosValid) {
-      const sum = Math.round(macros.reduce((a, b) => a + b, 0) * 1e6) / 1e6
-      if (sum > 100) issue("macroSum", MACROS_SUM_MESSAGE)
-    }
-  })
+  .superRefine(addCustomFoodIssues)
 
 export function customItemPayload(values: CustomFoodFormValues): CustomItemPayload {
   return {

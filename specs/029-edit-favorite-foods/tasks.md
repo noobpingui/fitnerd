@@ -60,24 +60,24 @@ Reglas:
 ## Fase B — Implementación (implementer)
 
 ### Backend
-- [ ] T-050 [REQ-002, AC-002.2, AC-002.3, AC-002.4, AC-002.5, AC-002.6, AC-002.7] (impl) Implementar `parse_custom_food_fields` extrayendo las reglas de `_parse_custom_item`, que pasa a usarla sin cambiar orden ni mensajes — `backend/services/meal_rules.py`
-- [ ] T-051 [REQ-003, AC-003.1] (impl) Añadir `CUSTOM_FOOD_NAME_TAKEN_MESSAGE` — `backend/services/food_library_rules.py`
-- [ ] T-052 [REQ-001, REQ-002, REQ-003, REQ-004, AC-001.1, AC-001.3, AC-001.4, AC-001.5, AC-001.6, AC-002.1, AC-003.1, AC-003.2, AC-004.1, AC-004.2] (impl) Implementar `FoodLibraryService.update_custom_food` según el plan 3.3 (id, cuerpo, campos, bloqueo, 404, 409, asignación, favorito, commit/rollback) — `backend/services/food_library_service.py`
-- [ ] T-053 [REQ-001, REQ-004, AC-001.1, AC-001.2, AC-003.3, AC-004.3, AC-004.4] (impl) Añadir `PATCH /custom/<custom_food_id>` con `@require_auth`, parámetro de texto y `get_json(silent=True)` — `backend/routes/food_library_routes.py`
-- [ ] T-054 [REQ-005, AC-005.1, AC-005.2, AC-005.3, AC-005.4, AC-003.4] (impl) Comprobar que REQ-005 se cumple sin código nuevo; si algún test de T-027 o T-028 falla, corregir solo la causa en el servicio — `backend/services/meal_service.py`
+- [x] T-050 [REQ-002, AC-002.2, AC-002.3, AC-002.4, AC-002.5, AC-002.6, AC-002.7] (impl) Implementar `parse_custom_food_fields` extrayendo las reglas de `_parse_custom_item`, que pasa a usarla sin cambiar orden ni mensajes — `backend/services/meal_rules.py`
+- [x] T-051 [REQ-003, AC-003.1] (impl) Añadir `CUSTOM_FOOD_NAME_TAKEN_MESSAGE` — `backend/services/food_library_rules.py`
+- [x] T-052 [REQ-001, REQ-002, REQ-003, REQ-004, AC-001.1, AC-001.3, AC-001.4, AC-001.5, AC-001.6, AC-002.1, AC-003.1, AC-003.2, AC-004.1, AC-004.2] (impl) Implementar `FoodLibraryService.update_custom_food` según el plan 3.3 (id, cuerpo, campos, bloqueo, 404, 409, asignación, favorito, commit/rollback) — `backend/services/food_library_service.py`
+- [x] T-053 [REQ-001, REQ-004, AC-001.1, AC-001.2, AC-003.3, AC-004.3, AC-004.4] (impl) Añadir `PATCH /custom/<custom_food_id>` con `@require_auth`, parámetro de texto y `get_json(silent=True)` — `backend/routes/food_library_routes.py`
+- [x] T-054 [REQ-005, AC-005.1, AC-005.2, AC-005.3, AC-005.4, AC-003.4] (impl) Comprobar que REQ-005 se cumple sin código nuevo; si algún test de T-027 o T-028 falla, corregir solo la causa en el servicio — `backend/services/meal_service.py`
 
 ### Frontend
-- [ ] T-060 [REQ-009] (impl) Implementar `customFoodNameKey` (NFKD, sin marcas, minúsculas, espacios colapsados) — `frontend/src/features/food-library/names.ts`
-- [ ] T-061 [REQ-010, AC-010.1] (impl) Implementar `updateCustomFood` con `apiFetch` y validación con `customLibraryFoodSchema` — `frontend/src/features/food-library/api.ts`
-- [ ] T-062 [REQ-009, REQ-010, AC-009.1, AC-009.2, AC-009.3, AC-009.4, AC-009.5, AC-010.2, AC-010.4] (impl) Implementar `useUpdateCustomFood` y `useCustomFoodNameCheck` según el plan 3.3 — `frontend/src/features/food-library/hooks.ts`
-- [ ] T-063 [REQ-007, REQ-008, AC-007.5, AC-008.5] (impl) Extraer `addCustomFoodIssues` compartida e implementar `customFoodEditSchema` con los mensajes de la 022 — `frontend/src/features/diary/schemas.ts`
-- [ ] T-064 [REQ-008, REQ-010, AC-008.1, AC-008.2, AC-008.3, AC-008.4, AC-008.5, AC-010.1] (impl) Implementar `customFoodEditDefaults`, `customFoodEditPayload` e `isCustomFoodEditUnchanged` — `frontend/src/features/diary/customFoodEdit.ts`
-- [ ] T-065 [REQ-010, AC-010.3, AC-010.4, AC-010.5] (impl) Añadir los tres mensajes e implementar `updateCustomFoodErrorView` — `frontend/src/features/diary/errors.ts`
-- [ ] T-066 [REQ-011, AC-011.1, AC-011.3] (impl) Implementar `applyCustomFoodEdit` — `frontend/src/features/diary/proposal.ts`
-- [ ] T-067 [REQ-007, REQ-008, REQ-009, NFR-001, AC-007.1, AC-007.5, AC-008.1, AC-009.1, AC-010.3, AC-010.6, AC-N001.1, AC-N001.5] (impl) Implementar `CustomFoodEditForm` (react-hook-form, `useWatch`, foco en «Nombre», aviso con `role="status"` y `aria-describedby`, `useEscapeCapture`) — `frontend/src/features/diary/components/CustomFoodEditForm.tsx`
-- [ ] T-068 [REQ-006, AC-006.1, AC-006.2] (impl) Añadir el botón «Editar» (prop `onEdit`, `data-edit-food-id`) entre la estrella y «Borrar», solo en los propios — `frontend/src/features/diary/components/LibraryFoodList.tsx`
-- [ ] T-069 [REQ-007, REQ-010, NFR-001, AC-007.1, AC-007.2, AC-007.3, AC-007.4, AC-007.6, AC-007.7, AC-007.8, AC-010.1, AC-010.2, AC-010.3, AC-010.4, AC-010.5, AC-010.7, AC-N001.2, AC-N001.3, AC-N001.4] (impl) Generalizar la confirmación en línea a `InlineTarget` (delete o edit), `startEdit`, `cancelEdit`, `saveEdit`, foco tras cada resultado, aviso de 404 y `onCustomFoodEdited` — `frontend/src/features/diary/components/FoodSearchPanel.tsx`
-- [ ] T-070 [REQ-011, AC-006.3, AC-011.1, AC-011.2, AC-011.3] (impl) Pasar `onCustomFoodEdited={applyEdited}` al panel de la vista de búsqueda y actualizar las filas con `applyCustomFoodEdit` — `frontend/src/features/diary/components/PhotoReview.tsx`
+- [x] T-060 [REQ-009] (impl) Implementar `customFoodNameKey` (NFKD, sin marcas, minúsculas, espacios colapsados) — `frontend/src/features/food-library/names.ts`
+- [x] T-061 [REQ-010, AC-010.1] (impl) Implementar `updateCustomFood` con `apiFetch` y validación con `customLibraryFoodSchema` — `frontend/src/features/food-library/api.ts`
+- [x] T-062 [REQ-009, REQ-010, AC-009.1, AC-009.2, AC-009.3, AC-009.4, AC-009.5, AC-010.2, AC-010.4] (impl) Implementar `useUpdateCustomFood` y `useCustomFoodNameCheck` según el plan 3.3 — `frontend/src/features/food-library/hooks.ts`
+- [x] T-063 [REQ-007, REQ-008, AC-007.5, AC-008.5] (impl) Extraer `addCustomFoodIssues` compartida e implementar `customFoodEditSchema` con los mensajes de la 022 — `frontend/src/features/diary/schemas.ts`
+- [x] T-064 [REQ-008, REQ-010, AC-008.1, AC-008.2, AC-008.3, AC-008.4, AC-008.5, AC-010.1] (impl) Implementar `customFoodEditDefaults`, `customFoodEditPayload` e `isCustomFoodEditUnchanged` — `frontend/src/features/diary/customFoodEdit.ts`
+- [x] T-065 [REQ-010, AC-010.3, AC-010.4, AC-010.5] (impl) Añadir los tres mensajes e implementar `updateCustomFoodErrorView` — `frontend/src/features/diary/errors.ts`
+- [x] T-066 [REQ-011, AC-011.1, AC-011.3] (impl) Implementar `applyCustomFoodEdit` — `frontend/src/features/diary/proposal.ts`
+- [x] T-067 [REQ-007, REQ-008, REQ-009, NFR-001, AC-007.1, AC-007.5, AC-008.1, AC-009.1, AC-010.3, AC-010.6, AC-N001.1, AC-N001.5] (impl) Implementar `CustomFoodEditForm` (react-hook-form, `useWatch`, foco en «Nombre», aviso con `role="status"` y `aria-describedby`, `useEscapeCapture`) — `frontend/src/features/diary/components/CustomFoodEditForm.tsx`
+- [x] T-068 [REQ-006, AC-006.1, AC-006.2] (impl) Añadir el botón «Editar» (prop `onEdit`, `data-edit-food-id`) entre la estrella y «Borrar», solo en los propios — `frontend/src/features/diary/components/LibraryFoodList.tsx`
+- [x] T-069 [REQ-007, REQ-010, NFR-001, AC-007.1, AC-007.2, AC-007.3, AC-007.4, AC-007.6, AC-007.7, AC-007.8, AC-010.1, AC-010.2, AC-010.3, AC-010.4, AC-010.5, AC-010.7, AC-N001.2, AC-N001.3, AC-N001.4] (impl) Generalizar la confirmación en línea a `InlineTarget` (delete o edit), `startEdit`, `cancelEdit`, `saveEdit`, foco tras cada resultado, aviso de 404 y `onCustomFoodEdited` — `frontend/src/features/diary/components/FoodSearchPanel.tsx`
+- [x] T-070 [REQ-011, AC-006.3, AC-011.1, AC-011.2, AC-011.3] (impl) Pasar `onCustomFoodEdited={applyEdited}` al panel de la vista de búsqueda y actualizar las filas con `applyCustomFoodEdit` — `frontend/src/features/diary/components/PhotoReview.tsx`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

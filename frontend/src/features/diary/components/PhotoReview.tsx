@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
 import {
+  applyCustomFoodEdit,
   customEntry,
   formatProposalTotal,
   isSavable,
@@ -14,6 +15,7 @@ import {
   unlinkCustomFood,
   withEntryKey,
 } from "../proposal"
+import type { CustomLibraryFood } from "@/features/food-library/types"
 import { proposalReviewSchema } from "../schemas"
 import type {
   ProposalEntry,
@@ -80,6 +82,11 @@ export function PhotoReview({
     )
   }
 
+  // Un alimento propio editado en la biblioteca actualiza sus filas (misma clave y gramos).
+  function applyEdited(food: CustomLibraryFood) {
+    replace(entries.map((entry): ProposalFormEntry => applyCustomFoodEdit(entry, food) ?? entry))
+  }
+
   function backToList() {
     setView({ name: "list" })
   }
@@ -104,6 +111,7 @@ export function PhotoReview({
           backToList()
         }}
         onCustomFoodDeleted={unlinkDeleted}
+        onCustomFoodEdited={applyEdited}
         onCreateCustom={(name) =>
           setView({
             name: "custom",

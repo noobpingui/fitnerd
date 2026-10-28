@@ -98,10 +98,11 @@ export function unlinkCustomFood(entry: ProposalEntry, customFoodId: number): Pr
 // Si la entrada es ese alimento propio (custom con el mismo customFoodId), la misma entrada (misma key y gramos)
 // con el nombre y los valores por 100 g editados; si no, null.
 export function applyCustomFoodEdit(
-  _entry: ProposalFormEntry,
-  _food: CustomLibraryFood
+  entry: ProposalFormEntry,
+  food: CustomLibraryFood
 ): ProposalFormEntry | null {
-  throw new Error("not implemented")
+  if (entry.kind !== "custom" || entry.customFoodId !== food.id) return null
+  return { ...entry, name: food.name, per100g: food.per_100g }
 }
 
 export function customEntry(payload: CustomItemPayload): ProposalEntry {

@@ -25,3 +25,6 @@
 - [ ] `frontend/src/features/food-library/types.ts`: `export type RecentFood =LibraryFood & { last_grams: number }` sin espacio tras `=`. Corregir en implement.
 - [ ] `customFoodEditSchema` (`frontend/src/features/diary/schemas.ts`) es un `z.object` sin reglas. Sustituirlo por las reglas reales en T-063.
 - [ ] Incidente de proceso: el hook bloqueó escribir un script en el scratchpad (fuera de `specs/`). Usé un heredoc por stdin, que solo lee datos. Los logs de pytest y vitest sí quedaron en el scratchpad por redirección. No afecta al repositorio.
+
+## implement · implementer
+- [ ] Corregir el E501 en backend/tests/test_routes/test_food_library_routes.py:1226 (lo debe hacer el test-author o el usuario).

@@ -17,13 +17,22 @@ export function favoriteErrorMessage(error: unknown): string {
   return FAVORITE_FAILED_MESSAGE
 }
 
+export const CUSTOM_FOOD_NAME_TAKEN_MESSAGE = "Ya tienes un alimento con ese nombre."
+export const UPDATE_CUSTOM_FOOD_FAILED_MESSAGE = "No se pudo guardar el alimento."
+export const CUSTOM_FOOD_NOT_FOUND_MESSAGE = "No encontramos ese alimento."
+
 export type UpdateCustomFoodErrorView =
   | { kind: "name_taken" }
   | { kind: "not_found"; message: string }
   | { kind: "message"; message: string }
 
-export function updateCustomFoodErrorView(_error: unknown): UpdateCustomFoodErrorView {
-  throw new Error("not implemented")
+export function updateCustomFoodErrorView(error: unknown): UpdateCustomFoodErrorView {
+  if (error instanceof ApiError) {
+    if (error.status === 409) return { kind: "name_taken" }
+    if (error.status === 404) return { kind: "not_found", message: CUSTOM_FOOD_NOT_FOUND_MESSAGE }
+    if (error.status === 400) return { kind: "message", message: error.message }
+  }
+  return { kind: "message", message: UPDATE_CUSTOM_FOOD_FAILED_MESSAGE }
 }
 
 export const ANALYSIS_FAILED_MESSAGE = "No se pudo analizar la foto. Vuelve a intentarlo."

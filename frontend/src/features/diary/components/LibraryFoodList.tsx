@@ -10,6 +10,7 @@ export function LibraryFoodList({
   foods,
   onSelect,
   onToggleFavorite,
+  onEdit,
   onDelete,
   renderInline,
   disabled = false,
@@ -18,6 +19,7 @@ export function LibraryFoodList({
   foods: LibraryFood[]
   onSelect: (food: LibraryFood) => void
   onToggleFavorite: (food: LibraryFood) => void
+  onEdit: (food: CustomLibraryFood, trigger: HTMLButtonElement) => void
   onDelete: (food: CustomLibraryFood, trigger: HTMLButtonElement) => void
   renderInline?: (food: LibraryFood) => ReactNode
   disabled?: boolean
@@ -63,6 +65,19 @@ export function LibraryFoodList({
             >
               <Star aria-hidden="true" className={food.favorite ? "fill-current" : undefined} />
             </Button>
+            {food.kind === "custom" && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                aria-label={`Editar ${food.name}`}
+                data-edit-food-id={food.id}
+                disabled={disabled}
+                onClick={(event) => onEdit(food, event.currentTarget)}
+              >
+                Editar
+              </Button>
+            )}
             {food.kind === "custom" && (
               <Button
                 type="button"
