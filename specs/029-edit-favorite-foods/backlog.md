@@ -60,3 +60,10 @@
 - [x] R3 (NIT, test-author): el marcador `SDD: 029 REQ-009 AC-010.6` de T-077 (`CustomFoodEditForm.test.tsx:553`) y los de T-049 juntan REQ-009 con un AC de REQ-010; conviene usar `REQ-009 AC-009.1` o solo `REQ-009`.
 - [x] R4 (NIT, planner): según el riesgo F3/R1 de `plan.md` (sección 6), los tests de `FoodSearchPanel` cubren el caso del mismo mensaje de error dos veces seguidas, pero solo prueban un primer fallo; hay que corregir la frase o añadir un test con dos 500 seguidos.
 - [x] R5 (NIT, planner): T-048 y T-075 de `tasks.md` (líneas 63 y 97) siguen marcadas [x] y describen `wasSaving`, que ya no existe; conviene anotar que las sustituyen T-076 y T-078.
+
+## verify (iteración 5) · verifier
+- [ ] Comprobación manual en navegador real de foco y anuncio a lectores de pantalla (AC-N001.1 a AC-N001.5 y aviso role="status" de AC-009.1); los tests lo cubren solo en jsdom.
+- [ ] accountSwitch.test.tsx dio timeout bajo carga en la iteración 4 (pasó al reejecutar; no reproducido en esta ejecución). Problema ajeno a la feature: anotar en docs/backlog.md.
+
+## review (iteración 4) · reviewer
+- [ ] R6 (NIT, test-author): alinear el marcador de `frontend/src/features/diary/components/MealPhotoDialog.test.tsx:2758` (T-047), por ejemplo como `REQ-010 AC-010.4`, o separar REQ-011 en su propio marcador
