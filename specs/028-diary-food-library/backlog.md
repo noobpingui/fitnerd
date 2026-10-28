@@ -87,3 +87,18 @@
 ## implement (iteración 2) · implementer
 - [ ] Los tests de `/body-metrics` (`router.test.tsx` y `lazyRoutes.test.tsx`) rozan el timeout de 5 s cuando la suite corre completa (pasan solos, 26/26): considerar subir su timeout o precargar el chunk.
 - [ ] `features/foods/types.ts` ahora solo contiene `FoodDataType`; valorar moverlo a `diary/` en otra tarea.
+
+## verify (iteración 2) · verifier
+- [ ] Corregir la descripción de T-134 en `tasks.md`: la firma real de `useEscapeCapture` es `(onEscape, active)`.
+- [ ] Mover el tipo `FoodSearchFormValues` de `features/foods/schemas.ts` a `features/diary`, ya que lo usa el `FoodSearchPanel` compartido.
+- [ ] Revisión manual en el navegador de AC-017.7 y AC-N002.3 a AC-N002.5, además de AC-N002.2 con lector de pantalla.
+
+## review (iteración 2) · reviewer
+- [ ] F9 (implementer, MENOR): si la lista que contiene la confirmación de borrado se oculta al escribir o al cambiar la búsqueda, la confirmación sigue abierta por dentro; al volver a mostrarse, le quita el foco a la caja de búsqueda y vuelve a pintar el error de borrado (`FoodSearchPanel.tsx:90-91,143-170,348`). Arreglo propuesto: cerrarla cuando cambia el texto o cuando su lista o su alimento dejan de mostrarse.
+- [ ] F10 (implementer, NIT): `typo_tolerance` usa el literal 4 en lugar de `TYPO_MIN_FORM_LENGTH` (`catalog_search_service.py:96,140`).
+- [ ] F11 (planner, NIT): `proposalFormSchema` (key opcional) ya solo lo usan los tests (`schemas.ts:228`); se puede retirar y dejar las guardas sobre `proposalReviewSchema`.
+- [ ] Etapa docs (Art. P4): documentar el paso manual de la migración `e6a8c0d2f4b7` en `docs/deploy-runbook.md`.
+- [ ] Prueba manual pendiente de AC-N002.2 con lector de pantalla.
+
+## plan (iteración 3) · planner
+- [ ] Foco al quitar un favorito desde «Favoritos» cuando el alimento desaparece de la lista (comportamiento previo a la 028 y fuera de F9): hoy puede quedar en `body` si no hay confirmación abierta.

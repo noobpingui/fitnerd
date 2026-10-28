@@ -5,6 +5,8 @@
 - **Iteración 2 (hallazgos F1 a F8 de la review):** lo nuevo o cambiado se marca con «(iteración 2)». Resumen en la
   sección 1; el diseño, en 3.2 y 3.3; los tests que cambian y los nuevos, en la sección 5 («Iteración 2»). **No hay migración nueva**: la
   `e6a8c0d2f4b7` no cambia.
+- **Iteración 3 (hallazgos F9, F10 y F11 de la review de la iteración 2):** todo está en la sección 9, al final. Sin
+  migración, sin cambios de contrato HTTP y sin cambios en la spec.
 
 ## 1. Resumen de la solución
 - **Backend:** dos tablas nuevas, `custom_foods` (biblioteca por usuario) y `food_favorites`, y la columna
@@ -945,3 +947,211 @@ debilitan; conservan su marcador y añaden el del AC nuevo si aplica):
   (decisión 3), cota determinista F × P con memoria y contador (decisión 5), `proposalReviewSchema` y filas que
   pierden el vínculo al borrar el alimento propio (decisión 7) y confirmación de borrado en línea con Escape en
   captura sobre `window` y foco gestionado, en lugar de `ConfirmDialog`/`confirmContainer` (decisión 9, nueva).
+
+## 9. Iteración 3 (hallazgos F9, F10 y F11 de la review de la iteración 2)
+Lo de las secciones 1 a 8 sigue vigente; esta sección solo añade o sustituye lo que se indica. La spec no cambia: F9
+corrige un estado obsoleto dentro de lo que ya piden REQ-017 y NFR-002, y F10 y F11 son internos. No hay migración nueva
+ni cambios de contrato HTTP, de dependencias ni de variables.
+
+### 9.1 Impacto
+| Ámbito | Archivo | Cambio |
+|---|---|---|
+| frontend | `frontend/src/features/diary/components/FoodSearchPanel.tsx` | F9: la confirmación de borrado (y su error) se cierra si cambia el texto de la caja o si su alimento deja de mostrarse en su lista |
+| frontend | `frontend/src/features/diary/components/FoodSearchPanel.test.tsx` | F9: cinco tests nuevos (9.4) |
+| frontend | `frontend/src/features/diary/schemas.ts` | F11: se retira `proposalFormSchema`; queda `proposalReviewSchema` |
+| frontend | `frontend/src/features/diary/schemas.test.ts` | F11: los tests de `proposalFormSchema` pasan a `proposalReviewSchema` y un test nuevo (9.4) |
+| backend | `backend/services/catalog_search_service.py` | F10: `typo_tolerance` usa `TYPO_MIN_FORM_LENGTH` |
+| docs | `docs/sdd/decisions/ADR-0036-biblioteca-de-alimentos-propios.md` | Contenido de las decisiones 7 (F11) y 9 (F9); el estado y la fila del índice no cambian |
+
+Sin cambios en `LibraryFoodList.tsx`, `useEscapeCapture.ts`, `AddFoodDialog.tsx`, `MealPhotoDialog.tsx` ni
+`PhotoReview.tsx`.
+
+### 9.2 Contratos e interfaces
+- **Sin símbolos exportados nuevos**, así que no hace falta paso de esqueletos (Art. B5.6).
+- **F9:** el tipo interno de `FoodSearchPanel.tsx` gana el texto de la caja en el momento de abrir la confirmación:
+  ```ts
+  type DeleteTarget = {
+    food: CustomLibraryFood
+    list: ListLabel
+    trigger: HTMLButtonElement
+    query: string // valor de la caja (sin recortar) al pulsar «Borrar»
+  }
+  ```
+  Y dos funciones internas del componente, sin exportar: `isTargetShown(current: DeleteTarget): boolean` y
+  `dismissDelete(): void`.
+- **F10:** `TYPO_MIN_FORM_LENGTH = 4` se mueve antes de `typo_tolerance(form: str) -> int`; las firmas no cambian.
+- **F11:** `schemas.ts` deja de exportar `proposalFormSchema`. `proposalReviewSchema` conserva su firma
+  (`z.ZodType<ProposalFormValues, ProposalFormValues>`). `proposalEntryUnion` pasa a no recibir parámetros y fija
+  `key: z.string()`, porque ya solo tiene un uso. `validateProposalGrams` y `gramsError` no cambian.
+
+### 9.3 Lógica
+**F9 · `FoodSearchPanel` (REQ-017 y NFR-002):** la confirmación pertenece a la vista en la que se abrió. Si el usuario
+cambia el texto de la caja, o si su alimento deja de mostrarse en esa lista, se cierra en silencio, igual que con
+«Cancelar» pero **sin mover el foco**. Así, al volver a montarse la lista, ni reaparece la confirmación ni roba el foco
+hacia «Cancelar», y tampoco se repinta «No se pudo borrar el alimento.».
+- `startDelete(list)` guarda además `query: form.getValues("query")`.
+- `isTargetShown(current)`, calculado en el render con los mismos datos que pintan las listas:
+  - `"Resultados"`: `hasResults` y `search.data` contiene un alimento con la misma `kind` e `id`;
+  - `"Favoritos"`: `showLists` y `favoriteFoods` lo contiene;
+  - `"Recientes"`: `showLists` y `recentFoods` lo contiene.
+  TanStack Query conserva `data` mientras vuelve a pedir una consulta (por ejemplo, tras la invalidación de
+  `foodLibraryKeys.all` al marcar un favorito), así que un refetch no cierra la confirmación por sí solo.
+- `dismissDelete()`: `setConfirming(false)`, `setTarget(null)` y `deleteFood.reset()`. Solo si el foco se ha quedado en
+  el cuerpo de la página (`document.activeElement` es `null` o `document.body`, porque el elemento enfocado se
+  desmontó), `form.setFocus("query")` (NFR-002: el foco no queda en el cuerpo). En cualquier otro caso no toca el foco.
+- Un `useEffect` con dependencias `[target, typed, shown, deleteFood.isPending, deleteFood.isSuccess]`, donde
+  `shown = target !== null && isTargetShown(target)`:
+  ```ts
+  if (!target || deleteFood.isPending || deleteFood.isSuccess) return
+  if (typed !== target.query || !shown) dismissDelete()
+  ```
+  - Con el borrado en curso no se cierra nada: no hay cancelación a medias, como con Escape (sección 3.3).
+  - `isSuccess` también se excluye. Entre el éxito de la mutación y el `onSuccess` de `mutate`, el alimento ya no está
+    en las listas; si el efecto llamara antes a `deleteFood.reset()`, se perdería el `onSuccess` y con él
+    `onCustomFoodDeleted` (AC-018.7). Ese `onSuccess` ya deja `target = null`.
+  - Al abrir, `typed === target.query` y el alimento está a la vista, así que el efecto no cierra nada.
+- `confirmDelete`, `onError`: `setConfirming(false)` y, si `form.getValues("query") === current.query`,
+  `focusTrigger(current)` como hasta ahora (AC-N002.4). Si el texto cambió mientras el borrado estaba en curso, no mueve
+  el foco (el usuario está escribiendo) y vuelve a anclar la confirmación al texto actual:
+  `setTarget({ ...current, query: form.getValues("query") })`. Así el aviso «No se pudo borrar el alimento.» se ve en
+  su elemento si este sigue a la vista (AC-017.3) y, si no, el efecto lo retira.
+- `onSuccess`, `cancelDelete`, `focusTrigger`, `renderInline`, `DeleteConfirmation` y `useEscapeCapture` no cambian. El
+  listener de Escape se quita al desmontarse `DeleteConfirmation`, como ya pasaba.
+
+**F10 · `catalog_search_service.py`:** `typo_tolerance` pasa a `if len(form) < TYPO_MIN_FORM_LENGTH: return 0`, y la
+constante se declara antes de la función, junto a las demás de módulo. `typo_comparison_bound` ya la usa, así que la
+tolerancia y la cota no pueden divergir. El comportamiento no cambia.
+
+**F11 · `schemas.ts`:** se borra `proposalFormSchema` y el comentario «Como proposalFormSchema pero…» pasa a describir
+`proposalReviewSchema` por sí mismo («Esquema del formulario de la propuesta (PhotoReview): `key` obligatoria y gramos
+validados salvo en las entradas sin coincidencia.»). `PhotoReview` ya usa `proposalReviewSchema` (F6), así que no
+cambia nada en producción.
+
+### 9.4 Estrategia de pruebas
+Mismo entorno y aislamiento que en la sección 5: `vi.mock("@/features/food-library/api", …)` con las fábricas de
+`src/test/foodLibraryFixtures.ts` y promesas controladas a mano para el borrado en curso. **No hace falta ningún doble
+nuevo** ni ningún servicio nuevo en el entorno.
+
+**F9 · tests nuevos en `FoodSearchPanel.test.tsx`** (bloque `describe` de la iteración 3; rojo legítimo hoy porque la
+confirmación reaparece, el error se repinta o el foco salta). Trazan a AC existentes, ya que no piden comportamiento
+nuevo, sino que la confirmación y el foco de REQ-017 y NFR-002 sigan siendo correctos cuando cambia la vista:
+1. `// SDD: 028 REQ-017 AC-017.7 NFR-002 AC-N002.3` «si se escribe con la confirmación abierta en «Favoritos» y se
+   vuelve a vaciar la caja, «Favoritos» vuelve sin la confirmación y el foco sigue en «Buscar alimento»». Con «Gallo
+   pinto» en «Favoritos», pulsar su «Borrar», escribir «ar» en la caja (las listas se ocultan) y vaciarla. Comprueba
+   que no hay ningún `alertdialog`, que el foco está en el campo «Buscar alimento» y que `deleteCustomFood` no se llamó.
+2. `// SDD: 028 REQ-017 AC-017.7 NFR-002 AC-N002.3` «si cambia la consulta con la confirmación abierta en
+   «Resultados» y «Gallo pinto» vuelve a aparecer, sale sin la confirmación». Con «gallo» y la confirmación abierta,
+   escribir « p» y volver a «gallo» (pasado el retardo, «Gallo pinto» vuelve a «Resultados»). Mismas comprobaciones que
+   el test 1.
+3. `// SDD: 028 REQ-017 AC-017.3 AC-017.7` «el aviso «No se pudo borrar el alimento.» no reaparece tras ocultar y
+   volver a mostrar la lista». Con un borrado que falla en «Favoritos», el aviso está en su elemento (como hoy); tras
+   escribir «ar» y vaciar la caja, «Gallo pinto» sigue en «Favoritos» sin el aviso.
+4. `// SDD: 028 REQ-017 AC-017.7 NFR-002 AC-N002.3` «si el alimento sale de «Favoritos» con la confirmación abierta y
+   vuelve, sale sin la confirmación». Con la confirmación abierta en «Favoritos», pulsar «Quitar Gallo pinto de
+   favoritos» (el mock de `getFavoriteFoods` pasa a devolver `[]`) y después «Añadir Gallo pinto a favoritos» desde
+   «Recientes» (vuelve a devolverlo). Comprueba que no hay ningún `alertdialog`, que el foco no está en «Cancelar» y
+   que `deleteCustomFood` no se llamó.
+5. `// SDD: 028 REQ-017 AC-017.3 NFR-002 AC-N002.4` «si se escribe mientras el borrado está en curso y falla, se ve el
+   aviso sin que el foco salga de la caja». Con la confirmación abierta en «Favoritos», confirmar con una promesa
+   pendiente, escribir «a» en la caja (las listas siguen a la vista) y rechazarla. Comprueba que el foco sigue en
+   «Buscar alimento», que el aviso está en el elemento de «Gallo pinto» de «Favoritos» y que, tras escribir «r» y
+   vaciar la caja, ya no está.
+
+Los tests de REQ-017 y NFR-002 de las iteraciones 1 y 2 (abrir, cancelar, Escape, fallo, 204 y 404, foco y
+`onCustomFoodDeleted`) **no cambian**: ninguno escribe en la caja con la confirmación abierta. Siguen probando que
+cancelar, Escape y un fallo devuelven el foco al botón (AC-N002.4), que un 204 lo lleva a la caja (AC-N002.5) y que
+`onCustomFoodDeleted` se llama tras un 204 o un 404 (AC-018.7).
+
+**F10 · sin test nuevo.** Es una refactorización sin cambio de comportamiento (Art. B5.1 pide tests del comportamiento,
+y no cambia). La cubre la suite existente:
+- `test_typo_tolerance_by_length_of_the_form`: los límites 3/4 y 7/8;
+- los tests de `TypoDistances` (forma de 3 caracteres con `startswith`) y los de AC-006.x y AC-N004.x de
+  `test_catalog_search_service.py`, `test_food_library_service.py`, `test_food_library_routes.py` y
+  `test_catalog_routes.py`.
+
+Un test que comparara la constante con `typo_tolerance` pasaría ya sin implementar y sería solo una guarda; no se
+añade.
+
+**F11 · tests que cambian en `frontend/src/features/diary/schemas.test.ts`** (Art. B5.3: se adaptan porque el símbolo
+desaparece; ninguno se debilita, todos conservan sus marcadores y sus aserciones de comportamiento):
+- Import: se quita `proposalFormSchema`.
+- `proposalIssues(entries)` pasa a validar con `proposalReviewSchema` y da a cada entrada sin clave una
+  (``key: entry.key ?? `k${index}` ``). Los mensajes esperados por posición no cambian. Lo usan los tests de 025
+  AC-007.3 (rangos y decimales, personalizado, sin coincidencia y posición) y de 028 AC-019.1.
+- `describe("proposalFormSchema")` pasa a `describe("proposalReviewSchema · validación de la propuesta")`, y cada
+  `proposalFormSchema.safeParse(...)` a `proposalReviewSchema.safeParse(...)` con entradas con `key`:
+  - «acepta los gramos %j» (025 AC-007.2): `{ ...RICE_ENTRY, key: "k1", grams }`.
+  - «conserva la `key`…» (028 AC-019.3) y «conserva el `customFoodId`…» (028 AC-018.4): ya llevan `key`, solo cambia
+    el esquema.
+  - «un personalizado creado en la propuesta, sin `customFoodId`, sigue siendo válido» (028 AC-018.2): las dos
+    entradas llevan `key` (`"k1"`). Lo que prueba es la ausencia de `customFoodId`, no la de `key`; en la propuesta
+    toda entrada tiene clave desde `withEntryKey`.
+  - «valida los gramos de una entrada con clave igual que sin ella» (028 AC-019.1) pasa a «valida los gramos de una
+    entrada con clave y la conserva». La parte «sin ella» ya no existe: una entrada sin clave se rechaza, y eso lo
+    prueba el bloque siguiente.
+- `describe("proposalReviewSchema")` (las guardas de regresión de la excepción ratificada a B5.2 y B5.6):
+  - «rechaza una entrada %s sin `key`, que el esquema de la 025 sí acepta» pasa a «rechaza una entrada %s sin `key`».
+    Se quita la línea `expect(proposalFormSchema.safeParse(...).success).toBe(true)`, que hablaba de un esquema que ya
+    no existe. Se mantienen el rechazo y la ruta `key` del error.
+  - «da con los gramos %j el mismo mensaje «%s» que proposalFormSchema» pasa a «da con los gramos %j el mensaje «%s»
+    de los gramos de la propuesta». Se mantiene `toEqual({ 0: message, 1: message })`. La comparación con
+    `proposalIssues`, que ahora sería tautológica, se cambia por una con la regla compartida:
+    `toEqual({ 0: gramsError(grams), 1: gramsError(grams) })` (`gramsError` ya se exporta de `schemas.ts`).
+  - «conserva la `key`… y el `customFoodId`…» y «no valida los gramos de una entrada sin coincidencia» no cambian.
+
+**F11 · test nuevo en `schemas.test.ts`:** `// SDD: 028 REQ-018 AC-018.7` «`schemas.ts` ya no exporta
+`proposalFormSchema`, que solo usaban los tests», con `import * as diarySchemas from "./schemas"` y
+`expect(Object.keys(diarySchemas)).not.toContain("proposalFormSchema")`. Es rojo legítimo hasta que se retire. El
+escaneo de `PhotoReview.source.test.ts` («no usa `proposalFormSchema`») sigue igual.
+
+**Excepción a B5.2 y B5.6:** F11 **no la amplía ni la invalida**. Las cuatro pruebas (nueve casos) de
+`proposalReviewSchema` siguen siendo guardas de regresión de un esquema declarativo y conservan su marcador
+`regression guard`. Solo pierden la comparación con el esquema retirado, que se sustituye por la regla `gramsError`. El
+único test nuevo de F11 tiene rojo legítimo.
+
+**Cobertura:** no hay AC nuevos. Los AC afectados (AC-017.3, AC-017.7, AC-N002.3, AC-N002.4, AC-007.2 y AC-007.3 de la
+025, AC-018.2, AC-018.4, AC-018.7, AC-019.1 y AC-019.3) siguen con al menos un test con marcador.
+
+### 9.5 Mapa de los hallazgos → diseño
+| Hallazgo | REQ / NFR | Dónde se resuelve |
+|---|---|---|
+| F9 | REQ-017 (AC-017.3, AC-017.7), NFR-002 (AC-N002.3 a AC-N002.5) | `DeleteTarget.query`, `isTargetShown`, `dismissDelete`, el efecto de cierre y `onError` de `confirmDelete` en `FoodSearchPanel.tsx` |
+| F10 | REQ-006, NFR-004 (sin cambio de comportamiento) | `typo_tolerance` con `TYPO_MIN_FORM_LENGTH` en `catalog_search_service.py` |
+| F11 | Interno (como F6); REQ-018 y REQ-019 a través de `proposalReviewSchema` | Retirada de `proposalFormSchema` en `schemas.ts` |
+
+El resto del mapa (sección 4) no cambia.
+
+### 9.6 Riesgos y mitigaciones
+| Riesgo | Probabilidad | Impacto | Mitigación |
+|---|---|---|---|
+| El efecto de cierre llama a `deleteFood.reset()` antes del `onSuccess` de `mutate` y se pierde `onCustomFoodDeleted` | Baja | Alto | El efecto no actúa con `isPending` ni con `isSuccess`; los tests existentes de `onCustomFoodDeleted` (204 y 404) y AC-018.7 en `MealPhotoDialog.test.tsx` lo vigilan |
+| Un refetch de las listas (por ejemplo, tras marcar un favorito) cierra la confirmación sin que el usuario haga nada | Baja | Bajo | TanStack Query conserva `data` durante el refetch; solo cierra si el alimento ya no está en los datos nuevos, y entonces su elemento ya no existe |
+| Cerrar la confirmación deja el foco en el cuerpo de la página | Baja | Medio | `dismissDelete` enfoca la caja si el foco quedó en `body`; en otro caso no lo toca (test 4) |
+| Al adaptar `schemas.test.ts` se debilita alguna aserción | Baja | Medio | Lista cerrada en 9.4 con el motivo de cada cambio; los mensajes esperados y los marcadores no cambian |
+
+El riesgo de la sección 6 «`proposalReviewSchema` y `proposalFormSchema` divergen» desaparece con F11.
+
+### 9.7 Cumplimiento de la constitución
+- **Art. B1.3:** la spec no cambia. F9 se ciñe a REQ-017 («dentro de su elemento de la lista en la que se pulsó»,
+  «cerrar solo la confirmación, como Cancelar») y a NFR-002 (el foco no salta ni queda en el cuerpo). No hace falta un
+  AC nuevo: los tests trazan a AC existentes.
+- **Art. B5.1, B5.2 y B5.3:** los tests nuevos de F9 y F11 se escriben antes de implementar y fallan hoy por
+  comportamiento ausente. F10 no cambia comportamiento y no añade tests. Los tests de `schemas.test.ts` que cambian lo
+  hacen porque desaparece el símbolo, sin debilitarse (lista en 9.4). La excepción ratificada a B5.2 y B5.6 no cambia.
+- **Art. B5.6:** sin esqueletos, porque no hay símbolos exportados nuevos.
+- **Art. B5.7 y P2.frontend.5:** sin errores nuevos de lint, tipos ni ratchet. El efecto nuevo declara todas sus
+  dependencias, sin `eslint-disable`.
+- **Art. P1:** marcadores `028`, nombres en español y mocks en la capa `api.ts`. No hay tests nuevos en el backend.
+- **Art. P2.frontend.3:** el panel sigue con react-hook-form (`form.getValues`, `form.setFocus`) y TanStack Query.
+- **Art. P2.backend.5:** F10 reutiliza la constante existente en lugar de duplicar el literal.
+- **Art. P4:** sin cambios de modelo ni migración.
+- **Art. P5.2:** la ADR-0036 ya está «Aceptada» (la aceptó la sesión principal). Este plan solo ajusta el texto de sus
+  decisiones 7 y 9 para que siga describiendo el código, sin tocar su estado ni la fila del índice.
+- Ningún «DEBERÍA» queda sin cumplir.
+
+### 9.8 ADRs
+- [ADR-0036](../../docs/sdd/decisions/ADR-0036-biblioteca-de-alimentos-propios.md), revisión de contenido:
+  - decisión 7: se quita la mención a `proposalFormSchema` (F11);
+  - decisión 9: la confirmación se cierra sin mover el foco si cambia el texto de la caja o si su alimento deja de
+    mostrarse en su lista (F9).
+- No hay ADR nueva: F9 aplica la decisión 9 a un caso límite y F10 y F11 son internos.

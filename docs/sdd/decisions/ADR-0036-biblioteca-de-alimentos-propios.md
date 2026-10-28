@@ -1,6 +1,6 @@
 # ADR-0036: Biblioteca de alimentos propios, favoritos y recientes del diario, con búsqueda tolerante a erratas
 
-- **Estado:** Propuesta · 2026-10-27 (plan de la feature `028-diary-food-library`; revisada en la iteración 2 del plan,
+- **Estado:** Aceptada · 2026-10-27 (plan de la feature `028-diary-food-library`; revisada en la iteración 2 del plan,
   tras los hallazgos F1 a F8 de la review)
 - **Decidido por:** el planner lo propone; lo acepta o rechaza el usuario en el gate de `review` (Art. P5.2).
 
@@ -72,8 +72,8 @@ Opciones consideradas para el vínculo con el alimento propio:
    entrada nueva o sustituida recibe una clave nueva, así un valor obsoleto de `useWatch` nunca se aplica a otra fila.
    (Iteración 2, F6.) El formulario de la propuesta valida con su propio esquema, `proposalReviewSchema`, con `key`
    obligatoria y tipado como `z.ZodType<ProposalFormValues, ProposalFormValues>`, así `zodResolver` y `useForm` encajan
-   sin forzar tipos (`as never`); `proposalFormSchema` (la 025, con `key` opcional) comparte con él las variantes y la
-   validación de gramos.
+   sin forzar tipos (`as never`). (Iteración 3, F11.) Se retira `proposalFormSchema` (la 025, con `key` opcional), que
+   ya solo usaban los tests; `proposalReviewSchema` es el único esquema de la propuesta.
    (Iteración 2, F7.) Si el usuario borra de su biblioteca, desde la búsqueda de la propuesta, un alimento propio que
    ya está en filas de esa propuesta, esas filas pierden el `customFoodId` y conservan nombre, valores, gramos y
    «Personalizado»; al guardar se envían con `name` y `per_100g` y `POST /api/meals` vuelve a crear el alimento propio.
@@ -90,6 +90,10 @@ Opciones consideradas para el vínculo con el alimento propio:
    descartar la propuesta (026), y no hace falta tocar `AddFoodDialog` ni `MealPhotoDialog`. Foco: al abrir, en
    «Cancelar»; al cancelar, con Escape o tras un borrado que falla (la confirmación se cierra y el error queda en el
    elemento), en el botón «Borrar» que la abrió; tras un borrado correcto, en la caja «Buscar alimento».
+   (Iteración 3, F9.) La confirmación pertenece a la vista en que se abrió. Si cambia el texto de la caja, o si su
+   alimento deja de mostrarse en esa lista, se cierra en silencio junto con su aviso de error, sin mover el foco (salvo
+   que este haya quedado en el cuerpo de la página, en cuyo caso va a la caja). Así, al volver a mostrarse la lista,
+   ni reaparece ni roba el foco. Con el borrado en curso no se cierra.
 
 ## Consecuencias
 - (+) Sin tablas de estado derivadas: los recientes reflejan siempre el diario, incluso al quitar, deshacer o borrar.
