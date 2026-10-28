@@ -10,7 +10,7 @@
   "branch": "feat/029-edit-favorite-foods",
   "base_branch": "main",
   "created_at": "2026-10-28T08:05:41.152Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,7 +25,10 @@
       "at": "2026-10-28T18:31:39.223Z",
       "note": "auto (gate_mode=flow): T-076..T-079 para R1 y R2"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-28T18:34:13.694Z",
+      "note": "auto (gate_mode=flow): red check PASS, 2 en rojo legítimo y 2 guardas aceptadas"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -35,7 +38,7 @@
   "commits": {
     "spec": "afaf840",
     "plan": "4d3de4c",
-    "tasks": "45309f2",
+    "tasks": "9ed91d6",
     "tests": "2f0542f",
     "implement": "c20acdb"
   },
@@ -46,8 +49,8 @@
   },
   "max_iterations": 5,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-28T18:34:00.108Z"
   },
   "verify": {
     "result": null,
@@ -58,15 +61,15 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-28T17:45:27.283Z",
-    "reason": "tests nuevos T-046..T-049 para F2-F4 tras red check PASS",
+    "at": "2026-10-28T18:34:13.553Z",
+    "reason": "T-076 sustituye T-048 y T-077 nuevo, tras red check PASS (R1, R2)",
     "sha256": {
       "backend/tests/test_routes/test_food_library_routes.py": "f89294abc2703fcdca79ec97e9159b1547efc84a365e5c299eaad08e62cfcf9b",
       "backend/tests/test_routes/test_meal_library_routes.py": "3f0481d5bb1082539df6ede530746691db17dcb5814b29308dfefb2b4421432e",
       "backend/tests/test_services/test_food_library_service.py": "5a394e683f37e699262cb486dcae3083b1f8db4fa9b196afb539582db6069ebc",
       "backend/tests/test_services/test_meal_rules.py": "ca1490dd4c15d358a9e5d8743c58d3293056e0129117a2c02f900d797e53f272",
       "frontend/src/features/diary/components/AddFoodDialog.test.tsx": "530a2692839b855f3d3edc3654d66cc5d73962ccda8d95f3e12f1fd8730ab9cc",
-      "frontend/src/features/diary/components/CustomFoodEditForm.test.tsx": "eaf1741a74ca2fafec5df22df008d06431c11719f8d197184965375907fd987b",
+      "frontend/src/features/diary/components/CustomFoodEditForm.test.tsx": "d7935c31d3542b73c373567e84f6781cf3e2fbebe2096bb064d8b07086a4df4b",
       "frontend/src/features/diary/components/FoodSearchPanel.test.tsx": "b3649ef0a28075c67bdcce5efd66f468591cba5c95ea8d67135b2a12eaa7d910",
       "frontend/src/features/diary/components/MealPhotoDialog.test.tsx": "90ad03df1efe6933ed4a8e9b4acbd6b90a33457bd5aedc787c3fc724dbe91214",
       "frontend/src/features/diary/customFoodEdit.test.ts": "1186cebb1765bf3ebe29b68e8527767b9f978a489c513d8c3a91388fcb02b597",
@@ -631,6 +634,60 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): T-076..T-079 para R1 y R2"
+    },
+    {
+      "at": "2026-10-28T18:31:39.526Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 9ed91d6"
+    },
+    {
+      "at": "2026-10-28T18:31:39.703Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Corrección R1-R2: sin scaffold; test-author y red check"
+    },
+    {
+      "at": "2026-10-28T18:31:39.809Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (T-076, T-077; scaffold omitido)"
+    },
+    {
+      "at": "2026-10-28T18:32:43.607Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Excepciones aceptadas por el orquestador en el red check de T-076: los casos con serverError y con nameTakenKey (foco a Nombre tras isSaving true a false) son guardas de regresión que ya pasan hoy; el comportamiento nuevo lo cubren el caso sin error de T-076 y el de T-077, en rojo"
+    },
+    {
+      "at": "2026-10-28T18:32:43.701Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red (T-076, T-077)"
+    },
+    {
+      "at": "2026-10-28T18:34:00.108Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red PASS (T-076, T-077): 2 rojos legítimos (T-076 sin error por aserción de foco; T-077 texto antiguo tras volver al mismo nombre) y 2 guardas aceptadas que pasan (T-076 con serverError y con nameTakenKey). Sin rojo ilegítimo. tests_snapshot de CustomFoodEditForm.test.tsx desactualizado por diseño"
+    },
+    {
+      "at": "2026-10-28T18:34:13.441Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS (T-076, T-077)"
+    },
+    {
+      "at": "2026-10-28T18:34:13.553Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "15 archivo(s) de test: T-076 sustituye T-048 y T-077 nuevo, tras red check PASS (R1, R2)"
+    },
+    {
+      "at": "2026-10-28T18:34:13.694Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 2 en rojo legítimo y 2 guardas aceptadas"
     }
   ]
 }

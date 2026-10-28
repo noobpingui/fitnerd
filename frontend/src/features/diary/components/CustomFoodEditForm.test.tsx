@@ -11,6 +11,7 @@ import { ApiError } from "@/lib/apiClient"
 import { searchFoodLibrary } from "@/features/food-library/api"
 import { makeBananaFood, makeCustomLibraryFood } from "@/test/foodLibraryFixtures"
 import { CustomFoodEditForm } from "./CustomFoodEditForm"
+import { UPDATE_CUSTOM_FOOD_FAILED_MESSAGE } from "../errors"
 
 vi.mock("@/features/food-library/api", () => ({
   searchFoodLibrary: vi.fn(),
@@ -435,32 +436,53 @@ describe("CustomFoodEditForm - nombre repetido", () => {
   })
 })
 
-describe("CustomFoodEditForm - foco al terminar un guardado fallido (F3)", () => {
-  // SDD: 029 NFR-001 AC-N001.1
-  it("con `isSaving` y el foco en otro elemento, al pasar a `isSaving: false` el foco vuelve a «Nombre»", async () => {
+describe("CustomFoodEditForm - foco al terminar un guardado fallido (F3, R1)", () => {
+  type Outcome = { serverError: string | null; nameTakenKey: string | null }
+
+  async function focusCaloriesThenFinish(after: Outcome) {
     const user = userEvent.setup()
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
     })
-    const tree = (isSaving: boolean) => (
+    const tree = (isSaving: boolean, outcome: Outcome) => (
       <QueryClientProvider client={queryClient}>
         <CustomFoodEditForm
           food={GALLO}
           isSaving={isSaving}
-          serverError={null}
-          nameTakenKey={null}
+          serverError={outcome.serverError}
+          nameTakenKey={outcome.nameTakenKey}
           onSubmit={vi.fn()}
           onCancel={vi.fn()}
         />
       </QueryClientProvider>
     )
-    const { rerender } = render(tree(true))
+    const { rerender } = render(tree(true, { serverError: null, nameTakenKey: null }))
     await user.click(caloriesField())
     expect(caloriesField()).toHaveFocus()
 
-    rerender(tree(false))
+    rerender(tree(false, after))
+  }
+
+  // SDD: 029 NFR-001 AC-N001.1
+  it("de `isSaving` a no con `serverError` el foco va a «Nombre»", async () => {
+    await focusCaloriesThenFinish({ serverError: UPDATE_CUSTOM_FOOD_FAILED_MESSAGE, nameTakenKey: null })
 
     await waitFor(() => expect(nameField()).toHaveFocus())
+  })
+
+  // SDD: 029 NFR-001 AC-N001.1
+  it("de `isSaving` a no con `nameTakenKey` (409) el foco va a «Nombre»", async () => {
+    await focusCaloriesThenFinish({ serverError: null, nameTakenKey: "gallo pinto con huevo" })
+
+    await waitFor(() => expect(nameField()).toHaveFocus())
+  })
+
+  // SDD: 029 NFR-001 AC-N001.1
+  it("de `isSaving` a no sin `serverError` ni `nameTakenKey` el foco sigue en «Calorías»", async () => {
+    await focusCaloriesThenFinish({ serverError: null, nameTakenKey: null })
+
+    await new Promise((r) => setTimeout(r, 50))
+    expect(caloriesField()).toHaveFocus()
   })
 })
 
@@ -526,6 +548,24 @@ describe("CustomFoodEditForm - Intro durante la comprobación del nombre (F4)", 
     await user.type(nameField(), " 2")
 
     expect(screen.getByRole("status")).not.toHaveTextContent(CHECKING)
+  })
+
+  // SDD: 029 REQ-009 AC-010.6
+  it("volver al mismo nombre con la comprobación en curso no muestra el texto antiguo ni envía", async () => {
+    const user = userEvent.setup()
+    pendingSearch([])
+    const { onSubmit } = renderForm()
+    await replaceText(user, nameField(), "Gallo pinto nuevo")
+    await waitFor(() => expect(searchMock).toHaveBeenCalled())
+    await user.keyboard("{Enter}")
+    expect(screen.getByRole("status")).toHaveTextContent(CHECKING)
+
+    await user.type(nameField(), " 2")
+    await user.type(nameField(), "{Backspace}{Backspace}")
+
+    expect(nameField()).toHaveValue("Gallo pinto nuevo")
+    expect(screen.getByRole("status")).not.toHaveTextContent(CHECKING)
+    expect(onSubmit).not.toHaveBeenCalled()
   })
 
   // SDD: 029 REQ-009 AC-010.6
