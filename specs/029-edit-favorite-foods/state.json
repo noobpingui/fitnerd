@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "feature": "029-edit-favorite-foods",
+  "title": "Editar alimentos propios desde «Favoritos» en el buscador de «Añadir alimento»",
+  "type": "feature",
+  "scope": [
+    "backend",
+    "frontend"
+  ],
+  "branch": "feat/029-edit-favorite-foods",
+  "base_branch": "main",
+  "created_at": "2026-10-28T08:05:41.152Z",
+  "stage": "plan",
+  "status": "in_progress",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-28T08:58:47.895Z",
+      "note": "Si"
+    },
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
+    "verify": null,
+    "review": null,
+    "docs": null,
+    "close": null
+  },
+  "commits": {},
+  "iterations": {
+    "tests": 0,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 5,
+  "red_check": {
+    "result": null,
+    "at": null
+  },
+  "verify": {
+    "result": null,
+    "at": null
+  },
+  "review": {
+    "verdict": null,
+    "at": null
+  },
+  "tests_snapshot": null,
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-28T08:05:41.152Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama feat/029-edit-favorite-foods desde main"
+    },
+    {
+      "at": "2026-10-28T08:06:06.472Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegar en spec-writer"
+    },
+    {
+      "at": "2026-10-28T08:09:46.227Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "Q1-Q7 pendientes de respuesta del usuario (alcance de Editar, nombre repetido, cambios, propuesta de foto, cancelar, fallo de comprobación)"
+    },
+    {
+      "at": "2026-10-28T08:56:26.866Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec: 11 REQ, 62 AC, 1 NFR; Q1-Q7 resueltas"
+    },
+    {
+      "at": "2026-10-28T08:58:47.895Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Si"
+    }
+  ]
+}
