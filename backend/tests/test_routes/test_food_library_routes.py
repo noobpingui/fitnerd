@@ -1222,9 +1222,10 @@ def test_editing_with_calories_out_of_range_is_400(client, app, headers, calorie
     """Calorías de -1 y de 901."""
     food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
 
-    response = patch_custom(
-        client, headers, food_id, edit_payload(calories_kcal=calories, protein_g=0, carbs_g=0, fat_g=0)
+    payload = edit_payload(
+        calories_kcal=calories, protein_g=0, carbs_g=0, fat_g=0
     )
+    response = patch_custom(client, headers, food_id, payload)
 
     assert response.status_code == 400
     assert response.get_json() == CALORIES_RANGE_MESSAGE

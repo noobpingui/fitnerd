@@ -10,7 +10,7 @@
   "branch": "feat/029-edit-favorite-foods",
   "base_branch": "main",
   "created_at": "2026-10-28T08:05:41.152Z",
-  "stage": "verify",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -26,13 +26,10 @@
       "note": "auto (gate_mode=flow): 52 tareas, 62 AC cubiertos"
     },
     "tests": {
-      "at": "2026-10-28T09:53:55.682Z",
-      "note": "auto (gate_mode=flow): red check PASS, 59 tests backend y todos los de frontend en rojo legítimo, F5 excepción"
+      "at": "2026-10-28T17:25:13.151Z",
+      "note": "auto (gate_mode=flow): corrección E501, tests pasan, sin red check"
     },
-    "implement": {
-      "at": "2026-10-28T17:18:56.812Z",
-      "note": "auto (gate_mode=flow): T-050..T-070 hechas, backend 2681 en verde, lint y tsc sin errores"
-    },
+    "implement": null,
     "verify": null,
     "review": null,
     "docs": null,
@@ -42,10 +39,11 @@
     "spec": "afaf840",
     "plan": "c9b7b82",
     "tasks": "e2a207d",
-    "tests": "f9af9cf"
+    "tests": "f9af9cf",
+    "implement": "0d45818"
   },
   "iterations": {
-    "tests": 1,
+    "tests": 2,
     "implement": 0,
     "review": 0
   },
@@ -63,10 +61,10 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-28T09:53:55.559Z",
-    "reason": "tests aprobados tras red check PASS (iteración 2)",
+    "at": "2026-10-28T17:25:13.027Z",
+    "reason": "corrección de formato E501 en test (verify FAIL), sin cambio de comportamiento",
     "sha256": {
-      "backend/tests/test_routes/test_food_library_routes.py": "9e5424880e68c0e0f29d9ac79ac9dd4b6711ff2b23732145a4db90bc6fc85917",
+      "backend/tests/test_routes/test_food_library_routes.py": "f89294abc2703fcdca79ec97e9159b1547efc84a365e5c299eaad08e62cfcf9b",
       "backend/tests/test_routes/test_meal_library_routes.py": "3f0481d5bb1082539df6ede530746691db17dcb5814b29308dfefb2b4421432e",
       "backend/tests/test_services/test_food_library_service.py": "5a394e683f37e699262cb486dcae3083b1f8db4fa9b196afb539582db6069ebc",
       "backend/tests/test_services/test_meal_rules.py": "ca1490dd4c15d358a9e5d8743c58d3293056e0129117a2c02f900d797e53f272",
@@ -294,6 +292,48 @@
       "stage": "implement",
       "event": "note",
       "note": "Foco a Nombre tras error del servidor con contador de estado y efecto en FoodSearchPanel; ratchet backend: 1 E501 nuevo en un test (no tocable por implementer)"
+    },
+    {
+      "at": "2026-10-28T17:19:00.607Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 0d45818"
+    },
+    {
+      "at": "2026-10-28T17:19:00.766Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegar en verifier (full)"
+    },
+    {
+      "at": "2026-10-28T17:24:15.769Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify FAIL: full: backend 2681 passed; frontend test 1715 passed, lint, tsc y build OK; ratchet backend FAIL: 1 E501 nuevo en test_food_library_routes.py:1226 (responsable test-author); trazabilidad 61/61 AC, 52/52 tareas [x], sin skip nuevos"
+    },
+    {
+      "at": "2026-10-28T17:24:23.458Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "verify FAIL: E501 nuevo en test_food_library_routes.py:1226 · tests 2/5"
+    },
+    {
+      "at": "2026-10-28T17:25:12.935Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "E501 corregido en test"
+    },
+    {
+      "at": "2026-10-28T17:25:13.027Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "15 archivo(s) de test: corrección de formato E501 en test (verify FAIL), sin cambio de comportamiento"
+    },
+    {
+      "at": "2026-10-28T17:25:13.151Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección E501, tests pasan, sin red check"
     }
   ]
 }

@@ -28,3 +28,7 @@
 
 ## implement · implementer
 - [ ] Corregir el E501 en backend/tests/test_routes/test_food_library_routes.py:1226 (lo debe hacer el test-author o el usuario).
+
+## verify · verifier
+- [ ] La nota de tasks en state.json dice «62 AC», pero la spec tiene 61 AC (AC-008.8 citado en REQ-005 es de la spec 028).
+- [ ] La aprobación de implement se dio con la nota «1 E501 nuevo» pendiente; la comprobación de ratchet debería exigirse antes de aprobar implement.
