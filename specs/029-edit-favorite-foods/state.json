@@ -10,7 +10,7 @@
   "branch": "feat/029-edit-favorite-foods",
   "base_branch": "main",
   "created_at": "2026-10-28T08:05:41.152Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -21,7 +21,10 @@
       "at": "2026-10-28T17:38:53.436Z",
       "note": "auto (gate_mode=flow): plan para F1-F4, solo frontend, sin cambios de spec"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-28T17:39:37.822Z",
+      "note": "auto (gate_mode=flow): T-046..T-049 test y T-071..T-075 impl para F1-F4"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -31,7 +34,7 @@
   },
   "commits": {
     "spec": "afaf840",
-    "plan": "c9b7b82",
+    "plan": "e378858",
     "tasks": "e2a207d",
     "tests": "15c54d9",
     "implement": "0d45818"
@@ -412,6 +415,30 @@
       "stage": "plan",
       "event": "note",
       "note": "F2 reutiliza onCustomFoodDeleted; F3 solo wasSaving; F4 Intro no envía y región status muestra Comprobando el nombre…; F1 solo formato"
+    },
+    {
+      "at": "2026-10-28T17:38:53.842Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: e378858"
+    },
+    {
+      "at": "2026-10-28T17:38:54.042Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegar en task-breaker (corrección F1-F4)"
+    },
+    {
+      "at": "2026-10-28T17:39:37.736Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "9 tareas nuevas: 4 test, 5 impl"
+    },
+    {
+      "at": "2026-10-28T17:39:37.822Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): T-046..T-049 test y T-071..T-075 impl para F1-F4"
     }
   ]
 }

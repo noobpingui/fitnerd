@@ -57,6 +57,12 @@ Reglas:
 - [x] T-044 [REQ-006, REQ-007, AC-006.3, AC-007.4] (test) `MealPhotoDialog`: botón «Editar» en Favoritos de «Añadir otro alimento» y Escape sin confirmación de descartar y con el texto de búsqueda — `frontend/src/features/diary/components/MealPhotoDialog.test.tsx`
 - [x] T-045 [REQ-011, AC-011.1, AC-011.2, AC-011.3] (test) `MealPhotoDialog`: fila actualizada con 250 g y 500 kcal, total, cuerpo de «Guardar en {sección}» con `custom_food_id`, y filas ajenas sin cambios — `frontend/src/features/diary/components/MealPhotoDialog.test.tsx`
 
+### Frontend · correcciones de la review (iteración 2)
+- [ ] T-046 [REQ-010, AC-010.4] (test) `FoodSearchPanel` (F2): con `onCustomFoodDeleted` espiado, editar «Gallo pinto» (id 12) y 404 llama una vez con `12`; con 409, 400, 500 y 200 no se llama (con 200 solo `onCustomFoodEdited`) — `frontend/src/features/diary/components/FoodSearchPanel.test.tsx`
+- [ ] T-047 [REQ-011, AC-010.4] (test) `MealPhotoDialog` (F2): propuesta con «Gallo pinto» (id 12, 250 g), editarlo con 404, volver a la propuesta: fila «Personalizado» con valores anteriores (450 kcal), «Guardar en {sección}» la envía con `name`, `grams` y `per_100g` sin `custom_food_id`, y las filas ajenas no cambian — `frontend/src/features/diary/components/MealPhotoDialog.test.tsx`
+- [ ] T-048 [NFR-001, AC-N001.1] (test) `CustomFoodEditForm` (F3): con `isSaving: true` y el foco en otro elemento, al pasar a `isSaving: false` el foco va a «Nombre» (único mecanismo; los tests de foco existentes de `FoodSearchPanel` siguen valiendo) — `frontend/src/features/diary/components/CustomFoodEditForm.test.tsx`
+- [ ] T-049 [REQ-009, AC-010.6] (test) `CustomFoodEditForm` (F4): Intro durante la comprobación no envía y la región `role="status"` muestra «Comprobando el nombre…»; al terminar sin coincidencias desaparece, «Guardar» se habilita y no hay envío automático; con nombre repetido muestra el aviso de REQ-009; cambiar el nombre quita el texto; Intro sin cambios o con `isSaving` no muestra el texto — `frontend/src/features/diary/components/CustomFoodEditForm.test.tsx`
+
 ## Fase B — Implementación (implementer)
 
 ### Backend
@@ -78,6 +84,13 @@ Reglas:
 - [x] T-068 [REQ-006, AC-006.1, AC-006.2] (impl) Añadir el botón «Editar» (prop `onEdit`, `data-edit-food-id`) entre la estrella y «Borrar», solo en los propios — `frontend/src/features/diary/components/LibraryFoodList.tsx`
 - [x] T-069 [REQ-007, REQ-010, NFR-001, AC-007.1, AC-007.2, AC-007.3, AC-007.4, AC-007.6, AC-007.7, AC-007.8, AC-010.1, AC-010.2, AC-010.3, AC-010.4, AC-010.5, AC-010.7, AC-N001.2, AC-N001.3, AC-N001.4] (impl) Generalizar la confirmación en línea a `InlineTarget` (delete o edit), `startEdit`, `cancelEdit`, `saveEdit`, foco tras cada resultado, aviso de 404 y `onCustomFoodEdited` — `frontend/src/features/diary/components/FoodSearchPanel.tsx`
 - [x] T-070 [REQ-011, AC-006.3, AC-011.1, AC-011.2, AC-011.3] (impl) Pasar `onCustomFoodEdited={applyEdited}` al panel de la vista de búsqueda y actualizar las filas con `applyCustomFoodEdit` — `frontend/src/features/diary/components/PhotoReview.tsx`
+
+### Frontend · correcciones de la review (iteración 2)
+- [ ] T-071 [REQ-005] (impl) F1: corregir la errata de formato `RecentFood =LibraryFood` a `RecentFood = LibraryFood`, sin cambio de tipo; lo cubren lint y `tsc` — `frontend/src/features/food-library/types.ts`
+- [ ] T-072 [REQ-010, REQ-011, AC-010.4] (impl) F2: en `saveEdit`, tras un 404 llamar a `onCustomFoodDeleted?.(id)` antes de cerrar el formulario (no con 409, 400, 500 ni 200) y actualizar el comentario de la prop — `frontend/src/features/diary/components/FoodSearchPanel.tsx`
+- [ ] T-073 [NFR-001, AC-N001.1] (impl) F3: quitar `nameFocusTick`, su estado, sus `set` en `saveEdit` y su efecto del panel; el foco a «Nombre» tras un error lo da solo el efecto `wasSaving` del formulario (si falla un test de foco existente, conservar el del panel y quitar el del formulario, nunca los dos) — `frontend/src/features/diary/components/FoodSearchPanel.tsx`
+- [ ] T-074 [REQ-009] (impl) F4: exportar `CUSTOM_FOOD_NAME_CHECKING_MESSAGE = "Comprobando el nombre…"` — `frontend/src/features/diary/customFoodEdit.ts`
+- [ ] T-075 [REQ-009, NFR-001, AC-010.6, AC-N001.1] (impl) F3 y F4: Intro con `check.checking` y sin guardado no envía y fija `checkingNoticeFor`; la región `role="status"` muestra el mensaje mientras `!showTaken && check.checking && checkingNoticeFor === name`, sin añadirlo a `aria-describedby` ni envío automático; mantener el efecto `wasSaving` — `frontend/src/features/diary/components/CustomFoodEditForm.tsx`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |
@@ -123,7 +136,7 @@ Reglas:
 | REQ-008 | AC-008.3 | T-035, T-038 | T-064 |
 | REQ-008 | AC-008.4 | T-035, T-038 | T-064 |
 | REQ-008 | AC-008.5 | T-034, T-035, T-038 | T-063, T-064 |
-| REQ-009 | AC-009.1 | T-032, T-038 | T-062, T-067 |
+| REQ-009 | AC-009.1 | T-032, T-038, T-049 | T-062, T-067, T-074, T-075 |
 | REQ-009 | AC-009.2 | T-032 | T-062 |
 | REQ-009 | AC-009.3 | T-032 | T-062 |
 | REQ-009 | AC-009.4 | T-032 | T-062 |
@@ -131,14 +144,14 @@ Reglas:
 | REQ-010 | AC-010.1 | T-031, T-041 | T-061, T-064, T-069 |
 | REQ-010 | AC-010.2 | T-033, T-041 | T-062, T-069 |
 | REQ-010 | AC-010.3 | T-036, T-038, T-041 | T-065, T-067, T-069 |
-| REQ-010 | AC-010.4 | T-033, T-036, T-041 | T-062, T-065, T-069 |
+| REQ-010 | AC-010.4 | T-033, T-036, T-041, T-046, T-047 | T-062, T-065, T-069, T-072 |
 | REQ-010 | AC-010.5 | T-036, T-041 | T-065, T-069 |
-| REQ-010 | AC-010.6 | T-038, T-041 | T-067 |
+| REQ-010 | AC-010.6 | T-038, T-041, T-049 | T-067, T-075 |
 | REQ-010 | AC-010.7 | T-041 | T-069 |
 | REQ-011 | AC-011.1 | T-037, T-045 | T-066, T-070 |
 | REQ-011 | AC-011.2 | T-045 | T-070 |
 | REQ-011 | AC-011.3 | T-037, T-045 | T-066, T-070 |
-| NFR-001 | AC-N001.1 | T-038, T-042 | T-067 |
+| NFR-001 | AC-N001.1 | T-038, T-042, T-048 | T-067, T-073, T-075 |
 | NFR-001 | AC-N001.2 | T-042 | T-069 |
 | NFR-001 | AC-N001.3 | T-042 | T-069 |
 | NFR-001 | AC-N001.4 | T-042 | T-069 |
