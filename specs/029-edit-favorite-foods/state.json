@@ -10,7 +10,7 @@
   "branch": "feat/029-edit-favorite-foods",
   "base_branch": "main",
   "created_at": "2026-10-28T08:05:41.152Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,7 +25,10 @@
       "at": "2026-10-28T09:05:52.182Z",
       "note": "auto (gate_mode=flow): 52 tareas, 62 AC cubiertos"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-28T09:53:55.682Z",
+      "note": "auto (gate_mode=flow): red check PASS, 59 tests backend y todos los de frontend en rojo legítimo, F5 excepción"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -34,17 +37,18 @@
   },
   "commits": {
     "spec": "afaf840",
-    "plan": "c9b7b82"
+    "plan": "c9b7b82",
+    "tasks": "e2a207d"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 1,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 5,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-28T09:53:39.336Z"
   },
   "verify": {
     "result": null,
@@ -54,7 +58,27 @@
     "verdict": null,
     "at": null
   },
-  "tests_snapshot": null,
+  "tests_snapshot": {
+    "at": "2026-10-28T09:53:55.559Z",
+    "reason": "tests aprobados tras red check PASS (iteración 2)",
+    "sha256": {
+      "backend/tests/test_routes/test_food_library_routes.py": "9e5424880e68c0e0f29d9ac79ac9dd4b6711ff2b23732145a4db90bc6fc85917",
+      "backend/tests/test_routes/test_meal_library_routes.py": "3f0481d5bb1082539df6ede530746691db17dcb5814b29308dfefb2b4421432e",
+      "backend/tests/test_services/test_food_library_service.py": "5a394e683f37e699262cb486dcae3083b1f8db4fa9b196afb539582db6069ebc",
+      "backend/tests/test_services/test_meal_rules.py": "ca1490dd4c15d358a9e5d8743c58d3293056e0129117a2c02f900d797e53f272",
+      "frontend/src/features/diary/components/AddFoodDialog.test.tsx": "530a2692839b855f3d3edc3654d66cc5d73962ccda8d95f3e12f1fd8730ab9cc",
+      "frontend/src/features/diary/components/CustomFoodEditForm.test.tsx": "ed98fdb1db4ff2725bb37049f0a139bdf9c40160ee6b6bbab398aeeff5acc735",
+      "frontend/src/features/diary/components/FoodSearchPanel.test.tsx": "3530fc248e33c0fd9823c6153f47aac4a1815627c04b92daa775fed93e1fdf42",
+      "frontend/src/features/diary/components/MealPhotoDialog.test.tsx": "59e3805cc0b670036a0cae3595bbb326e7bb3c5df9fee98248128c4b97304163",
+      "frontend/src/features/diary/customFoodEdit.test.ts": "1186cebb1765bf3ebe29b68e8527767b9f978a489c513d8c3a91388fcb02b597",
+      "frontend/src/features/diary/errors.test.ts": "ec9f2f13b4aaca2dee7fd45e5ea31147655594ba488359b447e703259e1f1177",
+      "frontend/src/features/diary/proposal.test.ts": "6f7f118900f6de6335e9592c73a4e4ea06df65e78a92d2cde45197e19c9a8be7",
+      "frontend/src/features/diary/schemas.test.ts": "01556b41db0974213d42c64cd64b605ab6b13f553e564d8bc3a3d1cb2c592f0d",
+      "frontend/src/features/food-library/api.test.ts": "17d65592c57e61e88f0b307d4d624e7e475e6e39778bddea672f7a781d5f6e63",
+      "frontend/src/features/food-library/hooks.test.tsx": "4280f230791418ed2405722be7dbd20cc3e272a7503128d69a057b24579d21fc",
+      "frontend/src/features/food-library/names.test.ts": "1c430466664539a843b0c5f7f4f86816c7bb280a54387c575738921d0ab1f10f"
+    }
+  },
   "bypass": false,
   "history": [
     {
@@ -140,6 +164,96 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): 52 tareas, 62 AC cubiertos"
+    },
+    {
+      "at": "2026-10-28T09:05:56.951Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: e2a207d"
+    },
+    {
+      "at": "2026-10-28T09:05:57.128Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Iniciar etapa tests"
+    },
+    {
+      "at": "2026-10-28T09:05:57.220Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (implementer)"
+    },
+    {
+      "at": "2026-10-28T09:07:20.968Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-28T09:18:01.501Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red"
+    },
+    {
+      "at": "2026-10-28T09:30:07.720Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Rojo: 239 fallos legítimos (not implemented, 405 por ruta inexistente, texto ausente). Fallan 6 tests nuevos que pasan sin implementación: backend test_editing_keeps_the_favorite_row_of_the_food; frontend api.test (rechaza una respuesta que no es un alimento propio), schemas.test (acepta los valores actuales; acepta suma 100 g; customFoodFormSchema sigue igual), FoodSearchPanel (un resultado del catálogo no tiene Editar). Responsable: test-author."
+    },
+    {
+      "at": "2026-10-28T09:30:34.039Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red FAIL: 6 tests nuevos pasan sin implementación (F1-F6) · tests 1/5"
+    },
+    {
+      "at": "2026-10-28T09:30:34.122Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "F5 (customFoodFormSchema sigue igual) es una regresión sobre código existente: se acepta como excepción, no hace falta ponerla en rojo"
+    },
+    {
+      "at": "2026-10-28T09:45:42.297Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "test-author (iteración 2) sin cambios en disco durante 14 min (último 03:31): detenido y relanzado por la revisión de atascos"
+    },
+    {
+      "at": "2026-10-28T09:46:10.649Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3 (iteración 2): verifier red"
+    },
+    {
+      "at": "2026-10-28T09:53:39.336Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red PASS: 101 fallos backend y 143 frontend legitimos (not implemented, 405, texto ausente, aserciones de valores ausentes). Unica excepcion aceptada: F5 customFoodFormSchema sigue igual (regresion sobre codigo existente)."
+    },
+    {
+      "at": "2026-10-28T09:53:55.482Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS"
+    },
+    {
+      "at": "2026-10-28T09:53:55.559Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "15 archivo(s) de test: tests aprobados tras red check PASS (iteración 2)"
+    },
+    {
+      "at": "2026-10-28T09:53:55.682Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 59 tests backend y todos los de frontend en rojo legítimo, F5 excepción"
+    },
+    {
+      "at": "2026-10-28T09:53:55.765Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Red check PASS en iteración 2; F5 aceptada como excepción de regresión; scaffold con customFoodEditSchema sin reglas (T-007)"
     }
   ]
 }

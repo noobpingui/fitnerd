@@ -13,6 +13,7 @@ import {
   getFavoriteFoods,
   getRecentFoods,
   searchFoodLibrary,
+  updateCustomFood,
 } from "@/features/food-library/api"
 import { CHICKEN, RICE, TOMATO_SAUCE, makeAnalysis } from "@/test/analysisFixtures"
 import { makeMeal } from "@/test/diaryFixtures"
@@ -41,9 +42,11 @@ vi.mock("@/features/food-library/api", () => ({
   getRecentFoods: vi.fn(),
   getFavoriteFoods: vi.fn(),
   setFoodFavorite: vi.fn(),
+  updateCustomFood: vi.fn(),
   deleteCustomFood: vi.fn(),
 }))
 
+const updateMock = vi.mocked(updateCustomFood)
 const addMock = vi.mocked(addMealItems)
 const analyzeMock = vi.mocked(analyzeMealPhoto)
 const getDiaryMock = vi.mocked(getDiary)
@@ -2565,5 +2568,183 @@ describe("MealPhotoDialog - acciones según el error (F2, F3, F4)", () => {
     await within(dialog()).findByText("Analizando la foto…")
     expect(within(dialog()).getByRole("status")).toBe(region)
     expect(region).toHaveTextContent("Analizando la foto…")
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Spec 029 · REQ-006, REQ-007 y REQ-011: editar un alimento propio desde la propuesta
+// ---------------------------------------------------------------------------
+
+describe("MealPhotoDialog - editar un alimento propio desde la propuesta", () => {
+  beforeEach(() => {
+    resetMocks()
+    updateMock.mockReset()
+  })
+
+  const EDIT_LABEL = "Editar Gallo pinto"
+  const FORM_NAME = "Editar «Gallo pinto»"
+  const GALLO_500_PREVIEW = "500 kcal · 15,0 g proteína · 75,0 g carbohidratos · 10,0 g grasa"
+
+  // «Gallo pinto» propio en la biblioteca: la edición lo cambia y la búsqueda lo devuelve ya editado.
+  function galloEditable() {
+    let current = makeCustomLibraryFood()
+    searchMock.mockImplementation(async (query) =>
+      current.name.toLowerCase().includes(query.toLowerCase()) ? [current] : []
+    )
+    updateMock.mockImplementation(async (_id, payload) => {
+      current = { ...current, name: payload.name, per_100g: payload.per_100g }
+      return current
+    })
+  }
+
+  async function editGalloTo200Kcal(user: User) {
+    await user.click(
+      await within(dialog()).findByRole("button", { name: EDIT_LABEL })
+    )
+    const form = await within(dialog()).findByRole("form", { name: FORM_NAME })
+    const name = within(form).getByRole("textbox", { name: "Nombre" })
+    await user.clear(name)
+    await user.type(name, "Gallo pinto con huevo")
+    const calories = within(form).getByRole("textbox", { name: "Calorías por 100 g (kcal)" })
+    await user.clear(calories)
+    await user.type(calories, "200")
+    const saveButton = within(form).getByRole("button", { name: "Guardar" })
+    await waitFor(() => expect(saveButton).toBeEnabled())
+    await user.click(saveButton)
+    await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument())
+  }
+
+  // SDD: 029 REQ-006 AC-006.3
+  it("en «Favoritos» de «Añadir otro alimento» el propio tiene el botón «Editar Gallo pinto»", async () => {
+    const user = userEvent.setup()
+    favoritesMock.mockResolvedValue([{ ...GALLO_PROPIO, favorite: true }])
+    renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+
+    const favorites = await openList("Favoritos", within(dialog()))
+
+    expect(within(favorites).getByRole("button", { name: EDIT_LABEL })).toBeInTheDocument()
+  })
+
+  // SDD: 029 REQ-007 AC-007.4
+  it("Escape con el formulario de edición abierto solo lo cierra: sin confirmación de descartar, con la búsqueda y su texto", async () => {
+    const user = userEvent.setup()
+    const { onClose } = renderDialog()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+    searchMock.mockResolvedValue([GALLO_PROPIO])
+    await search(user, "gallo")
+    await user.click(await within(dialog()).findByRole("button", { name: EDIT_LABEL }))
+    const form = await within(dialog()).findByRole("form", { name: FORM_NAME })
+    expect(form.closest("li")).toHaveTextContent("Gallo pinto")
+
+    await user.keyboard("{Escape}")
+
+    await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument())
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
+    expect(onClose).not.toHaveBeenCalled()
+    expect(updateMock).not.toHaveBeenCalled()
+    expect(dialog()).toBeInTheDocument()
+    expect(within(dialog()).getByRole("searchbox", { name: "Buscar alimento" })).toHaveValue("gallo")
+    expect(within(dialog()).getByRole("list", { name: "Resultados" })).toHaveTextContent("Gallo pinto")
+  })
+
+  // SDD: 029 REQ-011 AC-011.1
+  it("al editar el propio que ya está en la propuesta, la fila pasa a «Gallo pinto con huevo» con 250 g, «Personalizado» y 500 kcal, y el total la incluye", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    galloEditable()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+    await search(user, "gallo")
+    await chooseFood(user, "Gallo pinto")
+    await setGrams(user, "Gallo pinto", "250")
+    await user.click(button("Añadir otro alimento"))
+    await search(user, "gallo")
+
+    await editGalloTo200Kcal(user)
+    expect(updateMock).toHaveBeenCalledWith(
+      12,
+      expect.objectContaining({ name: "Gallo pinto con huevo" })
+    )
+    await user.click(button("Volver a la propuesta"))
+
+    const items = rows()
+    expect(items).toHaveLength(2)
+    expect(items[1]).toHaveTextContent("Gallo pinto con huevo")
+    expect(items[1]).toHaveTextContent("Personalizado")
+    expect(gramsField("Gallo pinto con huevo")).toHaveValue("250")
+    expect(within(items[1]).getByText(GALLO_500_PREVIEW)).toBeInTheDocument()
+    expect(within(dialog()).getByText(/^Total: 695 kcal/)).toBeInTheDocument()
+    expect(within(dialog()).queryByText("Gallo pinto", { selector: "p, span, h3, h4" })).not.toBeInTheDocument()
+  })
+
+  // SDD: 029 REQ-011 AC-011.2
+  it("«Guardar en {sección}» envía la fila editada con su `custom_food_id` y los gramos", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    galloEditable()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+    await search(user, "gallo")
+    await chooseFood(user, "Gallo pinto")
+    await setGrams(user, "Gallo pinto", "250")
+    await user.click(button("Añadir otro alimento"))
+    await search(user, "gallo")
+    await editGalloTo200Kcal(user)
+    await user.click(button("Volver a la propuesta"))
+
+    await save(user)
+
+    await waitFor(() => expect(addMock).toHaveBeenCalledTimes(1))
+    expect(addMock.mock.calls[0][0].items).toEqual([
+      { catalog_id: "arroz-blanco-cocido", grams: 150 },
+      { custom_food_id: 12, grams: 250 },
+    ])
+  })
+
+  // SDD: 029 REQ-011 AC-011.3
+  it("editar un propio que no está en la propuesta deja las filas como estaban", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    galloEditable()
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+    await search(user, "gallo")
+
+    await editGalloTo200Kcal(user)
+    await user.click(button("Volver a la propuesta"))
+
+    const items = rows()
+    expect(items).toHaveLength(1)
+    expect(items[0]).toHaveTextContent("Arroz blanco cocido")
+    expect(within(items[0]).getByText(RICE_PREVIEW)).toBeInTheDocument()
+    expect(gramsField("Arroz blanco cocido")).toHaveValue("150")
+  })
+
+  // SDD: 029 REQ-011 AC-011.3
+  it("editar el propio no toca otra fila de un propio distinto", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    galloEditable()
+    await reachProposal(
+      user,
+      makeAnalysis({ items: [RICE], unmatched: [{ name: "Avena casera", grams: 80, confidence: "low" }] })
+    )
+    await user.click(button("Añadir otro alimento"))
+    await search(user, "gallo")
+    await chooseFood(user, "Gallo pinto")
+    await user.click(button("Añadir otro alimento"))
+    await search(user, "gallo")
+
+    await editGalloTo200Kcal(user)
+    await user.click(button("Volver a la propuesta"))
+
+    const items = rows()
+    expect(items).toHaveLength(3)
+    expect(items[1]).toHaveTextContent("Avena casera")
+    expect(items[1]).toHaveTextContent("Sin coincidencia en el catálogo")
+    expect(items[2]).toHaveTextContent("Gallo pinto con huevo")
   })
 })

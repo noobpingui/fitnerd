@@ -6,10 +6,12 @@ Voyage y Redis son dobles instalados en los singletons (se restauran al
 terminar): nada sale a la red y la biblioteca no debe usarlos (NFR-001).
 """
 
+import threading
+import time
 from datetime import datetime
 
 import pytest
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, text
 
 from extensions import db, embedding_client, jwt_manager, rate_limiter
 from models import CatalogFood, CustomFood, Food, FoodFavorite, User
@@ -924,6 +926,544 @@ def test_deleting_an_own_food_does_not_change_the_meal_items_in_the_database(cli
     with app.app_context():
         assert db.session.query(MealItem).count() == 1
         assert db.session.query(CustomFood).count() == 0
+
+
+# --------------------------------------------------------------------------
+# Editar un alimento propio (spec 029, REQ-001 a REQ-004)
+# --------------------------------------------------------------------------
+
+NAME_REQUIRED_MESSAGE = {"error": "Escribe el nombre del alimento."}
+NAME_TOO_LONG_MESSAGE = {"error": "El nombre no puede superar los 100 caracteres."}
+PER_100G_REQUIRED_MESSAGE = {
+    "error": "Indica las calorías, proteína, carbohidratos y grasa por 100 g."
+}
+CALORIES_RANGE_MESSAGE = {"error": "Las calorías por 100 g deben estar entre 0 y 900."}
+MACROS_RANGE_MESSAGE = {"error": "Los macros por 100 g deben estar entre 0 y 100 g."}
+MACROS_SUM_MESSAGE = {
+    "error": "La proteína, los carbohidratos y la grasa no pueden sumar más de 100 g por 100 g."
+}
+INVALID_REQUEST_MESSAGE = {"error": "La petición no es válida"}
+NAME_TAKEN_MESSAGE = {"error": "Ya tienes un alimento con ese nombre."}
+GALLO_PER_100G = {"calories_kcal": 180.0, "protein_g": 6.0, "carbs_g": 30.0, "fat_g": 4.0}
+
+
+def edit_payload(name="Gallo pinto con huevo", **values):
+    per_100g = {"calories_kcal": 200, "protein_g": 9, "carbs_g": 28, "fat_g": 6, **values}
+    return {"name": name, "per_100g": per_100g}
+
+
+def patch_custom(client, headers, food_id, body):
+    return client.patch(f"{URL}/custom/{food_id}", json=body, headers=headers)
+
+
+def custom_rows(app, email=None):
+    """Alimentos propios (del usuario, o de todos) como (id, nombre, kcal, p, c, g)."""
+    with app.app_context():
+        query = select(
+            CustomFood.id, CustomFood.name, CustomFood.calories_kcal, CustomFood.protein_g,
+            CustomFood.carbs_g, CustomFood.fat_g,
+        ).order_by(CustomFood.id)
+        if email is not None:
+            user_id = db.session.scalar(select(User.id).where(User.email == email))
+            query = query.where(CustomFood.user_id == user_id)
+        return [tuple(row) for row in db.session.execute(query).all()]
+
+
+def gallo_row(food_id, name="Gallo pinto"):
+    return (food_id, name, 180.0, 6.0, 30.0, 4.0)
+
+
+# SDD: 029 REQ-001 AC-001.1
+def test_editing_an_own_food_answers_200_with_the_library_format(client, app, headers):
+    """«Gallo pinto» favorito, editado con el nombre con espacios: 200 con `kind`, `id`,
+    el nombre recortado, los cuatro valores como número y `favorite: true`."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+    seed_favorite(app, "ana@example.com", custom_food_id=food_id)
+
+    response = patch_custom(
+        client, headers, food_id, edit_payload(name="  Gallo pinto con huevo ")
+    )
+
+    assert response.status_code == 200
+    assert response.get_json() == {
+        "kind": "custom",
+        "id": food_id,
+        "name": "Gallo pinto con huevo",
+        "per_100g": {"calories_kcal": 200.0, "protein_g": 9.0, "carbs_g": 28.0, "fat_g": 6.0},
+        "favorite": True,
+    }
+    assert custom_rows(app, "ana@example.com") == [
+        (food_id, "Gallo pinto con huevo", 200.0, 9.0, 28.0, 6.0)
+    ]
+
+
+# SDD: 029 REQ-001 AC-001.2
+def test_after_editing_favorites_and_search_show_the_new_values(client, app, headers):
+    """Los favoritos y `search?q=gallo` devuelven el alimento con los valores nuevos,
+    el mismo id y `favorite: true`, sin ningún «Gallo pinto» antiguo."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+    seed_favorite(app, "ana@example.com", custom_food_id=food_id)
+    assert patch_custom(client, headers, food_id, edit_payload()).status_code == 200
+
+    favorite_results = results_of(favorites(client, headers))
+    found = results_of(search(client, headers, "gallo"))
+
+    expected = {
+        "kind": "custom",
+        "id": food_id,
+        "name": "Gallo pinto con huevo",
+        "per_100g": {"calories_kcal": 200.0, "protein_g": 9.0, "carbs_g": 28.0, "fat_g": 6.0},
+        "favorite": True,
+    }
+    assert favorite_results == [expected]
+    assert found == [expected]
+    assert all(item["name"] != "Gallo pinto" for item in found)
+
+
+# SDD: 029 REQ-001 AC-001.3
+def test_editing_only_the_case_of_the_own_name_is_200(client, app, headers):
+    """«gallo PINTO» con los mismos valores: 200 y el nombre queda como se escribió."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+
+    response = patch_custom(
+        client,
+        headers,
+        food_id,
+        edit_payload(name="gallo PINTO", calories_kcal=180, protein_g=6, carbs_g=30, fat_g=4),
+    )
+
+    assert response.status_code == 200
+    assert response.get_json()["name"] == "gallo PINTO"
+    assert custom_rows(app) == [gallo_row(food_id, "gallo PINTO")]
+
+
+# SDD: 029 REQ-001 AC-001.4
+def test_editing_with_the_current_name_and_values_is_200_and_unchanged(client, app, headers):
+    """Mismos nombre y valores: 200 con el alimento sin cambios."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+
+    response = patch_custom(
+        client,
+        headers,
+        food_id,
+        edit_payload(name="Gallo pinto", calories_kcal=180, protein_g=6, carbs_g=30, fat_g=4),
+    )
+
+    assert response.status_code == 200
+    body = response.get_json()
+    assert body["name"] == "Gallo pinto" and body["per_100g"] == GALLO_PER_100G
+    assert custom_rows(app) == [gallo_row(food_id)]
+
+
+# SDD: 029 REQ-001 AC-001.5
+def test_editing_with_the_name_of_a_catalog_food_is_200(client, app, headers):
+    """«Arroz blanco cocido» es del catálogo: no cuenta como repetido."""
+    seed(app, WHITE_RICE)
+    food_id = seed_custom(app, "ana@example.com", "Arroz de la casa")
+
+    response = patch_custom(client, headers, food_id, edit_payload(name="Arroz blanco cocido"))
+
+    assert response.status_code == 200
+    assert response.get_json()["name"] == "Arroz blanco cocido"
+
+
+# SDD: 029 REQ-001 AC-001.6
+def test_editing_a_non_favorite_answers_favorite_false_and_stays_so(client, app, headers):
+    """Sin favorito: `favorite: false` y la tabla de favoritos sigue vacía."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+
+    response = patch_custom(client, headers, food_id, edit_payload())
+
+    assert response.status_code == 200
+    assert response.get_json()["favorite"] is False
+    assert favorites_in_database(app) == 0
+
+
+# SDD: 029 REQ-001 AC-001.1
+def test_editing_keeps_the_favorite_row_of_the_food(client, app, headers):
+    """La edición no recrea el favorito: sigue una sola fila, la misma."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+    seed_favorite(app, "ana@example.com", custom_food_id=food_id)
+
+    response = patch_custom(client, headers, food_id, edit_payload())
+
+    assert response.status_code == 200
+    with app.app_context():
+        rows = db.session.query(FoodFavorite).all()
+        assert [row.custom_food_id for row in rows] == [food_id]
+
+
+# SDD: 029 REQ-002 AC-002.1
+@pytest.mark.parametrize("body", ["hola", None, [], [{"name": "x"}], 5])
+def test_editing_with_a_body_that_is_not_an_object_is_400(client, app, headers, body):
+    """Texto, `null`, lista o número: 400 «La petición no es válida» y el alimento no cambia."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+
+    response = patch_custom(client, headers, food_id, body)
+
+    assert response.status_code == 400
+    assert response.get_json() == INVALID_REQUEST_MESSAGE
+    assert custom_rows(app) == [gallo_row(food_id)]
+
+
+# SDD: 029 REQ-002 AC-002.1
+def test_editing_with_malformed_json_is_400(client, app, headers):
+    """JSON malformado: el mismo 400 y el alimento no cambia."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+
+    response = client.patch(
+        f"{URL}/custom/{food_id}", data="{no es json", content_type="application/json",
+        headers=headers,
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == INVALID_REQUEST_MESSAGE
+    assert custom_rows(app) == [gallo_row(food_id)]
+
+
+# SDD: 029 REQ-002 AC-002.1
+def test_editing_with_a_literal_json_null_is_400(client, app, headers):
+    """El cuerpo `null` enviado de verdad (el parámetro `json=None` del cliente no lo manda)."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+
+    response = client.patch(
+        f"{URL}/custom/{food_id}", data="null", content_type="application/json", headers=headers
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == INVALID_REQUEST_MESSAGE
+    assert custom_rows(app) == [gallo_row(food_id)]
+
+
+# SDD: 029 REQ-002 AC-002.1
+def test_editing_without_a_json_body_is_400(client, app, headers):
+    """Sin cuerpo ni tipo de contenido: 400 y sin cambios."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+
+    response = client.patch(f"{URL}/custom/{food_id}", headers=headers)
+
+    assert response.status_code == 400
+    assert response.get_json() == INVALID_REQUEST_MESSAGE
+    assert custom_rows(app) == [gallo_row(food_id)]
+
+
+def without(body, key):
+    body = dict(body)
+    del body[key]
+    return body
+
+
+# SDD: 029 REQ-002 AC-002.2
+@pytest.mark.parametrize("name", ["", "   ", None])
+def test_editing_without_a_usable_name_is_400(client, app, headers, name):
+    """Nombre vacío, solo espacios o `null`: «Escribe el nombre del alimento.»."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+
+    response = patch_custom(client, headers, food_id, edit_payload(name=name))
+
+    assert response.status_code == 400
+    assert response.get_json() == NAME_REQUIRED_MESSAGE
+    assert custom_rows(app) == [gallo_row(food_id)]
+
+
+# SDD: 029 REQ-002 AC-002.2
+def test_editing_without_the_name_key_is_400(client, app, headers):
+    """Sin la clave `name`."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+
+    response = patch_custom(client, headers, food_id, without(edit_payload(), "name"))
+
+    assert response.status_code == 400
+    assert response.get_json() == NAME_REQUIRED_MESSAGE
+    assert custom_rows(app) == [gallo_row(food_id)]
+
+
+# SDD: 029 REQ-002 AC-002.3
+def test_editing_with_a_name_of_101_characters_is_400_and_of_100_is_200(client, app, headers):
+    """101 caracteres tras recortar: 400; 100 caracteres: 200 y se guarda."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+
+    too_long = patch_custom(client, headers, food_id, edit_payload(name=" " + "a" * 101 + " "))
+    assert too_long.status_code == 400
+    assert too_long.get_json() == NAME_TOO_LONG_MESSAGE
+    assert custom_rows(app) == [gallo_row(food_id)]
+
+    accepted = patch_custom(client, headers, food_id, edit_payload(name="a" * 100))
+    assert accepted.status_code == 200
+    assert custom_rows(app)[0][1] == "a" * 100
+
+
+# SDD: 029 REQ-002 AC-002.4
+@pytest.mark.parametrize(
+    "per_100g",
+    [
+        None,
+        {"calories_kcal": 100, "protein_g": 10, "carbs_g": 10},
+        {"calories_kcal": 100, "protein_g": 10, "carbs_g": 10, "fat_g": None},
+    ],
+)
+def test_editing_without_the_four_values_is_400(client, app, headers, per_100g):
+    """`per_100g` ausente o incompleto: «Indica las calorías, proteína, …»."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+    body = {"name": "Gallo pinto con huevo"}
+    if per_100g is not None:
+        body["per_100g"] = per_100g
+
+    response = patch_custom(client, headers, food_id, body)
+
+    assert response.status_code == 400
+    assert response.get_json() == PER_100G_REQUIRED_MESSAGE
+    assert custom_rows(app) == [gallo_row(food_id)]
+
+
+# SDD: 029 REQ-002 AC-002.5
+@pytest.mark.parametrize("calories", [-1, 901])
+def test_editing_with_calories_out_of_range_is_400(client, app, headers, calories):
+    """Calorías de -1 y de 901."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+
+    response = patch_custom(
+        client, headers, food_id, edit_payload(calories_kcal=calories, protein_g=0, carbs_g=0, fat_g=0)
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == CALORIES_RANGE_MESSAGE
+    assert custom_rows(app) == [gallo_row(food_id)]
+
+
+# SDD: 029 REQ-002 AC-002.6
+@pytest.mark.parametrize(
+    "values",
+    [{"protein_g": -1, "carbs_g": 0, "fat_g": 0}, {"protein_g": 0, "carbs_g": 0, "fat_g": 101}],
+)
+def test_editing_with_macros_out_of_range_is_400(client, app, headers, values):
+    """Proteína de -1 o grasa de 101."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+
+    response = patch_custom(client, headers, food_id, edit_payload(**values))
+
+    assert response.status_code == 400
+    assert response.get_json() == MACROS_RANGE_MESSAGE
+    assert custom_rows(app) == [gallo_row(food_id)]
+
+
+# SDD: 029 REQ-002 AC-002.7
+def test_editing_with_macros_that_add_up_to_more_than_100_is_400(client, app, headers):
+    """40 + 40 + 30 supera los 100 g."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+
+    response = patch_custom(
+        client, headers, food_id, edit_payload(protein_g=40, carbs_g=40, fat_g=30)
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == MACROS_SUM_MESSAGE
+    assert custom_rows(app) == [gallo_row(food_id)]
+
+
+# SDD: 029 REQ-003 AC-003.1
+def test_editing_with_the_name_of_another_own_food_is_409_and_changes_neither(
+    client, app, headers
+):
+    """«  ARROZ con   pollo de mama » choca con «Arroz con pollo de mamá»: 409 y los dos
+    alimentos conservan nombre y valores."""
+    first = seed_custom(app, "ana@example.com", "Gallo pinto")
+    second = seed_custom(app, "ana@example.com", "Arroz con pollo de mamá", calories=150.0)
+
+    response = patch_custom(
+        client, headers, first, edit_payload(name="  ARROZ con   pollo de mama ")
+    )
+
+    assert response.status_code == 409
+    assert response.get_json() == NAME_TAKEN_MESSAGE
+    assert custom_rows(app) == [
+        gallo_row(first),
+        (second, "Arroz con pollo de mamá", 150.0, 6.0, 30.0, 4.0),
+    ]
+
+
+# SDD: 029 REQ-003 AC-003.1
+def test_the_409_applies_to_an_own_food_that_is_not_a_favorite_too(client, app, headers):
+    """El repetido no tiene por qué ser favorito."""
+    first = seed_custom(app, "ana@example.com", "Gallo pinto")
+    seed_custom(app, "ana@example.com", "Avena casera")
+    seed_favorite(app, "ana@example.com", custom_food_id=first)
+
+    response = patch_custom(client, headers, first, edit_payload(name="avena CASERA"))
+
+    assert response.status_code == 409
+    assert response.get_json() == NAME_TAKEN_MESSAGE
+
+
+# SDD: 029 REQ-003 AC-003.2
+def test_editing_with_a_name_that_only_another_user_has_is_200(
+    client, app, headers, other_headers
+):
+    """El nombre del alimento de Luis no cuenta para Ana."""
+    seed_custom(app, "luis@example.com", "Arroz con pollo de mamá")
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+
+    response = patch_custom(client, headers, food_id, edit_payload(name="Arroz con pollo de mamá"))
+
+    assert response.status_code == 200
+    assert response.get_json()["name"] == "Arroz con pollo de mamá"
+
+
+def concurrent_patches(app, email, token_headers, requests):
+    """Bloquea la fila del usuario desde una conexión propia, lanza un `PATCH` por
+    (id, cuerpo) en hilos distintos, espera a que todos queden en espera del bloqueo, lo
+    libera y devuelve (estado, json) de cada uno (patrón de `concurrent_posts` de la 028)."""
+    results = {}
+
+    def worker(index, food_id, body):
+        response = app.test_client().patch(
+            f"{URL}/custom/{food_id}", json=body, headers=token_headers
+        )
+        results[index] = (response.status_code, response.get_json())
+
+    def waiters(monitor):
+        return monitor.execute(
+            text(
+                "SELECT count(*) FROM pg_stat_activity "
+                "WHERE datname = current_database() AND wait_event_type = 'Lock' "
+                "AND pid <> pg_backend_pid()"
+            )
+        ).scalar()
+
+    def wait_until(condition, timeout=10.0):
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if condition():
+                return True
+            time.sleep(0.05)
+        return condition()
+
+    with app.app_context():
+        user_id = db.session.scalar(select(User.id).where(User.email == email))
+        lock_conn = db.engine.connect()
+        monitor = db.engine.connect().execution_options(isolation_level="AUTOCOMMIT")
+        lock_tx = lock_conn.begin()
+        threads = []
+        try:
+            lock_conn.execute(
+                text("SELECT id FROM public.users WHERE id = :id FOR UPDATE"), {"id": user_id}
+            )
+            threads = [
+                threading.Thread(target=worker, args=(i, food_id, body), daemon=True)
+                for i, (food_id, body) in enumerate(requests)
+            ]
+            for thread in threads:
+                thread.start()
+            reached = wait_until(lambda: waiters(monitor) >= len(requests))
+            assert reached, (
+                "las peticiones no llegaron a esperar el bloqueo de la fila del usuario: "
+                "el test no habría probado la concurrencia"
+            )
+        finally:
+            lock_tx.rollback()
+            lock_conn.close()
+            for thread in threads:
+                thread.join(timeout=15)
+            monitor.close()
+
+    assert all(not t.is_alive() for t in threads), "una petición quedó colgada"
+    return [results[i] for i in range(len(requests))]
+
+
+# SDD: 029 REQ-003 AC-003.3
+def test_two_simultaneous_edits_to_the_same_name_give_one_200_and_one_409(client, app, headers):
+    """«Avena» y «Banano» editados a la vez a «Batido»: una responde 200 y la otra 409,
+    ninguna 500, y la biblioteca tiene un solo «Batido»."""
+    avena = seed_custom(app, "ana@example.com", "Avena")
+    banano = seed_custom(app, "ana@example.com", "Banano")
+
+    results = concurrent_patches(
+        app,
+        "ana@example.com",
+        headers,
+        [(avena, edit_payload(name="Batido")), (banano, edit_payload(name="Batido"))],
+    )
+
+    assert sorted(status for status, _ in results) == [200, 409]
+    assert not any(status == 500 for status, _ in results)
+    (conflict,) = [body for status, body in results if status == 409]
+    assert conflict == NAME_TAKEN_MESSAGE
+    names = [row[1] for row in custom_rows(app, "ana@example.com")]
+    assert names.count("Batido") == 1
+    assert sorted(names) in (["Avena", "Batido"], ["Banano", "Batido"])
+
+
+# SDD: 029 REQ-004 AC-004.1
+def test_editing_an_own_food_of_another_user_is_404_and_leaves_it_intact(
+    client, app, headers, other_headers
+):
+    """Ana no puede editar el alimento de Luis: 404 y Luis sigue viéndolo igual."""
+    luis_food = seed_custom(app, "luis@example.com", "Gallo pinto")
+
+    response = patch_custom(client, headers, luis_food, edit_payload())
+
+    assert response.status_code == 404
+    assert response.get_json() == NOT_FOUND
+    assert custom_rows(app, "luis@example.com") == [gallo_row(luis_food)]
+    assert names_of(search(client, other_headers, "gallo")) == ["Gallo pinto"]
+
+
+# SDD: 029 REQ-004 AC-004.2
+@pytest.mark.parametrize("food_id", ["abc", "0", "2147483648", "999999", "-5"])
+def test_editing_with_an_id_that_does_not_exist_or_is_not_valid_is_404(
+    client, app, headers, food_id
+):
+    """Inexistente, `abc`, `0` o `2147483648`: 404 con un cuerpo válido."""
+    own = seed_custom(app, "ana@example.com", "Gallo pinto")
+
+    response = patch_custom(client, headers, food_id, edit_payload())
+
+    assert response.status_code == 404
+    assert response.get_json() == NOT_FOUND
+    assert custom_rows(app) == [gallo_row(own)]
+
+
+# SDD: 029 REQ-004 AC-004.3
+def test_editing_an_own_food_that_was_deleted_is_404(client, app, headers):
+    """Tras `DELETE /custom/{id}` (028) la edición responde 404."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+    assert delete_custom(client, headers, food_id).status_code == 204
+
+    response = patch_custom(client, headers, food_id, edit_payload())
+
+    assert response.status_code == 404
+    assert response.get_json() == NOT_FOUND
+    assert custom_rows(app) == []
+
+
+# SDD: 029 REQ-004 AC-004.4
+def test_editing_without_an_authorization_header_is_401_and_changes_nothing(
+    client, app, headers
+):
+    """Sin cabecera de autorización: 401 y el alimento no cambia."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+
+    response = client.patch(f"{URL}/custom/{food_id}", json=edit_payload())
+
+    assert response.status_code == 401
+    assert custom_rows(app) == [gallo_row(food_id)]
+
+
+# SDD: 029 REQ-004 AC-004.4
+def test_editing_with_an_expired_token_is_401(client, app, headers):
+    """Un token caducado: 401 y el alimento no cambia."""
+    food_id = seed_custom(app, "ana@example.com", "Gallo pinto")
+    with app.app_context():
+        token = jwt_manager.generate_token({"id": "user-1", "user_role": "user"}, -5)
+
+    response = client.patch(
+        f"{URL}/custom/{food_id}",
+        json=edit_payload(),
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 401
+    assert custom_rows(app) == [gallo_row(food_id)]
 
 
 # --------------------------------------------------------------------------

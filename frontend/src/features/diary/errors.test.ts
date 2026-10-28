@@ -10,6 +10,7 @@ import {
   analysisErrorView,
   favoriteErrorMessage,
   saveErrorMessage,
+  updateCustomFoodErrorView,
 } from "./errors"
 
 describe("saveErrorMessage", () => {
@@ -130,5 +131,52 @@ describe("mensajes de la biblioteca de alimentos", () => {
     ["nada", undefined],
   ])("favoriteErrorMessage ante %s devuelve el mensaje genérico", (_name, error) => {
     expect(favoriteErrorMessage(error)).toBe("No se pudo actualizar tus favoritos.")
+  })
+})
+
+describe("updateCustomFoodErrorView", () => {
+  // SDD: 029 REQ-010 AC-010.3
+  it("un 409 es «nombre repetido»", () => {
+    expect(
+      updateCustomFoodErrorView(new ApiError(409, "Ya tienes un alimento con ese nombre."))
+    ).toEqual({ kind: "name_taken" })
+  })
+
+  // SDD: 029 REQ-010 AC-010.4
+  it("un 404 es «no encontrado» con el texto fijo de la spec, no el del servidor", () => {
+    expect(updateCustomFoodErrorView(new ApiError(404, "detalle interno"))).toEqual({
+      kind: "not_found",
+      message: "No encontramos ese alimento.",
+    })
+  })
+
+  // SDD: 029 REQ-010 AC-010.5
+  it("un 400 devuelve el mensaje del servidor", () => {
+    expect(
+      updateCustomFoodErrorView(new ApiError(400, "Las calorías por 100 g deben estar entre 0 y 900."))
+    ).toEqual({
+      kind: "message",
+      message: "Las calorías por 100 g deben estar entre 0 y 900.",
+    })
+  })
+
+  // SDD: 029 REQ-010 AC-010.5
+  it.each([401, 429, 500, 503])("un %d da «No se pudo guardar el alimento.»", (status) => {
+    expect(updateCustomFoodErrorView(new ApiError(status, "detalle interno"))).toEqual({
+      kind: "message",
+      message: "No se pudo guardar el alimento.",
+    })
+  })
+
+  // SDD: 029 REQ-010 AC-010.5
+  it.each([
+    ["un error de red", new TypeError("Failed to fetch")],
+    ["un valor que no es un error", "algo"],
+    ["nada", undefined],
+  ])("%s da «No se pudo guardar el alimento.»", (_name, error) => {
+    expect(updateCustomFoodErrorView(error)).toEqual({
+      kind: "message",
+      message: "No se pudo guardar el alimento.",
+    })
   })
 })

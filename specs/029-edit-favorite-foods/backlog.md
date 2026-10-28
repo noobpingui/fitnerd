@@ -11,3 +11,17 @@
 
 ## tasks · task-breaker
 - [ ] AC-003.3 (concurrencia) necesita el helper `concurrent_posts` de `test_meal_library_routes.py`. El test-author decide si lo copia o lo extrae a un módulo de utilidades de tests.
+
+## tests · test-author
+- [ ] `backend/tests/test_routes/test_food_library_routes.py` define su propio helper `concurrent_patches`, copiado del patrón de `concurrent_posts` de `test_meal_library_routes.py`. Se podría extraer a un módulo común de utilidades de tests.
+- [ ] `ENDPOINTS` del test de sesión de la 028 («las ocho rutas») no incluye el `PATCH`. Sus 401 se cubren con tests propios (AC-004.4).
+- [ ] `frontend/src/features/food-library/types.ts` tiene un typo del scaffold: `RecentFood =LibraryFood`. Es solo de formato y no afecta a la compilación.
+
+## tests (red) · verifier
+- [ ] frontend/src/features/food-library/types.ts: falta el espacio en `RecentFood =LibraryFood` (corregir en implement).
+- [ ] backend/tests/test_routes/test_food_library_routes.py (AC-003.3, concurrencia): el test depende de una bandera interna («reached») del bloqueo; vigilar que no sea frágil al implementar.
+
+## tests (red, iteración 2) · verifier
+- [ ] `frontend/src/features/food-library/types.ts`: `export type RecentFood =LibraryFood & { last_grams: number }` sin espacio tras `=`. Corregir en implement.
+- [ ] `customFoodEditSchema` (`frontend/src/features/diary/schemas.ts`) es un `z.object` sin reglas. Sustituirlo por las reglas reales en T-063.
+- [ ] Incidente de proceso: el hook bloqueó escribir un script en el scratchpad (fuera de `specs/`). Usé un heredoc por stdin, que solo lee datos. Los logs de pytest y vitest sí quedaron en el scratchpad por redirección. No afecta al repositorio.

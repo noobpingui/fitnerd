@@ -259,6 +259,16 @@ def _parse_per_100g(value: object) -> dict[str, float]:
     return {key: float(value[key]) for key in NUTRIENT_KEYS}
 
 
+@dataclass(frozen=True)
+class CustomFoodFields:
+    name: str
+    per_100g: dict[str, float]
+
+
+def parse_custom_food_fields(_item: dict) -> CustomFoodFields:
+    raise NotImplementedError("not implemented")
+
+
 def _parse_custom_item(item: dict, grams: Decimal) -> CustomItemInput:
     name = item.get("name")
     cleaned = name.strip() if isinstance(name, str) else ""

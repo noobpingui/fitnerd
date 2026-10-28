@@ -722,3 +722,155 @@ def test_restore_of_an_unlinked_custom_item_stays_unlinked(client, app, headers)
     assert response.status_code == 200
     assert response.get_json()["items"][0]["custom_food_id"] is None
     assert library(app) == []
+
+
+# --------------------------------------------------------------------------
+# Spec 029: efecto de editar un alimento propio en el diario (REQ-005)
+# --------------------------------------------------------------------------
+
+
+def edit_own_food(client, headers, food_id, name="Gallo pinto con huevo", calories=200):
+    response = client.patch(
+        f"{LIBRARY_URL}/custom/{food_id}",
+        json={
+            "name": name,
+            "per_100g": {"calories_kcal": calories, "protein_g": 9, "carbs_g": 28, "fat_g": 6},
+        },
+        headers=headers,
+    )
+    assert response.status_code == 200, response.get_json()
+    return response.get_json()
+
+
+# SDD: 029 REQ-005 AC-005.1
+def test_editing_an_own_food_keeps_the_copy_in_the_meals_already_registered(client, app, headers):
+    """«Gallo pinto» con 200 g el día de hoy, editado a «Gallo pinto con huevo»: el
+    diario conserva el nombre, los valores por 100 g, los nutrientes y el mismo vínculo."""
+    own_id = post(client, headers, [custom_item(grams=200)]).get_json()["items"][0][
+        "custom_food_id"
+    ]
+
+    edit_own_food(client, headers, own_id)
+
+    (item,) = items_of(client, headers, TODAY)
+    assert item["name"] == "Gallo pinto"
+    assert item["per_100g"] == GALLO_VALUES
+    assert item["nutrients"] == {
+        "calories_kcal": 360.0, "protein_g": 12.0, "carbs_g": 60.0, "fat_g": 8.0,
+    }
+    assert item["custom_food_id"] == own_id
+
+
+# SDD: 029 REQ-005 AC-005.1
+def test_editing_an_own_food_does_not_touch_the_meal_item_rows(client, app, headers):
+    """En la base, la fila del alimento registrado no cambia (nombre ni valores copiados)."""
+    own_id = post(client, headers, [custom_item(grams=200)]).get_json()["items"][0][
+        "custom_food_id"
+    ]
+
+    edit_own_food(client, headers, own_id)
+
+    with app.app_context():
+        (row,) = db.session.query(MealItem).all()
+        assert row.name == "Gallo pinto"
+        assert row.per_100g_calories_kcal == 180.0
+        assert row.custom_food_id == own_id
+
+
+# SDD: 029 REQ-005 AC-005.2
+def test_recents_show_the_edited_values_with_the_last_grams(client, app, headers):
+    """Tras editar, los recientes traen el nombre y los valores nuevos y `last_grams: 200.0`."""
+    own_id = post(client, headers, [custom_item(grams=200)]).get_json()["items"][0][
+        "custom_food_id"
+    ]
+    edit_own_food(client, headers, own_id)
+
+    results = client.get(f"{LIBRARY_URL}/recent", headers=headers).get_json()["results"]
+
+    assert results == [
+        {
+            "kind": "custom",
+            "id": own_id,
+            "name": "Gallo pinto con huevo",
+            "per_100g": {
+                "calories_kcal": 200.0, "protein_g": 9.0, "carbs_g": 28.0, "fat_g": 6.0,
+            },
+            "favorite": False,
+            "last_grams": 200.0,
+        }
+    ]
+
+
+# SDD: 029 REQ-005 AC-005.3
+def test_registering_by_custom_food_id_after_editing_copies_the_edited_values(
+    client, app, headers
+):
+    """`POST /api/meals` con `custom_food_id` y 100 g copia el nombre y los valores nuevos."""
+    own_id = post(client, headers, [custom_item(grams=200)]).get_json()["items"][0][
+        "custom_food_id"
+    ]
+    edit_own_food(client, headers, own_id)
+
+    response = post(
+        client, headers, [{"custom_food_id": own_id, "grams": 100}], meal_type="dinner"
+    )
+
+    assert response.status_code == 201
+    item = response.get_json()["items"][0]
+    assert item["name"] == "Gallo pinto con huevo"
+    assert item["per_100g"] == {
+        "calories_kcal": 200.0, "protein_g": 9.0, "carbs_g": 28.0, "fat_g": 6.0,
+    }
+    assert item["nutrients"]["calories_kcal"] == 200.0
+    assert item["custom_food_id"] == own_id
+
+
+# SDD: 029 REQ-003 AC-003.4
+def test_registering_the_old_name_after_renaming_creates_another_own_food(client, app, headers):
+    """Renombrado «Gallo pinto» → «Pinto», registrar un personalizado «Gallo pinto» crea
+    otro alimento con otro id y «Pinto» no cambia."""
+    own_id = post(client, headers, [custom_item("Gallo pinto")]).get_json()["items"][0][
+        "custom_food_id"
+    ]
+    client.patch(
+        f"{LIBRARY_URL}/custom/{own_id}",
+        json={"name": "Pinto", "per_100g": GALLO_VALUES},
+        headers=headers,
+    )
+
+    response = post(
+        client, headers, [custom_item("Gallo pinto", calories=150)], meal_type="dinner"
+    )
+
+    assert response.status_code == 201
+    new_id = response.get_json()["items"][0]["custom_food_id"]
+    assert new_id != own_id
+    assert library(app) == [
+        (own_id, "Pinto", 180.0, 6.0, 30.0, 4.0),
+        (new_id, "Gallo pinto", 150.0, 6.0, 30.0, 4.0),
+    ]
+
+
+# SDD: 029 REQ-005 AC-005.4
+def test_restore_after_editing_comes_back_with_the_name_and_values_it_had_when_removed(
+    client, app, headers
+):
+    """Quitar con `undo=1`, editar el alimento y restaurar: vuelve con el nombre y los
+    valores de cuando se quitó, con el mismo `custom_food_id`."""
+    meal = post(
+        client, headers, [custom_item("Gallo pinto", grams=250), custom_item("Avena casera")]
+    ).get_json()
+    own_id = meal["items"][0]["custom_food_id"]
+    token = remove_with_undo(client, headers, meal, 0)
+    edit_own_food(client, headers, own_id)
+
+    response = restore(client, headers, token)
+
+    assert response.status_code == 200
+    restored = response.get_json()["items"][0]
+    assert restored["name"] == "Gallo pinto"
+    assert restored["per_100g"] == GALLO_VALUES
+    assert restored["nutrients"]["calories_kcal"] == 450.0
+    assert restored["custom_food_id"] == own_id
+    # La biblioteca sigue con los valores editados (la restauración no los revierte).
+    assert library(app)[0] == (own_id, "Gallo pinto con huevo", 200.0, 9.0, 28.0, 6.0)

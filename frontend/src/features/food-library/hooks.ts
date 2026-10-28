@@ -13,7 +13,12 @@ import {
   searchFoodLibrary,
   setFoodFavorite,
 } from "./api"
-import type { LibraryFood, RecentFood } from "./types"
+import type {
+  CustomFoodUpdatePayload,
+  CustomLibraryFood,
+  LibraryFood,
+  RecentFood,
+} from "./types"
 
 export const foodLibraryKeys = {
   all: ["food-library"] as const,
@@ -66,6 +71,26 @@ export function useSetFoodFavorite(): UseMutationResult<
     mutationFn: ({ food, favorite }) => setFoodFavorite(food, favorite),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: foodLibraryKeys.all }),
   })
+}
+
+export type UpdateCustomFoodVariables = { id: number; payload: CustomFoodUpdatePayload }
+
+export function useUpdateCustomFood(): UseMutationResult<
+  CustomLibraryFood,
+  Error,
+  UpdateCustomFoodVariables
+> {
+  throw new Error("not implemented")
+}
+
+export type CustomFoodNameCheck = { checking: boolean; taken: boolean }
+
+export function useCustomFoodNameCheck(
+  _food: CustomLibraryFood,
+  _name: string,
+  _delayMs: number
+): CustomFoodNameCheck {
+  throw new Error("not implemented")
 }
 
 // Un 404 cuenta como éxito: el alimento ya no existe, que es lo que se pedía.

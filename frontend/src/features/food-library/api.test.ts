@@ -15,6 +15,7 @@ import {
   getRecentFoods,
   searchFoodLibrary,
   setFoodFavorite,
+  updateCustomFood,
 } from "./api"
 
 vi.mock("@/lib/apiClient", async (importOriginal) => ({
@@ -245,6 +246,57 @@ describe("setFoodFavorite", () => {
     apiFetchMock.mockRejectedValue(failure)
 
     await expect(setFoodFavorite({ kind: "catalog", id: "banano" }, true)).rejects.toBe(failure)
+  })
+})
+
+describe("updateCustomFood", () => {
+  const payload = {
+    name: "Gallo pinto con huevo",
+    per_100g: { calories_kcal: 200, protein_g: 9, carbs_g: 28, fat_g: 6 },
+  }
+  const edited = makeCustomLibraryFood({
+    name: "Gallo pinto con huevo",
+    per_100g: payload.per_100g,
+    favorite: true,
+  })
+
+  beforeEach(() => {
+    apiFetchMock.mockReset()
+    apiFetchMock.mockResolvedValue(edited)
+  })
+
+  // SDD: 029 REQ-010 AC-010.1
+  it("pide PATCH /api/food-library/custom/12 con el cuerpo y devuelve el alimento", async () => {
+    const result = await updateCustomFood(12, payload)
+
+    expect(apiFetchMock).toHaveBeenCalledTimes(1)
+    expect(lastCall()).toEqual({ path: "/api/food-library/custom/12", method: "PATCH" })
+    const [, options] = apiFetchMock.mock.calls[0]
+    expect((options as { body?: unknown }).body).toEqual(payload)
+    expect(result).toEqual(edited)
+  })
+
+  // SDD: 029 REQ-010 AC-010.1
+  it("rechaza una respuesta que no es un alimento propio", async () => {
+    apiFetchMock.mockResolvedValueOnce(edited)
+    await expect(updateCustomFood(12, payload)).resolves.toEqual(edited)
+
+    apiFetchMock.mockResolvedValueOnce(makeBananaFood())
+    await expect(updateCustomFood(12, payload)).rejects.toThrow()
+
+    apiFetchMock.mockResolvedValueOnce({ id: 12, name: "Gallo pinto con huevo" })
+    await expect(updateCustomFood(12, payload)).rejects.toThrow()
+
+    apiFetchMock.mockResolvedValueOnce({ results: [edited] })
+    await expect(updateCustomFood(12, payload)).rejects.toThrow()
+  })
+
+  // SDD: 029 REQ-010 AC-010.4
+  it("deja pasar el error del servidor tal cual", async () => {
+    const failure = new Error("404")
+    apiFetchMock.mockRejectedValue(failure)
+
+    await expect(updateCustomFood(12, payload)).rejects.toBe(failure)
   })
 })
 

@@ -49,6 +49,9 @@ class FoodLibraryService:
         self.user_repository = user_repository
         self.unit_of_work = unit_of_work
 
+    def update_custom_food(self, _user_id, _custom_food_id, _data):
+        raise NotImplementedError("not implemented")
+
     def search(
         self, user_id, raw_query: str | None, stats: TypoSearchStats | None = None
     ) -> list[LibraryFood]:

@@ -17,6 +17,15 @@ export function favoriteErrorMessage(error: unknown): string {
   return FAVORITE_FAILED_MESSAGE
 }
 
+export type UpdateCustomFoodErrorView =
+  | { kind: "name_taken" }
+  | { kind: "not_found"; message: string }
+  | { kind: "message"; message: string }
+
+export function updateCustomFoodErrorView(_error: unknown): UpdateCustomFoodErrorView {
+  throw new Error("not implemented")
+}
+
 export const ANALYSIS_FAILED_MESSAGE = "No se pudo analizar la foto. Vuelve a intentarlo."
 export const NO_FOODS_MESSAGE = "No reconocimos alimentos en la foto."
 export type AnalysisErrorView = {

@@ -61,6 +61,23 @@ export const gramsFormSchema = z
     if (message) ctx.addIssue({ code: "custom", path: ["grams"], message })
   })
 
+export type CustomFoodEditValues = {
+  name: string
+  calories: string
+  protein: string
+  carbs: string
+  fat: string
+}
+
+// Esqueleto: sin reglas todavía.
+export const customFoodEditSchema = z.object({
+  name: z.string(),
+  calories: z.string(),
+  protein: z.string(),
+  carbs: z.string(),
+  fat: z.string(),
+})
+
 export const customFoodFormSchema = z
   .object({
     name: z.string(),
