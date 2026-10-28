@@ -438,6 +438,21 @@ mantiene AC-010.4; F4 añade una señal sin cambiar REQ-009 ni AC-010.6. No hay 
 Ninguna cambia requisitos ni AC: el comportamiento visible de AC-N001.1, AC-010.3, AC-010.5 y AC-010.6 es el mismo.
 Solo frontend; sin backend, migraciones, variables ni dependencias.
 
+### Correcciones de la review (iteración 4)
+Son tres NIT de trazabilidad y documentación. No cambian código de producción ni comportamiento, y tampoco hay tests nuevos.
+
+| Hallazgo | Resolución en el plan | Responsable | Archivos |
+|---|---|---|---|
+| R3 (NIT) | Se alinean los marcadores `SDD:` de T-049 y T-077 con el REQ que prueban (sección 5, iteración 4): los casos del texto «Comprobando el nombre…» pasan a `REQ-009`, sin AC, porque prueban la cláusula «WHILE la comprobación del nombre está en curso» de REQ-009, que no tiene un AC propio. El caso de Intro con `isSaving` pasa a `REQ-010 AC-010.6`, que es el AC del doble envío. El caso de nombre repetido ya lleva `REQ-009 AC-009.1` y no cambia. El task-breaker ajusta las etiquetas de T-049 y T-077 y la matriz de cobertura de `tasks.md`. El test-author cambia solo los comentarios, sin tocar ningún `it` ni ninguna aserción | task-breaker, test-author | `specs/029-edit-favorite-foods/tasks.md`, `frontend/src/features/diary/components/CustomFoodEditForm.test.tsx` |
+| R4 (NIT) | Se corrige la mitigación de la sección 6: los tests de `FoodSearchPanel` cubren solo un primer fallo, y el caso de dos fallos seguidos con el mismo mensaje lo sostiene el orden de los estados. No se añade un test con dos 500 seguidos, porque el comportamiento es correcto y se comprobó en la review 3 | planner | `specs/029-edit-favorite-foods/plan.md` |
+| R5 (NIT) | El task-breaker anota en `tasks.md` que T-048 está sustituida por T-076 y que el efecto `wasSaving` de T-075 lo retira T-078, ambas en la iteración 3. Las dos tareas siguen marcadas `[x]` y no se borran, para conservar la historia. La matriz de cobertura deja de citar T-048 como test vigente de AC-N001.1 | task-breaker | `specs/029-edit-favorite-foods/tasks.md` |
+
+Ninguna cambia la spec, el backend ni el comportamiento. El cambio de R3 en el test toca solo comentarios: el verifier
+no necesita red check (no hay tests nuevos ni cambia ninguna aserción), pero el orquestador renueva `tests_snapshot` de
+`CustomFoodEditForm.test.tsx` después del cambio. El verifier comprueba la trazabilidad: cada AC sigue con al menos un
+test marcado en verde. AC-010.6 conserva T-038 y T-041, y AC-009.1 conserva T-032, T-038 y el caso de nombre repetido
+de T-049.
+
 ## 5. Estrategia de pruebas
 Marcadores `# SDD: 029 REQ-… AC-…` y `// SDD: 029 REQ-… AC-…` (Art. P1.1). Ningún test llama a servicios externos
 (Art. B5.4).
@@ -573,6 +588,22 @@ marcador `SDD: 029` y el REQ/AC más cercano:
 - **R2.a:** sin test propio (la rama es inalcanzable); al quitarla, los tests de F4 y de doble envío (AC-010.6) deben
   seguir pasando sin cambios.
 
+**Correcciones de la review (iteración 4).** Sin tests nuevos. Solo se cambian los marcadores en el bloque de F4 de
+`diary/components/CustomFoodEditForm.test.tsx` (R3); los `it`, sus nombres y sus aserciones no cambian:
+
+| Test (`it`) | Tarea | Marcador actual | Marcador nuevo |
+|---|---|---|---|
+| «Intro con la comprobación en curso no envía y la región de estado muestra «Comprobando el nombre…»…» | T-049 | `// SDD: 029 REQ-009 AC-010.6` | `// SDD: 029 REQ-009` |
+| «con nombre repetido al terminar muestra el aviso…» | T-049 | `// SDD: 029 REQ-009 AC-009.1` | sin cambios |
+| «cambiar el nombre después de Intro quita el texto de comprobación» | T-049 | `// SDD: 029 REQ-009 AC-010.6` | `// SDD: 029 REQ-009` |
+| «volver al mismo nombre con la comprobación en curso no muestra el texto antiguo ni envía» | T-077 | `// SDD: 029 REQ-009 AC-010.6` | `// SDD: 029 REQ-009` |
+| «Intro sin cambios no muestra el texto de comprobación» | T-049 | `// SDD: 029 REQ-009 AC-010.6` | `// SDD: 029 REQ-009` |
+| «Intro con `isSaving` no muestra el texto de comprobación» | T-049 | `// SDD: 029 REQ-009 AC-010.6` | `// SDD: 029 REQ-010 AC-010.6` |
+
+En `tasks.md`, la etiqueta de T-077 pasa a `[REQ-009]`, y la de T-049 a `[REQ-009, REQ-010, AC-009.1, AC-010.6]`,
+porque su caso de nombre repetido prueba AC-009.1 y su caso con `isSaving` prueba AC-010.6. La matriz quita T-077 de
+la fila de AC-010.6 y lo mantiene en la de AC-009.1 como test de REQ-009 sin AC propio, y deja T-049 en las filas de AC-009.1 y AC-010.6. R4 no añade ningún test (ver la sección 6).
+
 ## 6. Riesgos y mitigaciones
 | Riesgo | Probabilidad | Impacto | Mitigación |
 |---|---|---|---|
@@ -581,7 +612,7 @@ marcador `SDD: 029` y el REQ/AC más cercano:
 | El foco se queda en el cuerpo al deshabilitar los botones durante el guardado o al reordenar las listas | Media | Medio | Foco explícito tras cada resultado (botón «Editar» por `data-edit-food-id`, caja de búsqueda o campo «Nombre»); tests de AC-N001.1 a AC-N001.4 |
 | Generalizar el estado de la confirmación de borrado rompe la 028 | Media | Medio | Mismo efecto de cierre y mismas funciones de foco; los tests existentes de `FoodSearchPanel` deben seguir pasando sin cambios (Art. B5.3) |
 | Extraer `parse_custom_food_fields` y la validación compartida del esquema cambia mensajes u orden de la 022 | Baja | Medio | Refactor sin cambio de comportamiento; los tests de la 022 y la 028 (`test_meal_rules.py`, `schemas.test.ts`) siguen pasando |
-| Con un solo efecto por resultado, el mismo mensaje de error dos veces seguidas no movería el foco si React juntara el `setEditError(null)` y el nuevo mensaje en un render (F3, R1) | Baja | Bajo | `saveEdit` pone `editError` a `null` en el manejador del envío y los callbacks de TanStack Query llegan en una tarea posterior; un 409 siempre trae una clave distinta. Los tests de foco tras 409 y 500 de `FoodSearchPanel.test.tsx` lo cubren de punta a punta; si fallaran, el implementer escala en lugar de volver a añadir un segundo mecanismo |
+| Con un solo efecto por resultado, el mismo mensaje de error dos veces seguidas no movería el foco si React juntara el `setEditError(null)` y el nuevo mensaje en un render (F3, R1) | Baja | Bajo | `saveEdit` pone `editError` a `null` en el manejador del envío y los callbacks de TanStack Query llegan en una tarea posterior; un 409 siempre trae una clave distinta (con la misma clave «Guardar» está deshabilitado). Los tests de foco tras 409 y 500 de `FoodSearchPanel.test.tsx` cubren solo un primer fallo de punta a punta, no dos fallos seguidos con el mismo mensaje; ese caso lo sostiene el orden de los estados descrito, que se comprobó leyendo el código en la review 3 (R4), y el test de `CustomFoodEditForm` (T-076, casos 1 y 2) prueba que el formulario reacciona a cada resultado nuevo. Si un cambio futuro moviera `setEditError(null)` fuera del manejador del envío, el implementer escala en lugar de volver a añadir un segundo mecanismo |
 | Un 404 de edición por un fallo transitorio desvincula filas de un alimento que sí existe (F2) | Muy baja | Bajo | El servidor solo da 404 si el id no es válido o el alimento no existe o no es del usuario; es el mismo trato que la 028 da al borrado, y la fila se sigue guardando con `name` y `per_100g` (regla de la 028) |
 
 ## 7. Cumplimiento de la constitución
@@ -606,6 +637,9 @@ marcador `SDD: 029` y el REQ/AC más cercano:
   que el foco vuelve a «Nombre» tras un guardado fallido, ahora con el fallo modelado (`serverError` o `nameTakenKey`),
   y añade la guarda de que cambiar solo `isSaving` no mueve el foco. Lo hace el test-author, no el implementer
   (Art. B2), y el verifier confirma el rojo del caso 3 antes de implementar.
+- **Art. B4 y B5.3 en la iteración 4 (R3):** el test-author solo cambia comentarios de marcador para que cada uno
+  empareje el REQ con un AC suyo. Ningún test se debilita ni se quita, y cada AC conserva su cobertura. El cambio lo
+  pidió el usuario al corregir R3.
 - No hay ningún «DEBERÍA» incumplido.
 
 ## 8. ADRs

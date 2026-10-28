@@ -10,7 +10,7 @@
   "branch": "feat/029-edit-favorite-foods",
   "base_branch": "main",
   "created_at": "2026-10-28T08:05:41.152Z",
-  "stage": "verify",
+  "stage": "tasks",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -18,21 +18,12 @@
       "note": "Si"
     },
     "plan": {
-      "at": "2026-10-28T18:30:55.692Z",
-      "note": "auto (gate_mode=flow): plan para R1 y R2, solo frontend, sin cambios de spec"
+      "at": "2026-10-28T18:50:05.336Z",
+      "note": "auto (gate_mode=flow): plan para R3-R5, solo documentación y comentarios de tests"
     },
-    "tasks": {
-      "at": "2026-10-28T18:31:39.223Z",
-      "note": "auto (gate_mode=flow): T-076..T-079 para R1 y R2"
-    },
-    "tests": {
-      "at": "2026-10-28T18:34:13.694Z",
-      "note": "auto (gate_mode=flow): red check PASS, 2 en rojo legítimo y 2 guardas aceptadas"
-    },
-    "implement": {
-      "at": "2026-10-28T18:36:10.599Z",
-      "note": "auto (gate_mode=flow): R1-R2 implementados, frontend 1730 en verde, lint y tsc limpios, ratchet backend OK"
-    },
+    "tasks": null,
+    "tests": null,
+    "implement": null,
     "verify": null,
     "review": null,
     "docs": null,
@@ -43,17 +34,17 @@
     "plan": "4d3de4c",
     "tasks": "9ed91d6",
     "tests": "e210876",
-    "implement": "c20acdb"
+    "implement": "d0005f0"
   },
   "iterations": {
     "tests": 2,
     "implement": 0,
-    "review": 2
+    "review": 3
   },
   "max_iterations": 5,
   "red_check": {
-    "result": "PASS",
-    "at": "2026-10-28T18:34:00.108Z"
+    "result": null,
+    "at": null
   },
   "verify": {
     "result": null,
@@ -715,6 +706,78 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): R1-R2 implementados, frontend 1730 en verde, lint y tsc limpios, ratchet backend OK"
+    },
+    {
+      "at": "2026-10-28T18:36:10.912Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: d0005f0"
+    },
+    {
+      "at": "2026-10-28T18:36:11.106Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegar en verifier (full), tras R1-R2"
+    },
+    {
+      "at": "2026-10-28T18:41:38.764Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: verify full PASS iteración 4 (R1-R2): backend pytest 2681 passed, ratchet backend sin violaciones nuevas; frontend npm test 1730 passed (primera ejecución con un timeout ajeno en accountSwitch.test.tsx, pasa aislado y en la reejecución), lint, tsc y build OK; trazabilidad 61/61 AC con test SDD en verde, 11 REQ y NFR-001 en tareas, 61/61 tareas [x], sin skip nuevos"
+    },
+    {
+      "at": "2026-10-28T18:41:55.972Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS tras R1-R2"
+    },
+    {
+      "at": "2026-10-28T18:41:56.081Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS, backend 2681, frontend 1730, ratchet limpio"
+    },
+    {
+      "at": "2026-10-28T18:41:56.271Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegar en reviewer (tercera review, tras R1-R2)"
+    },
+    {
+      "at": "2026-10-28T18:44:59.490Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-28T18:44:59.584Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review 3 APPROVED: 0 bloqueantes, 0 mayores, 0 menores, 3 NIT"
+    },
+    {
+      "at": "2026-10-28T18:48:38.821Z",
+      "stage": "plan",
+      "event": "rework",
+      "note": "usuario: «Corrige R3, R4 Y R5»; R4 y R5 son del planner, R3 del test-author · review 3/5"
+    },
+    {
+      "at": "2026-10-28T18:50:05.232Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan actualizado para R3-R5"
+    },
+    {
+      "at": "2026-10-28T18:50:05.336Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan para R3-R5, solo documentación y comentarios de tests"
+    },
+    {
+      "at": "2026-10-28T18:50:05.432Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "R4: se corrige la frase en vez de añadir test; R3: marcadores de T-049 y T-077 pasan a REQ-009 (sin AC) y REQ-010 AC-010.6 para doble envío, solo comentarios, sin red check; R5: T-048 y T-075 anotadas como sustituidas por T-076 y T-078"
     }
   ]
 }
