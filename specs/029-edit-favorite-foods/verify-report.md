@@ -1,55 +1,46 @@
 # Verify report 029 — Editar alimentos propios en el buscador de «Añadir alimento»
 
-- **Modo:** red (tras la etapa tests, corrección R1-R2 de `review.md`, iteración 3 de tests: T-076 y T-077)
-- **Fecha:** 2026-10-28T18:33:04.767Z · **Rama:** `feat/029-edit-favorite-foods` @ `9ed91d6` (con los tests de T-076 y T-077 sin commitear) · **Base:** `main`
-- **Resultado:** PASS
+- **Modo:** red (tras la etapa tests, restringido a T-080 de `review.md` R3)
+- **Fecha:** 2026-10-28T18:52:01.605Z · **Rama:** `feat/029-edit-favorite-foods` @ `2d06efc` · **Base:** `main`
+- **Resultado:** FAIL
 
 ## 1. Comandos ejecutados
-Alcance: solo los tests nuevos de T-076 y T-077 (archivo `frontend/src/features/diary/components/CustomFoodEditForm.test.tsx`). El resto de tests de la feature pasó el red check anterior y no se vuelve a ejecutar.
+Ámbitos tocados por la feature: `backend`, `frontend`. T-080 solo cambia `frontend/src/features/diary/components/CustomFoodEditForm.test.tsx`, así que en esta comprobación solo se ejecuta ese archivo (comando `test_files` de `frontend`). El resto de comandos (lint, tsc, build, backend) no forman parte del modo red.
 
 | Ámbito | Comando (cwd) | Resultado | Resumen de la salida |
 |---|---|---|---|
-| frontend | `npx vitest run src/features/diary/components/CustomFoodEditForm.test.tsx` (`frontend`) | ⚠️ 2 rojos legítimos esperados, 2 guardas aceptadas que pasan | 38 tests en el archivo: 36 pasan y 2 fallan. Los dos fallos son el caso sin error de T-076 y T-077. Los dos casos con `serverError` y `nameTakenKey` de T-076 pasan (guardas aceptadas, ver sección 4). |
+| frontend | `npx vitest run src/features/diary/components/CustomFoodEditForm.test.tsx` (`frontend`) | ⚠️ | 1 archivo, 38 passed, 0 failed. El archivo carga. Ningún test nuevo está en rojo (ver sección 4) |
 
-No se ejecutan lint ni ratchet, typecheck ni build: en modo red no se piden.
-
-<!--
-Modo red: solo se ejecutan los tests nuevos (los que llevan el marcador SDD:). PASS significa que TODOS fallan
-por comportamiento ausente, no por errores de sintaxis, configuración, fixture o imports fuera del plan.
--->
+Notas: el scaffold check (paso 3 del modo red) no aplica en esta iteración, porque T-080 no añade esqueletos. Los esqueletos T-001 a T-011 ya se comprobaron en los red checks anteriores. Los tests de `hooks.test.tsx` y `FoodSearchPanel.test.tsx` no se han vuelto a ejecutar aquí; su última ejecución en verde es la del verify PASS de 2026-10-28T18:41:38.
 
 ## 2. Trazabilidad
-Solo las filas de los tests de esta corrección. Las demás filas de la feature se comprobaron en el red check anterior y en verify.
-
 | REQ / NFR | AC | Tareas | Tests con `SDD:` | Estado del test |
 |---|---|---|---|---|
-| NFR-001 | AC-N001.1 | T-076 | `CustomFoodEditForm.test.tsx` :: «de `isSaving` a no sin `serverError` ni `nameTakenKey` el foco sigue en «Calorías»» | Rojo legítimo (aserción: el foco pasa a «Nombre» con el código actual) |
-| NFR-001 | AC-N001.1 | T-076 | `CustomFoodEditForm.test.tsx` :: «de `isSaving` a no con `serverError` el foco va a «Nombre»» | Pasa hoy: guarda de regresión aceptada por el orquestador |
-| NFR-001 | AC-N001.1 | T-076 | `CustomFoodEditForm.test.tsx` :: «de `isSaving` a no con `nameTakenKey` (409) el foco va a «Nombre»» | Pasa hoy: guarda de regresión aceptada por el orquestador |
-| REQ-009 | AC-010.6 | T-077 | `CustomFoodEditForm.test.tsx` :: «volver al mismo nombre con la comprobación en curso no muestra el texto antiguo ni envía» | Rojo legítimo (aserción: «Comprobando el nombre…» sigue visible tras volver al mismo nombre) |
+| REQ-009 | AC-009.1 | T-032, T-038, T-049, T-077, T-080 | `frontend/src/features/diary/components/CustomFoodEditForm.test.tsx:325, 340, 520`; `frontend/src/features/food-library/hooks.test.tsx:71, 91, 170` | ✅ en `CustomFoodEditForm.test.tsx` (ejecutado). `hooks.test.tsx` no re-ejecutado |
+| REQ-010 | AC-010.6 | T-038, T-041, T-049, T-067, T-075, T-079, T-080 | `frontend/src/features/diary/components/CustomFoodEditForm.test.tsx:279, 582`; `frontend/src/features/diary/components/FoodSearchPanel.test.tsx:1892` | ✅ en `CustomFoodEditForm.test.tsx` (ejecutado). `FoodSearchPanel.test.tsx` no re-ejecutado |
 
-- AC sin test: — (en esta corrección, AC-N001.1 y AC-010.6 tienen al menos un test nuevo cada uno)
-- REQ sin tarea: —
-- Tareas sin marcar `[x]`: — (T-076 y T-077 están marcadas `[x]`; T-078 y T-079 son de implementación y no entran en esta etapa)
-- `skip`, `xfail`, `.only`, `.skip` o equivalentes nuevos en el diff: — (revisado en el diff del archivo de test: ninguno)
+Marcadores del archivo tras T-080, frente a la tabla de la sección 5 de `plan.md`:
+- `CustomFoodEditForm.test.tsx:501` (Intro con la comprobación en curso): `REQ-009`. Coincide.
+- `CustomFoodEditForm.test.tsx:520` (nombre repetido): `REQ-009 AC-009.1`. Coincide.
+- `CustomFoodEditForm.test.tsx:538` (cambiar el nombre después de Intro): `REQ-009`. Coincide.
+- `CustomFoodEditForm.test.tsx:553` (volver al mismo nombre): `REQ-009`. Coincide.
+- `CustomFoodEditForm.test.tsx:571` (Intro sin cambios): `REQ-009`. Coincide.
+- `CustomFoodEditForm.test.tsx:582` (Intro con `isSaving`): `REQ-010 AC-010.6`. Coincide.
+
+Diff de T-080 (`git diff` del archivo): 5 líneas cambiadas, todas comentarios `// SDD: 029 …`. No hay cambios en `it`, en nombres de test ni en aserciones. El archivo está en LF en el índice (`i/lf`).
+
+- AC sin test: — (para AC-009.1 y AC-010.6 hay marcadores; el resto de AC no se ha vuelto a comprobar en esta ejecución, sin cambios desde el verify PASS de 18:41:38)
+- REQ sin tarea: — (REQ-001 a REQ-011 y NFR-001 aparecen en `tasks.md`)
+- Tareas sin marcar `[x]`: — (0 casillas `- [ ]` en `tasks.md`)
+- `skip`, `xfail`, `.only`, `.skip` o equivalentes nuevos en el diff: — (`git diff main...HEAD` de `frontend` y `backend` no contiene ninguno)
 
 ## 3. Criterios de aceptación manuales
-Ninguno en esta corrección. AC-N001.1 y AC-010.6 se comprueban con tests automáticos.
+Ninguno en esta comprobación.
 
 ## 4. Fallos (si los hay)
 | # | Qué falló | Salida relevante (recortada) | Responsable probable (test-author · implementer · entorno) |
 |---|---|---|---|
-| — | Ninguno. Los dos tests en rojo son rojos legítimos esperados y no cuentan como fallo de la etapa | — | — |
+| 1 | Modo red sin rojo: T-080 solo cambia comentarios de marcador, así que ningún test nuevo falla. El criterio «todos los tests nuevos fallan por comportamiento ausente» no puede cumplirse. No es un fallo de código ni de tests. | `Test Files 1 passed (1)` · `Tests 38 passed (38)` | ninguno. Lo decide el orquestador: cerrar el red check de T-080 sin rojo o aceptarlo como excepción, como en los casos previos |
 
-Clasificación de los tests nuevos:
-- **Rojo legítimo (aserción fallida, comportamiento ausente):**
-  - T-076, caso «sin `serverError` ni `nameTakenKey`»: el foco va a «Nombre» tras `isSaving` a `false`, cuando el plan pide que siga en «Calorías». El código actual tiene el efecto `wasSaving` que R1 quita.
-  - T-077: tras escribir « 2» y borrarlo, «Comprobando el nombre…» sigue visible, porque `checkingNoticeFor` no se limpia en `onChange` (R2, apartado b).
-- **Guardas aceptadas que pasan hoy (excepciones del orquestador, ver `state.json` → `history`, evento `note` de 18:32:43):**
-  - T-076, caso «con `serverError`»: el foco va a «Nombre». Es regresión de comportamiento existente y no puede estar en rojo.
-  - T-076, caso «con `nameTakenKey`»: igual que el anterior.
-- **Rojo ilegítimo:** ninguno. El archivo carga, el import `UPDATE_CUSTOM_FOOD_FAILED_MESSAGE` desde `../errors` resuelve, no hay errores de sintaxis ni de fixture, y los 36 tests restantes del archivo pasan.
-
-Nota para el orquestador: el `tests_snapshot` de `state.json` (hash de `CustomFoodEditForm.test.tsx`) quedó desactualizado por diseño al cambiar este archivo en T-076 y T-077. Hay que refrescarlo al aceptar este red check.
-
-Notas (no son fallos): ninguna adicional.
+## Notas (no son fallos)
+- `state.json` → `tests_snapshot.sha256` de `CustomFoodEditForm.test.tsx` sigue siendo `9f1c2d34…`. No coincide con el SHA-256 del archivo en HEAD (`d7935c31…`) ni con el del disco (`effefd59…`). No he averiguado si el snapshot se calcula sobre contenido normalizado. No afecta al resultado, pero conviene revisarlo.

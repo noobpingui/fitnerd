@@ -10,7 +10,7 @@
   "branch": "feat/029-edit-favorite-foods",
   "base_branch": "main",
   "created_at": "2026-10-28T08:05:41.152Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,7 +25,10 @@
       "at": "2026-10-28T18:50:40.837Z",
       "note": "auto (gate_mode=flow): T-080 alinea marcadores; R5 anotado"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-28T18:59:00.763Z",
+      "note": "auto (gate_mode=flow): T-080 solo comentarios; excepción aprobada por el usuario"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -35,7 +38,7 @@
   "commits": {
     "spec": "afaf840",
     "plan": "71d4998",
-    "tasks": "9ed91d6",
+    "tasks": "2d06efc",
     "tests": "e210876",
     "implement": "d0005f0"
   },
@@ -46,8 +49,8 @@
   },
   "max_iterations": 5,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-28T18:59:00.386Z"
   },
   "verify": {
     "result": null,
@@ -58,15 +61,15 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-28T18:34:13.553Z",
-    "reason": "T-076 sustituye T-048 y T-077 nuevo, tras red check PASS (R1, R2)",
+    "at": "2026-10-28T18:59:00.478Z",
+    "reason": "renovación tras T-080 (comentarios de marcador); el hash anterior no coincidía con el archivo",
     "sha256": {
       "backend/tests/test_routes/test_food_library_routes.py": "f89294abc2703fcdca79ec97e9159b1547efc84a365e5c299eaad08e62cfcf9b",
       "backend/tests/test_routes/test_meal_library_routes.py": "3f0481d5bb1082539df6ede530746691db17dcb5814b29308dfefb2b4421432e",
       "backend/tests/test_services/test_food_library_service.py": "5a394e683f37e699262cb486dcae3083b1f8db4fa9b196afb539582db6069ebc",
       "backend/tests/test_services/test_meal_rules.py": "ca1490dd4c15d358a9e5d8743c58d3293056e0129117a2c02f900d797e53f272",
       "frontend/src/features/diary/components/AddFoodDialog.test.tsx": "530a2692839b855f3d3edc3654d66cc5d73962ccda8d95f3e12f1fd8730ab9cc",
-      "frontend/src/features/diary/components/CustomFoodEditForm.test.tsx": "d7935c31d3542b73c373567e84f6781cf3e2fbebe2096bb064d8b07086a4df4b",
+      "frontend/src/features/diary/components/CustomFoodEditForm.test.tsx": "9f1c2d34a8717ac6da0d258e7a7390b5098d696f663b60fc17082662af7d00b1",
       "frontend/src/features/diary/components/FoodSearchPanel.test.tsx": "b3649ef0a28075c67bdcce5efd66f468591cba5c95ea8d67135b2a12eaa7d910",
       "frontend/src/features/diary/components/MealPhotoDialog.test.tsx": "90ad03df1efe6933ed4a8e9b4acbd6b90a33457bd5aedc787c3fc724dbe91214",
       "frontend/src/features/diary/customFoodEdit.test.ts": "1186cebb1765bf3ebe29b68e8527767b9f978a489c513d8c3a91388fcb02b597",
@@ -805,6 +808,72 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): T-080 alinea marcadores; R5 anotado"
+    },
+    {
+      "at": "2026-10-28T18:50:41.125Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 2d06efc"
+    },
+    {
+      "at": "2026-10-28T18:50:41.309Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "T-080: solo comentarios de marcador, sin red check"
+    },
+    {
+      "at": "2026-10-28T18:50:41.408Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "T-080 solo cambia comentarios de marcador SDD: no hay comportamiento nuevo, por lo que no procede red check; se renueva el snapshot y verifica el verifier en verify"
+    },
+    {
+      "at": "2026-10-28T18:51:33.020Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "T-080: solo marcadores, 38 tests en verde"
+    },
+    {
+      "at": "2026-10-28T18:51:33.117Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "15 archivo(s) de test: T-080 solo cambia comentarios de marcador SDD (R3)"
+    },
+    {
+      "at": "2026-10-28T18:51:46.040Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red restringido a T-080 (el rework de plan puso red_check a null)"
+    },
+    {
+      "at": "2026-10-28T18:53:16.686Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: red FAIL (T-080, R3): solo cambian 5 marcadores SDD en CustomFoodEditForm.test.tsx; los marcadores coinciden con plan.md sección 5; AC-009.1 y AC-010.6 siguen trazados. El archivo carga y sus 38 tests pasan, pero ningún test nuevo está en rojo: T-080 no añade comportamiento, así que el modo red no puede dar PASS. Lo decide el orquestador."
+    },
+    {
+      "at": "2026-10-28T18:59:00.287Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Excepción aprobada por el usuario (AskUserQuestion, «Aceptar excepción»): el red check de T-080 se cierra sin rojo porque solo cambia 5 comentarios de marcador SDD; el verifier comprobó 6/6 marcadores y 38 tests en verde"
+    },
+    {
+      "at": "2026-10-28T18:59:00.386Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: excepción aprobada por el usuario: T-080 solo cambia comentarios, sin test en rojo; red checks anteriores PASS"
+    },
+    {
+      "at": "2026-10-28T18:59:00.478Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "15 archivo(s) de test: renovación tras T-080 (comentarios de marcador); el hash anterior no coincidía con el archivo"
+    },
+    {
+      "at": "2026-10-28T18:59:00.763Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): T-080 solo comentarios; excepción aprobada por el usuario"
     }
   ]
 }

@@ -68,7 +68,7 @@ Reglas:
 - [x] T-077 [REQ-009] (test) R2.b: con `pendingSearch([])`, escribir «Gallo pinto nuevo», Intro → «Comprobando el nombre…»; escribir « 2» y borrarlo hasta volver al mismo nombre con la comprobación en curso → el texto no aparece y `onSubmit` no se llama (rojo con el código actual) — `frontend/src/features/diary/components/CustomFoodEditForm.test.tsx`
 
 ### Frontend · correcciones de la review (iteración 4)
-- [ ] T-080 [REQ-009, REQ-010, AC-009.1, AC-010.6] (test) R3: alinear solo los comentarios de marcador `SDD: 029` del bloque de F4 y de T-077 en `CustomFoodEditForm.test.tsx` según la tabla de la sección 5 del plan (Intro con comprobación, cambiar el nombre, volver al mismo nombre e Intro sin cambios pasan a `REQ-009`; Intro con `isSaving` pasa a `REQ-010 AC-010.6`; el de nombre repetido no cambia); los `it`, sus nombres y sus aserciones no cambian, así que no hay red check — `frontend/src/features/diary/components/CustomFoodEditForm.test.tsx`
+- [x] T-080 [REQ-009, REQ-010, AC-009.1, AC-010.6] (test) R3: alinear solo los comentarios de marcador `SDD: 029` del bloque de F4 y de T-077 en `CustomFoodEditForm.test.tsx` según la tabla de la sección 5 del plan (Intro con comprobación, cambiar el nombre, volver al mismo nombre e Intro sin cambios pasan a `REQ-009`; Intro con `isSaving` pasa a `REQ-010 AC-010.6`; el de nombre repetido no cambia); los `it`, sus nombres y sus aserciones no cambian, así que no hay red check — `frontend/src/features/diary/components/CustomFoodEditForm.test.tsx`
 
 ## Fase B — Implementación (implementer)
 

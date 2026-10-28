@@ -498,7 +498,7 @@ describe("CustomFoodEditForm - Intro durante la comprobación del nombre (F4)", 
     return resolve
   }
 
-  // SDD: 029 REQ-009 AC-010.6
+  // SDD: 029 REQ-009
   it("Intro con la comprobación en curso no envía y la región de estado muestra «Comprobando el nombre…»; al terminar sin coincidencias desaparece, habilita «Guardar» y no envía", async () => {
     const user = userEvent.setup()
     const finish = pendingSearch([])
@@ -535,7 +535,7 @@ describe("CustomFoodEditForm - Intro durante la comprobación del nombre (F4)", 
     expect(onSubmit).not.toHaveBeenCalled()
   })
 
-  // SDD: 029 REQ-009 AC-010.6
+  // SDD: 029 REQ-009
   it("cambiar el nombre después de Intro quita el texto de comprobación", async () => {
     const user = userEvent.setup()
     pendingSearch([])
@@ -550,7 +550,7 @@ describe("CustomFoodEditForm - Intro durante la comprobación del nombre (F4)", 
     expect(screen.getByRole("status")).not.toHaveTextContent(CHECKING)
   })
 
-  // SDD: 029 REQ-009 AC-010.6
+  // SDD: 029 REQ-009
   it("volver al mismo nombre con la comprobación en curso no muestra el texto antiguo ni envía", async () => {
     const user = userEvent.setup()
     pendingSearch([])
@@ -568,7 +568,7 @@ describe("CustomFoodEditForm - Intro durante la comprobación del nombre (F4)", 
     expect(onSubmit).not.toHaveBeenCalled()
   })
 
-  // SDD: 029 REQ-009 AC-010.6
+  // SDD: 029 REQ-009
   it("Intro sin cambios no muestra el texto de comprobación", async () => {
     const user = userEvent.setup()
     const { onSubmit } = renderForm()
@@ -579,7 +579,7 @@ describe("CustomFoodEditForm - Intro durante la comprobación del nombre (F4)", 
     expect(onSubmit).not.toHaveBeenCalled()
   })
 
-  // SDD: 029 REQ-009 AC-010.6
+  // SDD: 029 REQ-010 AC-010.6
   it("Intro con `isSaving` no muestra el texto de comprobación", async () => {
     const user = userEvent.setup()
     pendingSearch([])
