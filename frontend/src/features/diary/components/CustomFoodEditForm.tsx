@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type ComponentProps, type KeyboardEvent, type ReactElement } from "react"
+import { useEffect, useId, useState, type ComponentProps, type KeyboardEvent, type ReactElement } from "react"
 import { useForm, useWatch, type FieldPath } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
@@ -81,16 +81,7 @@ export function CustomFoodEditForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Tras un guardado fallido (los botones estuvieron deshabilitados) el foco vuelve a «Nombre».
-  const wasSaving = useRef(false)
-  useEffect(() => {
-    if (wasSaving.current && !isSaving) form.setFocus("name")
-    wasSaving.current = isSaving
-    // form es estable.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSaving])
-
-  // Si el fallo llega sin que se vea el estado «guardando», el foco también vuelve a «Nombre».
+  // Tras un guardado fallido, por resultado, el foco vuelve a «Nombre».
   useEffect(() => {
     if (serverError !== null || nameTakenKey !== null) form.setFocus("name")
     // form es estable.
@@ -114,10 +105,6 @@ export function CustomFoodEditForm({
   ).macroSum?.message
 
   function handleSubmit(submitted: CustomFoodEditValues) {
-    if (!isSaving && check.checking) {
-      setCheckingNoticeFor(values.name)
-      return
-    }
     if (blocked) return
     onSubmit(customFoodEditPayload(submitted))
   }
@@ -154,6 +141,10 @@ export function CustomFoodEditForm({
                   maxLength={CUSTOM_NAME_MAX_LENGTH}
                   describedBy={showTaken ? takenId : null}
                   {...field}
+                  onChange={(event) => {
+                    setCheckingNoticeFor(null)
+                    field.onChange(event)
+                  }}
                 />
               </FormControl>
               <p id={takenId} role="status" aria-live="polite" className="text-sm text-destructive">

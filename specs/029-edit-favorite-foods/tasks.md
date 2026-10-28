@@ -97,8 +97,8 @@ Reglas:
 - [x] T-075 [REQ-009, NFR-001, AC-010.6, AC-N001.1] (impl) F3 y F4: Intro con `check.checking` y sin guardado no envía y fija `checkingNoticeFor`; la región `role="status"` muestra el mensaje mientras `!showTaken && check.checking && checkingNoticeFor === name`, sin añadirlo a `aria-describedby` ni envío automático; mantener el efecto `wasSaving` — `frontend/src/features/diary/components/CustomFoodEditForm.tsx`
 
 ### Frontend · correcciones de la review (iteración 3)
-- [ ] T-078 [NFR-001, AC-N001.1] (impl) R1: dejar un único efecto de foco a «Nombre» por resultado (`[serverError, nameTakenKey]`) y quitar el efecto `wasSaving` y su ref — `frontend/src/features/diary/components/CustomFoodEditForm.tsx`
-- [ ] T-079 [REQ-009, AC-010.6] (impl) R2: quitar de `handleSubmit` la rama inalcanzable de «comprobando» (la señal queda en `handleKeyDown`) y limpiar `checkingNoticeFor` en el `onChange` del campo «Nombre» envolviendo el de react-hook-form — `frontend/src/features/diary/components/CustomFoodEditForm.tsx`
+- [x] T-078 [NFR-001, AC-N001.1] (impl) R1: dejar un único efecto de foco a «Nombre» por resultado (`[serverError, nameTakenKey]`) y quitar el efecto `wasSaving` y su ref — `frontend/src/features/diary/components/CustomFoodEditForm.tsx`
+- [x] T-079 [REQ-009, AC-010.6] (impl) R2: quitar de `handleSubmit` la rama inalcanzable de «comprobando» (la señal queda en `handleKeyDown`) y limpiar `checkingNoticeFor` en el `onChange` del campo «Nombre» envolviendo el de react-hook-form — `frontend/src/features/diary/components/CustomFoodEditForm.tsx`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

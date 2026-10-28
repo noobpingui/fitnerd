@@ -10,7 +10,7 @@
   "branch": "feat/029-edit-favorite-foods",
   "base_branch": "main",
   "created_at": "2026-10-28T08:05:41.152Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,7 +29,10 @@
       "at": "2026-10-28T18:34:13.694Z",
       "note": "auto (gate_mode=flow): red check PASS, 2 en rojo legítimo y 2 guardas aceptadas"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-28T18:36:10.599Z",
+      "note": "auto (gate_mode=flow): R1-R2 implementados, frontend 1730 en verde, lint y tsc limpios, ratchet backend OK"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -39,7 +42,7 @@
     "spec": "afaf840",
     "plan": "4d3de4c",
     "tasks": "9ed91d6",
-    "tests": "2f0542f",
+    "tests": "e210876",
     "implement": "c20acdb"
   },
   "iterations": {
@@ -688,6 +691,30 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS, 2 en rojo legítimo y 2 guardas aceptadas"
+    },
+    {
+      "at": "2026-10-28T18:34:14.002Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: e210876"
+    },
+    {
+      "at": "2026-10-28T18:34:14.169Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegar en implementer (T-078, T-079; R1-R2)"
+    },
+    {
+      "at": "2026-10-28T18:36:10.501Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-078, T-079 hechas"
+    },
+    {
+      "at": "2026-10-28T18:36:10.599Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): R1-R2 implementados, frontend 1730 en verde, lint y tsc limpios, ratchet backend OK"
     }
   ]
 }
