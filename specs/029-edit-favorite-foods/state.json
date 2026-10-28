@@ -10,7 +10,7 @@
   "branch": "feat/029-edit-favorite-foods",
   "base_branch": "main",
   "created_at": "2026-10-28T08:05:41.152Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -21,7 +21,10 @@
       "at": "2026-10-28T18:30:55.692Z",
       "note": "auto (gate_mode=flow): plan para R1 y R2, solo frontend, sin cambios de spec"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-28T18:31:39.223Z",
+      "note": "auto (gate_mode=flow): T-076..T-079 para R1 y R2"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -31,7 +34,7 @@
   },
   "commits": {
     "spec": "afaf840",
-    "plan": "e378858",
+    "plan": "4d3de4c",
     "tasks": "45309f2",
     "tests": "2f0542f",
     "implement": "c20acdb"
@@ -604,6 +607,30 @@
       "stage": "plan",
       "event": "note",
       "note": "R1: un solo efecto por [serverError, nameTakenKey], se retira wasSaving y T-048 se reescribe (tests autorizados por el usuario al pedir corregir R1); R2: quitar rama inalcanzable y limpiar checkingNoticeFor en onChange"
+    },
+    {
+      "at": "2026-10-28T18:30:56.097Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 4d3de4c"
+    },
+    {
+      "at": "2026-10-28T18:30:56.285Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegar en task-breaker (R1-R2)"
+    },
+    {
+      "at": "2026-10-28T18:31:39.131Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "4 tareas nuevas: 2 test, 2 impl"
+    },
+    {
+      "at": "2026-10-28T18:31:39.223Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): T-076..T-079 para R1 y R2"
     }
   ]
 }

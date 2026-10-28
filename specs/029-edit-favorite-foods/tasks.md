@@ -63,6 +63,10 @@ Reglas:
 - [x] T-048 [NFR-001, AC-N001.1] (test) `CustomFoodEditForm` (F3): con `isSaving: true` y el foco en otro elemento, al pasar a `isSaving: false` el foco va a «Nombre» (único mecanismo; los tests de foco existentes de `FoodSearchPanel` siguen valiendo) — `frontend/src/features/diary/components/CustomFoodEditForm.test.tsx`
 - [x] T-049 [REQ-009, AC-010.6] (test) `CustomFoodEditForm` (F4): Intro durante la comprobación no envía y la región `role="status"` muestra «Comprobando el nombre…»; al terminar sin coincidencias desaparece, «Guardar» se habilita y no hay envío automático; con nombre repetido muestra el aviso de REQ-009; cambiar el nombre quita el texto; Intro sin cambios o con `isSaving` no muestra el texto — `frontend/src/features/diary/components/CustomFoodEditForm.test.tsx`
 
+### Frontend · correcciones de la review (iteración 3)
+- [ ] T-076 [NFR-001, AC-N001.1] (test) R1: sustituir el bloque `describe` de T-048 («foco al terminar un guardado fallido»; autorización del usuario recogida en el plan, sección 7) por tres casos con `rerender` y el foco puesto antes en «Calorías»: de `isSaving: true` a `false` con `serverError` (`UPDATE_CUSTOM_FOOD_FAILED_MESSAGE`) → foco en «Nombre»; con `nameTakenKey: "gallo pinto con huevo"` → foco en «Nombre»; sin `serverError` ni `nameTakenKey` → el foco sigue en «Calorías» (rojo legítimo) — `frontend/src/features/diary/components/CustomFoodEditForm.test.tsx`
+- [ ] T-077 [REQ-009, AC-010.6] (test) R2.b: con `pendingSearch([])`, escribir «Gallo pinto nuevo», Intro → «Comprobando el nombre…»; escribir « 2» y borrarlo hasta volver al mismo nombre con la comprobación en curso → el texto no aparece y `onSubmit` no se llama (rojo con el código actual) — `frontend/src/features/diary/components/CustomFoodEditForm.test.tsx`
+
 ## Fase B — Implementación (implementer)
 
 ### Backend
@@ -91,6 +95,10 @@ Reglas:
 - [x] T-073 [NFR-001, AC-N001.1] (impl) F3: quitar `nameFocusTick`, su estado, sus `set` en `saveEdit` y su efecto del panel; el foco a «Nombre» tras un error lo da solo el efecto `wasSaving` del formulario (si falla un test de foco existente, conservar el del panel y quitar el del formulario, nunca los dos) — `frontend/src/features/diary/components/FoodSearchPanel.tsx`
 - [x] T-074 [REQ-009] (impl) F4: exportar `CUSTOM_FOOD_NAME_CHECKING_MESSAGE = "Comprobando el nombre…"` — `frontend/src/features/diary/customFoodEdit.ts`
 - [x] T-075 [REQ-009, NFR-001, AC-010.6, AC-N001.1] (impl) F3 y F4: Intro con `check.checking` y sin guardado no envía y fija `checkingNoticeFor`; la región `role="status"` muestra el mensaje mientras `!showTaken && check.checking && checkingNoticeFor === name`, sin añadirlo a `aria-describedby` ni envío automático; mantener el efecto `wasSaving` — `frontend/src/features/diary/components/CustomFoodEditForm.tsx`
+
+### Frontend · correcciones de la review (iteración 3)
+- [ ] T-078 [NFR-001, AC-N001.1] (impl) R1: dejar un único efecto de foco a «Nombre» por resultado (`[serverError, nameTakenKey]`) y quitar el efecto `wasSaving` y su ref — `frontend/src/features/diary/components/CustomFoodEditForm.tsx`
+- [ ] T-079 [REQ-009, AC-010.6] (impl) R2: quitar de `handleSubmit` la rama inalcanzable de «comprobando» (la señal queda en `handleKeyDown`) y limpiar `checkingNoticeFor` en el `onChange` del campo «Nombre» envolviendo el de react-hook-form — `frontend/src/features/diary/components/CustomFoodEditForm.tsx`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |
@@ -136,7 +144,7 @@ Reglas:
 | REQ-008 | AC-008.3 | T-035, T-038 | T-064 |
 | REQ-008 | AC-008.4 | T-035, T-038 | T-064 |
 | REQ-008 | AC-008.5 | T-034, T-035, T-038 | T-063, T-064 |
-| REQ-009 | AC-009.1 | T-032, T-038, T-049 | T-062, T-067, T-074, T-075 |
+| REQ-009 | AC-009.1 | T-032, T-038, T-049, T-077 | T-062, T-067, T-074, T-075, T-079 |
 | REQ-009 | AC-009.2 | T-032 | T-062 |
 | REQ-009 | AC-009.3 | T-032 | T-062 |
 | REQ-009 | AC-009.4 | T-032 | T-062 |
@@ -146,12 +154,12 @@ Reglas:
 | REQ-010 | AC-010.3 | T-036, T-038, T-041 | T-065, T-067, T-069 |
 | REQ-010 | AC-010.4 | T-033, T-036, T-041, T-046, T-047 | T-062, T-065, T-069, T-072 |
 | REQ-010 | AC-010.5 | T-036, T-041 | T-065, T-069 |
-| REQ-010 | AC-010.6 | T-038, T-041, T-049 | T-067, T-075 |
+| REQ-010 | AC-010.6 | T-038, T-041, T-049, T-077 | T-067, T-075, T-079 |
 | REQ-010 | AC-010.7 | T-041 | T-069 |
 | REQ-011 | AC-011.1 | T-037, T-045 | T-066, T-070 |
 | REQ-011 | AC-011.2 | T-045 | T-070 |
 | REQ-011 | AC-011.3 | T-037, T-045 | T-066, T-070 |
-| NFR-001 | AC-N001.1 | T-038, T-042, T-048 | T-067, T-073, T-075 |
+| NFR-001 | AC-N001.1 | T-038, T-042, T-048, T-076 | T-067, T-073, T-075, T-078 |
 | NFR-001 | AC-N001.2 | T-042 | T-069 |
 | NFR-001 | AC-N001.3 | T-042 | T-069 |
 | NFR-001 | AC-N001.4 | T-042 | T-069 |
