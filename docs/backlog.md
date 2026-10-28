@@ -461,3 +461,32 @@ Feature: [specs/027-restore-token-hardening/](../specs/027-restore-token-hardeni
 - [ ] Exigir una longitud mínima a `SECRET_KEY` en producción (Q3, p. ej. 32 caracteres) en una spec posterior.
 - [x] Confirmar en el CI de GitHub (sin `SECRET_KEY` en el entorno) que los tests de producción de la 020 pasan (AC-N002.1); en local, `backend/.env` define `SECRET_KEY` y lo oculta.
 - [x] Añadir la fila de la 027 al historial de despliegues del runbook cuando se despliegue.
+
+## 028-diary-food-library · Biblioteca de alimentos del diario: personalizados reutilizables, recientes y favoritos, con búsqueda compartida (2026-10-28)
+
+Feature: [specs/028-diary-food-library/](../specs/028-diary-food-library/)
+
+- [ ] Pantalla «Mis alimentos» con edición de los alimentos propios.
+- [ ] Marcar favoritos desde las filas del diario.
+- [ ] Crear un alimento propio sin registrarlo en una comida.
+- [ ] Recetas o platos compuestos de varios alimentos.
+- [ ] Retirar `GET /api/foods/search` y los alimentos de USDA por `fdc_id` (sigue pendiente de la 023).
+- [ ] Si un alimento propio se borra desde otro dispositivo, el 400 al guardar la propuesta sigue sin indicar qué fila falla: habría que ampliar el contrato del error.
+- [ ] Si los favoritos huérfanos del catálogo se acumulan, contar los visibles en una sola consulta SQL (`count_visible_by_user`) en lugar de en el servicio.
+- [ ] Valorar un test que compruebe que la clave de nombre de la migración y `custom_food_name_key` coinciden en una batería de nombres.
+- [ ] El fixture `src/test/diaryFixtures.ts` podría traer `custom_food_id: null` para volver a hacerlo obligatorio en `MealItem`.
+- [ ] Valorar mover `useEscapeCapture` a otros diálogos en línea si aparecen más (por ahora solo lo usa la confirmación de borrado).
+- [ ] Foco al quitar un favorito desde «Favoritos» cuando el alimento desaparece de la lista (comportamiento previo a la 028): hoy puede quedar en `body` si no hay confirmación abierta.
+- [ ] Caso límite: si el texto cambia mientras el borrado está en curso y vuelve al valor original antes de que llegue el error, el foco salta al botón «Borrar».
+- [ ] F12 (NIT): el `eslint-disable` de `FoodSearchPanel.tsx:240` está justificado, pero contradice el plan 9.7 («sin eslint-disable»): ajustar el plan o el comentario de la línea 239.
+- [ ] F13 (NIT): el `eslint-disable` de `FoodSearchPanel.tsx:82` es de la iteración 1; se puede evitar llamando a `onQueryChange` desde el `onChange` de la caja, tras comprobar que `MealPhotoDialog` no depende de la llamada al montar.
+- [ ] F14 (NIT): el test de F11 en `schemas.test.ts:616-617` lleva el marcador AC-018.7, pero es una guarda estructural; marcarlo como `regression guard` sin AC.
+- [ ] Las guardas `?raw` de `schemas.ts` son frágiles si se renombra `gramsError`; sustituirlas por un test de tipos o de paridad sobre `proposalReviewSchema`.
+- [ ] Mover el tipo `FoodSearchFormValues` de `features/foods/schemas.ts` a `features/diary`, y `FoodDataType` de `features/foods/types.ts` a `diary/`.
+- [ ] Los tests de `/body-metrics` (`router.test.tsx` y `lazyRoutes.test.tsx`) rozan el timeout de 5 s cuando la suite corre completa (pasan solos): considerar subir su timeout o precargar el chunk.
+- [ ] ruff marca 2 errores de importación sin ordenar en `backend/tests/conftest.py`, previos a esta feature.
+- [ ] Anotar en la spec la ubicación del aviso de borrado fallido (en «Resultados»), que hoy solo fija el plan.
+- [ ] Corregir la firma de `useEscapeCapture` en T-134 de `tasks.md` y la nota «112 AC» (son 107 AC con marcador, según el verifier) en el estado de la feature.
+- [ ] Comprobación manual: AC-N002.2 con un lector de pantalla real (NVDA o VoiceOver) y, en el navegador, AC-017.7 y AC-N002.3 a AC-N002.5 (foco y posición de la confirmación en línea), antes del merge.
+- [ ] Rellenar la fila de la 028 en «Historial de despliegues» del runbook tras el despliegue.
+- [ ] En el caso B de la 028 del runbook, el comando de `flask db upgrade` contra producción necesita también `FRONTEND_BASE_URL=https://fitnerd.betofallas.dev` (spec 020) además de una `SECRET_KEY` válida; sin ella `ProductionConfig` no arranca. Aplicada en producción el 2026-10-27 con ambas exportadas solo para el comando.
