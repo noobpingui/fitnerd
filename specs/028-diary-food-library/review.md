@@ -1,102 +1,97 @@
 # Review 028 — Biblioteca de alimentos del diario: personalizados reutilizables, recientes y favoritos, con búsqueda compartida
 
-- **Iteración:** 2 de 5
-- **Diff revisado:** `git diff main...feat/028-diary-food-library` @ `9c8e7fd`, centrado en la iteración 2 (`56a780a..9c8e7fd`). Los cambios sin commitear están solo en `specs/028-diary-food-library/{backlog.md,state.json,verify-report.md}`, que son artefactos.
+- **Iteración:** 3 de 5
+- **Diff revisado:** `git diff main...feat/028-diary-food-library` @ `42d32da`, centrado en la iteración 3 (`9c8e7fd..42d32da`). Los cambios sin commitear están solo en `specs/028-diary-food-library/{backlog.md,state.json,verify-report.md}`, que son artefactos.
 - **Veredicto:** APPROVED
 
 ## 1. Resumen
-La iteración 2 corrige los hallazgos F1 a F8 de la primera review:
-- **F1 y F2:** confirmación en línea dentro del `<li>`, Escape capturado en `window` con `useEscapeCapture` y foco gestionado.
-- **F3:** el límite cuenta solo los favoritos visibles y se puede hacer `DELETE` de un favorito retirado.
-- **F4:** cota F × P con memoria por pareja, atajo `startswith` para formas cortas y descarte por longitud.
-- **F5:** se retiran `features/catalog/`, `foods/api.ts` y `catalogEntry`.
-- **F6:** `proposalReviewSchema` sin `as never`.
-- **F7:** `unlinkCustomFood` y `onCustomFoodDeleted`.
-- **F8:** el plan y la ADR-0036 reflejan la confirmación en línea.
+La iteración 3 corrige los tres hallazgos de la segunda review:
+- **F9:** la confirmación de borrado en línea, y su aviso de error, se cierran en silencio si cambia el texto de la caja o si el alimento deja de mostrarse en su lista.
+- **F10:** `typo_tolerance` usa `TYPO_MIN_FORM_LENGTH`.
+- **F11:** se retira `proposalFormSchema`.
 
-Todos quedan corregidos y no veo regresiones. Queda un caso límite menor de estado obsoleto en la confirmación en línea (F9) y dos NIT.
+Además, la ADR-0036 pasa a «Aceptada» (la editó la sesión principal, con la aprobación del usuario en el gate). Los tres hallazgos quedan corregidos y no veo regresiones en F1 a F8. Solo quedan tres NIT.
 
 ## 2. Cumplimiento de la spec
-Solo se detallan los AC nuevos o cambiados en la iteración 2. Los de la iteración 1 no cambian y siguen en verde: 121/121 AC en el verify, y las tablas de la iteración 1 siguen valiendo.
+Solo se detallan los AC que toca la iteración 3. El resto sigue como en las iteraciones 1 y 2: 121/121 AC en verde en el verify.
 
 | REQ / AC | ¿Implementado como se especificó? | Evidencia (archivo:línea o test) |
 |---|---|---|
-| REQ-009 AC-009.6 (límite con favoritos visibles) | Sí | `backend/services/food_library_service.py:132` y `:182-189` (`_visible_favorite_count`): cuenta todos los propios, porque el `CASCADE` no deja huérfanos, y del catálogo solo los que devuelve `get_by_ids`. Se calcula después de `_lock_user` (`:126`), así que la serialización con ADR-0020 se mantiene. Test: `test_food_library_routes.py:1031` y `test_food_library_service.py:733` |
-| REQ-009 AC-009.7 (`DELETE` de un favorito retirado) | Sí | `food_library_service.py:148-155`: `get_for_food` filtrado por `user_id`; si existe se borra, sin exigir el alimento. Test: `test_food_library_routes.py:1052` y `test_food_library_service.py:749` |
-| REQ-009 AC-009.8 (404 sin filtrar existencia) | Sí | `food_library_service.py:154-155`: si el usuario no tiene ese favorito, se pide `_require_food`. El favorito de otro usuario no se ve, porque `get_for_food` filtra por usuario, y no se toca. Un propio ajeno sigue dando 404 por `get_by_id_and_user`. No hay fuga de existencia: los ids del catálogo son públicos. Test: `test_food_library_routes.py:1070` y `test_food_library_service.py:764` |
-| REQ-017 AC-017.5 y AC-017.6 (Escape) | Sí | `frontend/src/lib/useEscapeCapture.ts:11-21`: `keydown` en `window` en fase de captura, que va antes que el listener de Radix en `document` en captura. Hace `stopPropagation` y `preventDefault`, y la limpieza del `useEffect` lo quita al desmontar o al pasar a inactivo. El listener solo existe mientras `DeleteConfirmation` está montada (`FoodSearchPanel.tsx:351-352`). Los tests usan el Dialog real de Radix: `AddFoodDialog.test.tsx:731`, donde un segundo Escape cierra el diálogo, y `MealPhotoDialog.test.tsx:1532`, sin confirmación de descartar. Los he ejecutado y están en verde |
-| REQ-017 AC-017.7 (confirmación dentro de su `<li>`) | Sí | `FoodSearchPanel.tsx:143-170` (`renderInline` por lista, que compara `list`, `kind` e `id`) y `LibraryFoodList.tsx:79` (`renderInline?.(food)` dentro del `<li>`). Es no modal y sin `aria-hidden`. Test: `FoodSearchPanel.test.tsx:998` |
-| NFR-002 AC-N002.3 a AC-N002.5 (foco) | Sí | Foco en «Cancelar» al montar (`FoodSearchPanel.tsx:348`). `focusTrigger` usa `isConnected`, con la caja como respaldo (`:103-106`), al cancelar (`:127-133`) y tras un error (`:118-121`). Tras un borrado correcto, `form.setFocus("query")` (`:113`). Tests: `FoodSearchPanel.test.tsx:1013-1088` |
-| NFR-004 AC-N004.1 a AC-N004.3 (cota F × P) | Sí | Detalle en las tres filas siguientes. Tests: `test_catalog_search_service.py:697-819` (contra el catálogo real de la 023), `test_food_library_service.py:825-850` y `test_catalog_routes.py:320` |
-| — atajo de formas cortas | Sí | `backend/services/catalog_search_service.py:155-158`. Con tolerancia 0, `startswith` equivale a la antigua condición `prefix_edit_distance ≤ 0` |
-| — descarte por longitud | Sí | `catalog_search_service.py:159-160`. `len(word) < len(form) - tol` es una cota inferior exacta de la distancia frente a cualquier inicio de la palabra, así que no cambia resultados |
-| — memoria por pareja | Sí | `catalog_search_service.py:161-167`. Es determinista y `typo_distance` sigue sumando con repeticiones (`:112-125`), así que el orden de REQ-006 no cambia. Hay un solo `TypoDistances` por búsqueda (`:195`) y la pasada exacta no lo usa |
-| REQ-018 AC-018.7 y AC-018.8 | Sí | `proposal.ts:92-96` (`unlinkCustomFood`) y `PhotoReview.tsx:74-81` (`replace` con `withEntryKey` en las filas desvinculadas). `proposalItems` envía `name` y `per_100g` cuando falta `customFoodId`. Tests: `MealPhotoDialog.test.tsx:1558` y `:1598`, `proposal.test.ts:544-580` y `FoodSearchPanel.test.tsx:1090-1130` |
-| REQ-020 (ampliado, F5) | Sí | Se borran `features/catalog/` entero, `features/foods/api.ts`, `foodSearchResponseSchema`, los tipos de USDA, `catalogEntry` y `src/test/catalogFixtures.ts`. Un grep confirma que no quedan imports a esos módulos. Guarda en `foodsRoute.test.tsx:66-180`. `features/foods/` conserva `format`, `schemas` (formulario de búsqueda), `searchError` y `types`, todos en uso |
+| REQ-017 AC-017.7 y NFR-002 AC-N002.3 (F9: la confirmación no reaparece ni roba el foco al volver la lista) | Sí | `frontend/src/features/diary/components/FoodSearchPanel.tsx:44-49` (`DeleteTarget.query`), `:144` (se guarda el texto al abrir), `:213-219` (`isTargetShown`, con los mismos datos que pintan las listas) y `:236-241` (efecto de cierre). Tests: `FoodSearchPanel.test.tsx:1157`, `:1175` y `:1216`. Los he ejecutado y están en verde |
+| REQ-017 AC-017.3 (F9: el aviso de error no se repinta) | Sí | `dismissDelete` (`FoodSearchPanel.tsx:222-228`) hace `deleteFood.reset()`, así que `isError` desaparece. Si la vista no cambia, el error se queda en su elemento, porque el efecto no cierra con `typed === target.query` y `shown`. Tests: `FoodSearchPanel.test.tsx:1196` y `:1251` |
+| NFR-002 AC-N002.4 (F9: fallo con el texto cambiado durante el borrado) | Sí, con la matización del plan 9.3 | `FoodSearchPanel.tsx:123-128`. Si el texto no cambió, `focusTrigger` actúa como antes. Si cambió, no mueve el foco (el usuario está escribiendo) y vuelve a anclar la confirmación al texto actual. La spec no cubre escribir durante un borrado en curso, y no cerrarla cumple «el foco no salta». Test: `FoodSearchPanel.test.tsx:1251` |
+| NFR-002 (el foco no queda en el cuerpo) | Sí | `FoodSearchPanel.tsx:226-227`. Como el efecto se ejecuta después del commit, si el elemento enfocado se desmontó, `activeElement` ya es `body` y el foco pasa a la caja. Test: `FoodSearchPanel.test.tsx:1216` (quitar de favoritos desde la propia lista) |
+| REQ-018 AC-018.7 (`onCustomFoodDeleted` no se pierde) | Sí | El efecto no actúa con `isPending` ni con `isSuccess` (`FoodSearchPanel.tsx:231-232` y `:237`), así que `reset()` nunca anula el `onSuccess` de `mutate` (`:117-122`). `startDelete` llama a `reset()` antes de abrir (`:143`), y `isSuccess` de un borrado anterior no bloquea el cierre de la confirmación siguiente: `reset` actualiza `getCurrentResult` de forma síncrona y el render lo lee. Siguen en verde los tests de 204 y 404 (`FoodSearchPanel.test.tsx:1090-1130`) y `MealPhotoDialog.test.tsx:1558` y `:1598` |
+| REQ-006 y NFR-004 (F10: sin cambio de comportamiento) | Sí | `backend/services/catalog_search_service.py:95-101`: solo cambia el literal `4` por la constante, que ahora se declara antes; `:176` (`typo_comparison_bound`) usa la misma. He ejecutado `pytest -k "catalog_search or typo"`: 108 tests en verde |
+| REQ-018 y REQ-019 a través de `proposalReviewSchema` (F11) | Sí | `frontend/src/features/diary/schemas.ts:187-233`: `proposalEntryUnion()` fija `key: z.string()`, y `proposalReviewSchema` conserva su anotación `z.ZodType<ProposalFormValues, ProposalFormValues>`. Un grep no encuentra referencias a `proposalFormSchema` fuera de las dos guardas negativas (`PhotoReview.source.test.ts:61` y `schemas.test.ts:618`) y de la ADR, que documenta la retirada. `tsc -b` está limpio |
+
+**Análisis del efecto de F9:**
+- **Sin bucles:** `dismissDelete` deja `target = null`, y en la ejecución siguiente el efecto sale en la primera guarda.
+- **Sin carreras con `isPending`:** `mutate` pone `pending` de forma síncrona, así que no hay un render entre el clic en «Borrar» y `isDeleting = true`.
+- **Un refetch no cierra la confirmación:** TanStack Query conserva `data` durante el refetch. Si el refetch falla con datos previos, `hasResults` pasa a `false`, la lista se oculta y la confirmación se cierra a la vez, lo que es coherente.
+- **Escape:** el listener se quita al desmontar `DeleteConfirmation`, como antes.
 
 ## 3. Cumplimiento del plan
-- **F7, `replace` en lugar de `form.getValues` + `update` por índice (plan 3.3, `PhotoReview`).** `unlinkDeleted` reconstruye las filas desde `entries` (fusión de `fields` y `useWatch`, con los gramos editados) y hace un solo `replace`. El cierre se captura en el render en que se confirma el borrado, mientras la vista `search` está activa y las filas no se pueden editar, así que los valores son los actuales. El implementer lo registró en `history`. Es una desviación justificada y equivalente.
-- **F3:** coincide con el plan. Se quita `FoodFavoriteRepository.count_by_user` y su fake. `CustomFoodRepository.count_by_user` se conserva porque lo usa el límite de 500.
-- **F4:** coincide con el plan (`TypoSearchStats`, `TypoDistances`, `typo_comparison_bound` y `stats` reenviado sin tocar rutas). Los contratos HTTP no cambian.
-- **F8:** `plan.md:554-590` y la ADR-0036 (decisión 9) describen la confirmación en línea, `useEscapeCapture` y el foco. Ya no se proponen `ConfirmDialog` ni `confirmContainer`. La ADR sigue en «Propuesta» (`ADR-0036…md:3` y el índice `README.md:42`).
+- **Desviación registrada: `eslint-disable-next-line react-hooks/exhaustive-deps` en el efecto de F9 (`FoodSearchPanel.tsx:240`).** El plan 9.7 decía «el efecto nuevo declara todas sus dependencias, sin `eslint-disable`», y el implementer lo anotó en `history` («a revisar»).
+  - **Lo he comprobado con oxlint** sobre copias del archivo en el scratchpad, sin tocar el repositorio:
+    - Sin la directiva, oxlint avisa `react-hooks(exhaustive-deps)` por `dismissDelete`.
+    - Sin las dos directivas aparece además un aviso `react(set-state-in-effect)` en la llamada `dismissDelete()`.
+    - Ninguna alternativa directa queda limpia. Meter `dismissDelete` en las dependencias haría que el efecto se ejecutara en cada render, aunque sin cambiar el resultado gracias a las guardas. Escribir su cuerpo dentro del efecto pone el `setState` en el propio efecto.
+  - **No hay riesgo de cierre obsoleto:** el efecto se crea en cada render y usa el `dismissDelete` de ese render. La omisión solo evita que se reejecute cuando cambia la identidad de la función.
+  - **Conclusión:** la desviación está justificada. Queda como NIT para que el plan refleje lo implementado (F12).
+- **Directiva de la línea 82 (`onQueryChange`).** Es de la iteración 1 (`56a780a`), no de esta. Se podría evitar llamando a `onQueryChange` desde el `onChange` de la caja (F13).
+- **NFR-003:** se limita a que `PhotoReview.tsx` no tenga avisos `incompatible-library`, y ni la iteración ni las directivas afectan a ese archivo. `npm run lint` (oxlint) está limpio y `PhotoReview.source.test.ts` en verde.
+- **F10 y F11:** coinciden con el plan 9.2 y 9.3. La ADR-0036 actualiza las decisiones 7 y 9 y su estado está en «Aceptada» en `ADR-0036…md:3` y en el índice (`docs/sdd/decisions/README.md:42`), editados en el commit `implement` por la sesión principal tras el «ADR-0036 Aceptada» del usuario (Art. P5.2).
 
 ## 4. Checklist de la constitución
 ### Parte I (base)
-- [x] B2: `snapshot --check` es idéntico (28 archivos). `git diff 1f2bed0 HEAD` no toca ningún archivo de test ni `fakes.py`: la implementación de la iteración 2 no modificó tests. Los cambios de tests de la iteración 2 están en el commit `tests` (`1f2bed0`), tras el red check PASS, con el `snapshot` registrado en `history`.
-- [x] B4: hay marcadores `SDD: 028 …` en todos los AC nuevos (AC-009.6 a AC-009.8, AC-017.5 a AC-017.7, AC-018.7 y AC-018.8, AC-N002.3 a AC-N002.5 y AC-N004.1 a AC-N004.3), y el verify da 121/121.
-- [x] B5.2 y B5.6: la excepción para los casos de `proposalReviewSchema`, que pasaban en el esqueleto declarativo y se aceptan como guardas de regresión, está **ratificada por el usuario** («si», `history` 2026-10-27T22:58:12). La iteración extra de tests la concedió el usuario («opción a»), y `max_iterations: 5` de `.sdd/config.json` se commiteó en `1f2bed0` con esa autorización. `state.json.max_iterations` sigue en 4 porque la CLI no lo permite subir; queda anotado en `history`.
-- [x] B5.3: no hay tests saltados. Los tests existentes que cambian responden a la spec aprobada en la iteración 2:
-  - favoritos visibles en AC-009.4 y AC-009.5;
-  - el error de borrado fuera de la confirmación;
-  - los mocks y aserciones de `features/catalog` y `foods/api`, módulos ya inexistentes. Su ausencia la vigila `foodsRoute.test.tsx`.
-
-  Se borran `CatalogResultList.test.tsx` y `catalog/schemas.test.ts` junto con el código que retira REQ-020 (F5), como prevé el plan. No hay llamadas a servicios externos. Los tests de NFR-004 leen `backend/scripts/data/food_catalog.csv` en modo de solo lectura.
-- [x] B5.7: según el verify, el ratchet de ruff no tiene violaciones nuevas y oxlint, `tsc -b` y `build` están limpios. Además desaparecen `as never` y `as unknown as` de `PhotoReview`.
+- [x] B2: `snapshot --check` es idéntico (28 archivos). `git diff 8dbf4e7 HEAD` no toca ningún archivo de test: la implementación de la iteración 3 no modificó tests. Los cambios de tests están en el commit `tests` (`8dbf4e7`), tras el red check PASS, con su `snapshot` en `history`.
+- [x] B4: los cinco tests de F9 trazan a AC-017.3, AC-017.7, AC-N002.3 y AC-N002.4, que es coherente. El test nuevo de F11 lleva `AC-018.7`, que no es lo que prueba (F14, NIT).
+- [x] B5.3: no hay tests saltados ni debilitados. Las adaptaciones de `schemas.test.ts` siguen la lista cerrada del plan 9.4:
+  - `proposalIssues` da `key` a las entradas, y los mensajes esperados no cambian;
+  - la contraste con `proposalFormSchema` se sustituye por `gramsError(grams)`, que no es tautológico y conserva `toEqual({0: message, 1: message})`;
+  - la parte «sin clave» de AC-019.1 la cubre el rechazo de entradas sin `key`.
+- [x] B5.2 y B5.6 (excepción ratificada): no se amplía. El bloque `describe("proposalReviewSchema")` mantiene 4 pruebas (9 casos) con el marcador `regression guard` (5 apariciones antes y después, contando la cabecera). Solo pierde la comparación con el esquema retirado. `max_iterations: 5` sigue en `.sdd/config.json:14`, sin más cambios.
+- [x] B5.4: no hay llamadas a servicios externos; se usan los mocks de `food-library/api`.
+- [x] B5.7: el ratchet de ruff no tiene violaciones nuevas (según el verify). He ejecutado `npm run lint` (sin avisos) y `npx tsc -b` (limpio).
 - [x] B6.5: no hay secretos ni variables nuevas.
 
 ### Parte II (proyecto)
-- [x] P1: fakes a mano (`FakeFoodFavoriteRepository`), sin `mock` ni `monkeypatch`; nombres en inglés en el backend y en español en el frontend; marcadores con el número de spec.
-- [x] P2.backend.1 y 2: el conteo de visibles vive en el servicio y usa repositorios inyectados. Solo `UnitOfWork` hace `commit` o `rollback`.
-- [x] P2.backend.3: `ResourceNotFoundError` y `ValidationError`.
-- [x] P2.backend.4 y P4: la iteración 2 no cambia modelos ni migraciones. La migración `e6a8c0d2f4b7` de la iteración 1 sigue siendo la única cabeza. Su paso manual queda para la etapa docs.
-- [x] P2.backend.5: se reutilizan `words`, `fold`, `query_forms`, `prefix_edit_distance` y `typo_tolerance`.
-- [x] P2.frontend.1: `useEscapeCapture` es genérico y va a `src/lib` con su test.
-- [x] P2.frontend.2 y 3: `apiFetch` y TanStack Query sin cambios; formularios con react-hook-form y zod.
-- [x] P2.general: textos y comentarios en español correcto.
-- [x] P3.1: aislamiento por usuario en `remove_favorite` y en `_visible_favorite_count`. `list_by_user` y `get_for_food` filtran por usuario.
-- [x] P3.2: entradas validadas en el servicio y en zod.
-- [x] P3.4: sin SQL concatenado.
-- [x] P5.1: archivos en LF en el índice (`git ls-files --eol`: `i/lf`).
-- [x] P5.2: la ADR-0036 sigue en «Propuesta». La acepta la sesión principal en este gate si el usuario lo aprueba.
-- [x] P5.3: no se edita `backend/scripts/data/**`; los tests solo lo leen.
+- [x] P1 (frontend): tests junto a su archivo, nombres en español que describen el comportamiento, red simulada en `api.ts` y sin dobles nuevos.
+- [x] P2.backend.5: F10 reutiliza la constante en lugar del literal.
+- [x] P2.backend.4 y P4: no hay cambios de modelo ni migración. La migración `e6a8c0d2f4b7` de la iteración 1 sigue siendo la única. Su paso manual en `docs/deploy-runbook.md` queda para la etapa docs.
+- [x] P2.frontend.3: el panel sigue con react-hook-form (`getValues`, `setFocus`) y TanStack Query.
+- [x] P2.frontend.5: oxlint sin errores ni avisos.
+- [x] P2.general.1: comentarios y textos en español correcto.
+- [x] P3: la iteración no cambia autorización, validación ni consultas.
+- [x] P5.2: la ADR-0036 la acepta la sesión principal con la aprobación explícita del usuario («ADR-0036 Aceptada» en los comentarios de la review 2).
 
-### Estado de los hallazgos de la iteración 1
+### Estado de los hallazgos de la iteración 2
 | # | Estado | Evidencia |
 |---|---|---|
-| F1 | Corregido | `useEscapeCapture` y los tests con Radix real (AC-017.5 y AC-017.6) |
-| F2 | Corregido | Confirmación en el `<li>` y foco gestionado (AC-017.7 y AC-N002.3 a AC-N002.5) |
-| F3 | Corregido | Spec Q11 y `food_library_service.py:132,148-155,182-189` |
-| F4 | Corregido | NFR-004 y `catalog_search_service.py:140-218` |
-| F5 | Corregido | Módulos borrados, sin imports colgantes; `tsc` y `build` en verde |
-| F6 | Corregido | `schemas.ts:233-235` (`proposalReviewSchema` anotado con `ProposalFormValues`) y `PhotoReview.tsx:59` |
-| F7 | Corregido | Spec Q12, `proposal.ts:92-96` y `PhotoReview.tsx:74-81` |
-| F8 | Corregido | `plan.md:554-590` y la decisión 9 de la ADR-0036 |
+| F9 | Corregido | `FoodSearchPanel.tsx:44-49,123-128,144,213-241` y los cinco tests de `FoodSearchPanel.test.tsx:1142-1279` |
+| F10 | Corregido | `catalog_search_service.py:95-101` |
+| F11 | Corregido | `schemas.ts:187-233`, sin referencias colgantes; test `schemas.test.ts:617` |
+
+F1 a F8 siguen corregidos. Los tests de Escape con Radix real (`AddFoodDialog.test.tsx` y `MealPhotoDialog.test.tsx`), los de foco, `unlinkCustomFood` y `onCustomFoodDeleted`, y los de favoritos visibles y cota F × P del backend están en verde. He ejecutado 355 tests de los cinco archivos afectados del frontend y 108 del backend.
 
 ## 5. Hallazgos
 | # | Severidad | Archivo:línea | Hallazgo | Responsable |
 |---|---|---|---|---|
-| F9 | MENOR | `frontend/src/features/diary/components/FoodSearchPanel.tsx:90-91,143-170,348` | `target` y `confirming` sobreviven a que la lista que contiene la confirmación se desmonte. **Ejemplo:** el usuario abre «Borrar» en «Favoritos», hace clic en la caja y escribe «ar»; la lista se oculta y la confirmación se desmonta. Mientras tanto, Escape ya no se captura y cierra el diálogo: es coherente, pero el estado sigue «abierto». Al borrar el texto, «Favoritos» vuelve a montarse con la confirmación abierta, y su `useEffect` (`:348`) roba el foco de la caja hacia «Cancelar» mientras el usuario escribe. Lo mismo pasa en «Resultados» si cambia la consulta y el alimento vuelve a aparecer, y con el aviso «No se pudo borrar el alimento.», que reaparece en el elemento. La spec no lo cubre, pero choca con la intención de NFR-002 (el foco no salta). **Arreglo sugerido:** cerrar la confirmación (`target = null`, `confirming = false`, `deleteFood.reset()`) cuando cambia el texto de la caja, o cuando su lista o su alimento dejan de mostrarse. | implementer |
-| F10 | NIT | `backend/services/catalog_search_service.py:96,140` | `TYPO_MIN_FORM_LENGTH = 4` se define junto a `TypoDistances`, pero `typo_tolerance` sigue usando el literal `4`. Si cambiara uno sin el otro, `typo_comparison_bound` y la tolerancia divergirían. Conviene que `typo_tolerance` use la constante. | implementer |
-| F11 | NIT | `frontend/src/features/diary/schemas.ts:228` | `proposalFormSchema`, con `key` opcional, ya no tiene uso en producción: `PhotoReview` usa `proposalReviewSchema` y solo lo importan `schemas.test.ts` y la comprobación de mensajes iguales. El plan (sección 3.2) lo conserva a propósito, pero es código que solo sostienen los tests. Se puede retirar más adelante y dejar las guardas sobre `proposalReviewSchema`. | planner |
+| F12 | NIT | `frontend/src/features/diary/components/FoodSearchPanel.tsx:239-240` y `specs/028-diary-food-library/plan.md` (9.7) | El efecto de F9 lleva `eslint-disable-next-line react-hooks/exhaustive-deps`, aunque el plan 9.7 dice «sin `eslint-disable`». La directiva está justificada: no hay cierre obsoleto, y quitarla, añadir `dismissDelete` a las dependencias o escribir su cuerpo en el efecto da avisos de oxlint (`exhaustive-deps` o `set-state-in-effect`). Pero el plan no describe lo implementado. Además, el comentario de la línea 239 («solo usa referencias estables y setters») omite que la razón real es no reejecutar el efecto en cada render. Conviene ajustar el plan o el comentario. | implementer |
+| F13 | NIT | `frontend/src/features/diary/components/FoodSearchPanel.tsx:79-83` | La directiva de `onQueryChange` es de la iteración 1. Se puede evitar llamando a `onQueryChange?.(event.target.value)` desde el `onChange` de la caja (`:259-262`), en lugar de con un efecto sobre `typed`, si nadie depende de la llamada inicial al montar. Hay que comprobarlo en `MealPhotoDialog`, que guarda el texto entre vistas. | implementer |
+| F14 | NIT | `frontend/src/features/diary/schemas.test.ts:616` | El test «`schemas.ts` ya no exporta `proposalFormSchema`…» lleva `SDD: 028 REQ-018 AC-018.7`, pero no prueba ese AC (desvincular filas al borrar un alimento propio): es una guarda estructural de F11. El plan 9.4 lo pedía así. Sería más fiel un marcador del tipo `SDD: 028 regression guard (F11)` sin AC, porque AC-018.7 ya tiene cobertura propia. | test-author |
 
 ## 6. Decisión
 **APPROVED.** No hay hallazgos BLOQUEANTES ni MAYORES.
-- F1 a F8 están corregidos tal como pide la spec de la iteración 2 y no veo regresiones.
-- Los tests están íntegros: el snapshot es idéntico, la implementación no tocó ningún test después del commit `tests` y los cambios de tests de la iteración 2 responden a la spec aprobada.
-- La excepción a B5.2 y B5.6 y el `max_iterations` 5 están autorizados por el usuario y constan en `history`.
-- La ADR-0036 sigue en «Propuesta» para que la acepte la sesión principal en este gate.
-- F9 (MENOR) y los dos NIT pueden ir al backlog o corregirse en esta feature si el usuario lo prefiere.
-- Siguen pendientes, como en la iteración 1, el paso manual de la migración `e6a8c0d2f4b7` en `docs/deploy-runbook.md` (etapa docs, Art. P4) y la prueba manual de AC-N002.2 con lector de pantalla.
+- F9, F10 y F11 están corregidos según el plan de la iteración 3 y no hay regresiones en F1 a F8.
+- Los tests están íntegros: el snapshot es idéntico y la implementación no tocó tests después del commit `tests` (`8dbf4e7`). Las adaptaciones de `schemas.test.ts` no debilitan ninguna aserción de comportamiento.
+- La excepción ratificada a B5.2 y B5.6 y el `max_iterations` 5 siguen en vigor y no se amplían.
+- La ADR-0036 está «Aceptada».
+- Los tres NIT pueden ir al backlog.
+- Siguen pendientes:
+  - el paso manual de la migración `e6a8c0d2f4b7` en `docs/deploy-runbook.md` (etapa docs, Art. P4);
+  - la prueba manual de AC-N002.2 con un lector de pantalla.
 
 ## Comentarios del usuario
 
