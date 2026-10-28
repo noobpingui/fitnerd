@@ -10,8 +10,8 @@
   "branch": "feat/029-edit-favorite-foods",
   "base_branch": "main",
   "created_at": "2026-10-28T08:05:41.152Z",
-  "stage": "close",
-  "status": "in_progress",
+  "stage": "done",
+  "status": "done",
   "approvals": {
     "spec": {
       "at": "2026-10-28T08:58:47.895Z",
@@ -45,7 +45,10 @@
       "at": "2026-10-28T19:08:56.365Z",
       "note": "auto (gate_mode=flow): README y fila de CLAUDE.md, sin runbook ni .env"
     },
-    "close": null
+    "close": {
+      "at": "2026-10-28T19:10:10.089Z",
+      "note": "Si"
+    }
   },
   "commits": {
     "spec": "afaf840",
@@ -53,7 +56,8 @@
     "tasks": "2d06efc",
     "tests": "0642be1",
     "implement": "d0005f0",
-    "review": "aa3c3b2"
+    "review": "aa3c3b2",
+    "docs": "d4ce2db"
   },
   "iterations": {
     "tests": 2,
@@ -977,6 +981,36 @@
       "stage": "docs",
       "event": "approved",
       "note": "auto (gate_mode=flow): README y fila de CLAUDE.md, sin runbook ni .env"
+    },
+    {
+      "at": "2026-10-28T19:08:56.781Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: d4ce2db"
+    },
+    {
+      "at": "2026-10-28T19:09:03.870Z",
+      "stage": "close",
+      "event": "started",
+      "note": "Cierre: checklist, backlog global y gate"
+    },
+    {
+      "at": "2026-10-28T19:09:12.023Z",
+      "stage": "close",
+      "event": "done",
+      "note": "checklist de hecho completa; backlog global actualizado"
+    },
+    {
+      "at": "2026-10-28T19:10:10.089Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Si"
+    },
+    {
+      "at": "2026-10-28T19:10:10.089Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
     }
   ]
 }

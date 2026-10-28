@@ -490,3 +490,30 @@ Feature: [specs/028-diary-food-library/](../specs/028-diary-food-library/)
 - [x] Comprobación manual: AC-N002.2 con un lector de pantalla real (NVDA o VoiceOver) y, en el navegador, AC-017.7 y AC-N002.3 a AC-N002.5 (foco y posición de la confirmación en línea), antes del merge. Hecho el 2026-10-27 en producción con Narrador de Windows 11 y Chrome: se anuncian «Buscando…», sin resultados, error de búsqueda y error de carga, y la confirmación de borrado y el recorrido del foco cumplen lo esperado. Sin probar con NVDA (opcional).
 - [x] Rellenar la fila de la 028 en «Historial de despliegues» del runbook tras el despliegue.
 - [x] En el caso B de la 028 del runbook, el comando de `flask db upgrade` contra producción necesita también `FRONTEND_BASE_URL=https://fitnerd.betofallas.dev` (spec 020) además de una `SECRET_KEY` válida; sin ella `ProductionConfig` no arranca. Aplicada en producción el 2026-10-27 con ambas exportadas solo para el comando.
+
+## 029-edit-favorite-foods · Editar alimentos propios en el buscador de «Añadir alimento» (2026-10-28)
+
+Detalle en [`specs/029-edit-favorite-foods/`](specs/029-edit-favorite-foods/backlog.md).
+
+- [ ] Deshacer una edición de un alimento propio.
+- [ ] Editar un alimento propio desde las filas del diario o desde una pantalla «Mis alimentos».
+- [ ] Endpoint dedicado para comprobar si un nombre ya existe, si la comprobación del cliente con la búsqueda se queda corta.
+- [ ] Usar `aria-disabled` en lugar de `disabled` para no perder el foco mientras se guarda, en la edición y en el borrado de la 028.
+- [ ] AC-003.3 (concurrencia) necesita el helper `concurrent_posts` de `test_meal_library_routes.py`. El test-author decide si lo copia o lo extrae a un módulo de utilidades de tests.
+- [ ] `backend/tests/test_routes/test_food_library_routes.py` define su propio helper `concurrent_patches`, copiado del patrón de `concurrent_posts` de `test_meal_library_routes.py`. Se podría extraer a un módulo común de utilidades de tests.
+- [ ] `ENDPOINTS` del test de sesión de la 028 («las ocho rutas») no incluye el `PATCH`. Sus 401 se cubren con tests propios (AC-004.4).
+- [ ] `frontend/src/features/food-library/types.ts` tiene un typo del scaffold: `RecentFood =LibraryFood`. Es solo de formato y no afecta a la compilación.
+- [ ] frontend/src/features/food-library/types.ts: falta el espacio en `RecentFood =LibraryFood` (corregir en implement).
+- [ ] backend/tests/test_routes/test_food_library_routes.py (AC-003.3, concurrencia): el test depende de una bandera interna («reached») del bloqueo; vigilar que no sea frágil al implementar.
+- [ ] `customFoodEditSchema` (`frontend/src/features/diary/schemas.ts`) es un `z.object` sin reglas. Sustituirlo por las reglas reales en T-063.
+- [ ] Incidente de proceso: el hook bloqueó escribir un script en el scratchpad (fuera de `specs/`). Usé un heredoc por stdin, que solo lee datos. Los logs de pytest y vitest sí quedaron en el scratchpad por redirección. No afecta al repositorio.
+- [ ] La nota de tasks en state.json dice «62 AC», pero la spec tiene 61 AC (AC-008.8 citado en REQ-005 es de la spec 028).
+- [ ] La aprobación de implement se dio con la nota «1 E501 nuevo» pendiente; la comprobación de ratchet debería exigirse antes de aprobar implement.
+- [ ] state.json, nota de implement: cita «62 AC»; la spec tiene 61 AC propios (el 62.º es AC-008.8, de la 028). Corregir la nota al cerrar.
+- [ ] Envío automático al terminar la comprobación del nombre si el usuario pulsó Intro mientras se comprobaba (F4, mejora opcional de UX).
+- [ ] En la 028, un 404 al borrar un alimento propio tampoco desvincula las filas de la propuesta (`confirmDelete` en el `onError`); se podría tratar igual que en F2.
+- [ ] Revisar si `accountSwitch.test.tsx` (test «B entra con el onboarding pendiente…») es inestable con carga: el timeout por defecto de 5 s es ajustado.
+- [ ] Algunos marcadores `SDD:` de la 029 emparejan un REQ con un AC de otro REQ (p. ej. `REQ-011 AC-010.4` en `MealPhotoDialog.test.tsx`, `REQ-009 AC-010.6` en `CustomFoodEditForm.test.tsx`) o solo llevan el REQ (`names.test.ts`, `CustomFoodEditForm.test.tsx` línea 357). No afecta a la cobertura, pero conviene alinearlos en la review.
+- [ ] Comprobación manual en navegador real de foco y anuncio a lectores de pantalla (AC-N001.1 a AC-N001.5 y aviso role="status" de AC-009.1); los tests lo cubren solo en jsdom.
+- [ ] accountSwitch.test.tsx dio timeout bajo carga en la iteración 4 (pasó al reejecutar; no reproducido en esta ejecución). Problema ajeno a la feature: anotar en docs/backlog.md.
+- [ ] R6 (NIT, test-author): alinear el marcador de `frontend/src/features/diary/components/MealPhotoDialog.test.tsx:2758` (T-047), por ejemplo como `REQ-010 AC-010.4`, o separar REQ-011 en su propio marcador
