@@ -10,14 +10,17 @@
   "branch": "feat/029-edit-favorite-foods",
   "base_branch": "main",
   "created_at": "2026-10-28T08:05:41.152Z",
-  "stage": "plan",
+  "stage": "tasks",
   "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-10-28T08:58:47.895Z",
       "note": "Si"
     },
-    "plan": null,
+    "plan": {
+      "at": "2026-10-28T09:04:36.453Z",
+      "note": "auto (gate_mode=flow): plan sin migración, PATCH food-library/custom, sin ADR"
+    },
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -26,7 +29,9 @@
     "docs": null,
     "close": null
   },
-  "commits": {},
+  "commits": {
+    "spec": "afaf840"
+  },
   "iterations": {
     "tests": 0,
     "implement": 0,
@@ -77,6 +82,36 @@
       "stage": "spec",
       "event": "approved",
       "note": "Si"
+    },
+    {
+      "at": "2026-10-28T08:58:53.369Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: afaf840"
+    },
+    {
+      "at": "2026-10-28T08:58:53.550Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Delegar en planner"
+    },
+    {
+      "at": "2026-10-28T09:04:36.364Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan listo"
+    },
+    {
+      "at": "2026-10-28T09:04:36.453Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan sin migración, PATCH food-library/custom, sin ADR"
+    },
+    {
+      "at": "2026-10-28T09:04:36.555Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Orden backend 404 id, 400 cuerpo, 404 fila, 409 nombre; chequeo de nombre en cliente reutiliza search; sin actualización optimista; sin ADR ni migración"
     }
   ]
 }
