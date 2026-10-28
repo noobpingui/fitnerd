@@ -10,7 +10,7 @@
   "branch": "feat/029-edit-favorite-foods",
   "base_branch": "main",
   "created_at": "2026-10-28T08:05:41.152Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -21,7 +21,10 @@
       "at": "2026-10-28T18:50:05.336Z",
       "note": "auto (gate_mode=flow): plan para R3-R5, solo documentación y comentarios de tests"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-28T18:50:40.837Z",
+      "note": "auto (gate_mode=flow): T-080 alinea marcadores; R5 anotado"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -31,7 +34,7 @@
   },
   "commits": {
     "spec": "afaf840",
-    "plan": "4d3de4c",
+    "plan": "71d4998",
     "tasks": "9ed91d6",
     "tests": "e210876",
     "implement": "d0005f0"
@@ -778,6 +781,30 @@
       "stage": "plan",
       "event": "note",
       "note": "R4: se corrige la frase en vez de añadir test; R3: marcadores de T-049 y T-077 pasan a REQ-009 (sin AC) y REQ-010 AC-010.6 para doble envío, solo comentarios, sin red check; R5: T-048 y T-075 anotadas como sustituidas por T-076 y T-078"
+    },
+    {
+      "at": "2026-10-28T18:50:05.703Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 71d4998"
+    },
+    {
+      "at": "2026-10-28T18:50:05.884Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Delegar en task-breaker (R3-R5)"
+    },
+    {
+      "at": "2026-10-28T18:50:40.740Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "T-080 nueva, anotaciones de sustitución"
+    },
+    {
+      "at": "2026-10-28T18:50:40.837Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): T-080 alinea marcadores; R5 anotado"
     }
   ]
 }
