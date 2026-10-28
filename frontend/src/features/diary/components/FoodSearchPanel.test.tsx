@@ -1136,6 +1136,149 @@ describe("FoodSearchPanel - confirmación de borrado en línea", () => {
 })
 
 // ---------------------------------------------------------------------------
+// Iteración 3 (F9): la confirmación pertenece a la vista en la que se abrió
+// ---------------------------------------------------------------------------
+
+describe("FoodSearchPanel - confirmación de borrado y cambio de vista", () => {
+  beforeEach(resetMocks)
+
+  const DELETE_LABEL = "Borrar Gallo pinto de tus alimentos"
+  const FAVORITE_GALLO = { ...GALLO, favorite: true }
+
+  async function renderFavorites() {
+    favoritesMock.mockResolvedValue([FAVORITE_GALLO])
+    const rendered = renderPanel()
+    const favorites = await screen.findByRole("list", { name: "Favoritos" })
+    return { ...rendered, favorites }
+  }
+
+  // Rojo hoy: la confirmación reaparece al volver «Favoritos» y roba el foco hacia «Cancelar».
+  // SDD: 028 REQ-017 AC-017.7 NFR-002 AC-N002.3
+  it("si se escribe con la confirmación abierta en «Favoritos» y se vacía la caja, «Favoritos» vuelve sin confirmación y el foco sigue en «Buscar alimento»", async () => {
+    const user = userEvent.setup()
+    const { favorites } = await renderFavorites()
+    await user.click(within(favorites).getByRole("button", { name: DELETE_LABEL }))
+    await within(favorites).findByRole("alertdialog")
+
+    await user.type(box(), "ar")
+    await user.clear(box())
+
+    const back = await screen.findByRole("list", { name: "Favoritos" })
+    expect(within(back).getByText("Gallo pinto")).toBeInTheDocument()
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
+    expect(box()).toHaveFocus()
+    expect(deleteMock).not.toHaveBeenCalled()
+  })
+
+  // Rojo hoy: al volver «Gallo pinto» a «Resultados» la confirmación reaparece.
+  // SDD: 028 REQ-017 AC-017.7 NFR-002 AC-N002.3
+  it("si cambia la consulta con la confirmación abierta en «Resultados» y «Gallo pinto» vuelve, sale sin confirmación", async () => {
+    const user = userEvent.setup()
+    searchMock.mockResolvedValue([GALLO])
+    renderPanel()
+    await typeAndEnter(user, "gallo")
+    const results = await screen.findByRole("list", { name: "Resultados" })
+    await user.click(within(results).getByRole("button", { name: DELETE_LABEL }))
+    await within(results).findByRole("alertdialog")
+
+    await user.type(box(), " p")
+    await user.keyboard("{Backspace}{Backspace}")
+
+    const back = await screen.findByRole("list", { name: "Resultados" })
+    expect(within(back).getByText("Gallo pinto")).toBeInTheDocument()
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
+    expect(box()).toHaveFocus()
+    expect(deleteMock).not.toHaveBeenCalled()
+  })
+
+  // Rojo hoy: el aviso se repinta al volver a mostrarse «Favoritos».
+  // SDD: 028 REQ-017 AC-017.3 AC-017.7
+  it("el aviso «No se pudo borrar el alimento.» no reaparece tras ocultar y volver a mostrar la lista", async () => {
+    const user = userEvent.setup()
+    deleteMock.mockRejectedValue(new ApiError(500, "boom"))
+    const { favorites } = await renderFavorites()
+    await user.click(within(favorites).getByRole("button", { name: DELETE_LABEL }))
+    const confirmation = await within(favorites).findByRole("alertdialog")
+    await user.click(within(confirmation).getByRole("button", { name: "Borrar" }))
+    const row = within(favorites).getByText("Gallo pinto").closest("li") as HTMLElement
+    expect(await within(row).findByText(DELETE_FAILED)).toBeInTheDocument()
+
+    await user.type(box(), "ar")
+    await user.clear(box())
+
+    const back = await screen.findByRole("list", { name: "Favoritos" })
+    expect(within(back).getByText("Gallo pinto")).toBeInTheDocument()
+    expect(screen.queryByText(DELETE_FAILED)).not.toBeInTheDocument()
+  })
+
+  // Rojo hoy: al volver el alimento a «Favoritos» reaparece la confirmación con el foco en «Cancelar».
+  // SDD: 028 REQ-017 AC-017.7 NFR-002 AC-N002.3
+  it("si el alimento sale de «Favoritos» con la confirmación abierta y vuelve, sale sin confirmación ni foco en «Cancelar»", async () => {
+    const user = userEvent.setup()
+    let favorited = true
+    favoritesMock.mockImplementation(async () => (favorited ? [FAVORITE_GALLO] : []))
+    recentMock.mockImplementation(async () => [
+      makeRecentFood({ ...GALLO, favorite: favorited }, 200),
+    ])
+    setFavoriteMock.mockImplementation(async (_food, favorite) => {
+      favorited = favorite
+    })
+    renderPanel()
+    const favorites = await screen.findByRole("list", { name: "Favoritos" })
+    const recent = await screen.findByRole("list", { name: "Recientes" })
+    await user.click(within(favorites).getByRole("button", { name: DELETE_LABEL }))
+    await within(favorites).findByRole("alertdialog")
+
+    await user.click(
+      within(favorites).getByRole("button", { name: "Quitar Gallo pinto de favoritos" })
+    )
+    await waitFor(() =>
+      expect(screen.queryByRole("list", { name: "Favoritos" })).not.toBeInTheDocument()
+    )
+    await user.click(
+      within(recent).getByRole("button", { name: "Añadir Gallo pinto a favoritos" })
+    )
+
+    const back = await screen.findByRole("list", { name: "Favoritos" })
+    expect(within(back).getByText("Gallo pinto")).toBeInTheDocument()
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Cancelar" })).not.toBeInTheDocument()
+    expect(deleteMock).not.toHaveBeenCalled()
+  })
+
+  // Rojo hoy: el fallo devuelve el foco al botón «Borrar» aunque el usuario esté escribiendo.
+  // SDD: 028 REQ-017 AC-017.3 NFR-002 AC-N002.4
+  it("si se escribe mientras el borrado está en curso y falla, el foco sigue en la caja y el aviso se ve hasta que cambia la vista", async () => {
+    const user = userEvent.setup()
+    const pending = deferred<void>()
+    deleteMock.mockReturnValue(pending.promise)
+    const { favorites } = await renderFavorites()
+    await user.click(within(favorites).getByRole("button", { name: DELETE_LABEL }))
+    const confirmation = await within(favorites).findByRole("alertdialog")
+    await user.click(within(confirmation).getByRole("button", { name: "Borrar" }))
+    await waitFor(() => expect(deleteMock).toHaveBeenCalledTimes(1))
+    await user.type(box(), "a")
+
+    await act(async () => {
+      pending.reject(new ApiError(500, "boom"))
+    })
+
+    const row = within(screen.getByRole("list", { name: "Favoritos" }))
+      .getByText("Gallo pinto")
+      .closest("li") as HTMLElement
+    expect(await within(row).findByText(DELETE_FAILED)).toBeInTheDocument()
+    expect(box()).toHaveFocus()
+
+    await user.type(box(), "r")
+    await user.clear(box())
+
+    const back = await screen.findByRole("list", { name: "Favoritos" })
+    expect(within(back).getByText("Gallo pinto")).toBeInTheDocument()
+    expect(screen.queryByText(DELETE_FAILED)).not.toBeInTheDocument()
+  })
+})
+
+// ---------------------------------------------------------------------------
 // NFR-002: accesibilidad
 // ---------------------------------------------------------------------------
 

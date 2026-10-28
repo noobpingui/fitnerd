@@ -17,10 +17,11 @@ import {
   mealPhotoAnalysisSchema,
   mealResponseSchema,
   parseDecimalText,
-  proposalFormSchema,
+  gramsError,
   proposalReviewSchema,
   type CustomFoodFormValues,
 } from "./schemas"
+import * as diarySchemas from "./schemas"
 import type { ProposalEntry } from "./types"
 
 const VALID_CUSTOM: CustomFoodFormValues = {
@@ -362,8 +363,13 @@ const SAUCE_ENTRY: ProposalEntry = {
 }
 
 // Mensajes de la propuesta por posición de la entrada (path entries.i.grams).
+// Spec 028 (F11): valida con proposalReviewSchema; da `key` a las entradas que no la traen.
 function proposalIssues(entries: ProposalEntry[]): Record<number, string> {
-  const result = proposalFormSchema.safeParse({ entries })
+  const keyed = entries.map((entry, index) => ({
+    ...entry,
+    key: (entry as { key?: string }).key ?? `k${index}`,
+  }))
+  const result = proposalReviewSchema.safeParse({ entries: keyed })
   const messages: Record<number, string> = {}
   if (result.success) return messages
   for (const issue of result.error.issues) {
@@ -375,7 +381,7 @@ function proposalIssues(entries: ProposalEntry[]): Record<number, string> {
   return messages
 }
 
-describe("proposalFormSchema", () => {
+describe("proposalReviewSchema · validación de la propuesta", () => {
   // SDD: 025 REQ-007 AC-007.3
   it.each([
     ["", GRAMS_RANGE_MESSAGE],
@@ -388,8 +394,8 @@ describe("proposalFormSchema", () => {
 
   // SDD: 025 REQ-007 AC-007.2
   it.each(["1", "2000", "150", "150,5", "150.5"])("acepta los gramos %j", (grams) => {
-    const result = proposalFormSchema.safeParse({
-      entries: [{ ...RICE_ENTRY, grams }],
+    const result = proposalReviewSchema.safeParse({
+      entries: [{ ...RICE_ENTRY, key: "k1", grams }],
     })
 
     expect(result.success).toBe(true)
@@ -409,7 +415,12 @@ describe("proposalFormSchema", () => {
 
   // SDD: 025 REQ-007 AC-007.3
   it("no valida los gramos de los alimentos sin coincidencia", () => {
-    const result = proposalFormSchema.safeParse({ entries: [RICE_ENTRY, SAUCE_ENTRY] })
+    const result = proposalReviewSchema.safeParse({
+      entries: [
+        { ...RICE_ENTRY, key: "k1" },
+        { ...SAUCE_ENTRY, key: "k2" },
+      ],
+    })
 
     expect(result.success).toBe(true)
   })
@@ -427,7 +438,7 @@ describe("proposalFormSchema", () => {
 
   // SDD: 028 REQ-019 AC-019.3
   it("conserva la `key` de cada entrada al validar (si no, no se emparejarían los gramos)", () => {
-    const result = proposalFormSchema.safeParse({
+    const result = proposalReviewSchema.safeParse({
       entries: [
         { ...RICE_ENTRY, key: "k1" },
         { ...SAUCE_ENTRY, key: "k2" },
@@ -451,7 +462,7 @@ describe("proposalFormSchema", () => {
 
   // SDD: 028 REQ-018 AC-018.4
   it("conserva el `customFoodId` de un alimento propio al validar", () => {
-    const result = proposalFormSchema.safeParse({
+    const result = proposalReviewSchema.safeParse({
       entries: [
         {
           kind: "custom",
@@ -470,20 +481,21 @@ describe("proposalFormSchema", () => {
 
   // SDD: 028 REQ-018 AC-018.2
   it("un personalizado creado en la propuesta, sin `customFoodId`, sigue siendo válido", () => {
-    const result = proposalFormSchema.safeParse({
+    const result = proposalReviewSchema.safeParse({
       entries: [
         {
           kind: "custom",
           name: "Gallo pinto",
           per100g: { calories_kcal: 180, protein_g: 6, carbs_g: 30, fat_g: 4 },
           grams: "200",
+          key: "k1",
         },
       ],
     })
 
     expect(result.success).toBe(true)
     // Contraste (028): con `customFoodId` el esquema si lo conserva.
-    const linked = proposalFormSchema.safeParse({
+    const linked = proposalReviewSchema.safeParse({
       entries: [
         {
           kind: "custom",
@@ -491,6 +503,7 @@ describe("proposalFormSchema", () => {
           name: "Gallo pinto",
           per100g: { calories_kcal: 180, protein_g: 6, carbs_g: 30, fat_g: 4 },
           grams: "200",
+          key: "k1",
         },
       ],
     })
@@ -498,12 +511,12 @@ describe("proposalFormSchema", () => {
   })
 
   // SDD: 028 REQ-019 AC-019.1
-  it("valida los gramos de una entrada con clave igual que sin ella", () => {
+  it("valida los gramos de una entrada con clave y la conserva", () => {
     expect(
       proposalIssues([{ ...RICE_ENTRY, grams: "0", key: "k1" } as ProposalEntry])
     ).toEqual({ 0: GRAMS_RANGE_MESSAGE })
     // Y la entrada valida con clave conserva la clave (028).
-    const valid = proposalFormSchema.safeParse({ entries: [{ ...RICE_ENTRY, key: "k1" }] })
+    const valid = proposalReviewSchema.safeParse({ entries: [{ ...RICE_ENTRY, key: "k1" }] })
     expect(valid.data?.entries[0]).toMatchObject({ key: "k1" })
   })
 })
@@ -558,12 +571,11 @@ describe("proposalReviewSchema", () => {
     ["del catálogo", RICE_ENTRY],
     ["personalizada", { ...KEYED_GALLO, key: undefined }],
     ["sin coincidencia", SAUCE_ENTRY],
-  ])("rechaza una entrada %s sin `key`, que el esquema de la 025 sí acepta", (_label, entry) => {
+  ])("rechaza una entrada %s sin `key`", (_label, entry) => {
     const review = proposalReviewSchema.safeParse({ entries: [entry] })
 
     expect(review.success).toBe(false)
     if (!review.success) expect(review.error.issues[0].path).toContain("key")
-    expect(proposalFormSchema.safeParse({ entries: [entry] }).success).toBe(true)
   })
 
   // SDD: 028 regression guard (esquema declarativo entregado completo en el scaffold)
@@ -585,11 +597,11 @@ describe("proposalReviewSchema", () => {
     ["0", GRAMS_RANGE_MESSAGE],
     ["2001", GRAMS_RANGE_MESSAGE],
     ["150,25", GRAMS_DECIMALS_MESSAGE],
-  ])("da con los gramos %j el mismo mensaje «%s» que proposalFormSchema", (grams, message) => {
+  ])("da con los gramos %j el mensaje «%s» de los gramos de la propuesta", (grams, message) => {
     const entries = [{ ...KEYED_RICE, grams }, { ...KEYED_GALLO, grams }, KEYED_SAUCE]
 
     expect(reviewIssues(entries)).toEqual({ 0: message, 1: message })
-    expect(reviewIssues(entries)).toEqual(proposalIssues(entries as ProposalEntry[]))
+    expect(reviewIssues(entries)).toEqual({ 0: gramsError(grams), 1: gramsError(grams) })
   })
 
   // SDD: 028 regression guard (esquema declarativo entregado completo en el scaffold)
@@ -598,4 +610,12 @@ describe("proposalReviewSchema", () => {
     expect(reviewIssues([KEYED_RICE, KEYED_SAUCE])).toEqual({})
     expect(proposalReviewSchema.safeParse({ entries: [KEYED_RICE, KEYED_SAUCE] }).success).toBe(true)
   })
+})
+
+// Spec 028, iteración 3 (F11): el esquema de la 025 se retira; solo lo usaban los tests.
+// SDD: 028 REQ-018 AC-018.7
+it("`schemas.ts` ya no exporta `proposalFormSchema`, que solo usaban los tests", () => {
+  expect(Object.keys(diarySchemas)).not.toContain("proposalFormSchema")
+  // Contraste: el esquema que lo sustituye sí sigue exportado.
+  expect(Object.keys(diarySchemas)).toContain("proposalReviewSchema")
 })
