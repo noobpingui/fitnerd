@@ -434,3 +434,122 @@ describe("CustomFoodEditForm - nombre repetido", () => {
     await waitFor(() => expect(saveButton()).toBeEnabled())
   })
 })
+
+describe("CustomFoodEditForm - foco al terminar un guardado fallido (F3)", () => {
+  // SDD: 029 NFR-001 AC-N001.1
+  it("con `isSaving` y el foco en otro elemento, al pasar a `isSaving: false` el foco vuelve a «Nombre»", async () => {
+    const user = userEvent.setup()
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    })
+    const tree = (isSaving: boolean) => (
+      <QueryClientProvider client={queryClient}>
+        <CustomFoodEditForm
+          food={GALLO}
+          isSaving={isSaving}
+          serverError={null}
+          nameTakenKey={null}
+          onSubmit={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      </QueryClientProvider>
+    )
+    const { rerender } = render(tree(true))
+    await user.click(caloriesField())
+    expect(caloriesField()).toHaveFocus()
+
+    rerender(tree(false))
+
+    await waitFor(() => expect(nameField()).toHaveFocus())
+  })
+})
+
+describe("CustomFoodEditForm - Intro durante la comprobación del nombre (F4)", () => {
+  const CHECKING = "Comprobando el nombre…"
+
+  function pendingSearch(result: Awaited<ReturnType<typeof searchFoodLibrary>>) {
+    let resolve!: () => void
+    const promise = new Promise<typeof result>((done) => {
+      resolve = () => done(result)
+    })
+    searchMock.mockReturnValue(promise)
+    return resolve
+  }
+
+  // SDD: 029 REQ-009 AC-010.6
+  it("Intro con la comprobación en curso no envía y la región de estado muestra «Comprobando el nombre…»; al terminar sin coincidencias desaparece, habilita «Guardar» y no envía", async () => {
+    const user = userEvent.setup()
+    const finish = pendingSearch([])
+    const { onSubmit } = renderForm()
+    await replaceText(user, nameField(), "Gallo pinto nuevo")
+    await waitFor(() => expect(searchMock).toHaveBeenCalled())
+    expect(saveButton()).toBeDisabled()
+
+    await user.keyboard("{Enter}")
+
+    expect(onSubmit).not.toHaveBeenCalled()
+    expect(screen.getByRole("status")).toHaveTextContent(CHECKING)
+    finish()
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent(""))
+    await waitFor(() => expect(saveButton()).toBeEnabled())
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+
+  // SDD: 029 REQ-009 AC-009.1
+  it("con nombre repetido al terminar muestra el aviso de nombre repetido en lugar del texto de comprobación", async () => {
+    const user = userEvent.setup()
+    const finish = pendingSearch([AVENA])
+    const { onSubmit } = renderForm()
+    await replaceText(user, nameField(), "avena casera")
+    await waitFor(() => expect(searchMock).toHaveBeenCalled())
+    await user.keyboard("{Enter}")
+    expect(screen.getByRole("status")).toHaveTextContent(CHECKING)
+
+    finish()
+
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent(TAKEN))
+    expect(screen.getByRole("status")).not.toHaveTextContent(CHECKING)
+    expect(saveButton()).toBeDisabled()
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+
+  // SDD: 029 REQ-009 AC-010.6
+  it("cambiar el nombre después de Intro quita el texto de comprobación", async () => {
+    const user = userEvent.setup()
+    pendingSearch([])
+    renderForm()
+    await replaceText(user, nameField(), "Gallo pinto nuevo")
+    await waitFor(() => expect(searchMock).toHaveBeenCalled())
+    await user.keyboard("{Enter}")
+    expect(screen.getByRole("status")).toHaveTextContent(CHECKING)
+
+    await user.type(nameField(), " 2")
+
+    expect(screen.getByRole("status")).not.toHaveTextContent(CHECKING)
+  })
+
+  // SDD: 029 REQ-009 AC-010.6
+  it("Intro sin cambios no muestra el texto de comprobación", async () => {
+    const user = userEvent.setup()
+    const { onSubmit } = renderForm()
+
+    await user.type(nameField(), "{Enter}")
+
+    expect(screen.getByRole("status")).toHaveTextContent("")
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+
+  // SDD: 029 REQ-009 AC-010.6
+  it("Intro con `isSaving` no muestra el texto de comprobación", async () => {
+    const user = userEvent.setup()
+    pendingSearch([])
+    const { onSubmit } = renderForm({ isSaving: true })
+    await replaceText(user, nameField(), "Gallo pinto nuevo")
+    await waitFor(() => expect(searchMock).toHaveBeenCalled())
+
+    await user.keyboard("{Enter}")
+
+    expect(screen.getByRole("status")).not.toHaveTextContent(CHECKING)
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+})

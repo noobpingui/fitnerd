@@ -2748,3 +2748,57 @@ describe("MealPhotoDialog - editar un alimento propio desde la propuesta", () =>
     expect(items[2]).toHaveTextContent("Gallo pinto con huevo")
   })
 })
+
+describe("MealPhotoDialog - editar un propio que ya no existe (F2)", () => {
+  beforeEach(() => {
+    resetMocks()
+    updateMock.mockReset()
+  })
+
+  // SDD: 029 REQ-011 AC-010.4
+  it("tras un 404 al editar, la fila pasa a «Personalizado» con sus valores anteriores y se guarda sin `custom_food_id`", async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    searchMock.mockResolvedValue([GALLO_PROPIO])
+    updateMock.mockRejectedValue(new ApiError(404, "No encontramos ese alimento."))
+    await reachProposal(user, makeAnalysis({ items: [RICE] }))
+    await user.click(button("Añadir otro alimento"))
+    await search(user, "gallo")
+    await chooseFood(user, "Gallo pinto")
+    await setGrams(user, "Gallo pinto", "250")
+    await user.click(button("Añadir otro alimento"))
+    await search(user, "gallo")
+
+    await user.click(await within(dialog()).findByRole("button", { name: "Editar Gallo pinto" }))
+    const form = await within(dialog()).findByRole("form", { name: "Editar «Gallo pinto»" })
+    const name = within(form).getByRole("textbox", { name: "Nombre" })
+    await user.clear(name)
+    await user.type(name, "Gallo pinto con huevo")
+    const saveButton = within(form).getByRole("button", { name: "Guardar" })
+    await waitFor(() => expect(saveButton).toBeEnabled())
+    await user.click(saveButton)
+    await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument())
+    await user.click(button("Volver a la propuesta"))
+
+    const items = rows()
+    expect(items).toHaveLength(2)
+    expect(items[1]).toHaveTextContent("Gallo pinto")
+    expect(items[1]).toHaveTextContent("Personalizado")
+    expect(within(items[1]).getByText(/^450 kcal/)).toBeInTheDocument()
+    expect(gramsField("Gallo pinto")).toHaveValue("250")
+    expect(items[0]).toHaveTextContent("Arroz blanco cocido")
+    expect(gramsField("Arroz blanco cocido")).toHaveValue("150")
+
+    await save(user)
+
+    await waitFor(() => expect(addMock).toHaveBeenCalledTimes(1))
+    expect(addMock.mock.calls[0][0].items).toEqual([
+      { catalog_id: "arroz-blanco-cocido", grams: 150 },
+      {
+        name: "Gallo pinto",
+        grams: 250,
+        per_100g: { calories_kcal: 180, protein_g: 6, carbs_g: 30, fat_g: 4 },
+      },
+    ])
+  })
+})

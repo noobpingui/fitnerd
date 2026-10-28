@@ -1,52 +1,51 @@
 # Verify report 029 — Editar alimentos propios en el buscador de «Añadir alimento»
 
-- **Modo:** full (etapa verify)
-- **Fecha:** 2026-10-28T17:19:12.419Z · **Rama:** `feat/029-edit-favorite-foods` @ `0d45818` · **Base:** `main`
-- **Resultado:** FAIL
+- **Modo:** red (tras la etapa tests, iteración 4: tests nuevos de T-046 a T-049, correcciones F2, F3 y F4 de `review.md`)
+- **Fecha:** 2026-10-28T17:44:08.741Z · **Rama:** `feat/029-edit-favorite-foods` @ `45309f2` · **Base:** `main`
+- **Resultado:** PASS
 
 ## 1. Comandos ejecutados
 | Ámbito | Comando (cwd) | Resultado | Resumen de la salida |
 |---|---|---|---|
-| backend | `".venv/Scripts/python.exe" -m pytest -q` (`backend`) | ✅ | 2681 passed, 0 fallos |
-| backend | ratchet de ruff: `node …/lint-ratchet.mjs backend` (raíz del repo) | ❌ | Exit 1. 1 violación nueva respecto a `main`: `E501` en `backend/tests/test_routes/test_food_library_routes.py:1226` (103 > 100). Los demás archivos tocados sin violaciones nuevas. |
-| frontend | `npm test` (`frontend`) | ✅ | 91 archivos, 1715 tests passed |
-| frontend | `npm run lint` (`frontend`) | ✅ | oxlint, exit 0, sin errores ni warnings listados |
-| frontend | `npx tsc -b` (`frontend`) | ✅ | exit 0, sin errores de tipos |
-| frontend | `npm run build` (`frontend`) | ✅ | build correcto en 6,54 s, exit 0 |
+| frontend | `npx vitest run` sobre `CustomFoodEditForm.test.tsx`, `FoodSearchPanel.test.tsx` y `MealPhotoDialog.test.tsx` con `-t "F[234]"` (`frontend`) | ✅ | 12 tests nuevos de T-046 a T-049 ejecutados: 5 fallan por comportamiento ausente (rojo legítimo) y 7 pasan con el código actual, todos ellos excepciones aceptadas por el orquestador (ver sección 4). Los 5 tests del bloque «acciones según el error (F2, F3, F4)» de `MealPhotoDialog` son existentes y no cuentan. |
+| backend | — | — | No se ejecuta: T-046 a T-049 son solo de frontend. |
 
-Los ámbitos tocados son `backend` y `frontend` (`state.json.scope`, confirmado con `changed --json`). Los comandos `lint`, `typecheck` y `build` de `backend` son `null` y no se ejecutan.
+Los tests existentes no se ejecutaron en este modo (alcance de la red: solo los tests nuevos). No se ejecutó lint ni typecheck, que no son comprobaciones de este modo.
 
 ## 2. Trazabilidad
-| REQ / NFR | AC | Tareas | Tests con `SDD: 029` | Estado del test |
+| REQ / NFR | AC | Tareas | Tests con `SDD:` | Estado del test |
 |---|---|---|---|---|
-| REQ-001 | AC-001.1 a AC-001.6 | T-021, T-023, T-052, T-053 | `test_food_library_service.py`, `test_food_library_routes.py` | ✅ |
-| REQ-002 | AC-002.1 a AC-002.7 | T-020, T-022, T-024, T-050, T-052 | `test_meal_rules.py`, `test_food_library_service.py`, `test_food_library_routes.py` | ✅ |
-| REQ-003 | AC-003.1 a AC-003.4 | T-022, T-025, T-027, T-051 a T-054 | `test_food_library_routes.py`, `test_food_library_service.py`, `test_meal_library_routes.py` | ✅ |
-| REQ-004 | AC-004.1 a AC-004.4 | T-022, T-026, T-052, T-053 | `test_food_library_routes.py`, `test_food_library_service.py` | ✅ |
-| REQ-005 | AC-005.1 a AC-005.4 | T-027, T-028, T-054 | `test_meal_library_routes.py` | ✅ |
-| REQ-006 | AC-006.1 a AC-006.3 | T-039, T-044, T-068, T-070 | `FoodSearchPanel.test.tsx`, `MealPhotoDialog.test.tsx` | ✅ |
-| REQ-007 | AC-007.1 a AC-007.8 | T-034, T-038, T-040, T-043, T-044, T-063, T-067, T-069 | `CustomFoodEditForm.test.tsx`, `FoodSearchPanel.test.tsx`, `AddFoodDialog.test.tsx`, `MealPhotoDialog.test.tsx`, `schemas.test.ts` | ✅ |
-| REQ-008 | AC-008.1 a AC-008.5 | T-034, T-035, T-038, T-063, T-064 | `customFoodEdit.test.ts`, `CustomFoodEditForm.test.tsx`, `schemas.test.ts` | ✅ |
-| REQ-009 | AC-009.1 a AC-009.5 | T-030, T-032, T-038, T-060, T-062 | `names.test.ts`, `hooks.test.tsx`, `CustomFoodEditForm.test.tsx` | ✅ |
-| REQ-010 | AC-010.1 a AC-010.7 | T-031, T-033, T-036, T-038, T-041, T-061 a T-065, T-069 | `api.test.ts`, `hooks.test.tsx`, `errors.test.ts`, `CustomFoodEditForm.test.tsx`, `FoodSearchPanel.test.tsx` | ✅ |
-| REQ-011 | AC-011.1 a AC-011.3 | T-037, T-045, T-066, T-070 | `proposal.test.ts`, `MealPhotoDialog.test.tsx` | ✅ |
-| NFR-001 | AC-N001.1 a AC-N001.5 | T-038, T-042, T-067, T-069 | `CustomFoodEditForm.test.tsx`, `FoodSearchPanel.test.tsx` | ✅ |
+| REQ-010 | AC-010.4 | T-046 | `FoodSearchPanel.test.tsx` › «un 404 al editar llama una vez a `onCustomFoodDeleted` con el id 12» | ✅ rojo legítimo (`expected "vi.fn()" to be called 1 times, but got 0 times`) |
+| REQ-010 | AC-010.4 | T-046 | `FoodSearchPanel.test.tsx` › «un 409 / 400 / 500 al editar no llama a `onCustomFoodDeleted`» (3 casos) | ⚠️ pasa con el código actual (excepción 1) |
+| REQ-010 | AC-010.4 | T-046 | `FoodSearchPanel.test.tsx` › «un 200 solo llama a `onCustomFoodEdited`, no a `onCustomFoodDeleted`» | ⚠️ pasa con el código actual (excepción 1) |
+| REQ-011 | AC-010.4 | T-047 | `MealPhotoDialog.test.tsx` › «tras un 404 al editar, la fila pasa a «Personalizado» con sus valores anteriores y se guarda sin `custom_food_id`» | ✅ rojo legítimo (la petición lleva `custom_food_id: 12` donde se espera `name`, `per_100g`) |
+| NFR-001 | AC-N001.1 | T-048 | `CustomFoodEditForm.test.tsx` › «con `isSaving` y el foco en otro elemento, al pasar a `isSaving: false` el foco vuelve a «Nombre»» | ⚠️ pasa con el código actual (excepción 3) |
+| REQ-009 | AC-010.6 | T-049 | `CustomFoodEditForm.test.tsx` › «Intro con la comprobación en curso no envía y la región de estado muestra «Comprobando el nombre…»…» | ✅ rojo legítimo (la región `role="status"` está vacía) |
+| REQ-009 | AC-009.1 | T-049 | `CustomFoodEditForm.test.tsx` › «con nombre repetido al terminar muestra el aviso de nombre repetido en lugar del texto de comprobación» | ✅ rojo legítimo (`expect(element).toHaveTextContent()`, la región no muestra el texto) |
+| REQ-009 | AC-010.6 | T-049 | `CustomFoodEditForm.test.tsx` › «cambiar el nombre después de Intro quita el texto de comprobación» | ✅ rojo legítimo (`expect(element).toHaveTextContent()`, la región no muestra el texto) |
+| REQ-009 | AC-010.6 | T-049 | `CustomFoodEditForm.test.tsx` › «Intro sin cambios no muestra el texto de comprobación» | ⚠️ pasa con el código actual (excepción 2) |
+| REQ-009 | AC-010.6 | T-049 | `CustomFoodEditForm.test.tsx` › «Intro con `isSaving` no muestra el texto de comprobación» | ⚠️ pasa con el código actual (excepción 2) |
 
-- AC sin test: — (los 61 AC de la spec tienen al menos un marcador `SDD: 029` y todos esos tests pasan. La cifra «62 AC» de la nota de `state.json` no coincide con la spec; ver backlog.)
-- REQ sin tarea: — (REQ-001 a REQ-011 y NFR-001 aparecen en `tasks.md`)
-- Tareas sin marcar `[x]`: — (52 de 52 marcadas)
-- `skip`, `xfail`, `.only`, `.skip`, `.todo` o equivalentes nuevos en el diff (`git diff main...HEAD`): —
-
-Nota: el AC-008.8 que cita el texto de REQ-005 es de la spec 028 y no es un AC de esta feature.
+- AC sin test: —
+- REQ sin tarea: —
+- Tareas sin marcar `[x]`: — (T-046 a T-049 están marcadas `[x]`; T-071 a T-075 siguen sin hacer, como corresponde a la fase de implementación)
+- `skip`, `xfail`, `.only`, `.skip` o equivalentes nuevos en el diff: — (revisado en el diff de los tres archivos de test)
 
 ## 3. Criterios de aceptación manuales
-Ninguno. Todos los AC de la spec tienen test automático, incluidos los de foco y accesibilidad (NFR-001). La spec no define criterios visuales.
+Ninguno en esta comprobación.
 
 ## 4. Fallos (si los hay)
-| # | Qué falló | Salida relevante (recortada) | Responsable probable (test-author · implementer · entorno) |
-|---|---|---|---|
-| 1 | Ratchet de ruff del backend: 1 violación nueva (E501) | `backend/tests/test_routes/test_food_library_routes.py:1226: Line too long (103 > 100)`. La línea es `client, headers, food_id, edit_payload(calories_kcal=calories, protein_g=0, carbs_g=0, fat_g=0)` dentro de `test_editing_with_calories_out_of_range_is_400`. El archivo existía en `main` sin violaciones, así que es nueva. Art. B5.7: el código nuevo o modificado no debe introducir violaciones de lint. | test-author (la línea está en un archivo de test, que no puede tocar el implementer) |
+Ningún test nuevo pasa sin implementación fuera de las excepciones aceptadas por el orquestador (nota de `state.json`, evento «note» de 2026-10-28T17:44:04). Los 7 tests que pasan con el código actual son:
 
-## 5. Observaciones
-- Lo de la etapa implement se aprobó con esta violación pendiente de la nota «ratchet backend: 1 E501 nuevo en un test»; se detecta ahora.
-- Los archivos de test, los `.ts` de producción y `tasks.md` no se han modificado en esta etapa.
+| # | Qué pasa | Salida relevante (recortada) | Responsable probable (test-author · implementer · entorno) |
+|---|---|---|---|
+| E1 | Excepción 1, `FoodSearchPanel` (F2): «un 409», «un 400», «un 500» y «un 200» no llaman a `onCustomFoodDeleted` (4 tests) | Pasan. Son guardas negativas: `onCustomFoodDeleted` no se llama en ningún caso hoy. | — (excepción aceptada) |
+| E2 | Excepción 2, `CustomFoodEditForm` (F4): «Intro sin cambios» e «Intro con `isSaving`» no muestran el texto de comprobación (2 tests) | Pasan. Guardas negativas: la región está vacía hoy. | — (excepción aceptada) |
+| E3 | Excepción 3, `CustomFoodEditForm` (F3): «al pasar a `isSaving: false` el foco vuelve a «Nombre»» (1 test) | Pasa: el mecanismo `nameFocusTick` del panel ya da el foco. F3 elimina un duplicado sin cambio observable. | — (excepción aceptada) |
+
+Tests con rojo legítimo (no son fallos, se listan para trazabilidad):
+- `FoodSearchPanel` (F2): «un 404 al editar llama una vez a `onCustomFoodDeleted` con el id 12». Fallo: `expected "vi.fn()" to be called 1 times, but got 0 times`. Comportamiento ausente.
+- `MealPhotoDialog` (F2): «tras un 404 al editar…». Fallo: `expected [ … ] to deeply equal [ … ]`; la petición de `POST /api/meals` lleva `custom_food_id: 12` donde se espera `name` y `per_100g` sin `custom_food_id`. Comportamiento ausente.
+- `CustomFoodEditForm` (F4): «Intro con la comprobación en curso…», «con nombre repetido al terminar…» y «cambiar el nombre después de Intro…». Fallo: `expect(element).toHaveTextContent()`; la región `role="status"` no muestra «Comprobando el nombre…». Comportamiento ausente.
+
+Ningún test nuevo falla por sintaxis, configuración, fixture ni imports fuera del plan.

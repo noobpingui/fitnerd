@@ -2019,3 +2019,60 @@ describe("FoodSearchPanel - foco al editar", () => {
     await waitFor(() => expect(nameInput(within(form))).toHaveFocus())
   })
 })
+
+describe("FoodSearchPanel - aviso al borrar un propio que ya no existe al editar (F2)", () => {
+  beforeEach(resetMocks)
+
+  async function editAndSave(onCustomFoodDeleted: () => void, onCustomFoodEdited = vi.fn()) {
+    const user = userEvent.setup()
+    libraryBackend([FAV_GALLO])
+    renderPanel({ onCustomFoodDeleted, onCustomFoodEdited })
+    const section = await openList("Favoritos")
+    await user.click(within(section).getByRole("button", { name: EDIT_LABEL }))
+    const form = await within(section).findByRole("form", { name: FORM_NAME })
+    await changeText(user, nameInput(within(form)), "Gallo pinto con huevo")
+    await waitFor(() => expect(within(form).getByRole("button", { name: "Guardar" })).toBeEnabled())
+    return { user, form, onCustomFoodEdited }
+  }
+
+  // SDD: 029 REQ-010 AC-010.4
+  it("un 404 al editar llama una vez a `onCustomFoodDeleted` con el id 12", async () => {
+    const onCustomFoodDeleted = vi.fn()
+    const { user, form } = await editAndSave(onCustomFoodDeleted)
+    updateMock.mockRejectedValue(new ApiError(404, NOT_FOUND))
+
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+
+    await waitFor(() => expect(onCustomFoodDeleted).toHaveBeenCalledTimes(1))
+    expect(onCustomFoodDeleted).toHaveBeenCalledWith(12)
+  })
+
+  // SDD: 029 REQ-010 AC-010.4
+  it.each([
+    ["409", new ApiError(409, NAME_TAKEN)],
+    ["400", new ApiError(400, "Las calorías por 100 g deben estar entre 0 y 900.")],
+    ["500", new ApiError(500, "boom")],
+  ])("un %s al editar no llama a `onCustomFoodDeleted`", async (_label, error) => {
+    const onCustomFoodDeleted = vi.fn()
+    const { user, form } = await editAndSave(onCustomFoodDeleted)
+    updateMock.mockRejectedValue(error)
+
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+
+    await waitFor(() => expect(updateMock).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(within(form).getByRole("button", { name: "Guardar" })).toBeInTheDocument())
+    expect(onCustomFoodDeleted).not.toHaveBeenCalled()
+  })
+
+  // SDD: 029 REQ-010 AC-010.4
+  it("un 200 solo llama a `onCustomFoodEdited`, no a `onCustomFoodDeleted`", async () => {
+    const onCustomFoodDeleted = vi.fn()
+    const { user, form, onCustomFoodEdited } = await editAndSave(onCustomFoodDeleted)
+
+    await user.click(within(form).getByRole("button", { name: "Guardar" }))
+
+    await waitFor(() => expect(onCustomFoodEdited).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument())
+    expect(onCustomFoodDeleted).not.toHaveBeenCalled()
+  })
+})
