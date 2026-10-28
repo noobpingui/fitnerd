@@ -1,4 +1,4 @@
-import type { CatalogFood } from "@/features/catalog/types"
+import type { LibraryFood } from "@/features/food-library/types"
 import { formatPortionPreview } from "./format"
 import { portionNutrients } from "./nutrition"
 import { parseDecimalText } from "./schemas"
@@ -10,6 +10,7 @@ import type {
   NutrientTotals,
   Nutrients,
   ProposalEntry,
+  ProposalFormEntry,
   SavableItemPayload,
 } from "./types"
 
@@ -45,7 +46,16 @@ export function proposalFromAnalysis(analysis: MealPhotoAnalysis): ProposalEntry
   ]
 }
 
-export function catalogEntry(food: CatalogFood, grams: string): ProposalEntry {
+export function libraryEntry(food: LibraryFood, grams: string): ProposalEntry {
+  if (food.kind === "custom") {
+    return {
+      kind: "custom",
+      customFoodId: food.id,
+      name: food.name,
+      per100g: food.per_100g,
+      grams,
+    }
+  }
   return {
     kind: "catalog",
     catalogId: food.id,
@@ -54,6 +64,35 @@ export function catalogEntry(food: CatalogFood, grams: string): ProposalEntry {
     grams,
     tag: "user",
   }
+}
+
+let entryKeyCounter = 0
+
+// Cada entrada del formulario lleva una clave propia: los gramos observados se
+// emparejan por clave y nunca por posición.
+export function withEntryKey(entry: ProposalEntry): ProposalFormEntry {
+  entryKeyCounter += 1
+  return { ...entry, key: `entry-${entryKeyCounter}` }
+}
+
+// Los gramos observados de la entrada con la misma clave pisan los del campo.
+export function mergeProposalEntries(
+  fields: ProposalFormEntry[],
+  watched: readonly (Partial<ProposalFormEntry> | undefined)[] | undefined
+): ProposalFormEntry[] {
+  if (!watched) return fields
+  return fields.map((field) => {
+    if (field.kind === "unmatched") return field
+    const seen = watched.find((value) => value?.key === field.key)
+    const grams = seen?.grams
+    return typeof grams === "string" ? { ...field, grams } : field
+  })
+}
+
+// Si la entrada es el alimento propio borrado, la misma entrada sin `customFoodId` (y sin `key`); si no, null.
+export function unlinkCustomFood(entry: ProposalEntry, customFoodId: number): ProposalEntry | null {
+  if (entry.kind !== "custom" || entry.customFoodId !== customFoodId) return null
+  return { kind: "custom", name: entry.name, per100g: entry.per100g, grams: entry.grams }
 }
 
 export function customEntry(payload: CustomItemPayload): ProposalEntry {
@@ -90,6 +129,11 @@ export function proposalItems(entries: ProposalEntry[]): SavableItemPayload[] {
   for (const entry of entries) {
     if (entry.kind === "catalog") {
       items.push({ catalog_id: entry.catalogId, grams: parseDecimalText(entry.grams) as number })
+    } else if (entry.kind === "custom" && entry.customFoodId !== undefined) {
+      items.push({
+        custom_food_id: entry.customFoodId,
+        grams: parseDecimalText(entry.grams) as number,
+      })
     } else if (entry.kind === "custom") {
       items.push({
         name: entry.name,

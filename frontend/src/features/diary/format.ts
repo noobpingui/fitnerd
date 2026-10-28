@@ -56,6 +56,11 @@ export function formatPortionPreview(nutrients: Nutrients): string {
   ].join(" · ")
 }
 
+// Texto de gramos del campo, con coma decimal (150 → "150", 12.5 → "12,5").
+export function gramsText(value: number): string {
+  return String(value).replace(".", ",")
+}
+
 export function sourceLabel(item: MealItem): string | null {
   if (item.source === "catalog") return null
   return item.data_type === null ? "Personalizado" : DATA_TYPE_LABELS[item.data_type]

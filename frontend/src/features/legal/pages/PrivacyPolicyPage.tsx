@@ -2,7 +2,7 @@ import { LegalPageLayout } from "@/features/legal/components/LegalPageLayout"
 
 export function PrivacyPolicyPage() {
   return (
-    <LegalPageLayout title="Política de privacidad" updatedAt="22 de octubre de 2026">
+    <LegalPageLayout title="Política de privacidad" updatedAt="27 de octubre de 2026">
       <p>
         fitnerd es un proyecto personal, desarrollado y
         mantenido por una sola persona - no una empresa con un equipo
@@ -36,7 +36,8 @@ export function PrivacyPolicyPage() {
           <li>
             <strong>Diario de comidas:</strong> los alimentos que registras
             en el diario, con sus cantidades y la fecha y la comida en que
-            los añades.
+            los añades, los alimentos personalizados que guardas para
+            reutilizarlos y los que marcas como favoritos.
           </li>
           <li>
             <strong>Actividad en la app:</strong> las preguntas que le

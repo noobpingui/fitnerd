@@ -27,8 +27,12 @@ vi.mock("@/features/diary/api", () => ({
   removeMealItem: vi.fn(),
   analyzeMealPhoto: vi.fn(),
 }))
-vi.mock("@/features/foods/api", () => ({
-  searchFoods: vi.fn(),
+vi.mock("@/features/food-library/api", () => ({
+  searchFoodLibrary: vi.fn(),
+  getRecentFoods: vi.fn(async () => []),
+  getFavoriteFoods: vi.fn(async () => []),
+  setFoodFavorite: vi.fn(),
+  deleteCustomFood: vi.fn(),
 }))
 vi.mock("@/features/profile/api", () => ({
   getProfile: vi.fn(),

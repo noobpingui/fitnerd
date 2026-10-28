@@ -7,18 +7,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { useCatalogSearch } from "@/features/catalog/hooks"
-import { CatalogResultList } from "@/features/catalog/components/CatalogResultList"
-import type { CatalogFood } from "@/features/catalog/types"
-import { FoodSearchForm } from "@/features/foods/components/FoodSearchForm"
-import { searchErrorView } from "@/features/foods/searchError"
+import type { LibraryFood } from "@/features/food-library/types"
 import { saveErrorMessage } from "../errors"
 import { useAddMealItems } from "../hooks"
-import type { CatalogItemPayload, CustomItemPayload, MealType } from "../types"
+import type { CatalogItemPayload, CustomItemPayload, LibraryItemPayload, MealType } from "../types"
 import { CustomFoodForm } from "./CustomFoodForm"
+import { FoodSearchPanel } from "./FoodSearchPanel"
 import { PortionForm } from "./PortionForm"
 
 type Step = "search" | "portion" | "custom"
+type Chosen = { food: LibraryFood; grams: string }
 
 export function AddFoodDialog({
   mealType,
@@ -32,27 +30,28 @@ export function AddFoodDialog({
   onClose: () => void
 }): ReactElement {
   const [step, setStep] = useState<Step>("search")
-  const [food, setFood] = useState<CatalogFood | null>(null)
-  // La búsqueda vive aquí para que «Volver a la búsqueda» conserve los resultados.
-  const search = useCatalogSearch()
+  const [chosen, setChosen] = useState<Chosen | null>(null)
+  const [customName, setCustomName] = useState("")
+  // La última consulta se guarda aquí para que «Volver a la búsqueda» la recupere.
+  const [lastQuery, setLastQuery] = useState("")
   const add = useAddMealItems(date)
-
-  function handleSearch(query: string) {
-    if (search.isPending) return
-    search.mutate(query)
-  }
 
   function goTo(next: Step) {
     add.reset()
     setStep(next)
   }
 
-  function choose(selected: CatalogFood) {
-    setFood(selected)
+  function choose(food: LibraryFood, grams: string) {
+    setChosen({ food, grams })
     goTo("portion")
   }
 
-  async function save(item: CatalogItemPayload | CustomItemPayload) {
+  function createCustom(name: string) {
+    setCustomName(name)
+    goTo("custom")
+  }
+
+  async function save(item: CatalogItemPayload | CustomItemPayload | LibraryItemPayload) {
     if (add.isPending) return
     try {
       await add.mutateAsync({ date, meal_type: mealType, items: [item] })
@@ -62,23 +61,9 @@ export function AddFoodDialog({
     onClose()
   }
 
-  const errorView = search.isError ? searchErrorView(search.error) : null
-  const noResults = search.isSuccess && search.data.results.length === 0
-
   const cancelButton = (
     <Button type="button" variant="ghost" disabled={add.isPending} onClick={onClose}>
       Cancelar
-    </Button>
-  )
-  const customButton = (
-    <Button
-      type="button"
-      variant="outline"
-      size={noResults ? "sm" : "default"}
-      className={noResults ? "mt-2" : undefined}
-      onClick={() => goTo("custom")}
-    >
-      Crear alimento personalizado
     </Button>
   )
   const backButton = (
@@ -112,62 +97,36 @@ export function AddFoodDialog({
         )}
 
         {step === "search" && (
-          <div>
-            <FoodSearchForm
-              onSearch={handleSearch}
-              isSearching={search.isPending}
-              defaultQuery={search.variables ?? ""}
-              placeholder="Ej.: arroz blanco cocido, banano"
-            />
-
-            <div role="status" aria-live="polite" className="my-4 text-sm text-muted-foreground">
-              {search.isIdle && "Busca un alimento para ver sus calorías y macros por 100 g."}
-              {search.isPending && "Buscando…"}
-              {noResults && (
-                <>
-                  <p>{`No encontramos alimentos para «${search.variables}».`}</p>
-                  {customButton}
-                </>
-              )}
-              {errorView && (
-                <>
-                  <p className="text-destructive">{errorView.message}</p>
-                  {errorView.canRetry && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="mt-2"
-                      onClick={() => search.mutate(search.variables as string)}
-                    >
-                      Reintentar
-                    </Button>
-                  )}
-                </>
-              )}
-            </div>
-
-            {search.isSuccess && !noResults && (
-              <CatalogResultList foods={search.data.results} onSelect={choose} />
-            )}
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              {!noResults && customButton}
-              {cancelButton}
-            </div>
-          </div>
+          <FoodSearchPanel
+            initialQuery={lastQuery}
+            onQueryChange={setLastQuery}
+            onSelect={choose}
+            onCreateCustom={createCustom}
+            actions={cancelButton}
+          />
         )}
 
-        {step === "portion" && food && (
+        {step === "portion" && chosen && (
           <div className="space-y-3">
-            <p className="font-medium">{food.name}</p>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <p className="font-medium">{chosen.food.name}</p>
+              {chosen.food.kind === "custom" && (
+                <span className="text-sm text-muted-foreground">Personalizado</span>
+              )}
+            </div>
             <PortionForm
-              key={food.id}
-              per100g={food.per_100g}
-              defaultGrams="100"
+              key={`${chosen.food.kind}:${chosen.food.id}`}
+              per100g={chosen.food.per_100g}
+              defaultGrams={chosen.grams}
               submitLabel="Añadir"
               isSaving={add.isPending}
-              onSubmit={(grams) => save({ catalog_id: food.id, grams })}
+              onSubmit={(grams) =>
+                save(
+                  chosen.food.kind === "custom"
+                    ? { custom_food_id: chosen.food.id, grams }
+                    : { catalog_id: chosen.food.id, grams }
+                )
+              }
             >
               {backButton}
               {cancelButton}
@@ -176,11 +135,7 @@ export function AddFoodDialog({
         )}
 
         {step === "custom" && (
-          <CustomFoodForm
-            defaultName={noResults ? String(search.variables ?? "") : ""}
-            isSaving={add.isPending}
-            onSubmit={save}
-          >
+          <CustomFoodForm defaultName={customName} isSaving={add.isPending} onSubmit={save}>
             {backButton}
             {cancelButton}
           </CustomFoodForm>

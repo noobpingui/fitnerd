@@ -1,28 +1,34 @@
 import { useState, type ReactElement } from "react"
-import { useFieldArray, useForm } from "react-hook-form"
+import { useFieldArray, useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
-import type { CatalogFood } from "@/features/catalog/types"
 import {
-  catalogEntry,
   customEntry,
   formatProposalTotal,
   isSavable,
+  libraryEntry,
+  mergeProposalEntries,
   proposalItems,
   proposalTotals,
+  unlinkCustomFood,
+  withEntryKey,
 } from "../proposal"
-import { proposalFormSchema } from "../schemas"
-import type { ProposalEntry, ProposalFormValues, SavableItemPayload } from "../types"
+import { proposalReviewSchema } from "../schemas"
+import type {
+  ProposalEntry,
+  ProposalFormEntry,
+  ProposalFormValues,
+  SavableItemPayload,
+} from "../types"
 import { CustomFoodForm } from "./CustomFoodForm"
+import { FoodSearchPanel } from "./FoodSearchPanel"
 import { ProposalEntryRow } from "./ProposalEntryRow"
-import { ProposalSearchStep } from "./ProposalSearchStep"
 
 type View =
   | { name: "list" }
-  | { name: "add" }
-  | { name: "resolve"; index: number }
-  | { name: "custom"; index: number }
+  | { name: "search"; index: number | null } // null = añadir otro alimento; si no, resolver esa fila
+  | { name: "custom"; index: number | null; foodName: string; grams: string }
 
 const UNMATCHED_NOTICE =
   "Los alimentos sin coincidencia no se guardan: búscalos en el catálogo, créalos como personalizados o quítalos."
@@ -46,21 +52,33 @@ export function PhotoReview({
   onCancel: () => void
 }): ReactElement {
   const [view, setView] = useState<View>({ name: "list" })
+  const [defaultValues] = useState<ProposalFormValues>(() => ({
+    entries: initialEntries.map(withEntryKey),
+  }))
   const form = useForm<ProposalFormValues>({
-    resolver: zodResolver(proposalFormSchema),
-    defaultValues: { entries: initialEntries },
+    resolver: zodResolver(proposalReviewSchema),
+    defaultValues,
   })
-  const { fields, append, update, remove } = useFieldArray({
+  const { fields, append, update, remove, replace } = useFieldArray({
     control: form.control,
     name: "entries",
   })
-  const watched = form.watch("entries")
-  const entries: ProposalEntry[] = fields.map(
-    (field, index) => (watched?.[index] ?? field) as ProposalEntry
-  )
+  // Los gramos de cada fila se leen por su clave, nunca por su posición.
+  const watched = useWatch({ control: form.control, name: "entries" })
+  const entries = mergeProposalEntries(fields, watched)
 
   const hasUnmatched = entries.some((entry) => entry.kind === "unmatched")
   const canSave = entries.some(isSavable)
+
+  // Un alimento propio borrado de la biblioteca deja de estar vinculado, pero la fila se conserva.
+  function unlinkDeleted(customFoodId: number) {
+    replace(
+      entries.map((entry): ProposalFormEntry => {
+        const unlinked = unlinkCustomFood(entry, customFoodId)
+        return unlinked ? withEntryKey(unlinked) : entry
+      })
+    )
+  }
 
   function backToList() {
     setView({ name: "list" })
@@ -71,36 +89,50 @@ export function PhotoReview({
     onSave(proposalItems(values.entries))
   }
 
-  if (view.name === "add" || view.name === "resolve") {
-    const target = view.name === "resolve" ? entries[view.index] : null
+  if (view.name === "search") {
+    const index = view.index
+    const target = index === null ? null : entries[index]
     return (
-      <ProposalSearchStep
+      <FoodSearchPanel
         initialQuery={target?.name ?? ""}
-        onBack={backToList}
-        onSelect={(food: CatalogFood) => {
-          if (view.name === "resolve") {
-            const current = entries[view.index]
-            update(view.index, catalogEntry(food, String(current.grams)))
+        onSelect={(food, defaultGrams) => {
+          if (index === null) {
+            append(withEntryKey(libraryEntry(food, defaultGrams)))
           } else {
-            append(catalogEntry(food, "100"))
+            update(index, withEntryKey(libraryEntry(food, String(entries[index].grams))))
           }
           backToList()
         }}
+        onCustomFoodDeleted={unlinkDeleted}
+        onCreateCustom={(name) =>
+          setView({
+            name: "custom",
+            index,
+            foodName: name || target?.name || "",
+            grams: target ? String(target.grams) : "",
+          })
+        }
+        actions={
+          <Button type="button" variant="outline" onClick={backToList}>
+            Volver a la propuesta
+          </Button>
+        }
       />
     )
   }
 
   if (view.name === "custom") {
-    const current = entries[view.index]
-    const index = view.index
+    const { index, foodName, grams } = view
     return (
       <CustomFoodForm
-        defaultName={current.name}
-        defaultGrams={String(current.grams)}
+        defaultName={foodName}
+        defaultGrams={grams}
         submitLabel="Añadir a la propuesta"
         isSaving={false}
         onSubmit={(payload) => {
-          update(index, customEntry(payload))
+          const entry = withEntryKey(customEntry(payload))
+          if (index === null) append(entry)
+          else update(index, entry)
           backToList()
         }}
       >
@@ -127,8 +159,15 @@ export function PhotoReview({
               index={index}
               entry={entries[index]}
               onRemove={() => remove(index)}
-              onSearch={() => setView({ name: "resolve", index })}
-              onCreate={() => setView({ name: "custom", index })}
+              onSearch={() => setView({ name: "search", index })}
+              onCreate={() =>
+                setView({
+                  name: "custom",
+                  index,
+                  foodName: entries[index].name,
+                  grams: String(entries[index].grams),
+                })
+              }
             />
           ))}
         </ul>
@@ -142,7 +181,7 @@ export function PhotoReview({
             type="button"
             variant="outline"
             disabled={isSaving}
-            onClick={() => setView({ name: "add" })}
+            onClick={() => setView({ name: "search", index: null })}
           >
             Añadir otro alimento
           </Button>

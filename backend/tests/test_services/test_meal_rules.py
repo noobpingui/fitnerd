@@ -12,6 +12,7 @@ from exceptions.custom_exceptions import ValidationError
 from services.meal_rules import (
     CatalogItemInput,
     CustomItemInput,
+    LibraryItemInput,
     RemovedItemSnapshot,
     UsdaItemInput,
     check_add_window,
@@ -911,3 +912,161 @@ def test_sum_nutrients_of_an_empty_list_is_all_zeros_and_complete():
         "fat_g": Decimal("0"),
     }
     assert incomplete == []
+
+
+# --------------------------------------------------------------------------
+# Spec 028: alimento propio por identificador y `cf` del token
+# --------------------------------------------------------------------------
+
+
+# SDD: 028 REQ-003 AC-003.1
+def test_parse_items_parses_an_own_food_by_custom_food_id():
+    """`{"custom_food_id": 3, "grams": 250}` se convierte en `LibraryItemInput`."""
+    result = parse_items([{"custom_food_id": 3, "grams": 250}])
+
+    assert result == [LibraryItemInput(custom_food_id=3, grams=Decimal("250"))]
+
+
+# SDD: 028 REQ-003 AC-003.1
+def test_parse_items_accepts_the_four_origins_in_the_order_of_the_request():
+    """Catálogo, USDA, personalizado y alimento propio en una petición."""
+    result = parse_items(
+        [
+            {"catalog_id": "banano", "grams": 100},
+            {"fdc_id": 171477, "grams": 150},
+            custom(),
+            {"custom_food_id": 9, "grams": 80.5},
+        ]
+    )
+
+    assert [type(entry) for entry in result] == [
+        CatalogItemInput,
+        UsdaItemInput,
+        CustomItemInput,
+        LibraryItemInput,
+    ]
+    assert result[3].grams == Decimal("80.5")
+
+
+# SDD: 028 REQ-003 AC-003.1
+@pytest.mark.parametrize("food_id", [1, 2_147_483_647])
+def test_parse_items_accepts_the_limits_of_the_custom_food_id(food_id):
+    """1 y 2.147.483.647 son identificadores válidos."""
+    result = parse_items([{"custom_food_id": food_id, "grams": 100}])
+
+    assert result[0].custom_food_id == food_id
+
+
+# SDD: 028 REQ-003 AC-003.2
+@pytest.mark.parametrize("food_id", [0, -1, 2_147_483_648, "3", "abc", 1.5, 1.0, True, [], {}])
+def test_parse_items_rejects_a_custom_food_id_that_is_not_an_integer_in_range(food_id):
+    """Cero, negativo, fuera del rango de la base, texto, decimal o bool:
+    «No encontramos ese alimento.»."""
+    assert message_of(parse_items, [{"custom_food_id": food_id, "grams": 100}]) == FOOD_NOT_FOUND
+
+
+# SDD: 028 REQ-003 AC-003.3
+@pytest.mark.parametrize(
+    "item",
+    [
+        {"custom_food_id": 3, "name": "Gallo pinto", "grams": 100},
+        {"custom_food_id": 3, "catalog_id": "banano", "grams": 100},
+        {"custom_food_id": 3, "fdc_id": 171477, "grams": 100},
+    ],
+)
+def test_parse_items_rejects_a_custom_food_id_together_with_another_source(item):
+    """`custom_food_id` junto con `name`, `catalog_id` o `fdc_id`: el 400 de origen."""
+    assert message_of(parse_items, [item]) == ITEM_SOURCE
+
+
+# SDD: 028 REQ-003 AC-003.3
+def test_parse_items_ignores_a_null_custom_food_id_when_counting_sources():
+    """`custom_food_id: null` no cuenta como presente."""
+    result = parse_items([{"catalog_id": "banano", "custom_food_id": None, "grams": 100}])
+
+    assert result == [CatalogItemInput(catalog_id="banano", grams=Decimal("100"))]
+    # Contraste: con un valor presente (no nulo) si cuenta como otra fuente (028).
+    present = {"catalog_id": "banano", "custom_food_id": 3, "grams": 100}
+    assert message_of(parse_items, [present]) == ITEM_SOURCE
+
+
+# SDD: 028 REQ-003 AC-003.5
+@pytest.mark.parametrize("grams", [None, 0, 2001, "100"])
+def test_parse_items_validates_the_grams_of_an_own_food(grams):
+    """Gramos ausentes, no numéricos o fuera de rango: el mismo mensaje de la 022."""
+    assert message_of(parse_items, [{"custom_food_id": 3, "grams": grams}]) == GRAMS_RANGE
+
+
+# SDD: 028 REQ-003 AC-003.5
+def test_parse_items_rejects_two_decimals_in_an_own_food():
+    """Dos decimales en los gramos: «Los gramos admiten como mucho un decimal.»."""
+    assert (
+        message_of(parse_items, [{"custom_food_id": 3, "grams": 10.55}]) == GRAMS_DECIMALS
+    )
+
+
+# SDD: 028 REQ-012 AC-012.1
+def test_snapshot_payload_adds_cf_only_when_there_is_a_custom_food_id():
+    """`cf` solo aparece si el alimento está vinculado; sin él, las claves son las de la 026."""
+    linked = snapshot_payload(
+        snapshot(source="custom", catalog_id=None, name="Gallo pinto", custom_food_id=7)
+    )
+    unlinked = snapshot_payload(snapshot(source="custom", catalog_id=None, name="Gallo pinto"))
+
+    assert linked["cf"] == 7
+    assert "cf" not in unlinked
+    assert set(unlinked) == {"v", "d", "t", "p", "s", "c", "f", "n", "dt", "g", "per", "exp"}
+
+
+# SDD: 028 REQ-012 AC-012.1
+def test_snapshot_with_a_custom_food_id_round_trips_through_parse():
+    """El `custom_food_id` ida y vuelta por el payload."""
+    item = snapshot(source="custom", catalog_id=None, name="Gallo pinto", custom_food_id=7)
+
+    parsed = parse_snapshot_payload(snapshot_payload(item))
+
+    assert parsed == item
+    assert parsed.custom_food_id == 7
+
+
+# SDD: 028 REQ-012 AC-012.1
+def test_parse_snapshot_payload_without_cf_has_no_custom_food_id():
+    """Un token anterior a la 028 (sin `cf`) sigue siendo válido y sin vínculo."""
+    parsed = parse_snapshot_payload(_payload_with(s="custom", c=None, f=None))
+
+    assert parsed is not None
+    assert parsed.custom_food_id is None
+    # Contraste: con `cf` el mismo payload si lleva el vinculo (028).
+    linked = parse_snapshot_payload(_payload_with(s="custom", c=None, f=None, cf=7))
+    assert linked is not None and linked.custom_food_id == 7
+
+
+# SDD: 028 REQ-012 AC-012.1
+@pytest.mark.parametrize("food_id", [1, 7, MAX_INT])
+def test_parse_snapshot_payload_accepts_a_cf_of_a_custom_item_in_range(food_id):
+    """`cf` entre 1 y 2.147.483.647 en un alimento `custom`."""
+    parsed = parse_snapshot_payload(_payload_with(s="custom", c=None, f=None, cf=food_id))
+
+    assert parsed is not None
+    assert parsed.custom_food_id == food_id
+
+
+# SDD: 028 REQ-012 AC-012.2
+@pytest.mark.parametrize("food_id", [0, -1, MAX_INT + 1, "7", 7.0, 1.5, True, [], {}])
+def test_parse_snapshot_payload_rejects_a_cf_that_is_not_a_valid_id(food_id):
+    """`cf` de otro tipo o fuera de rango: el token no es válido (`None`)."""
+    assert parse_snapshot_payload(_payload_with(s="custom", c=None, f=None, cf=food_id)) is None
+
+
+# SDD: 028 REQ-012 AC-012.2
+@pytest.mark.parametrize(
+    "payload",
+    [
+        _payload_with(cf=7),
+        _usda_payload(cf=7),
+        _payload_with(s="catalog", c="banano", cf=7),
+    ],
+)
+def test_parse_snapshot_payload_rejects_a_cf_in_a_source_other_than_custom(payload):
+    """`cf` solo vale en alimentos `custom`: con `catalog` o `usda` el token no es válido."""
+    assert parse_snapshot_payload(payload) is None

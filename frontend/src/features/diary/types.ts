@@ -10,6 +10,7 @@ export type MealItem = {
   source: MealItemSource
   catalog_id: string | null
   fdc_id: number | null
+  custom_food_id?: number | null
   name: string
   data_type: FoodDataType | null
   grams: number
@@ -37,6 +38,7 @@ export type CustomItemPayload = {
   grams: number
   per_100g: Record<NutrientKey, number>
 }
+export type LibraryItemPayload = { custom_food_id: number; grams: number }
 export type AnalysisConfidence = "high" | "medium" | "low"
 export type ProposedFood = {
   catalog_id: string
@@ -62,13 +64,20 @@ export type ProposalEntry =
       grams: string
       tag: AnalysisConfidence | "user" // "user" = «Añadido por ti»
     }
-  | { kind: "custom"; name: string; per100g: Record<NutrientKey, number>; grams: string }
+  | {
+      kind: "custom"
+      name: string
+      per100g: Record<NutrientKey, number>
+      grams: string
+      customFoodId?: number // solo los alimentos propios ya guardados
+    }
   | { kind: "unmatched"; name: string; grams: number; confidence: AnalysisConfidence }
-export type ProposalFormValues = { entries: ProposalEntry[] }
-export type SavableItemPayload = CatalogItemPayload | CustomItemPayload
+export type ProposalFormEntry = ProposalEntry & { key: string }
+export type ProposalFormValues = { entries: ProposalFormEntry[] }
+export type SavableItemPayload = CatalogItemPayload | CustomItemPayload | LibraryItemPayload
 export type AddMealItemsPayload = {
   date: string
   meal_type: MealType
-  items: (CatalogItemPayload | UsdaItemPayload | CustomItemPayload)[]
+  items: (CatalogItemPayload | UsdaItemPayload | CustomItemPayload | LibraryItemPayload)[]
 }
 export type RemovalUndo = { token: string; name: string; mealType: MealType }

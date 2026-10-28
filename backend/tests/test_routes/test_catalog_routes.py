@@ -8,6 +8,13 @@ import pytest
 
 from extensions import db, embedding_client, jwt_manager, rate_limiter
 from models import CatalogFood
+from repositories.catalog_food_repository import CatalogFoodRepository
+from routes.catalog_routes import _build_catalog_search_service
+from services.catalog_search_service import (
+    SearchCandidate,
+    TypoSearchStats,
+    typo_comparison_bound,
+)
 from tests.fakes import FakeRedisClient, FakeVoyageClient
 
 URL = "/api/catalog/search"
@@ -276,3 +283,62 @@ def test_search_number_31_in_a_minute_is_still_200_and_uses_no_counter(
 
     assert statuses == [200] * 31
     assert redis_fake.counts == {}
+
+
+# SDD: 028 REQ-006 AC-006.12
+def test_a_typo_query_finds_the_rice_with_the_format_of_spec_023(client, app):
+    """`q=aroz` encuentra «Arroz blanco cocido» con el mismo formato de respuesta de la 023."""
+    seed(app, WHITE_RICE, BLACK_BEANS)
+
+    response = search(client, app, "aroz")
+
+    assert response.status_code == 200
+    assert response.get_json() == {
+        "results": [
+            {
+                "id": "arroz-blanco-cocido",
+                "name": "Arroz blanco cocido",
+                "per_100g": {
+                    "calories_kcal": 100.0,
+                    "protein_g": 10.0,
+                    "carbs_g": 10.0,
+                    "fat_g": 5.0,
+                },
+            }
+        ]
+    }
+
+
+# SDD: 028 REQ-006 AC-006.10
+def test_the_plural_ces_also_works_in_the_catalog_search(client, app):
+    """`nueces` encuentra «Nuez» en `GET /api/catalog/search`."""
+    seed(app, {"id": "nuez", "name": "Nuez"})
+
+    assert names_of(search(client, app, "nueces")) == ["Nuez"]
+
+
+# SDD: 028 NFR-004 AC-N004.2
+def test_the_long_query_of_repeated_words_answers_200_empty_within_the_bound(client, app):
+    """`"arroces " * 12 + "qzxw"` (100 caracteres) responde 200 con `results` vacío
+    y el formato de la 023; el servicio, con la base real, hace las mismas comparaciones
+    que con `arroces qzxw` y como mucho F × P (con P solo del catálogo)."""
+    seed(app, WHITE_RICE, BROWN_RICE, BLACK_BEANS)
+    long_query = "arroces " * 12 + "qzxw"
+    assert len(long_query) == 100
+
+    response = search(client, app, long_query)
+
+    assert response.status_code == 200
+    assert response.get_json() == {"results": []}
+    with app.app_context():
+        service = _build_catalog_search_service()
+        candidates = [
+            SearchCandidate(food.name, food.synonyms, 0, str(food.id), food)
+            for food in CatalogFoodRepository(db.session).list_all()
+        ]
+        long_stats, short_stats = TypoSearchStats(), TypoSearchStats()
+        assert service.search(long_query, stats=long_stats) == []
+        assert service.search("arroces qzxw", stats=short_stats) == []
+        assert short_stats.comparisons > 0
+        assert long_stats.comparisons == short_stats.comparisons
+        assert long_stats.comparisons <= typo_comparison_bound(candidates, long_query)

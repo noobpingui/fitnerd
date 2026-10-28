@@ -3,8 +3,12 @@ import { describe, expect, it } from "vitest"
 import { ApiError } from "@/lib/apiClient"
 import {
   ANALYSIS_FAILED_MESSAGE,
+  DELETE_CUSTOM_FOOD_FAILED_MESSAGE,
+  FAVORITE_FAILED_MESSAGE,
+  LIBRARY_LOAD_FAILED_MESSAGE,
   SAVE_FAILED_MESSAGE,
   analysisErrorView,
+  favoriteErrorMessage,
   saveErrorMessage,
 } from "./errors"
 
@@ -89,5 +93,42 @@ describe("analysisErrorView", () => {
       canChangePhoto: false,
       canRegisterManually: true,
     })
+  })
+})
+
+describe("mensajes de la biblioteca de alimentos", () => {
+  // SDD: 028 REQ-015 AC-015.4
+  it("los textos fijos coinciden con los de la spec", () => {
+    expect(FAVORITE_FAILED_MESSAGE).toBe("No se pudo actualizar tus favoritos.")
+    expect(DELETE_CUSTOM_FOOD_FAILED_MESSAGE).toBe("No se pudo borrar el alimento.")
+    expect(LIBRARY_LOAD_FAILED_MESSAGE).toBe("No se pudieron cargar tus alimentos.")
+    // Y la funcion los usa (028): un 500 devuelve el texto fijo.
+    expect(favoriteErrorMessage(new ApiError(500, "x"))).toBe(FAVORITE_FAILED_MESSAGE)
+  })
+
+  // SDD: 028 REQ-015 AC-015.5
+  it("favoriteErrorMessage ante un 400 devuelve el mensaje del servidor (el límite de 100)", () => {
+    const limit = "Ya tienes 100 favoritos. Quita alguno para añadir otro."
+
+    expect(favoriteErrorMessage(new ApiError(400, limit))).toBe(limit)
+  })
+
+  // SDD: 028 REQ-015 AC-015.4
+  it.each([401, 404, 429, 500, 503])(
+    "favoriteErrorMessage ante un %d devuelve «No se pudo actualizar tus favoritos.»",
+    (status) => {
+      expect(favoriteErrorMessage(new ApiError(status, "detalle interno"))).toBe(
+        "No se pudo actualizar tus favoritos."
+      )
+    }
+  )
+
+  // SDD: 028 REQ-015 AC-015.4
+  it.each([
+    ["un error de red", new TypeError("Failed to fetch")],
+    ["un valor que no es un error", "algo"],
+    ["nada", undefined],
+  ])("favoriteErrorMessage ante %s devuelve el mensaje genérico", (_name, error) => {
+    expect(favoriteErrorMessage(error)).toBe("No se pudo actualizar tus favoritos.")
   })
 })

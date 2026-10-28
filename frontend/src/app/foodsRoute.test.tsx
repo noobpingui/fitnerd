@@ -18,11 +18,12 @@ vi.mock("@/features/diary/api", () => ({
   updateMealItemGrams: vi.fn(),
   removeMealItem: vi.fn(),
 }))
-vi.mock("@/features/catalog/api", () => ({
-  searchCatalog: vi.fn(),
-}))
-vi.mock("@/features/foods/api", () => ({
-  searchFoods: vi.fn(),
+vi.mock("@/features/food-library/api", () => ({
+  searchFoodLibrary: vi.fn(),
+  getRecentFoods: vi.fn(async () => []),
+  getFavoriteFoods: vi.fn(async () => []),
+  setFoodFavorite: vi.fn(),
+  deleteCustomFood: vi.fn(),
 }))
 vi.mock("@/features/profile/api", () => ({
   getProfile: vi.fn(),
@@ -44,6 +45,40 @@ vi.mock("@/features/auth/api", () => ({
 }))
 
 const routerSources = import.meta.glob("/src/app/router.tsx", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>
+
+// Archivos de la pantalla «Alimentos» de la 021 que la 028 retira (REQ-020, Q7).
+// Sus formato, esquema de la caja de búsqueda y mensajes de error se conservan: los usa el panel.
+const retiredFoodsFiles = import.meta.glob([
+  "/src/features/foods/pages/FoodsPage.tsx",
+  "/src/features/foods/pages/FoodsPage.test.tsx",
+  "/src/features/foods/components/FoodResultList.tsx",
+  "/src/features/foods/components/FoodSearchForm.tsx",
+  "/src/features/foods/hooks.ts",
+  "/src/features/diary/components/ProposalSearchStep.tsx",
+])
+
+// Iteración 2 (REQ-020, F5): el código sin uso de la búsqueda de la 023 y de USDA.
+const unusedSearchFiles = import.meta.glob([
+  "/src/features/catalog/**",
+  "/src/features/foods/api.ts",
+  "/src/test/catalogFixtures.ts",
+])
+
+const proposalSources = import.meta.glob("/src/features/diary/proposal.ts", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>
+const foodsSchemasSources = import.meta.glob("/src/features/foods/schemas.ts", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>
+const foodsTypesSources = import.meta.glob("/src/features/foods/types.ts", {
   query: "?raw",
   import: "default",
   eager: true,
@@ -84,7 +119,9 @@ describe("AppRouter - ruta /foods", () => {
     window.history.pushState({}, "", "/")
   })
 
+  // SDD: 028 regression guard (comportamiento de la 023: /foods redirige a /diary; no puede fallar antes de implementar)
   // SDD: 023 REQ-011 AC-011.1
+  // SDD: 028 REQ-020 AC-020.1
   it("abrir /foods termina en /diary y muestra la pantalla «Diario», no «Alimentos»", async () => {
     window.history.pushState({}, "", "/foods")
 
@@ -117,5 +154,34 @@ describe("AppRouter - ruta /foods", () => {
     expect(source).toMatch(/path="\/foods"/)
     expect(source).not.toMatch(/FoodsPage/)
     expect(source).not.toMatch(/features\/foods\/pages/)
+  })
+
+  // SDD: 028 REQ-020 AC-020.1
+  it("el código de la pantalla «Alimentos» de la 021 ya no existe", () => {
+    expect(Object.keys(retiredFoodsFiles)).toEqual([])
+  })
+
+  // SDD: 028 regression guard (comportamiento de la 023: /foods redirige a /diary; no puede fallar antes de implementar)
+  // SDD: 028 REQ-020 AC-020.1
+  it("/foods sigue llevando a /diary también cuando se abre con parámetros", async () => {
+    window.history.pushState({}, "", "/foods?q=arroz")
+
+    renderRouter()
+
+    expect(await screen.findByRole("heading", { level: 1, name: "Diario" })).toBeInTheDocument()
+    expect(window.location.pathname).toBe("/diary")
+  })
+
+  // SDD: 028 REQ-020 AC-020.1
+  it("el código sin uso de la búsqueda de la 023 y de USDA ya no existe", () => {
+    expect(Object.keys(unusedSearchFiles)).toEqual([])
+    expect(proposalSources["/src/features/diary/proposal.ts"]).not.toMatch(/catalogEntry/)
+    expect(foodsSchemasSources["/src/features/foods/schemas.ts"]).not.toMatch(
+      /foodSearchResponseSchema/
+    )
+    expect(foodsTypesSources["/src/features/foods/types.ts"]).not.toMatch(/FoodSearchResponse/)
+    // Contraste: lo que el panel sigue usando se conserva.
+    expect(foodsSchemasSources["/src/features/foods/schemas.ts"]).toMatch(/foodSearchFormSchema/)
+    expect(proposalSources["/src/features/diary/proposal.ts"]).toMatch(/libraryEntry/)
   })
 })

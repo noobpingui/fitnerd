@@ -26,9 +26,6 @@ vi.mock("@/features/diary/api", () => ({
   updateMealItemGrams: vi.fn(),
   removeMealItem: vi.fn(),
 }))
-vi.mock("@/features/foods/api", () => ({
-  searchFoods: vi.fn(),
-}))
 vi.mock("@/features/profile/api", () => ({
   getProfile: vi.fn(),
   saveProfile: vi.fn(),

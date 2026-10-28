@@ -72,6 +72,12 @@ class MealItem(Base):
     fdc_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     # Sin FK a catalog_foods (ADR-0031).
     catalog_id: Mapped[str | None] = mapped_column(String(60), nullable=True)
+    custom_food_id: Mapped[int | None] = mapped_column(
+        ForeignKey(
+            "public.custom_foods.id", ondelete="SET NULL", name="fk_meal_items_custom_food_id"
+        ),
+        nullable=True,
+    )
     name: Mapped[str] = mapped_column(Text, nullable=False)
     data_type: Mapped[str | None] = mapped_column(String(20), nullable=True)
     grams: Mapped[Decimal] = mapped_column(Numeric(5, 1), nullable=False)
@@ -110,6 +116,11 @@ class MealItem(Base):
             "AND data_type IS NULL)",
             name="ck_meal_items_source_fields",
         ),
+        CheckConstraint(
+            "custom_food_id IS NULL OR source = 'custom'",
+            name="ck_meal_items_custom_food_source",
+        ),
         Index("ix_meal_items_meal_id", "meal_id"),
+        Index("ix_meal_items_custom_food_id", "custom_food_id"),
         {"schema": "public"},
     )

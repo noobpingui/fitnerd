@@ -60,6 +60,12 @@ class CustomItemInput:
     per_100g: dict[str, float]
 
 
+@dataclass(frozen=True)
+class LibraryItemInput:
+    custom_food_id: int
+    grams: Decimal
+
+
 _DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _CENTS = Decimal("0.01")
 _TENTH = Decimal("0.1")
@@ -87,6 +93,7 @@ class RemovedItemSnapshot:
     grams: Decimal
     per_100g: dict[str, float | None]
     expires_at: int
+    custom_food_id: int | None = None
 
 
 def epoch_seconds(instant: datetime) -> int:
@@ -111,6 +118,7 @@ def snapshot_payload(snapshot: RemovedItemSnapshot) -> dict:
             for key in NUTRIENT_KEYS
         },
         "exp": snapshot.expires_at,
+        **({} if snapshot.custom_food_id is None else {"cf": snapshot.custom_food_id}),
     }
 
 
@@ -169,6 +177,9 @@ def parse_snapshot_payload(payload: object) -> RemovedItemSnapshot | None:
         return None
     if source == "usda" and fdc_id is None:
         return None
+    custom_food_id = payload.get("cf")
+    if "cf" in payload and (not is_db_id(custom_food_id) or source != "custom"):
+        return None
 
     raw_grams = payload.get("g")
     if not isinstance(raw_grams, str):
@@ -196,6 +207,7 @@ def parse_snapshot_payload(payload: object) -> RemovedItemSnapshot | None:
         grams=grams,
         per_100g=per_100g,
         expires_at=expires_at,
+        custom_food_id=custom_food_id,
     )
 
 
@@ -266,16 +278,29 @@ def _parse_catalog_item(item: dict, grams: Decimal) -> CatalogItemInput:
     return CatalogItemInput(catalog_id=catalog_id, grams=grams)
 
 
-def parse_items(value: object) -> list[CatalogItemInput | UsdaItemInput | CustomItemInput]:
+def _parse_library_item(item: dict, grams: Decimal) -> LibraryItemInput:
+    custom_food_id = item.get("custom_food_id")
+    if not is_db_id(custom_food_id):
+        raise ValidationError(FOOD_NOT_FOUND_MESSAGE)
+    return LibraryItemInput(custom_food_id=custom_food_id, grams=grams)
+
+
+def parse_items(
+    value: object,
+) -> list[CatalogItemInput | UsdaItemInput | CustomItemInput | LibraryItemInput]:
     if not isinstance(value, list) or not value:
         raise ValidationError(ITEMS_REQUIRED_MESSAGE)
     if len(value) > MAX_ITEMS_PER_MEAL:
         raise ValidationError(TOO_MANY_ITEMS_MESSAGE)
-    parsed: list[CatalogItemInput | UsdaItemInput | CustomItemInput] = []
+    parsed: list[CatalogItemInput | UsdaItemInput | CustomItemInput | LibraryItemInput] = []
     for item in value:
         if not isinstance(item, dict):
             raise ValidationError(ITEM_SOURCE_MESSAGE)
-        present = [key for key in ("catalog_id", "fdc_id", "name") if item.get(key) is not None]
+        present = [
+            key
+            for key in ("catalog_id", "fdc_id", "name", "custom_food_id")
+            if item.get(key) is not None
+        ]
         if len(present) != 1:
             raise ValidationError(ITEM_SOURCE_MESSAGE)
         grams = validate_grams(item.get("grams"))
@@ -283,6 +308,8 @@ def parse_items(value: object) -> list[CatalogItemInput | UsdaItemInput | Custom
             parsed.append(_parse_catalog_item(item, grams))
         elif present[0] == "fdc_id":
             parsed.append(_parse_usda_item(item, grams))
+        elif present[0] == "custom_food_id":
+            parsed.append(_parse_library_item(item, grams))
         else:
             parsed.append(_parse_custom_item(item, grams))
     return parsed

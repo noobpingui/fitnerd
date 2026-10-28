@@ -17,12 +17,12 @@ import {
   updateMealItemGrams,
 } from "@/features/diary/api"
 import type { PhotoProcessor } from "@/features/diary/photo"
-import { searchCatalog } from "@/features/catalog/api"
+import { searchFoodLibrary } from "@/features/food-library/api"
 import { getProfile } from "@/features/profile/api"
 import { answersFromProfile } from "@/features/profile/mappers"
 import { calculateMacros, type MacroKey } from "@/features/macros/calculations"
 import { RICE, TOMATO_SAUCE, makeAnalysis } from "@/test/analysisFixtures"
-import { makeCatalogFood } from "@/test/catalogFixtures"
+import { makeLibraryFood } from "@/test/foodLibraryFixtures"
 import { FakePhotoProcessor, makePhotoFile } from "@/test/photoFixtures"
 import {
   makeCatalogItem,
@@ -63,8 +63,14 @@ vi.mock("@/features/diary/photo", async (importOriginal) => {
     },
   }
 })
-vi.mock("@/features/catalog/api", () => ({
-  searchCatalog: vi.fn(),
+// Spec 028: el diálogo de añadir busca en la biblioteca y lee «Favoritos» y
+// «Recientes» al abrirse; los dos últimos devuelven listas vacías por defecto.
+vi.mock("@/features/food-library/api", () => ({
+  searchFoodLibrary: vi.fn(),
+  getRecentFoods: vi.fn(async () => []),
+  getFavoriteFoods: vi.fn(async () => []),
+  setFoodFavorite: vi.fn(),
+  deleteCustomFood: vi.fn(),
 }))
 vi.mock("@/features/profile/api", () => ({
   getProfile: vi.fn(),
@@ -77,12 +83,12 @@ const updateMock = vi.mocked(updateMealItemGrams)
 const removeMock = vi.mocked(removeMealItem)
 const restoreMock = vi.mocked(restoreMealItem)
 const deleteMock = vi.mocked(deleteMeal)
-const searchMock = vi.mocked(searchCatalog)
+const searchMock = vi.mocked(searchFoodLibrary)
 const analyzeMock = vi.mocked(analyzeMealPhoto)
 const getProfileMock = vi.mocked(getProfile)
 
 const CHICKEN_NAME = "Chicken, broilers or fryers, breast, meat only, cooked, roasted"
-const CATALOG_CHICKEN = makeCatalogFood()
+const CATALOG_CHICKEN = makeLibraryFood()
 const CATALOG_CHICKEN_NAME = "Pechuga de pollo a la plancha"
 // La pechuga del catálogo registrada con 150 g: 247,5 kcal.
 const CATALOG_CHICKEN_ITEM = makeCatalogItem({
@@ -446,14 +452,16 @@ describe("DiaryPage", () => {
     getDiaryMock.mockResolvedValueOnce(makeDiary())
     getDiaryMock.mockResolvedValue(makeDiary([breakfast]))
     addMock.mockResolvedValue(breakfast)
-    searchMock.mockResolvedValue({ results: [CATALOG_CHICKEN] })
+    searchMock.mockResolvedValue([CATALOG_CHICKEN])
     renderPage()
     await screen.findByText(`0 / ${intFormat.format(goal.kcal)} kcal`)
 
     await user.click(screen.getAllByRole("button", { name: "Añadir alimento" })[0])
     const dialog = await screen.findByRole("dialog", { name: "Añadir a Desayuno" })
-    await user.type(within(dialog).getByRole("searchbox", { name: "Buscar alimento" }), "pollo")
-    await user.click(within(dialog).getByRole("button", { name: "Buscar" }))
+    await user.type(
+      within(dialog).getByRole("searchbox", { name: "Buscar alimento" }),
+      "pollo{Enter}"
+    )
     await user.click(
       await within(dialog).findByRole("button", { name: `Elegir ${CATALOG_CHICKEN_NAME}` })
     )
@@ -1098,14 +1106,16 @@ describe("DiaryPage - editar un día pasado (REQ-004)", () => {
     getDiaryMock.mockResolvedValueOnce(dayOf("2026-10-20"))
     getDiaryMock.mockResolvedValue(dayOf("2026-10-20", [dinner]))
     addMock.mockResolvedValue(dinner)
-    searchMock.mockResolvedValue({ results: [CATALOG_CHICKEN] })
+    searchMock.mockResolvedValue([CATALOG_CHICKEN])
     renderAt(["/diary?date=2026-10-20"])
     await screen.findByText(`0 / ${intFormat.format(goal.kcal)} kcal`)
 
     await user.click(screen.getAllByRole("button", { name: "Añadir alimento" })[2])
     const dialog = await screen.findByRole("dialog", { name: "Añadir a Cena" })
-    await user.type(within(dialog).getByRole("searchbox", { name: "Buscar alimento" }), "pollo")
-    await user.click(within(dialog).getByRole("button", { name: "Buscar" }))
+    await user.type(
+      within(dialog).getByRole("searchbox", { name: "Buscar alimento" }),
+      "pollo{Enter}"
+    )
     await user.click(
       await within(dialog).findByRole("button", { name: `Elegir ${CATALOG_CHICKEN_NAME}` })
     )
@@ -1202,14 +1212,16 @@ describe("DiaryPage - editar un día pasado (REQ-004)", () => {
     const user = userEvent.setup()
     const message = "Solo puedes registrar comidas de hoy o del último año."
     addMock.mockRejectedValue(new ApiError(400, message))
-    searchMock.mockResolvedValue({ results: [CATALOG_CHICKEN] })
+    searchMock.mockResolvedValue([CATALOG_CHICKEN])
     renderAt(["/diary?date=2026-10-20"])
     await screen.findByText("No hay nada registrado este día.")
 
     await user.click(screen.getAllByRole("button", { name: "Añadir alimento" })[2])
     const dialog = await screen.findByRole("dialog", { name: "Añadir a Cena" })
-    await user.type(within(dialog).getByRole("searchbox", { name: "Buscar alimento" }), "pollo")
-    await user.click(within(dialog).getByRole("button", { name: "Buscar" }))
+    await user.type(
+      within(dialog).getByRole("searchbox", { name: "Buscar alimento" }),
+      "pollo{Enter}"
+    )
     await user.click(
       await within(dialog).findByRole("button", { name: `Elegir ${CATALOG_CHICKEN_NAME}` })
     )
@@ -1278,7 +1290,7 @@ describe("DiaryPage - cambio de día a medianoche (REQ-005)", () => {
     const user = userEvent.setup()
     const dinner = mealOn(TODAY, { id: 21, meal_type: "dinner", items: [CATALOG_CHICKEN_ITEM] })
     addMock.mockResolvedValue(dinner)
-    searchMock.mockResolvedValue({ results: [CATALOG_CHICKEN] })
+    searchMock.mockResolvedValue([CATALOG_CHICKEN])
     renderAt()
     await settle()
     await user.click(screen.getAllByRole("button", { name: "Añadir alimento" })[2])
@@ -1290,8 +1302,10 @@ describe("DiaryPage - cambio de día a medianoche (REQ-005)", () => {
     const dialog = screen.getByRole("dialog", { name: "Añadir a Cena" })
     expect(dialog).toBeInTheDocument()
     expect(addMock).not.toHaveBeenCalled()
-    await user.type(within(dialog).getByRole("searchbox", { name: "Buscar alimento" }), "pollo")
-    await user.click(within(dialog).getByRole("button", { name: "Buscar" }))
+    await user.type(
+      within(dialog).getByRole("searchbox", { name: "Buscar alimento" }),
+      "pollo{Enter}"
+    )
     await settle()
     await user.click(within(dialog).getByRole("button", { name: `Elegir ${CATALOG_CHICKEN_NAME}` }))
     const grams = within(dialog).getByLabelText("Gramos")

@@ -8,6 +8,15 @@ export function saveErrorMessage(error: unknown): string {
   return SAVE_FAILED_MESSAGE
 }
 
+export const FAVORITE_FAILED_MESSAGE = "No se pudo actualizar tus favoritos."
+export const DELETE_CUSTOM_FOOD_FAILED_MESSAGE = "No se pudo borrar el alimento."
+export const LIBRARY_LOAD_FAILED_MESSAGE = "No se pudieron cargar tus alimentos."
+
+export function favoriteErrorMessage(error: unknown): string {
+  if (error instanceof ApiError && error.status === 400) return error.message
+  return FAVORITE_FAILED_MESSAGE
+}
+
 export const ANALYSIS_FAILED_MESSAGE = "No se pudo analizar la foto. Vuelve a intentarlo."
 export const NO_FOODS_MESSAGE = "No reconocimos alimentos en la foto."
 export type AnalysisErrorView = {

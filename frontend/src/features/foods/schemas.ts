@@ -15,19 +15,3 @@ export const foodSearchFormSchema = z.object({
 })
 
 export type FoodSearchFormValues = { query: string }
-
-export const foodSearchResponseSchema = z.object({
-  results: z.array(
-    z.object({
-      fdc_id: z.number(),
-      description: z.string(),
-      data_type: z.enum(["foundation", "sr_legacy"]),
-      per_100g: z.object({
-        calories_kcal: z.number().nullable(),
-        protein_g: z.number().nullable(),
-        carbs_g: z.number().nullable(),
-        fat_g: z.number().nullable(),
-      }),
-    })
-  ),
-})

@@ -136,8 +136,10 @@ def test_post_creates_the_meal_with_the_computed_nutrients(client, headers, chic
 
 
 # SDD: 022 REQ-001 AC-001.6
+# SDD: 028 REQ-001 AC-001.9
 def test_post_response_has_the_full_contract_shape(client, headers, chicken):
-    """La respuesta incluye los campos de la sección 6 con `per_100g` de USDA."""
+    """La respuesta incluye los campos de la sección 6 con `per_100g` de USDA y,
+    desde la 028, `custom_food_id` (nulo en los alimentos de USDA)."""
     body = post(client, headers, [usda(150)]).get_json()
 
     assert set(body) == {"id", "date", "meal_type", "items", "totals", "incomplete"}
@@ -151,9 +153,10 @@ def test_post_response_has_the_full_contract_shape(client, headers, chicken):
     assert body["incomplete"] == []
     item = body["items"][0]
     assert set(item) == {
-        "id", "source", "fdc_id", "catalog_id", "name", "data_type", "grams", "per_100g",
-        "nutrients",
+        "id", "source", "fdc_id", "catalog_id", "custom_food_id", "name", "data_type", "grams",
+        "per_100g", "nutrients",
     }
+    assert item["custom_food_id"] is None
     assert item["catalog_id"] is None
     assert item["data_type"] == "sr_legacy"
     assert item["per_100g"] == {
@@ -1231,6 +1234,7 @@ def test_post_saves_a_catalog_item_with_a_copy_of_the_catalog_data(client, heade
         "source": "catalog",
         "catalog_id": "pechuga-de-pollo-a-la-plancha",
         "fdc_id": None,
+        "custom_food_id": None,
         "data_type": None,
         "name": "Pechuga de pollo a la plancha",
         "grams": 150,
