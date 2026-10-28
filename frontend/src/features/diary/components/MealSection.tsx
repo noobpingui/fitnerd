@@ -69,10 +69,9 @@ export function MealSection({
                 type="button"
                 variant="ghost"
                 size="sm"
-                aria-label={`Borrar ${label}`}
                 onClick={() => setDeleting(true)}
               >
-                Borrar comida
+                {`Vaciar ${label.toLowerCase()}`}
               </Button>
             )}
             <span className="tabular-nums text-sm text-muted-foreground">

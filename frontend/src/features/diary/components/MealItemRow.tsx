@@ -30,10 +30,10 @@ export function MealItemRow({
           type="button"
           variant="ghost"
           size="sm"
-          aria-label={`Editar ${item.name}`}
+          aria-label={`Editar gramos de ${item.name}`}
           onClick={onEdit}
         >
-          Editar
+          Editar gramos
         </Button>
         <Button
           type="button"

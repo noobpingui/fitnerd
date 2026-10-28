@@ -277,7 +277,7 @@ describe("DiaryPage", () => {
     for (const label of ["Foundation", "SR Legacy", "Personalizado", "USDA", "Catálogo"]) {
       expect(within(row).queryByText(label)).not.toBeInTheDocument()
     }
-    expect(within(row).getByRole("button", { name: "Editar Arroz blanco cocido" })).toBeInTheDocument()
+    expect(within(row).getByRole("button", { name: "Editar gramos de Arroz blanco cocido" })).toBeInTheDocument()
     expect(within(row).getByRole("button", { name: "Quitar Arroz blanco cocido" })).toBeInTheDocument()
   })
 
@@ -537,7 +537,7 @@ describe("DiaryPage", () => {
     renderPage()
     await screen.findByText(CHICKEN_NAME)
 
-    await user.click(screen.getByRole("button", { name: `Editar ${CHICKEN_NAME}` }))
+    await user.click(screen.getByRole("button", { name: `Editar gramos de ${CHICKEN_NAME}` }))
     const dialog = await screen.findByRole("dialog", { name: "Editar gramos" })
     const grams = within(dialog).getByLabelText("Gramos")
     await user.clear(grams)
@@ -563,7 +563,7 @@ describe("DiaryPage", () => {
     renderPage()
     await screen.findByText("Arroz blanco cocido")
 
-    await user.click(screen.getByRole("button", { name: "Editar Arroz blanco cocido" }))
+    await user.click(screen.getByRole("button", { name: "Editar gramos de Arroz blanco cocido" }))
     const dialog = await screen.findByRole("dialog", { name: "Editar gramos" })
     const grams = within(dialog).getByLabelText("Gramos")
     await user.clear(grams)
@@ -619,9 +619,9 @@ describe("DiaryPage", () => {
     renderPage()
     await screen.findByText(CHICKEN_NAME)
 
-    expect(screen.getByRole("button", { name: `Editar ${CHICKEN_NAME}` })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: `Editar gramos de ${CHICKEN_NAME}` })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: `Quitar ${CHICKEN_NAME}` })).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Editar Gallo pinto" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Editar gramos de Gallo pinto" })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Quitar Gallo pinto" })).toBeInTheDocument()
   })
 })
@@ -1177,7 +1177,7 @@ describe("DiaryPage - editar un día pasado (REQ-004)", () => {
     renderAt(["/diary?date=2026-10-20"])
     await screen.findByText(CHICKEN_NAME)
 
-    await user.click(screen.getByRole("button", { name: `Editar ${CHICKEN_NAME}` }))
+    await user.click(screen.getByRole("button", { name: `Editar gramos de ${CHICKEN_NAME}` }))
     const dialog = await screen.findByRole("dialog", { name: "Editar gramos" })
     const grams = within(dialog).getByLabelText("Gramos")
     await user.clear(grams)
@@ -1347,19 +1347,17 @@ describe("DiaryPage - borrar una comida (REQ-006)", () => {
   }
 
   // SDD: 026 REQ-006 AC-006.1
-  it("una sección con alimentos tiene «Borrar comida» llamado «Borrar Cena»; las vacías no", async () => {
+  it("una sección con alimentos tiene «Vaciar cena»; las vacías no", async () => {
     getDiaryMock.mockResolvedValue(dayOf(TODAY, [dinnerWithThree()]))
     renderAt()
     await screen.findByText("Arroz con pollo")
 
-    const button = screen.getByRole("button", { name: "Borrar Cena" })
-
-    expect(button).toHaveTextContent("Borrar comida")
-    expect(screen.getAllByRole("button", { name: /^Borrar / })).toHaveLength(1)
+    expect(screen.getByRole("button", { name: "Vaciar cena" })).toBeInTheDocument()
+    expect(screen.getAllByRole("button", { name: /^Vaciar / })).toHaveLength(1)
   })
 
   // SDD: 026 REQ-006 AC-006.1
-  it("un día sin comidas no muestra ningún «Borrar comida»", async () => {
+  it("un día sin comidas no muestra ningún «Vaciar»", async () => {
     const user = userEvent.setup()
     getDiaryMock.mockImplementation(async (date) =>
       date === "2026-10-25" ? dayOf(date, [dinnerWithThree()]) : dayOf(date)
@@ -1367,11 +1365,11 @@ describe("DiaryPage - borrar una comida (REQ-006)", () => {
     renderAt()
     await screen.findByText("Todavía no has registrado nada hoy.")
 
-    expect(screen.queryByRole("button", { name: /^Borrar / })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /^Vaciar / })).not.toBeInTheDocument()
 
     await user.click(screen.getByRole("button", { name: "Día anterior" }))
     await screen.findByText("Arroz con pollo")
-    expect(screen.getByRole("button", { name: "Borrar Cena" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Vaciar cena" })).toBeInTheDocument()
   })
 
   // SDD: 026 REQ-006 AC-006.3
@@ -1384,7 +1382,7 @@ describe("DiaryPage - borrar una comida (REQ-006)", () => {
     renderAt()
     await screen.findByText(`${intFormat.format(1200)} / ${intFormat.format(goal.kcal)} kcal`)
 
-    await user.click(screen.getByRole("button", { name: "Borrar Cena" }))
+    await user.click(screen.getByRole("button", { name: "Vaciar cena" }))
     const confirmation = await screen.findByRole("alertdialog", { name: "¿Borrar Cena?" })
     await user.click(within(confirmation).getByRole("button", { name: "Borrar" }))
 
@@ -1402,7 +1400,7 @@ describe("DiaryPage - borrar una comida (REQ-006)", () => {
     renderAt()
     await screen.findByText("Arroz con pollo")
 
-    await user.click(screen.getByRole("button", { name: "Borrar Cena" }))
+    await user.click(screen.getByRole("button", { name: "Vaciar cena" }))
     const confirmation = await screen.findByRole("alertdialog", { name: "¿Borrar Cena?" })
     await user.click(within(confirmation).getByRole("button", { name: "Cancelar" }))
 
