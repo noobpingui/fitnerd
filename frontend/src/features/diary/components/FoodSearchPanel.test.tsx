@@ -538,6 +538,23 @@ describe("FoodSearchPanel - favoritos y recientes", () => {
     expect(screen.queryByRole("list", { name: "Recientes" })).not.toBeInTheDocument()
   })
 
+  it("«Crear alimento personalizado» y las acciones van bajo el campo, antes de «Favoritos» y «Recientes»", async () => {
+    favoritesMock.mockResolvedValue([{ ...OATS, favorite: true }])
+    recentMock.mockResolvedValue([makeRecentFood(BANANA, 150)])
+    renderPanel({ actions: <button type="button">Cancelar</button> })
+
+    const favoritesToggle = await screen.findByRole("button", { name: /^Favoritos/ })
+    const create = screen.getByRole("button", { name: "Crear alimento personalizado" })
+    const cancel = screen.getByRole("button", { name: "Cancelar" })
+    const follows = (a: HTMLElement, b: HTMLElement) =>
+      Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING)
+
+    expect(follows(box(), create)).toBe(true)
+    expect(follows(create, cancel)).toBe(true)
+    expect(follows(cancel, favoritesToggle)).toBe(true)
+    expect(follows(cancel, screen.getByRole("button", { name: /^Recientes/ }))).toBe(true)
+  })
+
   it("cada sección se despliega y se pliega por separado", async () => {
     const user = userEvent.setup()
     favoritesMock.mockResolvedValue([{ ...OATS, favorite: true }])
