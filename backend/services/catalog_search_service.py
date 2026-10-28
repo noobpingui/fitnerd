@@ -92,8 +92,11 @@ def prefix_edit_distance(form: str, word: str) -> int:
     return min(previous)
 
 
+TYPO_MIN_FORM_LENGTH = 4
+
+
 def typo_tolerance(form: str) -> int:
-    if len(form) < 4:
+    if len(form) < TYPO_MIN_FORM_LENGTH:
         return 0
     return 1 if len(form) < 8 else 2
 
@@ -135,9 +138,6 @@ class SearchCandidate:
     source_order: int  # 0 catálogo, 1 propio
     key: str  # desempate estable (id como texto)
     item: object
-
-
-TYPO_MIN_FORM_LENGTH = 4
 
 
 @dataclass

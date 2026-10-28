@@ -41,7 +41,12 @@ const DEFAULT_GRAMS = "100"
 const INITIAL_TEXT = "Busca un alimento para ver sus calorías y macros por 100 g."
 
 type ListLabel = "Resultados" | "Favoritos" | "Recientes"
-type DeleteTarget = { food: CustomLibraryFood; list: ListLabel; trigger: HTMLButtonElement }
+type DeleteTarget = {
+  food: CustomLibraryFood
+  list: ListLabel
+  trigger: HTMLButtonElement
+  query: string // valor de la caja (sin recortar) al pulsar «Borrar»
+}
 
 // Búsqueda compartida del diario: busca mientras se escribe (con retardo), ofrece
 // «Favoritos» y «Recientes» con la caja vacía y deja marcar favoritos y borrar
@@ -117,7 +122,9 @@ export function FoodSearchPanel({
       },
       onError: () => {
         setConfirming(false)
-        focusTrigger(current)
+        const text = form.getValues("query")
+        if (text === current.query) focusTrigger(current)
+        else setTarget({ ...current, query: text })
       },
     })
   }
@@ -134,7 +141,7 @@ export function FoodSearchPanel({
   function startDelete(list: ListLabel) {
     return (food: CustomLibraryFood, trigger: HTMLButtonElement) => {
       deleteFood.reset()
-      setTarget({ food, list, trigger })
+      setTarget({ food, list, trigger, query: form.getValues("query") })
       setConfirming(true)
     }
   }
@@ -202,6 +209,36 @@ export function FoodSearchPanel({
   const searching = !showLists && (waiting || (query !== null && search.isPending))
   const noResults = !showLists && !waiting && search.isSuccess && search.data.length === 0
   const hasResults = !showLists && !waiting && search.isSuccess && search.data.length > 0
+
+  function isTargetShown(current: DeleteTarget): boolean {
+    const same = (food: LibraryFood) =>
+      food.kind === current.food.kind && food.id === current.food.id
+    if (current.list === "Resultados") return hasResults && (search.data ?? []).some(same)
+    if (current.list === "Favoritos") return showLists && favoriteFoods.some(same)
+    return showLists && recentFoods.some(same)
+  }
+
+  // Cierra la confirmación sin mover el foco a su botón (salvo que haya quedado en el cuerpo).
+  function dismissDelete() {
+    setConfirming(false)
+    setTarget(null)
+    deleteFood.reset()
+    const focused = document.activeElement
+    if (focused === null || focused === document.body) form.setFocus("query")
+  }
+
+  const shown = target !== null && isTargetShown(target)
+  const isDeleting = deleteFood.isPending
+  const deleted = deleteFood.isSuccess
+
+  // La confirmación pertenece a la vista donde se abrió: si cambia el texto o el
+  // alimento deja de mostrarse, se cierra en silencio.
+  useEffect(() => {
+    if (!target || isDeleting || deleted) return
+    if (typed !== target.query || !shown) dismissDelete()
+    // dismissDelete solo usa referencias estables y setters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target, typed, shown, isDeleting, deleted])
 
   return (
     <div>

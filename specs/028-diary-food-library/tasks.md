@@ -187,11 +187,11 @@ F10 no lleva tarea de test: es una refactorización sin cambio de comportamiento
 ### Fase B (iteración 3) — Implementación (implementer)
 
 #### backend
-- [ ] T-176 [REQ-006, NFR-004, AC-N004.2] (impl) F10: mover `TYPO_MIN_FORM_LENGTH` antes de `typo_tolerance` y usarla en lugar del literal, sin cambiar el comportamiento — `backend/services/catalog_search_service.py`
+- [x] T-176 [REQ-006, NFR-004, AC-N004.2] (impl) F10: mover `TYPO_MIN_FORM_LENGTH` antes de `typo_tolerance` y usarla en lugar del literal, sin cambiar el comportamiento — `backend/services/catalog_search_service.py`
 
 #### frontend
-- [ ] T-177 [REQ-017, AC-017.3, AC-017.7, NFR-002, AC-N002.3, AC-N002.4] (impl) F9: `DeleteTarget.query`, `isTargetShown`, `dismissDelete` y el efecto que cierra la confirmación sin mover el foco al cambiar el texto o salir el alimento de su lista; `onError` de `confirmDelete` reancla la confirmación si el texto cambió — `frontend/src/features/diary/components/FoodSearchPanel.tsx`
-- [ ] T-178 [REQ-018, AC-018.7] (impl) F11: retirar `proposalFormSchema`, dejar `proposalEntryUnion` sin parámetros con `key: z.string()` y actualizar el comentario de `proposalReviewSchema` — `frontend/src/features/diary/schemas.ts`
+- [x] T-177 [REQ-017, AC-017.3, AC-017.7, NFR-002, AC-N002.3, AC-N002.4] (impl) F9: `DeleteTarget.query`, `isTargetShown`, `dismissDelete` y el efecto que cierra la confirmación sin mover el foco al cambiar el texto o salir el alimento de su lista; `onError` de `confirmDelete` reancla la confirmación si el texto cambió — `frontend/src/features/diary/components/FoodSearchPanel.tsx`
+- [x] T-178 [REQ-018, AC-018.7] (impl) F11: retirar `proposalFormSchema`, dejar `proposalEntryUnion` sin parámetros con `key: z.string()` y actualizar el comentario de `proposalReviewSchema` — `frontend/src/features/diary/schemas.ts`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

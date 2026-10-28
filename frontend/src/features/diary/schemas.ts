@@ -184,7 +184,8 @@ export const mealPhotoAnalysisSchema = z.object({
   totals,
 })
 
-function proposalEntryUnion<Key extends z.ZodType<string | undefined>>(key: Key) {
+function proposalEntryUnion() {
+  const key = z.string()
   return z.discriminatedUnion("kind", [
     z.object({
       kind: z.literal("catalog"),
@@ -225,13 +226,10 @@ function validateProposalGrams(
   })
 }
 
-export const proposalFormSchema = z
-  .object({ entries: z.array(proposalEntryUnion(z.string().optional())) })
-  .superRefine(validateProposalGrams)
-
-// Como proposalFormSchema pero con `key` obligatoria (PhotoReview).
+// Esquema del formulario de la propuesta (PhotoReview): `key` obligatoria y gramos
+// validados salvo en las entradas sin coincidencia.
 export const proposalReviewSchema: z.ZodType<ProposalFormValues, ProposalFormValues> = z
-  .object({ entries: z.array(proposalEntryUnion(z.string())) })
+  .object({ entries: z.array(proposalEntryUnion()) })
   .superRefine(validateProposalGrams)
 
 export const removalResponseSchema = z.object({ restore_token: z.string().min(1) })

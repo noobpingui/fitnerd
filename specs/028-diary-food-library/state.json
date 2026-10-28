@@ -10,7 +10,7 @@
   "branch": "feat/028-diary-food-library",
   "base_branch": "main",
   "created_at": "2026-10-27T08:34:57.517Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,7 +29,10 @@
       "at": "2026-10-28T00:38:42.092Z",
       "note": "auto (gate_mode=flow): red check PASS; casillas T-169 a T-175 marcadas por la sesión principal"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-28T00:43:51.332Z",
+      "note": "auto (gate_mode=flow): suites completas en verde"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -39,7 +42,7 @@
     "spec": "66a0bff",
     "plan": "1fcb034",
     "tasks": "7b952b1",
-    "tests": "1f2bed0",
+    "tests": "8dbf4e7",
     "implement": "9c8e7fd"
   },
   "iterations": {
@@ -719,6 +722,36 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS; casillas T-169 a T-175 marcadas por la sesión principal"
+    },
+    {
+      "at": "2026-10-28T00:38:42.518Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 8dbf4e7"
+    },
+    {
+      "at": "2026-10-28T00:38:42.736Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar iteración 3 (T-176 a T-178)"
+    },
+    {
+      "at": "2026-10-28T00:43:51.228Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "implement it.3: backend 2580 y frontend 1568 en verde, tsc, lint y build limpios"
+    },
+    {
+      "at": "2026-10-28T00:43:51.332Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): suites completas en verde"
+    },
+    {
+      "at": "2026-10-28T00:43:51.439Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "Decisión: eslint-disable-next-line react-hooks/exhaustive-deps en el efecto de F9 (el plan decía sin disable; mismo patrón que onQueryChange); a revisar"
     }
   ]
 }
