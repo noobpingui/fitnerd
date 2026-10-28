@@ -365,5 +365,6 @@ Merge del PR y paso 6.
 | 2026-10-22 | 025, foto desde el diario | #34, `3e436d9` | — (solo frontend) | — |
 | 2026-10-26 | 026, días y edición del diario | #37, `ca909bb` | — (`SECRET_KEY` propia confirmada en EC2; comprobaciones manuales en navegador hechas) | — |
 | 2026-10-27 | 027, SECRET_KEY obligatoria en producción y validación del token de restauración | #39, `a5e9740` | — (`SECRET_KEY` propia confirmada en EC2 antes del merge; AC-N002.1 confirmado en el job `test` del PR) | — |
+| 2026-10-27 | 028, biblioteca de alimentos propios, favoritos y recientes | #41, `da2767f` | `e6a8c0d2f4b7` (`custom_foods`, `food_favorites`, `meal_items.custom_food_id`), aplicada antes del merge desde local, con `FRONTEND_BASE_URL` y una `SECRET_KEY` temporal exportadas solo para el comando; relleno de 6 alimentos propios, 7 alimentos personalizados vinculados y 0 favoritos; comprobaciones manuales en navegador hechas | `prod-2026-10-27.dump` |
 
 Añade una fila en cada despliegue.
