@@ -10,7 +10,7 @@
   "branch": "feat/029-edit-favorite-foods",
   "base_branch": "main",
   "created_at": "2026-10-28T08:05:41.152Z",
-  "stage": "docs",
+  "stage": "close",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -41,7 +41,10 @@
       "at": "2026-10-28T19:08:21.724Z",
       "note": "Aprobado"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-28T19:08:56.365Z",
+      "note": "auto (gate_mode=flow): README y fila de CLAUDE.md, sin runbook ni .env"
+    },
     "close": null
   },
   "commits": {
@@ -49,7 +52,8 @@
     "plan": "71d4998",
     "tasks": "2d06efc",
     "tests": "0642be1",
-    "implement": "d0005f0"
+    "implement": "d0005f0",
+    "review": "aa3c3b2"
   },
   "iterations": {
     "tests": 2,
@@ -949,6 +953,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Aprobado"
+    },
+    {
+      "at": "2026-10-28T19:08:22.060Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: aa3c3b2"
+    },
+    {
+      "at": "2026-10-28T19:08:22.252Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegar en doc-keeper"
+    },
+    {
+      "at": "2026-10-28T19:08:56.246Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "docs actualizados: README y CLAUDE.md"
+    },
+    {
+      "at": "2026-10-28T19:08:56.365Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): README y fila de CLAUDE.md, sin runbook ni .env"
     }
   ]
 }
