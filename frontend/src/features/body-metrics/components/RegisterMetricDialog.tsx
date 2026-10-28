@@ -103,7 +103,7 @@ export function RegisterMetricDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onSave)} className="flex flex-col gap-4">
+        <form autoComplete="off" onSubmit={form.handleSubmit(onSave)} className="flex flex-col gap-4">
           <Field label="Fecha" htmlFor="register-date" error={errors.date}>
             <Input
               id="register-date"

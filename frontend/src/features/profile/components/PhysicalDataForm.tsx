@@ -236,7 +236,7 @@ export function PhysicalDataForm({
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSave)} className="flex flex-col gap-5">
+    <form autoComplete="off" onSubmit={form.handleSubmit(onSave)} className="flex flex-col gap-5">
       <div className="grid gap-5 sm:grid-cols-2">
         <Field label="Género">
           <UnitToggle

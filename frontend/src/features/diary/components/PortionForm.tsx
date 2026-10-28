@@ -45,7 +45,7 @@ export function PortionForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
+      <form autoComplete="off" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
         <FormField
           control={form.control}
           name="grams"

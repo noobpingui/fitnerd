@@ -85,7 +85,7 @@ export function MetricEditForm({
   })
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4 py-2">
+    <form autoComplete="off" onSubmit={onSubmit} className="flex flex-col gap-4 py-2">
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="flex flex-col gap-2">
           <Label htmlFor={`metric-weight-${id}`}>Peso ({weightUnit})</Label>
