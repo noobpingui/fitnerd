@@ -10,7 +10,7 @@
   "branch": "feat/029-edit-favorite-foods",
   "base_branch": "main",
   "created_at": "2026-10-28T08:05:41.152Z",
-  "stage": "verify",
+  "stage": "tasks",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -18,21 +18,12 @@
       "note": "Si"
     },
     "plan": {
-      "at": "2026-10-28T17:38:53.436Z",
-      "note": "auto (gate_mode=flow): plan para F1-F4, solo frontend, sin cambios de spec"
+      "at": "2026-10-28T18:30:55.692Z",
+      "note": "auto (gate_mode=flow): plan para R1 y R2, solo frontend, sin cambios de spec"
     },
-    "tasks": {
-      "at": "2026-10-28T17:39:37.822Z",
-      "note": "auto (gate_mode=flow): T-046..T-049 test y T-071..T-075 impl para F1-F4"
-    },
-    "tests": {
-      "at": "2026-10-28T17:45:27.425Z",
-      "note": "auto (gate_mode=flow): red check PASS, 5 en rojo legítimo y 7 excepciones aceptadas"
-    },
-    "implement": {
-      "at": "2026-10-28T17:50:54.940Z",
-      "note": "auto (gate_mode=flow): F1-F4 implementados, frontend 1727 en verde, lint y tsc limpios, ratchet backend OK"
-    },
+    "tasks": null,
+    "tests": null,
+    "implement": null,
     "verify": null,
     "review": null,
     "docs": null,
@@ -43,17 +34,17 @@
     "plan": "e378858",
     "tasks": "45309f2",
     "tests": "2f0542f",
-    "implement": "0d45818"
+    "implement": "c20acdb"
   },
   "iterations": {
     "tests": 2,
     "implement": 0,
-    "review": 1
+    "review": 2
   },
   "max_iterations": 5,
   "red_check": {
-    "result": "PASS",
-    "at": "2026-10-28T17:45:16.462Z"
+    "result": null,
+    "at": null
   },
   "verify": {
     "result": null,
@@ -541,6 +532,78 @@
       "stage": "implement",
       "event": "note",
       "note": "F3: el foco a Nombre vive solo en CustomFoodEditForm, pero con dos efectos (wasSaving y otro por serverError o nameTakenKey) porque el test del panel exigía foco tras un fallo; F4: onKeyDown en el form con Intro mientras se comprueba, porque Guardar deshabilitado impide el submit"
+    },
+    {
+      "at": "2026-10-28T17:50:55.455Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: c20acdb"
+    },
+    {
+      "at": "2026-10-28T17:50:55.630Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegar en verifier (full), tras F1-F4"
+    },
+    {
+      "at": "2026-10-28T17:57:13.557Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: full: backend 2681 passed, ratchet backend sin violaciones nuevas; frontend 1727 passed, lint, tsc y build OK; trazabilidad 61/61 AC con test SDD en verde, 61/61 tareas [x], sin skip nuevos, tests sin cambios desde el red check"
+    },
+    {
+      "at": "2026-10-28T17:57:22.532Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS tras F1-F4"
+    },
+    {
+      "at": "2026-10-28T17:57:22.638Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS, backend 2681, frontend 1727, ratchet limpio"
+    },
+    {
+      "at": "2026-10-28T17:57:22.817Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Delegar en reviewer (segunda review, tras F1-F4)"
+    },
+    {
+      "at": "2026-10-28T18:00:49.164Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-28T18:00:49.259Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review 2 APPROVED: 0 bloqueantes, 0 mayores, 1 menor (R1), 1 NIT (R2)"
+    },
+    {
+      "at": "2026-10-28T18:28:23.162Z",
+      "stage": "plan",
+      "event": "rework",
+      "note": "usuario: «Vamos a corregir R1 y R2 de una vez»; R1 es del planner · review 2/5"
+    },
+    {
+      "at": "2026-10-28T18:30:55.581Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan actualizado para R1 y R2"
+    },
+    {
+      "at": "2026-10-28T18:30:55.692Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan para R1 y R2, solo frontend, sin cambios de spec"
+    },
+    {
+      "at": "2026-10-28T18:30:55.799Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "R1: un solo efecto por [serverError, nameTakenKey], se retira wasSaving y T-048 se reescribe (tests autorizados por el usuario al pedir corregir R1); R2: quitar rama inalcanzable y limpiar checkingNoticeFor en onChange"
     }
   ]
 }

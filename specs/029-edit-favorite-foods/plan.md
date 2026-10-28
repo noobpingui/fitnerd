@@ -285,14 +285,19 @@ no válido (`parseDecimalText` da `null`) cuenta como cambio (AC-008.5). (`food.
   AC-N001.1), los cinco campos con las etiquetas de la spec (las de `CustomFoodForm` sin «Gramos») y los botones
   «Guardar» (`type="submit"`, «Guardando…» mientras `isSaving`) y «Cancelar» (`type="button"`).
 - Al montar: `form.setFocus("name")` (AC-N001.1).
-- **Foco tras un guardado fallido, un único mecanismo (review F3):** el efecto del formulario que, cuando `isSaving` pasa
-  de `true` a `false` con el formulario aún montado, hace `form.setFocus("name")` (ref `wasSaving`). Es el único que
-  devuelve el foco a «Nombre» tras un 409, un 400 o un error genérico. Se elimina del panel el contador
-  `nameFocusTick`, su estado, sus `setNameFocusTick` en `saveEdit` y su efecto con `querySelector("form input[name='name']")`.
-  Motivo: el formulario conoce su campo por react-hook-form, sin buscar en el DOM, y el caso de éxito y el de 404
-  desmontan el formulario, así que ese efecto no actúa en ellos (y si llegara a actuar en el render intermedio, el
-  `pendingFocus` o el `focusTrigger` del panel se ejecutan después y fijan el foco final). Si al quitar el del panel
-  falla algún test de foco existente (AC-N001), se conserva el del panel y se quita el del formulario: nunca los dos.
+- **Foco tras un guardado fallido, un único mecanismo (review F3, decisión final en la review R1):** un solo efecto del
+  formulario, **por resultado**, con dependencias `[serverError, nameTakenKey]`:
+  `if (serverError !== null || nameTakenKey !== null) form.setFocus("name")`. Es el único que devuelve el foco a
+  «Nombre» tras un 409, un 400 o un error genérico. **Se elimina el efecto `wasSaving`** (la ref y su efecto sobre
+  `[isSaving]`): no hace falta y, si el rechazo es inmediato (p. ej. sin conexión), TanStack Query junta «pendiente» y
+  «error» en un solo render, `isSaving` nunca se ve a `true` y ese efecto no actúa. El efecto por resultado cubre todos
+  los fallos que dejan el formulario abierto: un 409 fija un `nameTakenKey` nuevo (no se puede reenviar el nombre ya
+  rechazado, porque «Guardar» queda deshabilitado con `takenByServer`, así que la clave siempre cambia), y un 400 o un
+  error genérico fijan `serverError` después de que `saveEdit` lo pase a `null` al empezar (`setEditError(null)` antes
+  de `mutate`; los callbacks de la mutación llegan en una tarea posterior, así que el `null` se pinta antes y el mismo
+  mensaje dos veces seguidas vuelve a disparar el efecto). Con éxito o 404 el formulario se desmonta y el foco lo fija
+  el panel (`pendingFocus` o `focusTrigger`). El panel no tiene ningún mecanismo de foco a «Nombre» (sin
+  `nameFocusTick` ni `querySelector` del campo, como ya está). Cambiar solo `isSaving` no mueve el foco.
 - `check = useCustomFoodNameCheck(food, nameValue, SEARCH_DEBOUNCE_MS)`;
   `takenByServer = nameTakenKey !== null && customFoodNameKey(nameValue.trim()) === nameTakenKey`;
   `showTaken = check.taken || takenByServer`.
@@ -303,16 +308,24 @@ no válido (`parseDecimalText` da `null`) cuenta como cambio (AC-008.5). (`food.
 - «Guardar» deshabilitado si `isSaving || isCustomFoodEditUnchanged(values, food) || check.checking || showTaken`
   (REQ-008, REQ-009, AC-010.3). «Cancelar» deshabilitado mientras `isSaving`.
 - `handleSubmit(values)` (lo llama `form.handleSubmit` solo si la validación zod pasa; si no, salen los mensajes de
-  validación, como hoy): si `isSaving` o `blocked` por otro motivo no envía nada (AC-010.6, REQ-008, REQ-009); si no,
-  `onSubmit(customFoodEditPayload(values))` (AC-010.1).
-- **Intro mientras se comprueba el nombre (review F4):** si al enviar (Intro en un campo) `check.checking` es `true` y
-  no hay guardado en curso, no se envía nada (REQ-009 sigue igual) pero se da una señal: el formulario guarda en un
+  validación, como hoy): `if (blocked) return` (con `isSaving`, sin cambios, comprobando o con nombre repetido no envía
+  nada, AC-010.6, REQ-008, REQ-009); si no, `onSubmit(customFoodEditPayload(values))` (AC-010.1). **No** lleva la rama
+  `if (!isSaving && check.checking) { setCheckingNoticeFor(…); return }` (review R2.a): no se alcanza, porque con la
+  comprobación en curso «Guardar» está deshabilitado (ni clic ni envío implícito) y `handleKeyDown` ya hace
+  `preventDefault`; la señal vive solo en `handleKeyDown`.
+- **Intro mientras se comprueba el nombre (review F4):** el `onKeyDown` del `<form>` (`handleKeyDown`): con Intro en un
+  campo (no en un botón), si `check.checking` es `true` y no hay guardado en curso, hace `preventDefault`, no se envía
+  nada (REQ-009 sigue igual) y se da una señal: el formulario guarda en un
   estado `checkingNoticeFor = values.name` y la misma región `role="status"` de «Nombre» muestra
   `CUSTOM_FOOD_NAME_CHECKING_MESSAGE` («Comprobando el nombre…») mientras
   `!showTaken && check.checking && checkingNoticeFor === values.name` (valor derivado, sin efecto). Cuando la
   comprobación termina, el texto desaparece solo: si el nombre está repetido, la región pasa a mostrar el aviso de
   REQ-009; si no, queda vacía y «Guardar» se habilita, y el usuario vuelve a pulsar Intro o «Guardar» (**no** hay envío
-  automático al terminar la comprobación). Si el usuario cambia el nombre, el texto también desaparece. El campo
+  automático al terminar la comprobación). Si el usuario cambia el nombre, el texto también desaparece y **el estado se
+  limpia** (review R2.b): el `onChange` del campo «Nombre» envuelve el de react-hook-form,
+  `onChange={(event) => { setCheckingNoticeFor(null); field.onChange(event) }}` (en el manejador, sin efecto), de modo
+  que volver a escribir el mismo nombre con otra comprobación en marcha no hace reaparecer el texto sin un Intro nuevo.
+  El campo
   «Nombre» no añade `takenId` a `aria-describedby` por este texto (solo por el aviso, AC-N001.5); la región `aria-live`
   ya lo anuncia. Intro con el formulario sin cambios o con el aviso de nombre repetido visible sigue sin hacer nada y
   sin texto nuevo (el botón deshabilitado y el aviso ya son la señal). Con `isSaving`, Intro tampoco muestra este texto.
@@ -353,7 +366,9 @@ no válido (`parseDecimalText` da `null`) cuenta como cambio (AC-008.5). (`food.
     - `message`: el formulario sigue abierto con `serverError = message` y lo escrito (AC-010.5).
     - En los dos casos en que el formulario sigue abierto, el foco va al campo «Nombre» (los botones estuvieron
       deshabilitados durante el guardado y el foco no debe quedarse en el cuerpo, NFR-001). Lo hace solo el efecto
-      `wasSaving` de `CustomFoodEditForm` (review F3); `saveEdit` no gestiona ese foco.
+      por resultado (`[serverError, nameTakenKey]`) de `CustomFoodEditForm` (review F3 y R1); `saveEdit` no gestiona
+      ese foco, pero sí pone `editError` a `null` antes de `mutate` (ya lo hace), que es lo que permite que el mismo
+      mensaje de error dos veces seguidas vuelva a mover el foco.
 - `listProps(list)` añade `onEdit: startEdit(list)`.
 
 **Frontend · `LibraryFoodList` (REQ-006):** en los `custom`, tras la estrella y antes de «Borrar», un `Button`
@@ -408,11 +423,20 @@ rechazaría al guardar la propuesta.
 |---|---|---|
 | F1 (NIT) | Errata de formato en `RecentFood` (sección 3.2, `types.ts`) | `frontend/src/features/food-library/types.ts` |
 | F2 (MENOR) | Tras un 404 al editar, el panel llama a `onCustomFoodDeleted` y la propuesta desvincula sus filas (secciones 3.2 y 3.3) | `frontend/src/features/diary/components/FoodSearchPanel.tsx` (y sus tests y los de `MealPhotoDialog`) |
-| F3 (NIT) | Un único mecanismo de foco a «Nombre» tras un guardado fallido: el efecto `wasSaving` de `CustomFoodEditForm`; se quita `nameFocusTick` del panel (sección 3.3) | `FoodSearchPanel.tsx`, `CustomFoodEditForm.tsx` |
+| F3 (NIT) | Un único mecanismo de foco a «Nombre» tras un guardado fallido, en `CustomFoodEditForm`; se quita `nameFocusTick` del panel (sección 3.3). En la iteración 3 (R1) el mecanismo pasa a ser el efecto por resultado y se retira `wasSaving` | `FoodSearchPanel.tsx`, `CustomFoodEditForm.tsx` |
 | F4 (NIT) | Intro durante la comprobación del nombre: no envía, muestra «Comprobando el nombre…» en la región de estado, sin envío automático (sección 3.3) | `frontend/src/features/diary/customFoodEdit.ts`, `CustomFoodEditForm.tsx` |
 
 Ninguna cambia requisitos ni AC de la spec: F2 aplica a la edición la desvinculación que la 028 ya hace al borrar y
 mantiene AC-010.4; F4 añade una señal sin cambiar REQ-009 ni AC-010.6. No hay cambios en el backend.
+
+### Correcciones de la review (iteración 3)
+| Hallazgo | Resolución en el plan | Archivos |
+|---|---|---|
+| R1 (MENOR) | Un único efecto de foco a «Nombre» tras un guardado fallido, por resultado (`[serverError, nameTakenKey]`); se quita el efecto `wasSaving` y su ref. T-048 se reescribe para probar el foco por resultado y que cambiar solo `isSaving` no lo mueve (secciones 3.3 y 5) | `frontend/src/features/diary/components/CustomFoodEditForm.tsx` y su test |
+| R2 (NIT) | (a) Se quita de `handleSubmit` la rama inalcanzable de «comprobando» (la señal queda solo en `handleKeyDown`); (b) `checkingNoticeFor` se limpia en el `onChange` del campo «Nombre» (sección 3.3), con un test nuevo (sección 5) | `CustomFoodEditForm.tsx` y su test |
+
+Ninguna cambia requisitos ni AC: el comportamiento visible de AC-N001.1, AC-010.3, AC-010.5 y AC-010.6 es el mismo.
+Solo frontend; sin backend, migraciones, variables ni dependencias.
 
 ## 5. Estrategia de pruebas
 Marcadores `# SDD: 029 REQ-… AC-…` y `// SDD: 029 REQ-… AC-…` (Art. P1.1). Ningún test llama a servicios externos
@@ -525,6 +549,30 @@ donde ya se hace, con los mocks de `@/features/diary/api` (Art. P1.frontend.4). 
   - Intro sin cambios o con `isSaving: true` → sin texto «Comprobando el nombre…» y sin `onSubmit`.
 - **F1:** sin test (solo formato); lo cubren `npm run lint` y `npx tsc -b`.
 
+**Casos por las correcciones de la review (iteración 3).** En `diary/components/CustomFoodEditForm.test.tsx`, con
+marcador `SDD: 029` y el REQ/AC más cercano:
+- **R1 · T-048 se reescribe** (`// SDD: 029 NFR-001 AC-N001.1`). Hoy prueba que al pasar `isSaving` de `true` a
+  `false`, con `serverError` y `nameTakenKey` a `null`, el foco va a «Nombre»: eso describe el efecto `wasSaving`, que
+  se retira, y no modela un fallo (en la integración, ese paso sin error solo ocurre con éxito, que desmonta el
+  formulario). El test-author sustituye su bloque `describe` («foco al terminar un guardado fallido») por tres casos con
+  `rerender` y el foco puesto antes en «Calorías»:
+  1. de `isSaving: true, serverError: null` a `isSaving: false, serverError: UPDATE_CUSTOM_FOOD_FAILED_MESSAGE`
+     («No se pudo guardar el alimento.», de `errors.ts`) → el foco va a «Nombre» (fallo 400/500);
+  2. de `isSaving: true, nameTakenKey: null` a `isSaving: false, nameTakenKey: "gallo pinto con huevo"` → el foco va a
+     «Nombre» (409);
+  3. de `isSaving: true` a `isSaving: false` sin `serverError` ni `nameTakenKey` → el foco **sigue** en «Calorías»
+     (guarda del mecanismo único; con el código actual está en rojo porque `wasSaving` mueve el foco).
+  Los casos 1 y 2 pasan ya con el código actual (los cubre el efecto por resultado) y son guardas de regresión; el
+  caso 3 es el rojo legítimo de R1. Los tests de foco tras 409 y 500 de `FoodSearchPanel.test.tsx` no se tocan y
+  deben seguir pasando.
+- **R2.b · test nuevo** (`// SDD: 029 REQ-009 AC-010.6`), en el bloque de F4 y con la búsqueda pendiente
+  (`pendingSearch([])`): escribir «Gallo pinto nuevo», esperar la búsqueda, pulsar Intro → la región muestra
+  «Comprobando el nombre…»; escribir « 2» y luego borrar esos dos caracteres hasta volver a «Gallo pinto nuevo», con la
+  comprobación otra vez en curso → la región **no** muestra «Comprobando el nombre…» y `onSubmit` no se llama. En rojo
+  con el código actual (el estado no se limpia y el texto reaparece).
+- **R2.a:** sin test propio (la rama es inalcanzable); al quitarla, los tests de F4 y de doble envío (AC-010.6) deben
+  seguir pasando sin cambios.
+
 ## 6. Riesgos y mitigaciones
 | Riesgo | Probabilidad | Impacto | Mitigación |
 |---|---|---|---|
@@ -533,7 +581,7 @@ donde ya se hace, con los mocks de `@/features/diary/api` (Art. P1.frontend.4). 
 | El foco se queda en el cuerpo al deshabilitar los botones durante el guardado o al reordenar las listas | Media | Medio | Foco explícito tras cada resultado (botón «Editar» por `data-edit-food-id`, caja de búsqueda o campo «Nombre»); tests de AC-N001.1 a AC-N001.4 |
 | Generalizar el estado de la confirmación de borrado rompe la 028 | Media | Medio | Mismo efecto de cierre y mismas funciones de foco; los tests existentes de `FoodSearchPanel` deben seguir pasando sin cambios (Art. B5.3) |
 | Extraer `parse_custom_food_fields` y la validación compartida del esquema cambia mensajes u orden de la 022 | Baja | Medio | Refactor sin cambio de comportamiento; los tests de la 022 y la 028 (`test_meal_rules.py`, `schemas.test.ts`) siguen pasando |
-| Quitar `nameFocusTick` deja el foco en el cuerpo en algún caso de error (F3) | Baja | Medio | El efecto `wasSaving` cubre 409, 400 y genérico; los tests de foco existentes deben pasar sin cambios y, si no, se conserva el mecanismo del panel en su lugar (nunca los dos) |
+| Con un solo efecto por resultado, el mismo mensaje de error dos veces seguidas no movería el foco si React juntara el `setEditError(null)` y el nuevo mensaje en un render (F3, R1) | Baja | Bajo | `saveEdit` pone `editError` a `null` en el manejador del envío y los callbacks de TanStack Query llegan en una tarea posterior; un 409 siempre trae una clave distinta. Los tests de foco tras 409 y 500 de `FoodSearchPanel.test.tsx` lo cubren de punta a punta; si fallaran, el implementer escala en lugar de volver a añadir un segundo mecanismo |
 | Un 404 de edición por un fallo transitorio desvincula filas de un alimento que sí existe (F2) | Muy baja | Bajo | El servidor solo da 404 si el id no es válido o el alimento no existe o no es del usuario; es el mismo trato que la 028 da al borrado, y la fila se sigue guardando con `name` y `per_100g` (regla de la 028) |
 
 ## 7. Cumplimiento de la constitución
@@ -553,6 +601,11 @@ donde ya se hace, con los mocks de `@/features/diary/api` (Art. P1.frontend.4). 
   sin proveedores de IA (P3.3 no aplica); solo ORM (P3.4); sin variables nuevas (P3.5).
 - **Art. P4:** sin migración ni pasos manuales en producción.
 - **Art. P5:** archivos en LF; sin ADRs ni archivos de datos.
+- **Art. B5.3 y la reescritura de T-048 (R1):** T-048 es un test de esta misma feature, aún sin fusionar, que probaba
+  un detalle de implementación (`wasSaving`) que el plan retira. Su sustituto no es más débil: mantiene la aserción de
+  que el foco vuelve a «Nombre» tras un guardado fallido, ahora con el fallo modelado (`serverError` o `nameTakenKey`),
+  y añade la guarda de que cambiar solo `isSaving` no mueve el foco. Lo hace el test-author, no el implementer
+  (Art. B2), y el verifier confirma el rojo del caso 3 antes de implementar.
 - No hay ningún «DEBERÍA» incumplido.
 
 ## 8. ADRs
