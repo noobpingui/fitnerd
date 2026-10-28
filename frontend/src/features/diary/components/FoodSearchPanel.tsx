@@ -274,6 +274,12 @@ export function FoodSearchPanel({
         </form>
       </Form>
 
+      {/* Arriba, bajo el campo: con listas largas los botones no quedan al final. */}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {!noResults && createButton("", false)}
+        {actions}
+      </div>
+
       <div role="status" aria-live="polite" className="my-4 text-sm text-muted-foreground">
         {noLists && INITIAL_TEXT}
         {loadFailed && (
@@ -367,11 +373,6 @@ export function FoodSearchPanel({
           {...listProps("Resultados")}
         />
       )}
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        {!noResults && createButton("", false)}
-        {actions}
-      </div>
     </div>
   )
 }
