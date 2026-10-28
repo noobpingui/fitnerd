@@ -145,7 +145,7 @@ export function PhotoReview({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form autoComplete="off" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         {saveError && (
           <p role="alert" className="text-sm text-destructive">
             {saveError}

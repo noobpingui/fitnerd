@@ -164,6 +164,13 @@ function resetMocks() {
   })
 }
 
+// «Favoritos» y «Recientes» arrancan plegadas: despliega la sección (si hace falta) y devuelve su lista.
+async function openList(name: "Favoritos" | "Recientes", root: { findByRole: typeof screen.findByRole } = screen) {
+  const toggle = await root.findByRole("button", { name: new RegExp(`^${name}`) })
+  if (toggle.getAttribute("aria-expanded") === "false") await userEvent.setup().click(toggle)
+  return root.findByRole("list", { name })
+}
+
 describe("AddFoodDialog - búsqueda compartida", () => {
   beforeEach(resetMocks)
 
@@ -243,7 +250,7 @@ describe("AddFoodDialog - búsqueda compartida", () => {
     const user = userEvent.setup()
     recentMock.mockResolvedValue([makeRecentFood(makeBananaFood(), 150)])
     renderDialog()
-    const recents = await within(dialog()).findByRole("list", { name: "Recientes" })
+    const recents = await openList("Recientes", within(dialog()))
 
     await user.click(within(recents).getByRole("button", { name: "Elegir Banano" }))
 
@@ -256,7 +263,7 @@ describe("AddFoodDialog - búsqueda compartida", () => {
     const user = userEvent.setup()
     favoritesMock.mockResolvedValue([{ ...makeBananaFood(), favorite: true }])
     renderDialog()
-    const favorites = await within(dialog()).findByRole("list", { name: "Favoritos" })
+    const favorites = await openList("Favoritos", within(dialog()))
 
     await user.click(within(favorites).getByRole("button", { name: "Elegir Banano" }))
 
@@ -268,7 +275,7 @@ describe("AddFoodDialog - búsqueda compartida", () => {
     const user = userEvent.setup()
     recentMock.mockResolvedValue([makeRecentFood(makeBananaFood(), 150)])
     const { onClose } = renderDialog()
-    const recents = await within(dialog()).findByRole("list", { name: "Recientes" })
+    const recents = await openList("Recientes", within(dialog()))
     await user.click(within(recents).getByRole("button", { name: "Elegir Banano" }))
 
     await user.click(within(dialog()).getByRole("button", { name: "Añadir" }))
@@ -493,7 +500,7 @@ describe("AddFoodDialog - búsqueda compartida", () => {
 
     renderDialog(client)
 
-    const recents = await within(dialog()).findByRole("list", { name: "Recientes" })
+    const recents = await openList("Recientes", within(dialog()))
     expect(within(recents).getByText("Pechuga de pollo a la plancha")).toBeInTheDocument()
     expect(recentMock.mock.calls.length).toBeGreaterThan(callsBefore)
   })
@@ -587,7 +594,7 @@ describe("AddFoodDialog - alimento propio de la biblioteca", () => {
     const user = userEvent.setup()
     recentMock.mockResolvedValue([makeRecentFood(makeCustomLibraryFood(), 200)])
     renderDialog()
-    const recents = await within(dialog()).findByRole("list", { name: "Recientes" })
+    const recents = await openList("Recientes", within(dialog()))
     await user.click(within(recents).getByRole("button", { name: "Elegir Gallo pinto" }))
     expect(within(dialog()).getByLabelText("Gramos")).toHaveValue("200")
 

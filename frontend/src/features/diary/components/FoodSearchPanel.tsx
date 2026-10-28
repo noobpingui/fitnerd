@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type ReactElement, type ReactNode } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -94,6 +95,9 @@ export function FoodSearchPanel({
   const deleteFood = useDeleteCustomFood()
   const [target, setTarget] = useState<DeleteTarget | null>(null)
   const [confirming, setConfirming] = useState(false)
+  // «Favoritos» y «Recientes» arrancan plegadas para no saturar la vista.
+  const [favoritesOpen, setFavoritesOpen] = useState(false)
+  const [recentsOpen, setRecentsOpen] = useState(false)
 
   function handleSubmit(values: FoodSearchFormValues) {
     flush(values.query)
@@ -214,8 +218,8 @@ export function FoodSearchPanel({
     const same = (food: LibraryFood) =>
       food.kind === current.food.kind && food.id === current.food.id
     if (current.list === "Resultados") return hasResults && (search.data ?? []).some(same)
-    if (current.list === "Favoritos") return showLists && favoriteFoods.some(same)
-    return showLists && recentFoods.some(same)
+    if (current.list === "Favoritos") return showLists && favoritesOpen && favoriteFoods.some(same)
+    return showLists && recentsOpen && recentFoods.some(same)
   }
 
   // Cierra la confirmación sin mover el foco a su botón (salvo que haya quedado en el cuerpo).
@@ -243,7 +247,7 @@ export function FoodSearchPanel({
   return (
     <div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3" noValidate>
+        <form autoComplete="off" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3" noValidate>
           <FormField
             control={form.control}
             name="query"
@@ -253,6 +257,7 @@ export function FoodSearchPanel({
                 <FormControl>
                   <Input
                     type="search"
+                    autoComplete="off"
                     placeholder="Ej.: arroz blanco cocido, banano"
                     maxLength={FOOD_QUERY_MAX_LENGTH}
                     {...field}
@@ -320,20 +325,28 @@ export function FoodSearchPanel({
       )}
 
       {showLists && favoriteFoods.length > 0 && (
-        <section className="mb-4 space-y-2">
-          <h3 className="font-medium">Favoritos</h3>
+        <CollapsibleSection
+          title="Favoritos"
+          count={favoriteFoods.length}
+          open={favoritesOpen}
+          onToggle={() => setFavoritesOpen((current) => !current)}
+        >
           <LibraryFoodList
             label="Favoritos"
             foods={favoriteFoods}
             onSelect={(food) => onSelect(food, DEFAULT_GRAMS)}
             {...listProps("Favoritos")}
           />
-        </section>
+        </CollapsibleSection>
       )}
 
       {showLists && recentFoods.length > 0 && (
-        <section className="mb-4 space-y-2">
-          <h3 className="font-medium">Recientes</h3>
+        <CollapsibleSection
+          title="Recientes"
+          count={recentFoods.length}
+          open={recentsOpen}
+          onToggle={() => setRecentsOpen((current) => !current)}
+        >
           <LibraryFoodList
             label="Recientes"
             foods={recentFoods}
@@ -343,7 +356,7 @@ export function FoodSearchPanel({
             }}
             {...listProps("Recientes")}
           />
-        </section>
+        </CollapsibleSection>
       )}
 
       {hasResults && (
@@ -360,6 +373,44 @@ export function FoodSearchPanel({
         {actions}
       </div>
     </div>
+  )
+}
+
+// Sección que se despliega al pulsar su cabecera; plegada no pinta la lista.
+function CollapsibleSection({
+  title,
+  count,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string
+  count: number
+  open: boolean
+  onToggle: () => void
+  children: ReactNode
+}): ReactElement {
+  const panelId = useId()
+  return (
+    <section className="mb-4">
+      <h3>
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={panelId}
+          onClick={onToggle}
+          className="flex w-full items-center justify-between rounded-md py-1 font-medium"
+        >
+          <span>
+            <span>{title}</span> <span className="font-normal text-muted-foreground">({count})</span>
+          </span>
+          <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true" />
+        </button>
+      </h3>
+      <div id={panelId} className="mt-2 space-y-2" hidden={!open}>
+        {open && children}
+      </div>
+    </section>
   )
 }
 

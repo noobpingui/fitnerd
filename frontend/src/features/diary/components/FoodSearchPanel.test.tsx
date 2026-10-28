@@ -130,6 +130,13 @@ async function advance(ms: number) {
 // REQ-013: buscar mientras se escribe
 // ---------------------------------------------------------------------------
 
+// «Favoritos» y «Recientes» arrancan plegadas: despliega la sección (si hace falta) y devuelve su lista.
+async function openList(name: "Favoritos" | "Recientes", root: { findByRole: typeof screen.findByRole } = screen) {
+  const toggle = await root.findByRole("button", { name: new RegExp(`^${name}`) })
+  if (toggle.getAttribute("aria-expanded") === "false") await userEvent.setup().click(toggle)
+  return root.findByRole("list", { name })
+}
+
 describe("FoodSearchPanel - buscar mientras se escribe", () => {
   beforeEach(() => {
     resetMocks()
@@ -429,7 +436,7 @@ describe("FoodSearchPanel - resultados, carreras y errores", () => {
     favoritesMock.mockResolvedValue([{ ...OATS, favorite: true }])
     searchMock.mockResolvedValue([RICE])
     renderPanel()
-    await screen.findByRole("list", { name: "Favoritos" })
+    await openList("Favoritos")
 
     await typeAndEnter(user, "arroz")
 
@@ -451,8 +458,8 @@ describe("FoodSearchPanel - favoritos y recientes", () => {
     recentMock.mockResolvedValue([makeRecentFood(BANANA, 150)])
     renderPanel()
 
-    const favorites = await screen.findByRole("list", { name: "Favoritos" })
-    const recents = await screen.findByRole("list", { name: "Recientes" })
+    const favorites = await openList("Favoritos")
+    const recents = await openList("Recientes")
 
     expect(screen.getByText("Favoritos")).toBeInTheDocument()
     expect(screen.getByText("Recientes")).toBeInTheDocument()
@@ -465,7 +472,7 @@ describe("FoodSearchPanel - favoritos y recientes", () => {
     recentMock.mockResolvedValue([makeRecentFood(BANANA, 150)])
     renderPanel()
 
-    const recents = await screen.findByRole("list", { name: "Recientes" })
+    const recents = await openList("Recientes")
 
     expect(within(recents).getByText("89 kcal")).toBeInTheDocument()
     expect(within(recents).getByText("1,1 g proteína")).toBeInTheDocument()
@@ -479,7 +486,7 @@ describe("FoodSearchPanel - favoritos y recientes", () => {
     recentMock.mockResolvedValue([makeRecentFood(BANANA, 150)])
     renderPanel()
 
-    await screen.findByRole("list", { name: "Recientes" })
+    await openList("Recientes")
 
     expect(screen.queryByText("Favoritos")).not.toBeInTheDocument()
     expect(screen.queryByRole("list", { name: "Favoritos" })).not.toBeInTheDocument()
@@ -502,7 +509,7 @@ describe("FoodSearchPanel - favoritos y recientes", () => {
     recentMock.mockResolvedValue([makeRecentFood(BANANA, 150)])
     searchMock.mockResolvedValue([RICE])
     renderPanel()
-    await screen.findByRole("list", { name: "Favoritos" })
+    await openList("Favoritos")
 
     await typeAndEnter(user, "arroz")
     await screen.findByRole("list", { name: "Resultados" })
@@ -511,9 +518,41 @@ describe("FoodSearchPanel - favoritos y recientes", () => {
 
     await user.clear(box())
 
-    expect(await screen.findByRole("list", { name: "Favoritos" })).toBeInTheDocument()
-    expect(screen.getByRole("list", { name: "Recientes" })).toBeInTheDocument()
+    // «Favoritos» sigue desplegada; «Recientes» vuelve plegada como estaba.
+    expect(await openList("Favoritos")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /^Recientes/ })).toHaveAttribute("aria-expanded", "false")
     expect(screen.queryByRole("list", { name: "Resultados" })).not.toBeInTheDocument()
+  })
+
+  it("«Favoritos» y «Recientes» arrancan plegadas, con su recuento, y no pintan sus alimentos", async () => {
+    favoritesMock.mockResolvedValue([{ ...OATS, favorite: true }])
+    recentMock.mockResolvedValue([makeRecentFood(BANANA, 150)])
+    renderPanel()
+
+    const favoritesToggle = await screen.findByRole("button", { name: "Favoritos (1)" })
+    const recentsToggle = screen.getByRole("button", { name: "Recientes (1)" })
+
+    expect(favoritesToggle).toHaveAttribute("aria-expanded", "false")
+    expect(recentsToggle).toHaveAttribute("aria-expanded", "false")
+    expect(screen.queryByRole("list", { name: "Favoritos" })).not.toBeInTheDocument()
+    expect(screen.queryByRole("list", { name: "Recientes" })).not.toBeInTheDocument()
+  })
+
+  it("cada sección se despliega y se pliega por separado", async () => {
+    const user = userEvent.setup()
+    favoritesMock.mockResolvedValue([{ ...OATS, favorite: true }])
+    recentMock.mockResolvedValue([makeRecentFood(BANANA, 150)])
+    renderPanel()
+
+    await user.click(await screen.findByRole("button", { name: /^Favoritos/ }))
+
+    expect(screen.getByRole("list", { name: "Favoritos" })).toBeInTheDocument()
+    expect(screen.queryByRole("list", { name: "Recientes" })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: /^Favoritos/ }))
+
+    expect(screen.queryByRole("list", { name: "Favoritos" })).not.toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /^Favoritos/ })).toHaveAttribute("aria-expanded", "false")
   })
 
   // SDD: 028 REQ-014 AC-014.3
@@ -521,7 +560,7 @@ describe("FoodSearchPanel - favoritos y recientes", () => {
     const user = userEvent.setup()
     recentMock.mockResolvedValue([makeRecentFood(BANANA, 150)])
     renderPanel()
-    await screen.findByRole("list", { name: "Recientes" })
+    await openList("Recientes")
 
     await type(user, "a")
 
@@ -555,7 +594,7 @@ describe("FoodSearchPanel - favoritos y recientes", () => {
 
     await user.click(screen.getByRole("button", { name: "Reintentar" }))
 
-    expect(await screen.findByRole("list", { name: "Recientes" })).toBeInTheDocument()
+    expect(await openList("Recientes")).toBeInTheDocument()
     expect(recentMock.mock.calls.length).toBeGreaterThan(recentCalls)
     expect(favoritesMock.mock.calls.length).toBeGreaterThan(favoriteCalls)
     expect(screen.queryByText(LOAD_FAILED)).not.toBeInTheDocument()
@@ -566,7 +605,7 @@ describe("FoodSearchPanel - favoritos y recientes", () => {
     const user = userEvent.setup()
     recentMock.mockResolvedValue([makeRecentFood(BANANA, 150)])
     const { onSelect } = renderPanel()
-    const recents = await screen.findByRole("list", { name: "Recientes" })
+    const recents = await openList("Recientes")
 
     await user.click(within(recents).getByRole("button", { name: "Elegir Banano" }))
 
@@ -578,7 +617,7 @@ describe("FoodSearchPanel - favoritos y recientes", () => {
     const user = userEvent.setup()
     recentMock.mockResolvedValue([makeRecentFood(GALLO, 12.5)])
     const { onSelect } = renderPanel()
-    const recents = await screen.findByRole("list", { name: "Recientes" })
+    const recents = await openList("Recientes")
 
     await user.click(within(recents).getByRole("button", { name: "Elegir Gallo pinto" }))
 
@@ -590,7 +629,7 @@ describe("FoodSearchPanel - favoritos y recientes", () => {
     const user = userEvent.setup()
     favoritesMock.mockResolvedValue([{ ...OATS, favorite: true }])
     const { onSelect } = renderPanel()
-    const favorites = await screen.findByRole("list", { name: "Favoritos" })
+    const favorites = await openList("Favoritos")
 
     await user.click(within(favorites).getByRole("button", { name: "Elegir Avena cocida" }))
 
@@ -603,8 +642,8 @@ describe("FoodSearchPanel - favoritos y recientes", () => {
     favoritesMock.mockResolvedValue([{ ...BANANA, favorite: true }])
     recentMock.mockResolvedValue([makeRecentFood({ ...BANANA, favorite: true }, 150)])
     const { onSelect } = renderPanel()
-    const favorites = await screen.findByRole("list", { name: "Favoritos" })
-    const recents = await screen.findByRole("list", { name: "Recientes" })
+    const favorites = await openList("Favoritos")
+    const recents = await openList("Recientes")
 
     await user.click(within(recents).getByRole("button", { name: "Elegir Banano" }))
     await user.click(within(favorites).getByRole("button", { name: "Elegir Banano" }))
@@ -643,8 +682,8 @@ describe("FoodSearchPanel - alimentos propios y favoritos", () => {
     recentMock.mockResolvedValue([makeRecentFood({ ...GALLO, favorite: true }, 200)])
     renderPanel()
 
-    const favorites = await screen.findByRole("list", { name: "Favoritos" })
-    const recents = await screen.findByRole("list", { name: "Recientes" })
+    const favorites = await openList("Favoritos")
+    const recents = await openList("Recientes")
 
     expect(within(favorites).getByText("Personalizado")).toBeInTheDocument()
     expect(within(recents).getByText("Personalizado")).toBeInTheDocument()
@@ -690,7 +729,7 @@ describe("FoodSearchPanel - alimentos propios y favoritos", () => {
       await screen.findByRole("button", { name: "Quitar Banano de favoritos", pressed: true })
     ).toBeInTheDocument()
     await user.clear(box())
-    const favorites = await screen.findByRole("list", { name: "Favoritos" })
+    const favorites = await openList("Favoritos")
     expect(within(favorites).getByText("Banano")).toBeInTheDocument()
   })
 
@@ -775,7 +814,7 @@ describe("FoodSearchPanel - alimentos propios y favoritos", () => {
     const user = userEvent.setup()
     recentMock.mockResolvedValue([makeRecentFood(BANANA, 150)])
     renderPanel()
-    const recents = await screen.findByRole("list", { name: "Recientes" })
+    const recents = await openList("Recientes")
 
     await user.click(within(recents).getByRole("button", { name: "Añadir Banano a favoritos" }))
 
@@ -845,8 +884,8 @@ describe("FoodSearchPanel - borrar un alimento propio", () => {
       deleted = true
     })
     renderPanel()
-    const favorites = await screen.findByRole("list", { name: "Favoritos" })
-    await screen.findByRole("list", { name: "Recientes" })
+    const favorites = await openList("Favoritos")
+    await openList("Recientes")
 
     await user.click(within(favorites).getByRole("button", { name: DELETE_LABEL }))
     const confirmation = await screen.findByRole("alertdialog", { name: CONFIRM_TITLE })
@@ -933,7 +972,7 @@ describe("FoodSearchPanel - borrar un alimento propio", () => {
     favoritesMock.mockResolvedValue([{ ...OATS, favorite: true }])
     recentMock.mockResolvedValue([makeRecentFood(BANANA, 150)])
     renderPanel()
-    await screen.findByRole("list", { name: "Recientes" })
+    await openList("Recientes")
 
     expect(screen.queryByRole("button", { name: /^Borrar / })).not.toBeInTheDocument()
   })
@@ -954,8 +993,8 @@ describe("FoodSearchPanel - confirmación de borrado en línea", () => {
     favoritesMock.mockResolvedValue([FAVORITE_GALLO])
     recentMock.mockResolvedValue([makeRecentFood(FAVORITE_GALLO, 200)])
     const rendered = renderPanel()
-    const recent = await screen.findByRole("list", { name: "Recientes" })
-    const favorites = await screen.findByRole("list", { name: "Favoritos" })
+    const recent = await openList("Recientes")
+    const favorites = await openList("Favoritos")
     return { ...rendered, recent, favorites }
   }
 
@@ -965,7 +1004,7 @@ describe("FoodSearchPanel - confirmación de borrado en línea", () => {
     recentMock.mockResolvedValue([makeRecentFood(FAVORITE_GALLO, 200)])
     favoritesMock.mockResolvedValue([])
     const rendered = renderPanel({ onCustomFoodDeleted })
-    const recent = await screen.findByRole("list", { name: "Recientes" })
+    const recent = await openList("Recientes")
     return { ...rendered, recent, onCustomFoodDeleted }
   }
 
@@ -1148,7 +1187,7 @@ describe("FoodSearchPanel - confirmación de borrado y cambio de vista", () => {
   async function renderFavorites() {
     favoritesMock.mockResolvedValue([FAVORITE_GALLO])
     const rendered = renderPanel()
-    const favorites = await screen.findByRole("list", { name: "Favoritos" })
+    const favorites = await openList("Favoritos")
     return { ...rendered, favorites }
   }
 
@@ -1163,7 +1202,7 @@ describe("FoodSearchPanel - confirmación de borrado y cambio de vista", () => {
     await user.type(box(), "ar")
     await user.clear(box())
 
-    const back = await screen.findByRole("list", { name: "Favoritos" })
+    const back = await openList("Favoritos")
     expect(within(back).getByText("Gallo pinto")).toBeInTheDocument()
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
     expect(box()).toHaveFocus()
@@ -1206,7 +1245,7 @@ describe("FoodSearchPanel - confirmación de borrado y cambio de vista", () => {
     await user.type(box(), "ar")
     await user.clear(box())
 
-    const back = await screen.findByRole("list", { name: "Favoritos" })
+    const back = await openList("Favoritos")
     expect(within(back).getByText("Gallo pinto")).toBeInTheDocument()
     expect(screen.queryByText(DELETE_FAILED)).not.toBeInTheDocument()
   })
@@ -1224,8 +1263,8 @@ describe("FoodSearchPanel - confirmación de borrado y cambio de vista", () => {
       favorited = favorite
     })
     renderPanel()
-    const favorites = await screen.findByRole("list", { name: "Favoritos" })
-    const recent = await screen.findByRole("list", { name: "Recientes" })
+    const favorites = await openList("Favoritos")
+    const recent = await openList("Recientes")
     await user.click(within(favorites).getByRole("button", { name: DELETE_LABEL }))
     await within(favorites).findByRole("alertdialog")
 
@@ -1239,7 +1278,7 @@ describe("FoodSearchPanel - confirmación de borrado y cambio de vista", () => {
       within(recent).getByRole("button", { name: "Añadir Gallo pinto a favoritos" })
     )
 
-    const back = await screen.findByRole("list", { name: "Favoritos" })
+    const back = await openList("Favoritos")
     expect(within(back).getByText("Gallo pinto")).toBeInTheDocument()
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
     expect(screen.queryByRole("button", { name: "Cancelar" })).not.toBeInTheDocument()
@@ -1272,7 +1311,7 @@ describe("FoodSearchPanel - confirmación de borrado y cambio de vista", () => {
     await user.type(box(), "r")
     await user.clear(box())
 
-    const back = await screen.findByRole("list", { name: "Favoritos" })
+    const back = await openList("Favoritos")
     expect(within(back).getByText("Gallo pinto")).toBeInTheDocument()
     expect(screen.queryByText(DELETE_FAILED)).not.toBeInTheDocument()
   })
@@ -1293,8 +1332,8 @@ describe("FoodSearchPanel - accesibilidad", () => {
     searchMock.mockResolvedValue([RICE, { ...BANANA, favorite: true }])
     renderPanel()
 
-    const favorites = await screen.findByRole("list", { name: "Favoritos" })
-    const recents = await screen.findByRole("list", { name: "Recientes" })
+    const favorites = await openList("Favoritos")
+    const recents = await openList("Recientes")
     expect(box()).toBeInTheDocument()
     expect(within(favorites).getByRole("button", { name: "Elegir Avena cocida" })).toBeInTheDocument()
     expect(

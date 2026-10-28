@@ -261,6 +261,13 @@ function resetMocks() {
 // REQ-001 y REQ-002: inicio, selectores y vista previa
 // ---------------------------------------------------------------------------
 
+// «Favoritos» y «Recientes» arrancan plegadas: despliega la sección (si hace falta) y devuelve su lista.
+async function openList(name: "Favoritos" | "Recientes", root: { findByRole: typeof screen.findByRole } = screen) {
+  const toggle = await root.findByRole("button", { name: new RegExp(`^${name}`) })
+  if (toggle.getAttribute("aria-expanded") === "false") await userEvent.setup().click(toggle)
+  return root.findByRole("list", { name })
+}
+
 describe("MealPhotoDialog - inicio y vista previa", () => {
   beforeEach(resetMocks)
 
@@ -1261,8 +1268,8 @@ describe("MealPhotoDialog - biblioteca de alimentos en la propuesta", () => {
 
     await user.click(button("Añadir otro alimento"))
 
-    const favorites = await within(dialog()).findByRole("list", { name: "Favoritos" })
-    const recents = await within(dialog()).findByRole("list", { name: "Recientes" })
+    const favorites = await openList("Favoritos", within(dialog()))
+    const recents = await openList("Recientes", within(dialog()))
     expect(within(favorites).getByText("Tomate")).toBeInTheDocument()
     expect(within(recents).getByText("Banano")).toBeInTheDocument()
     expect(button("Crear alimento personalizado")).toBeInTheDocument()
@@ -1408,7 +1415,7 @@ describe("MealPhotoDialog - biblioteca de alimentos en la propuesta", () => {
     renderDialog()
     await reachProposal(user, makeAnalysis({ items: [RICE] }))
     await user.click(button("Añadir otro alimento"))
-    const recents = await within(dialog()).findByRole("list", { name: "Recientes" })
+    const recents = await openList("Recientes", within(dialog()))
 
     await user.click(within(recents).getByRole("button", { name: "Elegir Banano" }))
 
@@ -1426,7 +1433,7 @@ describe("MealPhotoDialog - biblioteca de alimentos en la propuesta", () => {
     renderDialog()
     await reachProposal(user, makeAnalysis({ items: [RICE] }))
     await user.click(button("Añadir otro alimento"))
-    const favorites = await within(dialog()).findByRole("list", { name: "Favoritos" })
+    const favorites = await openList("Favoritos", within(dialog()))
 
     await user.click(within(favorites).getByRole("button", { name: "Elegir Banano" }))
 

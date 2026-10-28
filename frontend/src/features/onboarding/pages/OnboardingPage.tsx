@@ -308,6 +308,7 @@ export function OnboardingPage({
         </header>
 
         <form
+          autoComplete="off"
           className="flex flex-1 flex-col"
           onSubmit={(e) => {
             e.preventDefault()
