@@ -487,6 +487,6 @@ Feature: [specs/028-diary-food-library/](../specs/028-diary-food-library/)
 - [ ] ruff marca 2 errores de importación sin ordenar en `backend/tests/conftest.py`, previos a esta feature.
 - [ ] Anotar en la spec la ubicación del aviso de borrado fallido (en «Resultados»), que hoy solo fija el plan.
 - [ ] Corregir la firma de `useEscapeCapture` en T-134 de `tasks.md` y la nota «112 AC» (son 107 AC con marcador, según el verifier) en el estado de la feature.
-- [ ] Comprobación manual: AC-N002.2 con un lector de pantalla real (NVDA o VoiceOver) y, en el navegador, AC-017.7 y AC-N002.3 a AC-N002.5 (foco y posición de la confirmación en línea), antes del merge.
+- [x] Comprobación manual: AC-N002.2 con un lector de pantalla real (NVDA o VoiceOver) y, en el navegador, AC-017.7 y AC-N002.3 a AC-N002.5 (foco y posición de la confirmación en línea), antes del merge. Hecho el 2026-10-27 en producción con Narrador de Windows 11 y Chrome: se anuncian «Buscando…», sin resultados, error de búsqueda y error de carga, y la confirmación de borrado y el recorrido del foco cumplen lo esperado. Sin probar con NVDA (opcional).
 - [x] Rellenar la fila de la 028 en «Historial de despliegues» del runbook tras el despliegue.
 - [x] En el caso B de la 028 del runbook, el comando de `flask db upgrade` contra producción necesita también `FRONTEND_BASE_URL=https://fitnerd.betofallas.dev` (spec 020) además de una `SECRET_KEY` válida; sin ella `ProductionConfig` no arranca. Aplicada en producción el 2026-10-27 con ambas exportadas solo para el comando.
