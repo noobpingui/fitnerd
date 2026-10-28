@@ -10,7 +10,7 @@
   "branch": "feat/028-diary-food-library",
   "base_branch": "main",
   "created_at": "2026-10-27T08:34:57.517Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -21,7 +21,10 @@
       "at": "2026-10-28T00:33:02.162Z",
       "note": "auto (gate_mode=flow): plan iteración 3; F9 traza a AC-017.3/017.7/N002.3/N002.4"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-28T00:33:37.726Z",
+      "note": "auto (gate_mode=flow): 10 tareas nuevas"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -31,7 +34,7 @@
   },
   "commits": {
     "spec": "66a0bff",
-    "plan": "3b4ddaa",
+    "plan": "1fcb034",
     "tasks": "0e8f5c2",
     "tests": "1f2bed0",
     "implement": "9c8e7fd"
@@ -641,6 +644,30 @@
       "stage": "plan",
       "event": "note",
       "note": "Decisiones: F9 cierra la confirmación al cambiar el texto o salir de la lista, sin AC nuevo; F10 sin test nuevo; F11 retira proposalFormSchema y adapta tests de schemas; ADR-0036 Aceptada por el usuario"
+    },
+    {
+      "at": "2026-10-28T00:33:02.618Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 1fcb034"
+    },
+    {
+      "at": "2026-10-28T00:33:02.818Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "tasks iteración 3 (F9-F11)"
+    },
+    {
+      "at": "2026-10-28T00:33:37.612Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks it.3: 10 tareas T-169 a T-178 (0 scaffold, 7 test, 3 impl)"
+    },
+    {
+      "at": "2026-10-28T00:33:37.726Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 10 tareas nuevas"
     }
   ]
 }

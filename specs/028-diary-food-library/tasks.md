@@ -163,9 +163,44 @@ migración nueva. Los tests que se adaptan conservan su marcador y el motivo est
 - [x] T-167 [REQ-020, AC-020.1] (impl) Borrar `features/catalog/` entero (`api.ts`, `hooks.ts`, `schemas.ts`, `types.ts` y `components/CatalogResultList.tsx`) — `frontend/src/features/catalog/api.ts`
 - [x] T-168 [REQ-020, AC-020.1] (impl) Borrar `features/foods/api.ts`, quitar `foodSearchResponseSchema` y los tipos `FoodPer100g`, `Food` y `FoodSearchResponse` — `frontend/src/features/foods/api.ts`, `frontend/src/features/foods/schemas.ts`, `frontend/src/features/foods/types.ts`
 
+## Iteración 3 (hallazgos F9, F10 y F11 de la review de la iteración 2)
+Las tareas T-001 a T-168 están hechas y no se reabren. Estas continúan la numeración. No hay migración, contrato HTTP
+ni símbolo exportado nuevo (plan, sección 9). Los AC son los existentes: no hay AC nuevos.
+
+### Fase A0 (iteración 3) — Andamiaje
+No aplica: el plan (9.2) no añade símbolos exportados nuevos; `isTargetShown` y `dismissDelete` son internos del componente.
+
+### Fase A (iteración 3) — Tests (test-author)
+
+#### frontend
+- [ ] T-169 [REQ-017, AC-017.7, NFR-002, AC-N002.3] (test) F9, test 1: con la confirmación abierta en «Favoritos», escribir «ar» y vaciar la caja devuelve «Favoritos» sin `alertdialog`, con el foco en «Buscar alimento» y sin llamar a `deleteCustomFood` — `frontend/src/features/diary/components/FoodSearchPanel.test.tsx`
+- [ ] T-170 [REQ-017, AC-017.7, NFR-002, AC-N002.3] (test) F9, test 2: con la confirmación abierta en «Resultados», cambiar la consulta y volver a «gallo» muestra «Gallo pinto» sin confirmación, con el mismo foco y sin borrar — `frontend/src/features/diary/components/FoodSearchPanel.test.tsx`
+- [ ] T-171 [REQ-017, AC-017.3, AC-017.7] (test) F9, test 3: el aviso «No se pudo borrar el alimento.» no reaparece tras ocultar y volver a mostrar «Favoritos» — `frontend/src/features/diary/components/FoodSearchPanel.test.tsx`
+- [ ] T-172 [REQ-017, AC-017.7, NFR-002, AC-N002.3] (test) F9, test 4: si el alimento sale de «Favoritos» con la confirmación abierta y vuelve, sale sin confirmación, sin foco en «Cancelar» y sin borrar — `frontend/src/features/diary/components/FoodSearchPanel.test.tsx`
+- [ ] T-173 [REQ-017, AC-017.3, NFR-002, AC-N002.4] (test) F9, test 5: si se escribe mientras el borrado está en curso y falla, el foco sigue en la caja y el aviso se ve en el elemento de «Gallo pinto» hasta que cambia la vista — `frontend/src/features/diary/components/FoodSearchPanel.test.tsx`
+- [ ] T-174 [REQ-018, AC-018.2, AC-018.4, AC-018.7, REQ-019, AC-019.1, AC-019.3] (test) F11, adaptación: `proposalIssues` y los `describe` de `proposalFormSchema` pasan a `proposalReviewSchema` con entradas con `key`; las guardas dejan de comparar con el esquema retirado y usan `gramsError`. Motivo: desaparece el símbolo (Art. B5.3), sin debilitar aserciones ni marcadores — `frontend/src/features/diary/schemas.test.ts`
+- [ ] T-175 [REQ-018, AC-018.7] (test) F11, test nuevo: `schemas.ts` ya no exporta `proposalFormSchema` (`Object.keys` del módulo); rojo legítimo hasta retirarlo — `frontend/src/features/diary/schemas.test.ts`
+
+F10 no lleva tarea de test: es una refactorización sin cambio de comportamiento, cubierta por la suite existente
+(plan 9.4).
+
+### Fase B (iteración 3) — Implementación (implementer)
+
+#### backend
+- [ ] T-176 [REQ-006, NFR-004, AC-N004.2] (impl) F10: mover `TYPO_MIN_FORM_LENGTH` antes de `typo_tolerance` y usarla en lugar del literal, sin cambiar el comportamiento — `backend/services/catalog_search_service.py`
+
+#### frontend
+- [ ] T-177 [REQ-017, AC-017.3, AC-017.7, NFR-002, AC-N002.3, AC-N002.4] (impl) F9: `DeleteTarget.query`, `isTargetShown`, `dismissDelete` y el efecto que cierra la confirmación sin mover el foco al cambiar el texto o salir el alimento de su lista; `onError` de `confirmDelete` reancla la confirmación si el texto cambió — `frontend/src/features/diary/components/FoodSearchPanel.tsx`
+- [ ] T-178 [REQ-018, AC-018.7] (impl) F11: retirar `proposalFormSchema`, dejar `proposalEntryUnion` sin parámetros con `key: z.string()` y actualizar el comentario de `proposalReviewSchema` — `frontend/src/features/diary/schemas.ts`
+
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |
 |---|---|---|---|
+| REQ-017 (it. 3) | AC-017.3, AC-017.7 | T-169, T-170, T-171, T-172, T-173 | T-177 |
+| NFR-002 (it. 3) | AC-N002.3, AC-N002.4 | T-169, T-170, T-172, T-173 | T-177 |
+| REQ-018 (it. 3) | AC-018.2, AC-018.4, AC-018.7 | T-174, T-175 | T-178 |
+| REQ-019 (it. 3) | AC-019.1, AC-019.3 | T-174 | T-178 |
+| REQ-006 / NFR-004 (it. 3) | AC-N004.2 (sin cambio de comportamiento) | suite existente (T-032, T-138) | T-176 |
 | REQ-009 (it. 2) | AC-009.6, AC-009.7, AC-009.8 | T-137, T-139, T-140, T-141, T-142 | T-161 |
 | REQ-017 (it. 2) | AC-017.5, AC-017.6, AC-017.7 | T-144, T-146, T-147, T-149 | T-162, T-163, T-164, T-166 |
 | REQ-018 (it. 2) | AC-018.7, AC-018.8 | T-149, T-150, T-151 | T-165, T-166 |
