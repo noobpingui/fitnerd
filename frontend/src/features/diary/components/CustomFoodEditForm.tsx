@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type ComponentProps, type ReactElement } from "react"
+import { useEffect, useId, useRef, useState, type ComponentProps, type KeyboardEvent, type ReactElement } from "react"
 import { useForm, useWatch, type FieldPath } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
@@ -16,7 +16,12 @@ import { useCustomFoodNameCheck } from "@/features/food-library/hooks"
 import type { CustomFoodUpdatePayload, CustomLibraryFood } from "@/features/food-library/types"
 import { useEscapeCapture } from "@/lib/useEscapeCapture"
 import { SEARCH_DEBOUNCE_MS } from "../constants"
-import { customFoodEditDefaults, customFoodEditPayload, isCustomFoodEditUnchanged } from "../customFoodEdit"
+import {
+  CUSTOM_FOOD_NAME_CHECKING_MESSAGE,
+  customFoodEditDefaults,
+  customFoodEditPayload,
+  isCustomFoodEditUnchanged,
+} from "../customFoodEdit"
 import { CUSTOM_FOOD_NAME_TAKEN_MESSAGE } from "../errors"
 import { CUSTOM_NAME_MAX_LENGTH, customFoodEditSchema, type CustomFoodEditValues } from "../schemas"
 
@@ -85,11 +90,19 @@ export function CustomFoodEditForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSaving])
 
+  // Si el fallo llega sin que se vea el estado «guardando», el foco también vuelve a «Nombre».
+  useEffect(() => {
+    if (serverError !== null || nameTakenKey !== null) form.setFocus("name")
+    // form es estable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverError, nameTakenKey])
+
   const check = useCustomFoodNameCheck(food, values.name, SEARCH_DEBOUNCE_MS)
   const takenByServer =
     nameTakenKey !== null && customFoodNameKey(values.name.trim()) === nameTakenKey
   const showTaken = check.taken || takenByServer
   const unchanged = isCustomFoodEditUnchanged(values, food)
+  const [checkingNoticeFor, setCheckingNoticeFor] = useState<string | null>(null)
   const blocked = isSaving || unchanged || check.checking || showTaken
 
   useEscapeCapture(() => {
@@ -101,8 +114,21 @@ export function CustomFoodEditForm({
   ).macroSum?.message
 
   function handleSubmit(submitted: CustomFoodEditValues) {
+    if (!isSaving && check.checking) {
+      setCheckingNoticeFor(values.name)
+      return
+    }
     if (blocked) return
     onSubmit(customFoodEditPayload(submitted))
+  }
+
+  // Con «Guardar» deshabilitado el navegador no envía con Intro: se avisa de que se está comprobando.
+  function handleKeyDown(event: KeyboardEvent<HTMLFormElement>) {
+    if (event.key !== "Enter" || event.target instanceof HTMLButtonElement) return
+    if (!isSaving && check.checking) {
+      event.preventDefault()
+      setCheckingNoticeFor(values.name)
+    }
   }
 
   return (
@@ -111,6 +137,7 @@ export function CustomFoodEditForm({
       autoComplete="off"
       noValidate
       onSubmit={form.handleSubmit(handleSubmit)}
+      onKeyDown={handleKeyDown}
       className="mt-3 space-y-3 rounded-lg border p-4"
     >
       <div id={titleId} className="font-medium">{`Editar «${food.name}»`}</div>
@@ -130,7 +157,11 @@ export function CustomFoodEditForm({
                 />
               </FormControl>
               <p id={takenId} role="status" aria-live="polite" className="text-sm text-destructive">
-                {showTaken ? CUSTOM_FOOD_NAME_TAKEN_MESSAGE : ""}
+                {showTaken
+                  ? CUSTOM_FOOD_NAME_TAKEN_MESSAGE
+                  : check.checking && checkingNoticeFor === values.name
+                    ? CUSTOM_FOOD_NAME_CHECKING_MESSAGE
+                    : ""}
               </p>
               <FormMessage />
             </FormItem>

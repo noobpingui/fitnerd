@@ -16,4 +16,4 @@ export type CustomLibraryFood = {
 }
 export type LibraryFood = CatalogLibraryFood | CustomLibraryFood
 export type CustomFoodUpdatePayload = { name: string; per_100g: LibraryPer100g }
-export type RecentFood =LibraryFood & { last_grams: number }
+export type RecentFood = LibraryFood & { last_grams: number }

@@ -2,6 +2,9 @@ import type { CustomFoodUpdatePayload, CustomLibraryFood } from "@/features/food
 import { gramsText } from "./format"
 import { parseDecimalText, parseSignedDecimalText, type CustomFoodEditValues } from "./schemas"
 
+// Aviso mientras se comprueba el nombre y se pulsa Intro.
+export const CUSTOM_FOOD_NAME_CHECKING_MESSAGE = "Comprobando el nombre…"
+
 // Valores del formulario a partir del alimento (números con coma decimal, como gramsText).
 export function customFoodEditDefaults(food: CustomLibraryFood): CustomFoodEditValues {
   return {

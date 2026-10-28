@@ -10,7 +10,7 @@
   "branch": "feat/029-edit-favorite-foods",
   "base_branch": "main",
   "created_at": "2026-10-28T08:05:41.152Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,7 +29,10 @@
       "at": "2026-10-28T17:45:27.425Z",
       "note": "auto (gate_mode=flow): red check PASS, 5 en rojo legítimo y 7 excepciones aceptadas"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-10-28T17:50:54.940Z",
+      "note": "auto (gate_mode=flow): F1-F4 implementados, frontend 1727 en verde, lint y tsc limpios, ratchet backend OK"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -39,7 +42,7 @@
     "spec": "afaf840",
     "plan": "e378858",
     "tasks": "45309f2",
-    "tests": "15c54d9",
+    "tests": "2f0542f",
     "implement": "0d45818"
   },
   "iterations": {
@@ -508,6 +511,36 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS, 5 en rojo legítimo y 7 excepciones aceptadas"
+    },
+    {
+      "at": "2026-10-28T17:45:27.772Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 2f0542f"
+    },
+    {
+      "at": "2026-10-28T17:45:27.944Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegar en implementer (T-071..T-075, F1-F4)"
+    },
+    {
+      "at": "2026-10-28T17:50:54.846Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-071..T-075 hechas"
+    },
+    {
+      "at": "2026-10-28T17:50:54.940Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F1-F4 implementados, frontend 1727 en verde, lint y tsc limpios, ratchet backend OK"
+    },
+    {
+      "at": "2026-10-28T17:50:55.045Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "F3: el foco a Nombre vive solo en CustomFoodEditForm, pero con dos efectos (wasSaving y otro por serverError o nameTakenKey) porque el test del panel exigía foco tras un fallo; F4: onKeyDown en el form con Intro mientras se comprueba, porque Guardar deshabilitado impide el submit"
     }
   ]
 }

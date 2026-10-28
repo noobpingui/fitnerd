@@ -86,11 +86,11 @@ Reglas:
 - [x] T-070 [REQ-011, AC-006.3, AC-011.1, AC-011.2, AC-011.3] (impl) Pasar `onCustomFoodEdited={applyEdited}` al panel de la vista de búsqueda y actualizar las filas con `applyCustomFoodEdit` — `frontend/src/features/diary/components/PhotoReview.tsx`
 
 ### Frontend · correcciones de la review (iteración 2)
-- [ ] T-071 [REQ-005] (impl) F1: corregir la errata de formato `RecentFood =LibraryFood` a `RecentFood = LibraryFood`, sin cambio de tipo; lo cubren lint y `tsc` — `frontend/src/features/food-library/types.ts`
-- [ ] T-072 [REQ-010, REQ-011, AC-010.4] (impl) F2: en `saveEdit`, tras un 404 llamar a `onCustomFoodDeleted?.(id)` antes de cerrar el formulario (no con 409, 400, 500 ni 200) y actualizar el comentario de la prop — `frontend/src/features/diary/components/FoodSearchPanel.tsx`
-- [ ] T-073 [NFR-001, AC-N001.1] (impl) F3: quitar `nameFocusTick`, su estado, sus `set` en `saveEdit` y su efecto del panel; el foco a «Nombre» tras un error lo da solo el efecto `wasSaving` del formulario (si falla un test de foco existente, conservar el del panel y quitar el del formulario, nunca los dos) — `frontend/src/features/diary/components/FoodSearchPanel.tsx`
-- [ ] T-074 [REQ-009] (impl) F4: exportar `CUSTOM_FOOD_NAME_CHECKING_MESSAGE = "Comprobando el nombre…"` — `frontend/src/features/diary/customFoodEdit.ts`
-- [ ] T-075 [REQ-009, NFR-001, AC-010.6, AC-N001.1] (impl) F3 y F4: Intro con `check.checking` y sin guardado no envía y fija `checkingNoticeFor`; la región `role="status"` muestra el mensaje mientras `!showTaken && check.checking && checkingNoticeFor === name`, sin añadirlo a `aria-describedby` ni envío automático; mantener el efecto `wasSaving` — `frontend/src/features/diary/components/CustomFoodEditForm.tsx`
+- [x] T-071 [REQ-005] (impl) F1: corregir la errata de formato `RecentFood =LibraryFood` a `RecentFood = LibraryFood`, sin cambio de tipo; lo cubren lint y `tsc` — `frontend/src/features/food-library/types.ts`
+- [x] T-072 [REQ-010, REQ-011, AC-010.4] (impl) F2: en `saveEdit`, tras un 404 llamar a `onCustomFoodDeleted?.(id)` antes de cerrar el formulario (no con 409, 400, 500 ni 200) y actualizar el comentario de la prop — `frontend/src/features/diary/components/FoodSearchPanel.tsx`
+- [x] T-073 [NFR-001, AC-N001.1] (impl) F3: quitar `nameFocusTick`, su estado, sus `set` en `saveEdit` y su efecto del panel; el foco a «Nombre» tras un error lo da solo el efecto `wasSaving` del formulario (si falla un test de foco existente, conservar el del panel y quitar el del formulario, nunca los dos) — `frontend/src/features/diary/components/FoodSearchPanel.tsx`
+- [x] T-074 [REQ-009] (impl) F4: exportar `CUSTOM_FOOD_NAME_CHECKING_MESSAGE = "Comprobando el nombre…"` — `frontend/src/features/diary/customFoodEdit.ts`
+- [x] T-075 [REQ-009, NFR-001, AC-010.6, AC-N001.1] (impl) F3 y F4: Intro con `check.checking` y sin guardado no envía y fija `checkingNoticeFor`; la región `role="status"` muestra el mensaje mientras `!showTaken && check.checking && checkingNoticeFor === name`, sin añadirlo a `aria-describedby` ni envío automático; mantener el efecto `wasSaving` — `frontend/src/features/diary/components/CustomFoodEditForm.tsx`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

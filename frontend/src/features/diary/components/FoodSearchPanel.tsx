@@ -75,6 +75,7 @@ export function FoodSearchPanel({
   onQueryChange?: (query: string) => void
   onSelect: (food: LibraryFood, defaultGrams: string) => void
   onCreateCustom: (name: string) => void
+  // Se llama al borrar un alimento propio y también cuando editarlo da 404 (ya no existe).
   onCustomFoodDeleted?: (customFoodId: number) => void
   onCustomFoodEdited?: (food: CustomLibraryFood) => void
   actions?: ReactNode
@@ -112,7 +113,6 @@ export function FoodSearchPanel({
   const [editError, setEditError] = useState<string | null>(null)
   const [nameTakenKey, setNameTakenKey] = useState<string | null>(null)
   const [notFound, setNotFound] = useState<string | null>(null)
-  const [nameFocusTick, setNameFocusTick] = useState(0)
   const [pendingFocus, setPendingFocus] = useState<{ list: ListLabel; id: number } | null>(null)
   // «Favoritos» y «Recientes» arrancan plegadas para no saturar la vista.
   const [favoritesOpen, setFavoritesOpen] = useState(false)
@@ -214,26 +214,19 @@ export function FoodSearchPanel({
           const view = updateCustomFoodErrorView(error)
           if (view.kind === "name_taken") {
             setNameTakenKey(customFoodNameKey(payload.name))
-            setNameFocusTick((n) => n + 1)
           } else if (view.kind === "not_found") {
+            onCustomFoodDeleted?.(current.food.id)
             setTarget(null)
             setNameTakenKey(null)
             setNotFound(view.message)
             focusTrigger(current)
           } else {
             setEditError(view.message)
-            setNameFocusTick((n) => n + 1)
           }
         },
       }
     )
   }
-
-  // Tras un fallo al guardar, el foco vuelve al campo «Nombre» del formulario.
-  useEffect(() => {
-    if (nameFocusTick === 0) return
-    containerRef.current?.querySelector<HTMLInputElement>("form input[name='name']")?.focus()
-  }, [nameFocusTick])
 
   // Tras guardar: foco al botón «Editar» del alimento ya actualizado o, si no sale, a la caja.
   useEffect(() => {
