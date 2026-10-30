@@ -520,7 +520,7 @@ Detalle en [`specs/029-edit-favorite-foods/`](specs/029-edit-favorite-foods/back
 
 ## 030-diary-portion-chat · Chat de porciones del diario: endpoint backend que estima los gramos de un alimento con un LLM (2026-10-30)
 Detalle en [specs/030-diary-portion-chat/backlog.md](../specs/030-diary-portion-chat/backlog.md).
-- [ ] Siguiente feature: frontend de la ventana de chat en `/diary` (ubicación y texto de aviso sobre la caja), que consume `POST /api/meals/portion-estimate`.
+- [x] Siguiente feature (hecha en la 031-diary-portion-chat-ui): frontend de la ventana de chat en `/diary` (ubicación y texto de aviso sobre la caja), que consume `POST /api/meals/portion-estimate`.
 - [ ] Tras el despliegue: añadir el precio de Haiku en Langfuse si no aparece; probar a mano una pregunta con varios alimentos (NFR-002) y el 503 con Redis caído.
 - [ ] Revisar en la consola de Anthropic el coste de las 3 llamadas reales del red check (`claude-sonnet-5`, iteración 2).
 - [ ] Sin `ANTHROPIC_API_KEY` el coach pasa de 500 a 503 tras consumir el límite y llamar a Voyage (F8; aceptado por ser de configuración).

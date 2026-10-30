@@ -9,7 +9,7 @@
   "branch": "feat/031-diary-portion-chat-ui",
   "base_branch": "main",
   "created_at": "2026-10-30T20:55:25.327Z",
-  "stage": "docs",
+  "stage": "close",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -40,7 +40,10 @@
       "at": "2026-10-30T21:50:02.919Z",
       "note": "Si"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-10-30T21:50:43.871Z",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
     "close": null
   },
   "commits": {
@@ -48,7 +51,8 @@
     "plan": "f1568bd",
     "tasks": "28aa301",
     "tests": "796c9fb",
-    "implement": "5a9ca99"
+    "implement": "5a9ca99",
+    "review": "31f207e"
   },
   "iterations": {
     "tests": 1,
@@ -382,6 +386,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Si"
+    },
+    {
+      "at": "2026-10-30T21:50:03.189Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: 31f207e"
+    },
+    {
+      "at": "2026-10-30T21:50:03.429Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Actualizar documentación"
+    },
+    {
+      "at": "2026-10-30T21:50:43.751Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "README, CLAUDE.md y docs/backlog.md"
+    },
+    {
+      "at": "2026-10-30T21:50:43.871Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): docs actualizados"
     }
   ]
 }
