@@ -1,6 +1,6 @@
 # ADR-0037: Estimación de porciones con Anthropic, salida estructurada por herramienta forzada y cliente perezoso
 
-- **Estado:** Propuesta · 2026-10-30 (plan de la feature `030-diary-portion-chat`)
+- **Estado:** Aceptada · 2026-10-30 (plan de la feature `030-diary-portion-chat`)
 - **Decidido por:** el planner lo propone; lo acepta o rechaza el usuario en el gate de review (Art. P5.2).
 
 ## Contexto

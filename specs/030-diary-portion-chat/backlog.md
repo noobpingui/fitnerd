@@ -57,3 +57,16 @@
 - [ ] F7 (NIT, implementer): coach_service.py:52 sigue anotado `llm_client: LLMClient` y ahora recibe LazyLLMClient; usar un Protocol o la unión.
 - [ ] F8 (NIT, planner): sin ANTHROPIC_API_KEY el coach pasa de 500 a 503 tras consumir el límite y llamar a Voyage; el plan lo acepta, pero la spec dejaba los cambios en el coach fuera de alcance (que lo vea el usuario).
 - [ ] F9 (NIT, test-author): el test de AC-011.4 en test_meal_routes.py mezcla dos rutas e importa dentro del cuerpo.
+
+## verify (iteración 3) · verifier
+- [ ] Cambiar el marcador del test `test_portion_estimate_rejects_a_body_larger_than_4096_bytes` (test_meal_routes.py, línea 598) de AC-011.4 a AC-011.1 en una corrección de tests futura (test-author).
+- [ ] Prueba manual tras el despliegue: el comportamiento de la estimación con varios alimentos en una pregunta depende del modelo y no se comprueba con tests automatizados.
+
+## review (tercera) · reviewer
+- [ ] F10 (test-author): el docstring de test_coach_routes.py:1-6 sigue diciendo que la ruta construye clientes reales de Anthropic.
+- [ ] F11 (test-author): test_meal_routes.py:597 `test_portion_estimate_rejects_a_body_larger_than_4096_bytes` lleva el marcador AC-011.4, pero prueba AC-011.1.
+- [ ] F12 (implementer): `GenerativeClient.model: str | None` (llm_client.py:114) choca con `LLMClient.model: str` en un typechecker estricto por invarianza; declararlo como propiedad de solo lectura.
+
+## review (cuarta) · reviewer
+- [ ] F13 (NIT, test-author): falta la tilde en «inválidas» en el docstring de `backend/tests/test_routes/test_coach_routes.py:2`.
+- Decisión del usuario: F8 se deja tal cual (es de configuración).
