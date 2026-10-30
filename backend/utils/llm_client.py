@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Protocol
 
 import anthropic
 
@@ -107,6 +108,15 @@ class LLMClient:
 
         text = next((block.text for block in response.content if block.type == "text"), "")
         return GenerationResult(text, input_tokens, output_tokens)
+
+
+#Contrato mínimo que usa CoachService: lo cumplen LLMClient y LazyLLMClient.
+class GenerativeClient(Protocol):
+    model: str | None
+
+    def generate_with_usage(
+        self, system_prompt: str, messages: list[dict], max_tokens: int = 2048
+    ) -> GenerationResult: ...
 
 
 #Cliente perezoso con modelo propio (spec 030, ADR-0037): el modelo sale de la

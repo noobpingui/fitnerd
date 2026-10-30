@@ -29,7 +29,7 @@ email_sender = EmailSender()
 tracer = Tracer()
 vision_client = BedrockVisionClient()
 coach_llm = LazyLLMClient("ANTHROPIC_MODEL", DEFAULT_ANTHROPIC_MODEL)
-portion_llm =LazyLLMClient(
+portion_llm = LazyLLMClient(
     "PORTION_ESTIMATE_MODEL",
     DEFAULT_PORTION_ESTIMATE_MODEL,
     timeout=PORTION_ESTIMATE_TIMEOUT_SECONDS,
