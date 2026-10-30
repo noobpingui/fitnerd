@@ -532,3 +532,10 @@ Detalle en [specs/030-diary-portion-chat/backlog.md](../specs/030-diary-portion-
 - [ ] `test_llm_client.py` L27, L41, L55, L66 usan marcadores `SDD:` sin el número de la spec (preexistentes).
 - [ ] Reforzar la aserción casi tautológica de `test_llm_client_passes_timeout_and_max_retries_to_the_sdk_client`.
 - [ ] Proceso: test-author e implementer escribieron con la shell (B2.4) en varias iteraciones; reforzar la instrucción de esos roles.
+
+## 031-diary-portion-chat-ui · Chat de porciones en el diario: ventana pequeña en /diary entre los totales del día y Desayuno para preguntar cuántos gramos pesa un alimento (2026-10-30)
+Detalle en [specs/031-diary-portion-chat-ui/backlog.md](../specs/031-diary-portion-chat-ui/backlog.md).
+- [ ] Mostrar cuántas preguntas quedan del límite de 10 cada 6 horas.
+- [ ] El contador de caracteres cuenta unidades UTF-16 y el servidor cuenta puntos de código: con emojis el frontend puede ser algo más estricto que el servidor.
+- [ ] Comprobación manual en navegador real: disposición visual del bloque (AC-001.2), distinción visual de avisos y errores (AC-007.1 y AC-007.2) y anuncio con lector de pantalla (AC-N001.1).
+- [ ] Proceso: test-author e implementer volvieron a escribir con la shell (B2.4) en esta feature (F1); reforzar la instrucción de esos roles.
