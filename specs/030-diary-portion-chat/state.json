@@ -9,8 +9,8 @@
   "branch": "feat/030-diary-portion-chat",
   "base_branch": "main",
   "created_at": "2026-10-30T06:35:46.331Z",
-  "stage": "close",
-  "status": "in_progress",
+  "stage": "done",
+  "status": "done",
   "approvals": {
     "spec": {
       "at": "2026-10-30T07:55:52.178Z",
@@ -44,7 +44,10 @@
       "at": "2026-10-30T19:14:09.935Z",
       "note": "auto (gate_mode=flow): docs actualizados"
     },
-    "close": null
+    "close": {
+      "at": "2026-10-30T19:19:33.005Z",
+      "note": "Si"
+    }
   },
   "commits": {
     "spec": "850b7ed",
@@ -52,7 +55,8 @@
     "tasks": "8a1816c",
     "tests": "b527231",
     "implement": "d3322d4",
-    "review": "c72198a"
+    "review": "c72198a",
+    "docs": "a8afb68"
   },
   "iterations": {
     "tests": 3,
@@ -794,6 +798,36 @@
       "stage": "docs",
       "event": "approved",
       "note": "auto (gate_mode=flow): docs actualizados"
+    },
+    {
+      "at": "2026-10-30T19:14:10.178Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: a8afb68"
+    },
+    {
+      "at": "2026-10-30T19:14:10.281Z",
+      "stage": "close",
+      "event": "started",
+      "note": ""
+    },
+    {
+      "at": "2026-10-30T19:14:26.205Z",
+      "stage": "close",
+      "event": "done",
+      "note": "Cierre propuesto"
+    },
+    {
+      "at": "2026-10-30T19:19:33.005Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Si"
+    },
+    {
+      "at": "2026-10-30T19:19:33.005Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
     }
   ]
 }
