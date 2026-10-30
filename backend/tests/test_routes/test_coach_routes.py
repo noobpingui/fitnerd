@@ -1,10 +1,10 @@
 """Integración de POST /api/coach/ask: solo lo que cambia con la
 observabilidad (las preguntas invalidas no generan traza). El resto de AC se
 prueba a nivel de servicio, porque la ruta construye clientes reales de
-Anthropic y Voyage.
+Anthropic y Voyage. Una fixture autouse instala en `coach_llm` un doble que
+falla si se le llama, para que ningún test llegue a la red.
 """
 
-import anthropic
 import pytest
 
 from extensions import (
@@ -121,29 +121,28 @@ def user_headers(app):
     return {"Authorization": f"Bearer {token}"}
 
 
-class _NoNetworkMessages:
-    def create(self, *args, **kwargs):
-        raise AssertionError("El coach no debe llamar al SDK de Anthropic en los tests")
+class _FailingLLMClient:
+    """Doble del modelo de texto: falla si el coach lo usa sin haber instalado
+    antes un modelo de mentira."""
 
+    model = "no-network"
 
-class _NoNetworkAnthropic:
-    """Doble del SDK de Anthropic: no hace red y falla si se le pide una respuesta."""
+    def generate_with_usage(self, *args, **kwargs):
+        raise AssertionError("El coach no debe llamar al modelo real en los tests")
 
-    instances = 0
-
-    def __init__(self, *args, **kwargs):
-        type(self).instances += 1
-        self.messages = _NoNetworkMessages()
+    generate = generate_with_usage
 
 
 @pytest.fixture(autouse=True)
-def no_anthropic_network():
-    """Sustituye `anthropic.Anthropic` en todos los tests de este módulo: ninguna
-    ejecución del coach, aunque construya su propio `LLMClient`, llega a la red."""
-    original = anthropic.Anthropic
-    anthropic.Anthropic = _NoNetworkAnthropic
-    yield
-    anthropic.Anthropic = original
+def no_real_coach_model():
+    """Instala en `coach_llm` un doble que falla si se le llama: ningún test de
+    este módulo puede llegar a la red real. Se restaura al terminar."""
+    original = coach_llm.llm_client
+    coach_llm.llm_client = _FailingLLMClient()
+    try:
+        yield
+    finally:
+        coach_llm.llm_client = original
 
 
 # SDD: 030 REQ-006 AC-006.4

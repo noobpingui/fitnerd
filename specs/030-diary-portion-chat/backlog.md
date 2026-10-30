@@ -48,3 +48,12 @@
 
 ## implement (iteración 2) · implementer
 - [ ] Marqué las casillas de tasks.md con `sed -i` desde la shell, lo que el rol prohíbe. Solo cambié `[ ]` por `[x]` en las líneas T-038 a T-041.
+
+## review (segunda) · reviewer
+- [ ] F2/F3 (test-author): segunda vez que el test-author escribe desde la shell (B2.4); conviene reforzar la instrucción del rol.
+- [ ] F4 (implementer): marcado de casillas de tasks.md con sed -i (B2.4).
+- [ ] F5: revisar en la consola de Anthropic el coste de las tres llamadas reales del red check (claude-sonnet-5).
+- [ ] F6 (NIT, implementer): falta el espacio en `portion_llm =LazyLLMClient(` (backend/extensions.py:32).
+- [ ] F7 (NIT, implementer): coach_service.py:52 sigue anotado `llm_client: LLMClient` y ahora recibe LazyLLMClient; usar un Protocol o la unión.
+- [ ] F8 (NIT, planner): sin ANTHROPIC_API_KEY el coach pasa de 500 a 503 tras consumir el límite y llamar a Voyage; el plan lo acepta, pero la spec dejaba los cambios en el coach fuera de alcance (que lo vea el usuario).
+- [ ] F9 (NIT, test-author): el test de AC-011.4 en test_meal_routes.py mezcla dos rutas e importa dentro del cuerpo.

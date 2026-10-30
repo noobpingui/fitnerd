@@ -11,7 +11,7 @@ from decimal import Decimal
 
 import pytest
 
-from extensions import db, jwt_manager
+from extensions import db, jwt_manager, portion_llm, rate_limiter
 from models import CatalogFood, Food, User
 from models.meal import Meal, MealItem
 from repositories.catalog_food_repository import CatalogFoodRepository
@@ -19,6 +19,7 @@ from repositories.food_repository import FoodRepository
 from services.catalog_load_service import CatalogLoadService
 from services.meal_rules import RemovedItemSnapshot, epoch_seconds, snapshot_payload
 from tests.catalog_samples import catalog_row, write_catalog_csv
+from tests.fakes import FakeRedisClient, FakeStructuredLLMClient
 from unit_of_work.unit_of_work import UnitOfWork
 from utils.restore_token import RestoreTokenSigner
 
@@ -593,11 +594,11 @@ def test_post_accepts_a_valid_body_larger_than_4096_bytes(client, app, headers):
     assert len(response.get_json()["items"]) == 30
     assert counts(app) == (1, 30)
 
-    # Caso rojo del mismo tope: el mismo tamaño sí se rechaza en la estimación
-    # de porciones (aislada con dobles: nada sale a la red).
-    from extensions import portion_llm, rate_limiter
-    from tests.fakes import FakeRedisClient, FakeStructuredLLMClient
 
+# SDD: 030 REQ-011 AC-011.4
+def test_portion_estimate_rejects_a_body_larger_than_4096_bytes(client, headers):
+    """El mismo tamaño sí se rechaza en la estimación de porciones (aislada con
+    dobles: nada sale a la red)."""
     original_llm, original_client = portion_llm.llm_client, rate_limiter.client
     portion_llm.llm_client = FakeStructuredLLMClient(
         data={"is_food": True, "grams": 250, "unit": "5 huevos", "note": "x"}

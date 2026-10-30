@@ -9,7 +9,7 @@
   "branch": "feat/030-diary-portion-chat",
   "base_branch": "main",
   "created_at": "2026-10-30T06:35:46.331Z",
-  "stage": "verify",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,13 +25,10 @@
       "note": "auto (gate_mode=flow): 41 tareas, 42 AC cubiertos"
     },
     "tests": {
-      "at": "2026-10-30T08:56:01.432Z",
-      "note": "auto (gate_mode=flow): red check PASS"
+      "at": "2026-10-30T09:15:27.800Z",
+      "note": "auto (gate_mode=flow): corrección de tests de review"
     },
-    "implement": {
-      "at": "2026-10-30T09:00:45.181Z",
-      "note": "auto (gate_mode=flow): implementer reporta 2839 passed"
-    },
+    "implement": null,
     "verify": null,
     "review": null,
     "docs": null,
@@ -42,12 +39,12 @@
     "plan": "b770d94",
     "tasks": "8a1816c",
     "tests": "5b38e7d",
-    "implement": "aba984a"
+    "implement": "7fc3615"
   },
   "iterations": {
     "tests": 2,
     "implement": 0,
-    "review": 1
+    "review": 2
   },
   "max_iterations": 5,
   "red_check": {
@@ -63,12 +60,12 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-30T08:56:01.284Z",
-    "reason": "tests iteración 2 (REQ-010/011, coach, F3/F5)",
+    "at": "2026-10-30T09:15:27.656Z",
+    "reason": "fix review F1/F9 (sin monkeypatch)",
     "sha256": {
       "backend/tests/fakes.py": "957b67e26fbef6060ff5a6d756151ffa825241685ab1c22b365bf50f5562cbae",
-      "backend/tests/test_routes/test_coach_routes.py": "63c14b9c8344b86c40b56e7eb230ae1038207b69adaf9242a0db79cac2abc4d9",
-      "backend/tests/test_routes/test_meal_routes.py": "ec17820ae071827f03364230dcf160298dce44a98b8d11885ea16b908f0d1e2f",
+      "backend/tests/test_routes/test_coach_routes.py": "8762121d06dc3575eb06d6679d9d07ed123df70fd01cf0928c465d4803b80577",
+      "backend/tests/test_routes/test_meal_routes.py": "047253ea26dd0e53ff98f2de000d18bf521eb5e72da08c1b24f1f3097f070b70",
       "backend/tests/test_routes/test_portion_estimate_routes.py": "96e0c3a89128cf832019cf616f6163f90a3923796bf7558bf838b99f41f1e729",
       "backend/tests/test_services/test_llm_client.py": "7a953b01d1101f3c1ff40dac0f59bdae2e24c85699d767f517344e4b24c08e70",
       "backend/tests/test_services/test_portion_estimate_rules.py": "86dd3afc6f0cd264e2b552f3cad4095a3d231eb55b15300cb23233997c5a16c3",
@@ -514,6 +511,72 @@
       "stage": "implement",
       "event": "note",
       "note": "REQ-010: solo check_and_increment dentro del try; REQ-011: max_content_length en la ruta; coach usa coach_llm"
+    },
+    {
+      "at": "2026-10-30T09:00:45.572Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 7fc3615"
+    },
+    {
+      "at": "2026-10-30T09:00:45.769Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa (tras correcciones de review)"
+    },
+    {
+      "at": "2026-10-30T09:09:11.023Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: verify PASS (full, iteración 2): pytest backend 2839 passed (y 2839 con bloqueo de red, 0 intentos no locales); ratchet backend sin violaciones nuevas; 42/42 AC con marcador SDD 030 en test verde (37 REQ + 5 NFR); 11 REQ y 3 NFR en tareas; 41/41 tareas [x]; sin skip nuevos; excepción B5.2 F3/F5 aceptada por el usuario; sin AC manuales"
+    },
+    {
+      "at": "2026-10-30T09:09:20.601Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "PASS: 2839 tests, ratchet limpio, 42/42 AC, sin red"
+    },
+    {
+      "at": "2026-10-30T09:09:20.696Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-30T09:09:20.875Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review independiente (tras rework)"
+    },
+    {
+      "at": "2026-10-30T09:14:10.237Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "CHANGES_REQUESTED"
+    },
+    {
+      "at": "2026-10-30T09:14:10.337Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "review CHANGES_REQUESTED: MAYOR F1 monkeypatch de anthropic.Anthropic en test_coach_routes.py · review 2/5"
+    },
+    {
+      "at": "2026-10-30T09:15:27.560Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "F1 y F9 corregidos: doble en coach_llm.llm_client, AC-011.4 en dos tests"
+    },
+    {
+      "at": "2026-10-30T09:15:27.656Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "7 archivo(s) de test: fix review F1/F9 (sin monkeypatch)"
+    },
+    {
+      "at": "2026-10-30T09:15:27.800Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección de tests de review"
     }
   ]
 }
