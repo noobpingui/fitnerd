@@ -9,7 +9,7 @@
   "branch": "feat/030-diary-portion-chat",
   "base_branch": "main",
   "created_at": "2026-10-30T06:35:46.331Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -20,7 +20,10 @@
       "at": "2026-10-30T08:02:38.604Z",
       "note": "auto (gate_mode=flow): plan y ADR-0037 ampliados"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-30T08:03:45.124Z",
+      "note": "auto (gate_mode=flow): 41 tareas, 42 AC cubiertos"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -30,7 +33,7 @@
   },
   "commits": {
     "spec": "850b7ed",
-    "plan": "d30f4c1",
+    "plan": "b770d94",
     "tasks": "2f60fd7",
     "tests": "c09c6b1",
     "implement": "aba984a"
@@ -383,6 +386,30 @@
       "stage": "plan",
       "event": "note",
       "note": "Decisiones: coach_llm = LazyLLMClient (sin ANTHROPIC_API_KEY el coach pasa de 500 a 503); REQ-010 reutiliza PROVIDER_UNAVAILABLE_MESSAGE; REQ-011 con request.max_content_length=4096 en la ruta"
+    },
+    {
+      "at": "2026-10-30T08:02:39.025Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: b770d94"
+    },
+    {
+      "at": "2026-10-30T08:02:39.129Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Actualizar tasks.md con el plan ampliado"
+    },
+    {
+      "at": "2026-10-30T08:03:45.026Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks.md: +17 tareas (T-025..T-041), 42 AC"
+    },
+    {
+      "at": "2026-10-30T08:03:45.124Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 41 tareas, 42 AC cubiertos"
     }
   ]
 }

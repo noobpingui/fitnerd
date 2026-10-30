@@ -41,6 +41,38 @@ Orden por dependencia: cliente LLM → reglas → servicio → conexión (app) �
 - [x] T-023 [NFR-001] (config) Llamar a `portion_llm.init_app(app)` en `create_app` junto a `vision_client.init_app(app)` y mantener el import en `extensions` — `backend/app.py`
 - [x] T-024 [REQ-001, REQ-005, REQ-008] (impl) `_build_portion_estimate_service()`, `_serialize_portion_estimate()` (cinco claves siempre) y ruta `POST /portion-estimate` con `@require_auth`, `get_json(silent=True)` y usuario de `g.decoded_token["id"]` — `backend/routes/meal_routes.py`
 
+## Iteración 2 (rework desde review) — REQ-010, REQ-011 y backlog
+
+Las tareas T-001 a T-024 se conservan tal cual. Orden de la iteración: scaffold (A0) → test (A) → impl/config (B). El `init_app` de `coach_llm` en `app.py` y el cambio de `coach_routes.py` NO se hacen en el scaffold: se conectan en la fase B.
+
+### Fase A0 (iteración 2) — Esqueletos (scaffold)
+
+- [ ] T-025 [REQ-006] (scaffold) Constante `DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-5"` (mismo valor que el literal actual) y `Config.ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", DEFAULT_ANTHROPIC_MODEL)`, completos y sin lógica nueva — `backend/config.py`
+- [ ] T-026 [REQ-006] (scaffold) `LazyLLMClient.generate_with_usage(self, system_prompt, messages, max_tokens=2048) -> GenerationResult` con cuerpo `raise NotImplementedError("not implemented")` — `backend/utils/llm_client.py`
+- [ ] T-027 [REQ-006] (scaffold) Singleton `coach_llm = LazyLLMClient("ANTHROPIC_MODEL", DEFAULT_ANTHROPIC_MODEL)` en `extensions.py` (solo la declaración, sin tocar `app.py` ni `coach_routes.py`) — `backend/extensions.py`
+- [ ] T-028 [REQ-011] (scaffold) Constante `MAX_PORTION_REQUEST_BYTES = 4096` en `meal_routes.py` (completa; la ruta no la usa todavía) — `backend/routes/meal_routes.py`
+
+### Fase A (iteración 2) — Tests (rojo)
+
+- [ ] T-029 [REQ-010] (test) Dobles: parámetro opcional `raise_error=None` en `FakeRateLimiter` (registra la llamada en `calls` y lanza) y en `FakeRedisClient` (mutable; `incr` lanza antes de contar); los usos actuales no cambian — `backend/tests/fakes.py`
+- [ ] T-030 [REQ-010] (test) Servicio con limitador que falla: AC-010.1 (`ConnectionError("detalle-redis")` → `ServiceUnavailableError` con `PROVIDER_UNAVAILABLE_MESSAGE` sin el texto original, `llm.calls == []`, registro en `FakeLogger`), AC-010.2 (`backend.traces == []`) y AC-010.3 (`{"question": ""}` → `ValidationError` y `limiter.calls == []`) — `backend/tests/test_services/test_portion_estimate_service.py`
+- [ ] T-031 [REQ-010, REQ-011] (test) Ruta de porciones: AC-010.1 (Redis que lanza → 503 con mensaje fijo, sin modelo), AC-010.3 (Redis que lanza y `question` vacía → 400), AC-011.1 (cuerpo de 4097 bytes → 400 «La petición no es válida», sin modelo), AC-011.2 (4096 bytes → 200) y AC-011.3 (4097 bytes sin contador ni traza) — `backend/tests/test_routes/test_portion_estimate_routes.py`
+- [ ] T-032 [REQ-011] (test) AC-011.4: `POST /api/meals` con un cuerpo válido de más de 4096 bytes (30 alimentos personalizados con nombres distintos) → 201, el límite global no cambia — `backend/tests/test_routes/test_meal_routes.py`
+- [ ] T-033 [REQ-006] (test) `LazyLLMClient.generate_with_usage` (AC-006.4): con factoría falsa y `FakeApp({"ANTHROPIC_MODEL": "claude-sonnet-5"})`, `model == "claude-sonnet-5"`, el cliente se crea una vez con `{"model": ..., "timeout": None, "max_retries": None}`, delega y devuelve el `GenerationResult`, y la segunda llamada reutiliza el cliente — `backend/tests/test_services/test_llm_client.py`
+- [ ] T-034 [NFR-001] (test) F3, AC-N001.1: `LLMClient(model="m", api_key="clave-de-prueba", timeout=15.0, max_retries=1)` expone `timeout == 15.0` y `max_retries == 1` en el cliente del SDK; sin opciones usa los valores por defecto del SDK; sin red ni `monkeypatch` — `backend/tests/test_services/test_llm_client.py`
+- [ ] T-035 [REQ-004] (test) Marcadores antiguos de L27, L41, L55 y L66: pasan a `# SDD: 004 REQ-004 AC-004.1`, `# SDD: 004 REQ-004 AC-004.4`, `# SDD: 004 REQ-005 AC-005.3` y `# SDD: 004 REQ-004 AC-004.4`; solo cambia el comentario (sin cambiar nombre, docstring ni aserciones; se hace antes de añadir T-033 y T-034 para localizar las líneas) — `backend/tests/test_services/test_llm_client.py`
+- [ ] T-036 [REQ-002] (test) F5, AC-002.1: `test_build_estimate_truncates_a_long_note_to_100` usa `"a" * 99 + " " + "b" * 80` y comprueba además `estimate.note == "a" * 99` (ejercita el `rstrip`); se conservan las tres aserciones actuales — `backend/tests/test_services/test_portion_estimate_rules.py`
+- [ ] T-037 [REQ-006] (test) Coach por HTTP (AC-006.4): fixtures que instalan y restauran `FakeRedisClient`, `FakeLLMClient(answer="Haz 3 series de 10.")` en `coach_llm.llm_client` y `FakeVoyageClient`; siembra de `Video` y `TranscriptChunk`; (a) con el contador de porciones en 10, `POST /api/coach/ask` → 200; (b) con el del coach en 20, `POST /api/meals/portion-estimate` → 200; el test de 400 actual se mantiene — `backend/tests/test_routes/test_coach_routes.py`
+
+### Fase B (iteración 2) — Implementación
+
+Orden por dependencia: cliente LLM → servicio → ruta → conexión del coach.
+
+- [ ] T-038 [REQ-006] (impl) `LazyLLMClient`: extraer `_get_client()` (crea el cliente la primera vez con `model`, `timeout` y `max_retries`), usarlo en `generate_structured` e implementar `generate_with_usage` delegando; F2 (comentario «configuración» con tilde) y F4 (`-> StructuredGenerationResult` sin comillas) — `backend/utils/llm_client.py`
+- [ ] T-039 [REQ-010] (impl) `PortionEstimateService.estimate`: resolver `tracer` y `logger` antes del límite y envolver solo `check_and_increment` en `try`; ante cualquier excepción, `logger.error` con `format_error` y `ServiceUnavailableError(PROVIDER_UNAVAILABLE_MESSAGE) from None`, sin traza ni modelo; `RateLimitError` fuera del `try`; la validación sigue antes — `backend/services/portion_estimate_service.py`
+- [ ] T-040 [REQ-011] (impl) Ruta `estimate_portion`: fijar `request.max_content_length = MAX_PORTION_REQUEST_BYTES` antes de leer el cuerpo y traducir `RequestEntityTooLarge` a `ValidationError(INVALID_REQUEST_MESSAGE) from None`, sin tocar el límite global; importes de `ValidationError` e `INVALID_REQUEST_MESSAGE` — `backend/routes/meal_routes.py`
+- [ ] T-041 [REQ-006] (config) Llamar a `coach_llm.init_app(app)` en `create_app` junto a `portion_llm.init_app(app)` y hacer que `_build_coach_service()` use `coach_llm` en lugar de construir un `LLMClient` (quitar el import de `LLMClient`; `current_app` sigue para `SECRET_KEY`) — `backend/app.py`, `backend/routes/coach_routes.py`
+
 ## Matriz de cobertura
 
 | AC | Tarea test | Tarea impl |
@@ -49,7 +81,7 @@ Orden por dependencia: cliente LLM → reglas → servicio → conexión (app) �
 | AC-001.2 | T-008 | T-021 |
 | AC-001.3 | T-008 | T-021 |
 | AC-001.4 | T-008 | T-021 |
-| AC-002.1 | T-008 | T-021 |
+| AC-002.1 | T-008, T-036 | T-021 |
 | AC-002.2 | T-008 | T-021 |
 | AC-002.3 | T-008 | T-021 |
 | AC-003.1 | T-009, T-012, T-016 | T-021, T-022, T-024 |
@@ -66,7 +98,7 @@ Orden por dependencia: cliente LLM → reglas → servicio → conexión (app) �
 | AC-006.1 | T-013, T-018 | T-022 |
 | AC-006.2 | T-013 | T-022 |
 | AC-006.3 | T-018 | T-022 |
-| AC-006.4 | T-013 | T-022 |
+| AC-006.4 | T-013, T-033, T-037 | T-022, T-038, T-041 |
 | AC-006.5 | T-018 | T-022 |
 | AC-007.1 | T-012, T-018 | T-022 |
 | AC-008.1 | T-019 | T-024 |
@@ -75,7 +107,14 @@ Orden por dependencia: cliente LLM → reglas → servicio → conexión (app) �
 | AC-009.2 | T-014 | T-022 |
 | AC-009.3 | T-014 | T-022 |
 | AC-009.4 | T-014 | T-022 |
-| AC-N001.1 | T-010, T-015 | T-020, T-022 |
+| AC-010.1 | T-029, T-030, T-031 | T-039 |
+| AC-010.2 | T-029, T-030 | T-039 |
+| AC-010.3 | T-029, T-030, T-031 | T-039 |
+| AC-011.1 | T-031 | T-040 |
+| AC-011.2 | T-031 | T-040 |
+| AC-011.3 | T-031 | T-040 |
+| AC-011.4 | T-032 | T-040 |
+| AC-N001.1 | T-010, T-015, T-034 | T-020, T-022 |
 | AC-N001.2 | T-011 | T-020, T-023 |
 | AC-N002.1 | T-015 | T-021, T-022 |
 | AC-N002.2 | T-015 | T-022 |
