@@ -9,7 +9,7 @@
   "branch": "feat/031-diary-portion-chat-ui",
   "base_branch": "main",
   "created_at": "2026-10-30T20:55:25.327Z",
-  "stage": "verify",
+  "stage": "docs",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -32,8 +32,14 @@
       "at": "2026-10-30T21:45:38.884Z",
       "note": "auto (gate_mode=flow): corrección F2/F3"
     },
-    "verify": null,
-    "review": null,
+    "verify": {
+      "at": "2026-10-30T21:48:04.272Z",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    "review": {
+      "at": "2026-10-30T21:50:02.919Z",
+      "note": "Si"
+    },
     "docs": null,
     "close": null
   },
@@ -42,7 +48,7 @@
     "plan": "f1568bd",
     "tasks": "28aa301",
     "tests": "796c9fb",
-    "implement": "8126ff4"
+    "implement": "5a9ca99"
   },
   "iterations": {
     "tests": 1,
@@ -55,12 +61,12 @@
     "at": "2026-10-30T21:23:23.435Z"
   },
   "verify": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-30T21:47:54.166Z"
   },
   "review": {
-    "verdict": null,
-    "at": null
+    "verdict": "APPROVED",
+    "at": "2026-10-30T21:49:38.522Z"
   },
   "tests_snapshot": {
     "at": "2026-10-30T21:23:30.689Z",
@@ -322,6 +328,60 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): corrección F2/F3"
+    },
+    {
+      "at": "2026-10-30T21:45:39.143Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 5a9ca99"
+    },
+    {
+      "at": "2026-10-30T21:45:39.390Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa tras corrección F2/F3"
+    },
+    {
+      "at": "2026-10-30T21:47:54.166Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify 031 full tras corrección F2/F3 (iteración 2): npm test 1806 passed (93 archivos); lint sin errores; tsc -b limpio; build OK (index 384.69 kB); trazabilidad completa (33 AC, 8 REQ, 2 NFR, 26 tareas [x]); tests sin cambios desde el red check; sin skip/only nuevos. Informe en verify-report.md."
+    },
+    {
+      "at": "2026-10-30T21:48:04.154Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS tras F2/F3"
+    },
+    {
+      "at": "2026-10-30T21:48:04.272Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-30T21:48:04.392Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Segunda review tras F2/F3"
+    },
+    {
+      "at": "2026-10-30T21:49:38.522Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-30T21:49:38.638Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED 2ª review: F2/F3 corregidos, F4 decidido, F1 proceso"
+    },
+    {
+      "at": "2026-10-30T21:50:02.919Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Si"
     }
   ]
 }
