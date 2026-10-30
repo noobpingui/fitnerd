@@ -5,6 +5,8 @@ import {
   useQueryClient,
   type UseMutationResult,
 } from "@tanstack/react-query"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm, type UseFormReturn } from "react-hook-form"
 import { foodLibraryKeys } from "@/features/food-library/hooks"
 import { ApiError } from "@/lib/apiClient"
 import { todayIsoDate } from "@/lib/dates"
@@ -22,8 +24,6 @@ import { TODAY_CHECK_INTERVAL_MS, UNDO_DURATION_MS } from "./constants"
 import { portionEstimateErrorAnswer, undoErrorMessage } from "./errors"
 import { portionAnswerFromEstimate } from "./portionChat"
 import { portionQuestionFormSchema } from "./schemas"
-import { useForm, type UseFormReturn } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
 import type {
   AddMealItemsPayload,
   Meal,
@@ -207,7 +207,7 @@ export type PortionChatState = {
 
 // El estado vive en DiaryPage (que no se desmonta al cambiar de día) para conservar la conversación.
 export function usePortionChat(): PortionChatState {
-  const estimate = useEstimatePortion()
+  const { mutateAsync } = useEstimatePortion()
   const form = useForm<PortionQuestionFormValues>({
     resolver: zodResolver(portionQuestionFormSchema),
     mode: "onSubmit",
@@ -227,8 +227,7 @@ export function usePortionChat(): PortionChatState {
       form.setValue("question", "")
       const setAnswer = (answer: PortionChatAnswer) =>
         setTurns((current) => current.map((turn) => (turn.id === id ? { ...turn, answer } : turn)))
-      estimate
-        .mutateAsync(values.question)
+      mutateAsync(values.question)
         .then(
           (result) => setAnswer(portionAnswerFromEstimate(result)),
           (error: unknown) => setAnswer(portionEstimateErrorAnswer(error))
@@ -237,7 +236,7 @@ export function usePortionChat(): PortionChatState {
           inFlightRef.current = false
         })
     },
-    [estimate, form]
+    [mutateAsync, form]
   )
 
   return { form, turns, isPending: turns.some((turn) => turn.answer === null), submit }

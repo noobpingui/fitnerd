@@ -6,10 +6,10 @@ import { answersFromProfile } from "@/features/profile/mappers"
 import { calculateMacros } from "@/features/macros/calculations"
 import { DiaryDateNav } from "../components/DiaryDateNav"
 import { DiaryDayView } from "../components/DiaryDayView"
+import { PortionChat } from "../components/PortionChat"
 import { resolveDiaryDate } from "../days"
 import { formatDiaryDate } from "../format"
 import { useDiary, usePortionChat, useToday } from "../hooks"
-import { PortionChat } from "../components/PortionChat"
 import type { MealType, NutrientTotals } from "../types"
 
 export function DiaryPage(): ReactElement {
