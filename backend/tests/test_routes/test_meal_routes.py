@@ -595,7 +595,7 @@ def test_post_accepts_a_valid_body_larger_than_4096_bytes(client, app, headers):
     assert counts(app) == (1, 30)
 
 
-# SDD: 030 REQ-011 AC-011.4
+# SDD: 030 REQ-011 AC-011.1
 def test_portion_estimate_rejects_a_body_larger_than_4096_bytes(client, headers):
     """El mismo tamaño sí se rechaza en la estimación de porciones (aislada con
     dobles: nada sale a la red)."""

@@ -1,8 +1,8 @@
 """Integración de POST /api/coach/ask: solo lo que cambia con la
 observabilidad (las preguntas invalidas no generan traza). El resto de AC se
-prueba a nivel de servicio, porque la ruta construye clientes reales de
-Anthropic y Voyage. Una fixture autouse instala en `coach_llm` un doble que
-falla si se le llama, para que ningún test llegue a la red.
+prueba a nivel de servicio. La ruta usa `coach_llm` (un LazyLLMClient) y la
+fixture autouse `no_real_coach_model` instala en `coach_llm.llm_client` un
+doble que falla si se le llama, para que ningún test llegue a la red.
 """
 
 import pytest
