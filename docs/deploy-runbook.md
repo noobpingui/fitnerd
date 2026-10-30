@@ -304,6 +304,20 @@ Migración `e6a8c0d2f4b7` (ADR-0036): crea `public.custom_foods` y `public.food_
    - Con lector de pantalla (AC-N002.2): se anuncia la confirmación de borrado y el foco vuelve al botón «Borrar» al cancelar.
 6. **Marcha atrás:** revertir el merge basta para el código. `flask db downgrade` a `d4f6a8c0e2b5` quita la columna `meal_items.custom_food_id` (con su restricción, índice y `CHECK`) y borra `food_favorites` y `custom_foods`: **se pierden los favoritos y la biblioteca**, pero las comidas conservan la copia del nombre y de los valores por 100 g, así que no se pierde historial. Los alimentos propios se pueden regenerar con otro `upgrade` (el relleno los recrea desde las comidas); los favoritos no. Úsalo solo si la migración estorba de verdad y con el volcado a mano.
 
+### Caso A (sin migraciones) solo backend: 030, estimación de porciones del diario
+
+`POST /api/meals/portion-estimate` (ADR-0037) estima los gramos de un alimento a partir de una pregunta en texto, con Anthropic y una herramienta forzada, sin RAG. No hay migración, ni datos que cargar, ni cambios en el frontend, Caddy o AWS. Además, el coach pasa a usar `coach_llm` (`LazyLLMClient`); su contrato no cambia, pero sin `ANTHROPIC_API_KEY` ahora responde 503 en lugar de 500.
+
+1. **Variable opcional en el `backend/.env` de EC2:** `PORTION_ESTIMATE_MODEL`. Si falta o está vacía se usa `claude-haiku-4-5`; no hace falta añadirla. Nunca usa `ANTHROPIC_MODEL`. Reutiliza la `ANTHROPIC_API_KEY` del coach. Si Anthropic retira el alias por defecto, todas las preguntas dan 503 hasta fijar esta variable.
+2. **Langfuse:** el precio de Haiku no está en la tabla de precios de Langfuse. Añádelo a mano en el proyecto; mientras falte, las trazas de esta estimación no llevan coste.
+3. **Límites:** 10 preguntas por 6 horas y usuario (contador en Redis independiente del coach), pregunta de hasta 200 caracteres y cuerpo de hasta 4096 bytes. Con Redis caído el endpoint falla cerrado: 503 con mensaje fijo, sin llamar al modelo.
+4. **Merge y CD** (paso 6). Como no hay frontend que lo use todavía, no hay nada visible para el usuario.
+5. **Comprobaciones manuales tras el CD**, con una cuenta real (el test no llega a Anthropic):
+   - Preguntas con varios alimentos («un plato de arroz con pollo y ensalada», «5 huevos»): responde 200 con `status` `estimated`, gramos enteros, `unit` y `note` coherentes. Una pregunta que no sea de comida da `not_food`.
+   - Redis caído: para el contenedor de Redis un momento y envía una pregunta; debe dar 503 con JSON y no llamar al modelo. Vuelve a levantarlo y comprueba que responde de nuevo.
+   - El coach (`POST /api/coach/ask`) sigue respondiendo con normalidad.
+6. **Marcha atrás:** revertir el merge basta. No hay migración que deshacer.
+
 ### Caso C (destructiva): migración después del CD
 
 1. Backup completo (paso 3) **verificado**, con el recuento de filas de lo que se va a borrar.
