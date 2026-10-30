@@ -9,7 +9,7 @@
   "branch": "feat/030-diary-portion-chat",
   "base_branch": "main",
   "created_at": "2026-10-30T06:35:46.331Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -20,7 +20,10 @@
       "at": "2026-10-30T07:17:54.613Z",
       "note": "auto (gate_mode=flow): plan.md y ADR-0037 (Propuesta)"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-10-30T07:18:49.337Z",
+      "note": "auto (gate_mode=flow): 24 tareas, 35 AC cubiertos"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -29,7 +32,8 @@
     "close": null
   },
   "commits": {
-    "spec": "4b0725b"
+    "spec": "4b0725b",
+    "plan": "d30f4c1"
   },
   "iterations": {
     "tests": 0,
@@ -111,6 +115,30 @@
       "stage": "plan",
       "event": "note",
       "note": "Decisiones: salida estructurada con tool_choice forzado (report_portion); singleton perezoso portion_llm; PORTION_ESTIMATE_MODEL opcional (default claude-haiku-4-5); sin migración"
+    },
+    {
+      "at": "2026-10-30T07:17:57.445Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: d30f4c1"
+    },
+    {
+      "at": "2026-10-30T07:17:57.605Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Descomponer plan en tasks.md"
+    },
+    {
+      "at": "2026-10-30T07:18:49.253Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks.md: 24 tareas"
+    },
+    {
+      "at": "2026-10-30T07:18:49.337Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 24 tareas, 35 AC cubiertos"
     }
   ]
 }
