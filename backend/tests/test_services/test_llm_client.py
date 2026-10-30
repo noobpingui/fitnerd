@@ -110,7 +110,7 @@ def test_generate_structured_forces_the_tool_and_returns_data_and_tokens():
     call = fake.calls[0]
     assert call["model"] == "claude-sonnet-5"
     assert call["max_tokens"] == 150
-    assert call["temperature"] == 0
+    assert "temperature" not in call
     assert call["system"] == "sistema"
     assert call["messages"] == messages
     assert call["tools"] == [TOOL]

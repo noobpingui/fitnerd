@@ -46,6 +46,8 @@ class LLMClient:
         self.model = model
 
     #Salida estructurada con una herramienta forzada (spec 030, ADR-0037).
+    #`temperature` se acepta por compatibilidad con los llamadores pero no se envia: el SDK
+    #1.0.0 de Anthropic lo quito de messages.create().
     def generate_structured(
         self,
         system_prompt: str,
@@ -57,7 +59,6 @@ class LLMClient:
         response = self.client.messages.create(
             model=self.model,
             max_tokens=max_tokens,
-            temperature=temperature,
             system=system_prompt,
             messages=messages,
             tools=[tool],
