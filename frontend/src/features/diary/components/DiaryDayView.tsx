@@ -1,4 +1,4 @@
-import type { ReactElement } from "react"
+import type { ReactElement, ReactNode } from "react"
 import { MEAL_SECTIONS } from "../constants"
 import { useRemovalUndo } from "../hooks"
 import type { Diary, MealType, NutrientTotals } from "../types"
@@ -13,18 +13,22 @@ export function DiaryDayView({
   diary,
   targets,
   onDialogOpenChange,
+  afterTotals,
 }: {
   date: string
   isToday: boolean
   diary: Diary
   targets: NutrientTotals
   onDialogOpenChange: (type: MealType, open: boolean) => void
+  afterTotals?: ReactNode
 }): ReactElement {
   const undo = useRemovalUndo(date)
 
   return (
     <>
       <DailyTotals totals={diary.totals} incomplete={diary.incomplete} targets={targets} />
+
+      {afterTotals}
 
       {diary.meals.length === 0 && (
         <p className="mb-4 text-sm text-muted-foreground">

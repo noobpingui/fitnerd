@@ -6,9 +6,10 @@ import { answersFromProfile } from "@/features/profile/mappers"
 import { calculateMacros } from "@/features/macros/calculations"
 import { DiaryDateNav } from "../components/DiaryDateNav"
 import { DiaryDayView } from "../components/DiaryDayView"
+import { PortionChat } from "../components/PortionChat"
 import { resolveDiaryDate } from "../days"
 import { formatDiaryDate } from "../format"
-import { useDiary, useToday } from "../hooks"
+import { useDiary, usePortionChat, useToday } from "../hooks"
 import type { MealType, NutrientTotals } from "../types"
 
 export function DiaryPage(): ReactElement {
@@ -19,6 +20,8 @@ export function DiaryPage(): ReactElement {
   const { date, normalize } = resolveDiaryDate(searchParams.get("date"), today)
   const diary = useDiary(date)
   const profile = useProfile()
+  // Fuera de DiaryDayView para que la conversación sobreviva al cambio de día.
+  const portionChat = usePortionChat()
 
   // Un parámetro inválido, fuera del intervalo o igual a hoy deja la dirección en /diary.
   useEffect(() => {
@@ -89,6 +92,7 @@ export function DiaryPage(): ReactElement {
           diary={diary.data}
           targets={targets}
           onDialogOpenChange={handleDialogOpenChange}
+          afterTotals={<PortionChat chat={portionChat} />}
         />
       )}
     </div>

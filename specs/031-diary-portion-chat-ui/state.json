@@ -1,0 +1,443 @@
+{
+  "schema_version": 1,
+  "feature": "031-diary-portion-chat-ui",
+  "title": "Chat de porciones en el diario: ventana pequeña en /diary entre los totales del día y Desayuno para preguntar cuántos gramos pesa un alimento",
+  "type": "feature",
+  "scope": [
+    "frontend"
+  ],
+  "branch": "feat/031-diary-portion-chat-ui",
+  "base_branch": "main",
+  "created_at": "2026-10-30T20:55:25.327Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-30T21:06:25.516Z",
+      "note": "Aprobado"
+    },
+    "plan": {
+      "at": "2026-10-30T21:10:34.056Z",
+      "note": "auto (gate_mode=flow): plan sin ADR, solo frontend"
+    },
+    "tasks": {
+      "at": "2026-10-30T21:11:27.754Z",
+      "note": "auto (gate_mode=flow): 26 tareas, cobertura completa"
+    },
+    "tests": {
+      "at": "2026-10-30T21:23:30.843Z",
+      "note": "auto (gate_mode=flow): red check PASS, 76 tests rojos"
+    },
+    "implement": {
+      "at": "2026-10-30T21:45:38.884Z",
+      "note": "auto (gate_mode=flow): corrección F2/F3"
+    },
+    "verify": {
+      "at": "2026-10-30T21:48:04.272Z",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    "review": {
+      "at": "2026-10-30T21:50:02.919Z",
+      "note": "Si"
+    },
+    "docs": {
+      "at": "2026-10-30T21:50:43.871Z",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
+    "close": {
+      "at": "2026-10-30T21:51:12.075Z",
+      "note": "Si"
+    }
+  },
+  "commits": {
+    "spec": "0373244",
+    "plan": "f1568bd",
+    "tasks": "28aa301",
+    "tests": "796c9fb",
+    "implement": "5a9ca99",
+    "review": "31f207e",
+    "docs": "e1a63ec"
+  },
+  "iterations": {
+    "tests": 1,
+    "implement": 0,
+    "review": 1
+  },
+  "max_iterations": 5,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-10-30T21:23:23.435Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-10-30T21:47:54.166Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-10-30T21:49:38.522Z"
+  },
+  "tests_snapshot": {
+    "at": "2026-10-30T21:23:30.689Z",
+    "reason": "tests 031 aprobados tras red check PASS",
+    "sha256": {
+      "frontend/src/features/diary/api.test.ts": "d1a0dd08a2e530e83fe3fc8f3faa8269b0f50102b2fb24e94d9dd1bb7bc9301b",
+      "frontend/src/features/diary/components/PortionChat.test.tsx": "e3248b92581d8062b1b057d2cad362ac6b30b378776a82a2c681e57e3e438041",
+      "frontend/src/features/diary/errors.test.ts": "ae661033bdbbe4ce628576ce48b10740ae0471a20ac3668a14d46d010c863f5f",
+      "frontend/src/features/diary/pages/DiaryPage.test.tsx": "89c5e3d9d1c8b73336c1b92fe4582c2889d5e6b8f8e19dc721882a47f8bd962f",
+      "frontend/src/features/diary/portionChat.test.ts": "248b268b6050beb470f423193cf960e9ad9a7f860e0524aed664141a770a36dd",
+      "frontend/src/features/diary/schemas.test.ts": "74f5e8bf5abc383a1cda584e0cfe64c52adbc77c8a4d6d37915035ef97ea72d4",
+      "frontend/src/test/portionEstimateFixtures.ts": "7a1afe26d197c3013bc0e024b51289e0043af1d79aa84b644395652e2a144b47"
+    }
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-30T20:55:25.327Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama feat/031-diary-portion-chat-ui desde main"
+    },
+    {
+      "at": "2026-10-30T20:58:34.264Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Escribir spec.md del chat de porciones en /diary"
+    },
+    {
+      "at": "2026-10-30T21:00:46.144Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "Q1-Q8 del spec-writer pendientes de respuesta del usuario"
+    },
+    {
+      "at": "2026-10-30T21:04:51.510Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec 031: 8 REQ, 2 NFR, Q1-Q8 resueltas"
+    },
+    {
+      "at": "2026-10-30T21:06:25.516Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Aprobado"
+    },
+    {
+      "at": "2026-10-30T21:06:25.790Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 0373244"
+    },
+    {
+      "at": "2026-10-30T21:06:26.019Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Diseñar plan.md del chat de porciones"
+    },
+    {
+      "at": "2026-10-30T21:10:33.946Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan 031 frontend: usePortionChat en DiaryPage, PortionChat, estimatePortion"
+    },
+    {
+      "at": "2026-10-30T21:10:34.056Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan sin ADR, solo frontend"
+    },
+    {
+      "at": "2026-10-30T21:10:34.357Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: f1568bd"
+    },
+    {
+      "at": "2026-10-30T21:10:34.472Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "DECISIONS: borrador del campo se conserva al cambiar de día; role=log aria-live polite; zod exige grams entero 1-5000; sin ADR"
+    },
+    {
+      "at": "2026-10-30T21:10:34.673Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Descomponer plan en tareas"
+    },
+    {
+      "at": "2026-10-30T21:11:27.647Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "26 tareas: 9 scaffold, 10 test, 7 impl"
+    },
+    {
+      "at": "2026-10-30T21:11:27.754Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 26 tareas, cobertura completa"
+    },
+    {
+      "at": "2026-10-30T21:11:28.010Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 28aa301"
+    },
+    {
+      "at": "2026-10-30T21:11:28.217Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (hay tareas scaffold)"
+    },
+    {
+      "at": "2026-10-30T21:11:28.321Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold"
+    },
+    {
+      "at": "2026-10-30T21:12:15.653Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-30T21:15:13.985Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check"
+    },
+    {
+      "at": "2026-10-30T21:18:22.880Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Tests nuevos 031: 63 fallan por comportamiento ausente y 13 pasan sin implementación (3 api.test rechazos con toThrow sin mensaje, 8 rechazos de schemas con z.never, 2 de DiaryPage AC-001.5). Responsables: test-author."
+    },
+    {
+      "at": "2026-10-30T21:18:31.317Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red FAIL: 13 tests pasan sin implementación (api 3, schemas 8, DiaryPage 2) · tests 1/5"
+    },
+    {
+      "at": "2026-10-30T21:20:05.274Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Red check de nuevo (iteración 2)"
+    },
+    {
+      "at": "2026-10-30T21:23:23.435Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red 031 iteracion 2: 76 tests nuevos (SDD 031) fallan todos por comportamiento ausente (not implemented, esquemas z.never, bloque inexistente); 0 pasan; los 13 de la iteracion 1 ya fallan; esqueletos sin logica. Informe en verify-report.md."
+    },
+    {
+      "at": "2026-10-30T21:23:30.580Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red PASS: 76 tests nuevos fallan"
+    },
+    {
+      "at": "2026-10-30T21:23:30.689Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "7 archivo(s) de test: tests 031 aprobados tras red check PASS"
+    },
+    {
+      "at": "2026-10-30T21:23:30.843Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 76 tests rojos"
+    },
+    {
+      "at": "2026-10-30T21:23:34.787Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 796c9fb"
+    },
+    {
+      "at": "2026-10-30T21:23:35.063Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar T-020 a T-026"
+    },
+    {
+      "at": "2026-10-30T21:28:35.399Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-020..T-026 hechas, 1806 tests verdes"
+    },
+    {
+      "at": "2026-10-30T21:28:35.516Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 1806 tests verdes, tsc y lint limpios"
+    },
+    {
+      "at": "2026-10-30T21:28:35.830Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 8126ff4"
+    },
+    {
+      "at": "2026-10-30T21:28:36.087Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa"
+    },
+    {
+      "at": "2026-10-30T21:30:43.100Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify 031 full: npm test 1806 passed (93 archivos); lint sin errores; tsc -b limpio; build OK; trazabilidad completa (40 AC, 8 REQ, 2 NFR, 26 tareas [x]); sin skip/only nuevos. Informe en verify-report.md."
+    },
+    {
+      "at": "2026-10-30T21:30:49.406Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: 1806 tests, lint, tsc, build"
+    },
+    {
+      "at": "2026-10-30T21:30:49.520Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-30T21:30:49.756Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review independiente"
+    },
+    {
+      "at": "2026-10-30T21:33:06.117Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-30T21:33:06.235Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED: 0 bloqueantes/mayores, 1 menor, 3 nit"
+    },
+    {
+      "at": "2026-10-30T21:40:52.901Z",
+      "stage": "implement",
+      "event": "rework",
+      "note": "review F2 (useCallback submit) y F3 (orden de imports) · review 1/5"
+    },
+    {
+      "at": "2026-10-30T21:45:38.769Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F2 y F3 corregidos, 1806 tests verdes"
+    },
+    {
+      "at": "2026-10-30T21:45:38.884Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección F2/F3"
+    },
+    {
+      "at": "2026-10-30T21:45:39.143Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 5a9ca99"
+    },
+    {
+      "at": "2026-10-30T21:45:39.390Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa tras corrección F2/F3"
+    },
+    {
+      "at": "2026-10-30T21:47:54.166Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verify 031 full tras corrección F2/F3 (iteración 2): npm test 1806 passed (93 archivos); lint sin errores; tsc -b limpio; build OK (index 384.69 kB); trazabilidad completa (33 AC, 8 REQ, 2 NFR, 26 tareas [x]); tests sin cambios desde el red check; sin skip/only nuevos. Informe en verify-report.md."
+    },
+    {
+      "at": "2026-10-30T21:48:04.154Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS tras F2/F3"
+    },
+    {
+      "at": "2026-10-30T21:48:04.272Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-30T21:48:04.392Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Segunda review tras F2/F3"
+    },
+    {
+      "at": "2026-10-30T21:49:38.522Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-30T21:49:38.638Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED 2ª review: F2/F3 corregidos, F4 decidido, F1 proceso"
+    },
+    {
+      "at": "2026-10-30T21:50:02.919Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Si"
+    },
+    {
+      "at": "2026-10-30T21:50:03.189Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: 31f207e"
+    },
+    {
+      "at": "2026-10-30T21:50:03.429Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Actualizar documentación"
+    },
+    {
+      "at": "2026-10-30T21:50:43.751Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "README, CLAUDE.md y docs/backlog.md"
+    },
+    {
+      "at": "2026-10-30T21:50:43.871Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
+    {
+      "at": "2026-10-30T21:50:44.134Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: e1a63ec"
+    },
+    {
+      "at": "2026-10-30T21:50:56.252Z",
+      "stage": "close",
+      "event": "done",
+      "note": "checklist hecha, backlog global actualizado"
+    },
+    {
+      "at": "2026-10-30T21:51:12.075Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Si"
+    },
+    {
+      "at": "2026-10-30T21:51:12.075Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
+    }
+  ]
+}

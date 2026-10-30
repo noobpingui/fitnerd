@@ -5,6 +5,8 @@ import {
   useQueryClient,
   type UseMutationResult,
 } from "@tanstack/react-query"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm, type UseFormReturn } from "react-hook-form"
 import { foodLibraryKeys } from "@/features/food-library/hooks"
 import { ApiError } from "@/lib/apiClient"
 import { todayIsoDate } from "@/lib/dates"
@@ -12,14 +14,26 @@ import {
   addMealItems,
   analyzeMealPhoto,
   deleteMeal,
+  estimatePortion,
   getDiary,
   removeMealItem,
   restoreMealItem,
   updateMealItemGrams,
 } from "./api"
 import { TODAY_CHECK_INTERVAL_MS, UNDO_DURATION_MS } from "./constants"
-import { undoErrorMessage } from "./errors"
-import type { AddMealItemsPayload, Meal, MealPhotoAnalysis, RemovalUndo } from "./types"
+import { portionEstimateErrorAnswer, undoErrorMessage } from "./errors"
+import { portionAnswerFromEstimate } from "./portionChat"
+import { portionQuestionFormSchema } from "./schemas"
+import type {
+  AddMealItemsPayload,
+  Meal,
+  MealPhotoAnalysis,
+  PortionChatAnswer,
+  PortionChatTurn,
+  PortionEstimate,
+  PortionQuestionFormValues,
+  RemovalUndo,
+} from "./types"
 
 export const diaryKeys = { day: (date: string) => ["diary", date] as const }
 
@@ -174,4 +188,56 @@ export function useRemovalUndo(
         ? undoErrorMessage(restore.error)
         : null,
   }
+}
+
+// Sin reintentos ni invalidaciones: cada pregunta cuenta para el límite y no toca el diario.
+export function useEstimatePortion(): UseMutationResult<PortionEstimate, Error, string> {
+  return useMutation<PortionEstimate, Error, string>({
+    mutationFn: (question) => estimatePortion(question),
+    retry: false,
+  })
+}
+
+export type PortionChatState = {
+  form: UseFormReturn<PortionQuestionFormValues>
+  turns: PortionChatTurn[]
+  isPending: boolean
+  submit: (values: PortionQuestionFormValues) => void
+}
+
+// El estado vive en DiaryPage (que no se desmonta al cambiar de día) para conservar la conversación.
+export function usePortionChat(): PortionChatState {
+  const { mutateAsync } = useEstimatePortion()
+  const form = useForm<PortionQuestionFormValues>({
+    resolver: zodResolver(portionQuestionFormSchema),
+    mode: "onSubmit",
+    reValidateMode: "onSubmit",
+    defaultValues: { question: "" },
+  })
+  const [turns, setTurns] = useState<PortionChatTurn[]>([])
+  const nextIdRef = useRef(1)
+  const inFlightRef = useRef(false)
+
+  const submit = useCallback(
+    (values: PortionQuestionFormValues) => {
+      if (inFlightRef.current) return
+      inFlightRef.current = true
+      const id = nextIdRef.current++
+      setTurns((current) => [...current, { id, question: values.question, answer: null }])
+      form.setValue("question", "")
+      const setAnswer = (answer: PortionChatAnswer) =>
+        setTurns((current) => current.map((turn) => (turn.id === id ? { ...turn, answer } : turn)))
+      mutateAsync(values.question)
+        .then(
+          (result) => setAnswer(portionAnswerFromEstimate(result)),
+          (error: unknown) => setAnswer(portionEstimateErrorAnswer(error))
+        )
+        .finally(() => {
+          inFlightRef.current = false
+        })
+    },
+    [mutateAsync, form]
+  )
+
+  return { form, turns, isPending: turns.some((turn) => turn.answer === null), submit }
 }
