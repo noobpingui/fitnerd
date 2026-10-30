@@ -81,3 +81,15 @@ export type AddMealItemsPayload = {
   items: (CatalogItemPayload | UsdaItemPayload | CustomItemPayload | LibraryItemPayload)[]
 }
 export type RemovalUndo = { token: string; name: string; mealType: MealType }
+
+export type PortionEstimate =
+  | { status: "estimated"; grams: number; unit: string | null; note: string | null }
+  | { status: "not_food" | "unknown"; message: string }
+// Respuesta mostrada debajo de una pregunta.
+export type PortionChatAnswer =
+  | { kind: "estimate"; grams: number; unit: string | null; note: string | null }
+  | { kind: "message"; text: string } // not_food / unknown
+  | { kind: "notice"; text: string } // 429, estilo neutro
+  | { kind: "error"; text: string } // 400, 503 y cualquier otro fallo
+export type PortionChatTurn = { id: number; question: string; answer: PortionChatAnswer | null } // null = en curso
+export type PortionQuestionFormValues = { question: string }

@@ -1,4 +1,5 @@
 import { ApiError } from "@/lib/apiClient"
+import type { PortionChatAnswer } from "./types"
 
 export const SAVE_FAILED_MESSAGE = "No se pudo guardar. Vuelve a intentarlo."
 export const REMOVE_FAILED_MESSAGE = "No se pudo quitar el alimento. Vuelve a intentarlo."
@@ -85,4 +86,12 @@ export const UNDO_FAILED_MESSAGE = "No se pudo deshacer. Vuelve a intentarlo."
 export function undoErrorMessage(error: unknown): string {
   if (error instanceof ApiError && error.status === 400) return error.message
   return UNDO_FAILED_MESSAGE
+}
+
+export const PORTION_ESTIMATE_FAILED_MESSAGE = "No se pudo estimar el peso. Vuelve a intentarlo."
+
+export function portionEstimateErrorAnswer(
+  _error: unknown
+): Extract<PortionChatAnswer, { kind: "notice" | "error" }> {
+  throw new Error("not implemented")
 }

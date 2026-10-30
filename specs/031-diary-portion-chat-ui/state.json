@@ -9,7 +9,7 @@
   "branch": "feat/031-diary-portion-chat-ui",
   "base_branch": "main",
   "created_at": "2026-10-30T20:55:25.327Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -24,7 +24,10 @@
       "at": "2026-10-30T21:11:27.754Z",
       "note": "auto (gate_mode=flow): 26 tareas, cobertura completa"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-30T21:23:30.843Z",
+      "note": "auto (gate_mode=flow): red check PASS, 76 tests rojos"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -33,17 +36,18 @@
   },
   "commits": {
     "spec": "0373244",
-    "plan": "f1568bd"
+    "plan": "f1568bd",
+    "tasks": "28aa301"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 1,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 5,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-30T21:23:23.435Z"
   },
   "verify": {
     "result": null,
@@ -53,7 +57,19 @@
     "verdict": null,
     "at": null
   },
-  "tests_snapshot": null,
+  "tests_snapshot": {
+    "at": "2026-10-30T21:23:30.689Z",
+    "reason": "tests 031 aprobados tras red check PASS",
+    "sha256": {
+      "frontend/src/features/diary/api.test.ts": "d1a0dd08a2e530e83fe3fc8f3faa8269b0f50102b2fb24e94d9dd1bb7bc9301b",
+      "frontend/src/features/diary/components/PortionChat.test.tsx": "e3248b92581d8062b1b057d2cad362ac6b30b378776a82a2c681e57e3e438041",
+      "frontend/src/features/diary/errors.test.ts": "ae661033bdbbe4ce628576ce48b10740ae0471a20ac3668a14d46d010c863f5f",
+      "frontend/src/features/diary/pages/DiaryPage.test.tsx": "89c5e3d9d1c8b73336c1b92fe4582c2889d5e6b8f8e19dc721882a47f8bd962f",
+      "frontend/src/features/diary/portionChat.test.ts": "248b268b6050beb470f423193cf960e9ad9a7f860e0524aed664141a770a36dd",
+      "frontend/src/features/diary/schemas.test.ts": "74f5e8bf5abc383a1cda584e0cfe64c52adbc77c8a4d6d37915035ef97ea72d4",
+      "frontend/src/test/portionEstimateFixtures.ts": "7a1afe26d197c3013bc0e024b51289e0043af1d79aa84b644395652e2a144b47"
+    }
+  },
   "bypass": false,
   "history": [
     {
@@ -139,6 +155,78 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): 26 tareas, cobertura completa"
+    },
+    {
+      "at": "2026-10-30T21:11:28.010Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 28aa301"
+    },
+    {
+      "at": "2026-10-30T21:11:28.217Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (hay tareas scaffold)"
+    },
+    {
+      "at": "2026-10-30T21:11:28.321Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold"
+    },
+    {
+      "at": "2026-10-30T21:12:15.653Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-30T21:15:13.985Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check"
+    },
+    {
+      "at": "2026-10-30T21:18:22.880Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Tests nuevos 031: 63 fallan por comportamiento ausente y 13 pasan sin implementación (3 api.test rechazos con toThrow sin mensaje, 8 rechazos de schemas con z.never, 2 de DiaryPage AC-001.5). Responsables: test-author."
+    },
+    {
+      "at": "2026-10-30T21:18:31.317Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red FAIL: 13 tests pasan sin implementación (api 3, schemas 8, DiaryPage 2) · tests 1/5"
+    },
+    {
+      "at": "2026-10-30T21:20:05.274Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Red check de nuevo (iteración 2)"
+    },
+    {
+      "at": "2026-10-30T21:23:23.435Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red 031 iteracion 2: 76 tests nuevos (SDD 031) fallan todos por comportamiento ausente (not implemented, esquemas z.never, bloque inexistente); 0 pasan; los 13 de la iteracion 1 ya fallan; esqueletos sin logica. Informe en verify-report.md."
+    },
+    {
+      "at": "2026-10-30T21:23:30.580Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red PASS: 76 tests nuevos fallan"
+    },
+    {
+      "at": "2026-10-30T21:23:30.689Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "7 archivo(s) de test: tests 031 aprobados tras red check PASS"
+    },
+    {
+      "at": "2026-10-30T21:23:30.843Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 76 tests rojos"
     }
   ]
 }

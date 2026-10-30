@@ -19,7 +19,16 @@ import {
 } from "./api"
 import { TODAY_CHECK_INTERVAL_MS, UNDO_DURATION_MS } from "./constants"
 import { undoErrorMessage } from "./errors"
-import type { AddMealItemsPayload, Meal, MealPhotoAnalysis, RemovalUndo } from "./types"
+import type { UseFormReturn } from "react-hook-form"
+import type {
+  AddMealItemsPayload,
+  Meal,
+  MealPhotoAnalysis,
+  PortionChatTurn,
+  PortionEstimate,
+  PortionQuestionFormValues,
+  RemovalUndo,
+} from "./types"
 
 export const diaryKeys = { day: (date: string) => ["diary", date] as const }
 
@@ -174,4 +183,19 @@ export function useRemovalUndo(
         ? undoErrorMessage(restore.error)
         : null,
   }
+}
+
+export function useEstimatePortion(): UseMutationResult<PortionEstimate, Error, string> {
+  throw new Error("not implemented")
+}
+
+export type PortionChatState = {
+  form: UseFormReturn<PortionQuestionFormValues>
+  turns: PortionChatTurn[]
+  isPending: boolean
+  submit: (values: PortionQuestionFormValues) => void
+}
+
+export function usePortionChat(): PortionChatState {
+  throw new Error("not implemented")
 }

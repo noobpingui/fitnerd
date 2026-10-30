@@ -5,7 +5,13 @@ import {
   mealResponseSchema,
   removalResponseSchema,
 } from "./schemas"
-import type { AddMealItemsPayload, Diary, Meal, MealPhotoAnalysis } from "./types"
+import type {
+  AddMealItemsPayload,
+  Diary,
+  Meal,
+  MealPhotoAnalysis,
+  PortionEstimate,
+} from "./types"
 
 export async function getDiary(date: string): Promise<Diary> {
   const params = new URLSearchParams({ date })
@@ -59,4 +65,8 @@ export async function restoreMealItem(restoreToken: string): Promise<Meal> {
 
 export async function deleteMeal(mealId: number): Promise<void> {
   await apiFetch<void>(`/api/meals/${mealId}`, { method: "DELETE" })
+}
+
+export async function estimatePortion(_question: string): Promise<PortionEstimate> {
+  throw new Error("not implemented")
 }

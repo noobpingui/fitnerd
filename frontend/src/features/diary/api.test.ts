@@ -4,7 +4,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "@/lib/apiClient"
 import { RICE, TOMATO_SAUCE, makeAnalysis } from "@/test/analysisFixtures"
 import { makeMeal } from "@/test/diaryFixtures"
-import { analyzeMealPhoto, deleteMeal, removeMealItem, restoreMealItem } from "./api"
+import {
+  EGGS_ESTIMATE,
+  NOT_FOOD_RESPONSE,
+  UNKNOWN_RESPONSE,
+} from "@/test/portionEstimateFixtures"
+import {
+  analyzeMealPhoto,
+  deleteMeal,
+  estimatePortion,
+  removeMealItem,
+  restoreMealItem,
+} from "./api"
 
 vi.mock("@/lib/apiClient", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/apiClient")>()),
@@ -163,5 +174,62 @@ describe("deleteMeal", () => {
     const [path, options] = apiFetchMock.mock.calls[0]
     expect(path).toBe("/api/meals/1")
     expect(options).toMatchObject({ method: "DELETE" })
+  })
+})
+
+describe("estimatePortion", () => {
+  beforeEach(() => {
+    apiFetchMock.mockReset()
+    apiFetchMock.mockResolvedValue(EGGS_ESTIMATE)
+  })
+
+  // SDD: 031 REQ-003 AC-003.1
+  // SDD: 031 REQ-003 AC-003.3
+  it("hace una sola llamada POST /api/meals/portion-estimate con el cuerpo exacto { question }", async () => {
+    await estimatePortion("5 huevos")
+
+    expect(apiFetchMock).toHaveBeenCalledTimes(1)
+    const [path, options] = apiFetchMock.mock.calls[0]
+    expect(path).toBe("/api/meals/portion-estimate")
+    expect(options).toMatchObject({ method: "POST" })
+    expect((options as { body: unknown }).body).toEqual({ question: "5 huevos" })
+  })
+
+  // SDD: 031 REQ-003 AC-003.1
+  it("devuelve la respuesta parseada", async () => {
+    const result = await estimatePortion("5 huevos")
+
+    expect(result).toMatchObject({
+      status: "estimated",
+      grams: 250,
+      unit: "5 huevos grandes",
+      note: "Unos 50 g por huevo sin cáscara.",
+    })
+  })
+
+  // SDD: 031 REQ-003 AC-003.1
+  it("devuelve el mensaje de not_food y de unknown", async () => {
+    apiFetchMock.mockResolvedValueOnce(NOT_FOOD_RESPONSE)
+    apiFetchMock.mockResolvedValueOnce(UNKNOWN_RESPONSE)
+
+    expect(await estimatePortion("coche")).toMatchObject({
+      status: "not_food",
+      message: NOT_FOOD_RESPONSE.message,
+    })
+    expect(await estimatePortion("zzz")).toMatchObject({
+      status: "unknown",
+      message: UNKNOWN_RESPONSE.message,
+    })
+  })
+
+  // SDD: 031 REQ-007 AC-007.5
+  it.each([
+    ["estimated con gramos nulos", { status: "estimated", grams: null, unit: null, note: null, message: null }],
+    ["un status desconocido", { status: "raro", grams: null, unit: null, note: null, message: "x" }],
+    ["un cuerpo que no es un objeto", "hola"],
+  ])("rechaza una respuesta con %s", async (_name, body) => {
+    apiFetchMock.mockResolvedValue(body)
+
+    await expect(estimatePortion("5 huevos")).rejects.toMatchObject({ name: "ZodError" })
   })
 })

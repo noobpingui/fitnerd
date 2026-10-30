@@ -19,6 +19,8 @@ import {
   mealResponseSchema,
   parseDecimalText,
   gramsError,
+  portionEstimateResponseSchema,
+  portionQuestionFormSchema,
   proposalReviewSchema,
   type CustomFoodEditValues,
   type CustomFoodFormValues,
@@ -713,4 +715,129 @@ it("`schemas.ts` ya no exporta `proposalFormSchema`, que solo usaban los tests",
   expect(Object.keys(diarySchemas)).not.toContain("proposalFormSchema")
   // Contraste: el esquema que lo sustituye sí sigue exportado.
   expect(Object.keys(diarySchemas)).toContain("proposalReviewSchema")
+})
+
+// ---------------------------------------------------------------------------
+// Spec 031: chat de porciones
+// ---------------------------------------------------------------------------
+
+describe("portionQuestionFormSchema", () => {
+  // SDD: 031 REQ-002 AC-002.2
+  it.each([[""], ["   "]])("rechaza la pregunta %j", (question) => {
+    const result = portionQuestionFormSchema.safeParse({ question })
+
+    expect(result.success).toBe(false)
+    expect(result.error?.issues[0]?.path).toEqual(["question"])
+    // Contraste: con texto, la misma forma sí se acepta.
+    expect(portionQuestionFormSchema.safeParse({ question: "5 huevos" }).success).toBe(true)
+  })
+
+  // SDD: 031 REQ-003 AC-003.1
+  it("acepta «  5 huevos  » y la devuelve sin los espacios de los extremos", () => {
+    const result = portionQuestionFormSchema.safeParse({ question: "  5 huevos  " })
+
+    expect(result.success).toBe(true)
+    expect(result.data).toEqual({ question: "5 huevos" })
+  })
+
+  // SDD: 031 REQ-002 AC-002.3
+  it("acepta 200 caracteres y rechaza 201", () => {
+    expect(portionQuestionFormSchema.safeParse({ question: "a".repeat(200) }).success).toBe(true)
+    expect(portionQuestionFormSchema.safeParse({ question: "a".repeat(201) }).success).toBe(false)
+  })
+})
+
+describe("portionEstimateResponseSchema", () => {
+  // SDD: 031 REQ-005 AC-005.1
+  it("acepta la estimación completa del contrato", () => {
+    const result = portionEstimateResponseSchema.safeParse({
+      status: "estimated",
+      grams: 250,
+      unit: "5 huevos grandes",
+      note: "Unos 50 g por huevo sin cáscara.",
+      message: null,
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data).toMatchObject({ status: "estimated", grams: 250, unit: "5 huevos grandes" })
+  })
+
+  // SDD: 031 REQ-005 AC-005.2
+  it("acepta una estimación con unidad y nota nulas", () => {
+    expect(
+      portionEstimateResponseSchema.safeParse({
+        status: "estimated",
+        grams: 120,
+        unit: null,
+        note: null,
+        message: null,
+      }).success
+    ).toBe(true)
+  })
+
+  // SDD: 031 REQ-005 AC-005.3
+  it("acepta 5000 g", () => {
+    expect(
+      portionEstimateResponseSchema.safeParse({
+        status: "estimated",
+        grams: 5000,
+        unit: null,
+        note: null,
+        message: null,
+      }).success
+    ).toBe(true)
+  })
+
+  // SDD: 031 REQ-006 AC-006.1
+  it("acepta la respuesta not_food con su mensaje", () => {
+    const result = portionEstimateResponseSchema.safeParse({
+      status: "not_food",
+      grams: null,
+      unit: null,
+      note: null,
+      message: "Solo puedo ayudarte a estimar cuántos gramos pesa un alimento.",
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data).toMatchObject({
+      status: "not_food",
+      message: "Solo puedo ayudarte a estimar cuántos gramos pesa un alimento.",
+    })
+  })
+
+  // SDD: 031 REQ-006 AC-006.2
+  it("acepta la respuesta unknown con su mensaje", () => {
+    const result = portionEstimateResponseSchema.safeParse({
+      status: "unknown",
+      grams: null,
+      unit: null,
+      note: null,
+      message: "No he podido estimar el peso. Prueba a describir el alimento de otra forma.",
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data).toMatchObject({ status: "unknown" })
+  })
+
+  // SDD: 031 REQ-007 AC-007.5
+  it.each([
+    ["gramos nulos", { status: "estimated", grams: null, unit: null, note: null, message: null }],
+    ["gramos decimales", { status: "estimated", grams: 12.5, unit: null, note: null, message: null }],
+    ["gramos 0", { status: "estimated", grams: 0, unit: null, note: null, message: null }],
+    ["gramos 5001", { status: "estimated", grams: 5001, unit: null, note: null, message: null }],
+    ["un status desconocido", { status: "otro", grams: null, unit: null, note: null, message: "x" }],
+    ["not_food sin mensaje", { status: "not_food", grams: null, unit: null, note: null, message: null }],
+  ])("rechaza una respuesta con %s", (_name, body) => {
+    expect(portionEstimateResponseSchema.safeParse(body).success).toBe(false)
+    // Contraste: una estimación válida sí se acepta con el mismo esquema.
+    expect(
+      portionEstimateResponseSchema.safeParse({
+        status: "estimated",
+        grams: 250,
+        unit: null,
+        note: null,
+        message: null,
+      }).success
+    ).toBe(true)
+  })
 })

@@ -1,14 +1,17 @@
 // Mensajes de error al guardar o quitar en el diario (spec 022).
 import { describe, expect, it } from "vitest"
+import { z } from "zod"
 import { ApiError } from "@/lib/apiClient"
 import {
   ANALYSIS_FAILED_MESSAGE,
   DELETE_CUSTOM_FOOD_FAILED_MESSAGE,
   FAVORITE_FAILED_MESSAGE,
   LIBRARY_LOAD_FAILED_MESSAGE,
+  PORTION_ESTIMATE_FAILED_MESSAGE,
   SAVE_FAILED_MESSAGE,
   analysisErrorView,
   favoriteErrorMessage,
+  portionEstimateErrorAnswer,
   saveErrorMessage,
   updateCustomFoodErrorView,
 } from "./errors"
@@ -177,6 +180,62 @@ describe("updateCustomFoodErrorView", () => {
     expect(updateCustomFoodErrorView(error)).toEqual({
       kind: "message",
       message: "No se pudo guardar el alimento.",
+    })
+  })
+})
+
+describe("portionEstimateErrorAnswer", () => {
+  const RATE_LIMIT = "Alcanzaste el límite de 10 preguntas cada 6 horas. Vuelve a intentarlo más tarde."
+
+  // SDD: 031 REQ-007 AC-007.1
+  it("un 429 da un aviso neutro con el mensaje del servidor", () => {
+    expect(portionEstimateErrorAnswer(new ApiError(429, RATE_LIMIT))).toEqual({
+      kind: "notice",
+      text: RATE_LIMIT,
+    })
+  })
+
+  // SDD: 031 REQ-007 AC-007.2
+  it("un 503 da un error con el mensaje del servidor", () => {
+    const message = "No se pudo estimar el peso en este momento. Vuelve a intentarlo en unos minutos."
+
+    expect(portionEstimateErrorAnswer(new ApiError(503, message))).toEqual({
+      kind: "error",
+      text: message,
+    })
+  })
+
+  // SDD: 031 REQ-007 AC-007.3
+  it("un 400 da un error con el mensaje del servidor", () => {
+    const message = "La pregunta no puede superar los 200 caracteres."
+
+    expect(portionEstimateErrorAnswer(new ApiError(400, message))).toEqual({
+      kind: "error",
+      text: message,
+    })
+  })
+
+  // SDD: 031 REQ-007 AC-007.4
+  it.each([
+    ["un 500", new ApiError(500, "boom interno")],
+    ["un fallo de red", new TypeError("Failed to fetch")],
+    ["un valor que no es un error", "algo"],
+  ])("%s da el mensaje genérico sin el texto original", (_name, error) => {
+    const answer = portionEstimateErrorAnswer(error)
+
+    expect(answer).toEqual({ kind: "error", text: PORTION_ESTIMATE_FAILED_MESSAGE })
+    expect(answer.text).not.toMatch(/boom|Failed to fetch/)
+  })
+
+  // SDD: 031 REQ-007 AC-007.5
+  it("un ZodError da el mensaje genérico", () => {
+    const zodError = new z.ZodError([
+      { code: "custom", path: ["grams"], message: "Invalid input" },
+    ])
+
+    expect(portionEstimateErrorAnswer(zodError)).toEqual({
+      kind: "error",
+      text: "No se pudo estimar el peso. Vuelve a intentarlo.",
     })
   })
 })

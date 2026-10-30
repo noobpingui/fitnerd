@@ -1,5 +1,10 @@
 import { z } from "zod"
-import type { CustomItemPayload, ProposalFormValues } from "./types"
+import type {
+  CustomItemPayload,
+  PortionEstimate,
+  PortionQuestionFormValues,
+  ProposalFormValues,
+} from "./types"
 
 export const GRAMS_RANGE_MESSAGE = "Los gramos deben estar entre 1 y 2000."
 export const GRAMS_DECIMALS_MESSAGE = "Los gramos admiten como mucho un decimal."
@@ -265,3 +270,14 @@ export const proposalReviewSchema: z.ZodType<ProposalFormValues, ProposalFormVal
   .superRefine(validateProposalGrams)
 
 export const removalResponseSchema = z.object({ restore_token: z.string().min(1) })
+
+// Esquemas provisionales (scaffold): no validan nada.
+export const portionQuestionFormSchema = z.never() as unknown as z.ZodType<
+  PortionQuestionFormValues,
+  PortionQuestionFormValues
+>
+
+export const portionEstimateResponseSchema = z.never() as unknown as z.ZodType<
+  PortionEstimate,
+  unknown
+>

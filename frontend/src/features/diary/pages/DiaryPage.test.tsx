@@ -2,7 +2,7 @@
 // diario, de los alimentos y del perfil; la fecha de hoy se fija con
 // `vi.useFakeTimers({ toFake: ["Date"] })` (martes 20 de octubre de 2026).
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { act, render, screen, waitFor, within } from "@testing-library/react"
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { MemoryRouter, RouterProvider, createMemoryRouter } from "react-router"
@@ -11,13 +11,20 @@ import {
   addMealItems,
   analyzeMealPhoto,
   deleteMeal,
+  estimatePortion,
   getDiary,
   removeMealItem,
   restoreMealItem,
   updateMealItemGrams,
 } from "@/features/diary/api"
 import type { PhotoProcessor } from "@/features/diary/photo"
-import { searchFoodLibrary } from "@/features/food-library/api"
+import {
+  deleteCustomFood,
+  getFavoriteFoods,
+  getRecentFoods,
+  searchFoodLibrary,
+  setFoodFavorite,
+} from "@/features/food-library/api"
 import { getProfile } from "@/features/profile/api"
 import { answersFromProfile } from "@/features/profile/mappers"
 import { calculateMacros, type MacroKey } from "@/features/macros/calculations"
@@ -33,7 +40,7 @@ import {
   ZERO_TOTALS,
 } from "@/test/diaryFixtures"
 import { makeProfileResponse } from "@/test/profileFixtures"
-import type { Diary, Meal, MealItem } from "../types"
+import type { Diary, Meal, MealItem, PortionEstimate } from "../types"
 import { DiaryPage } from "./DiaryPage"
 
 vi.mock("@/features/diary/api", () => ({
@@ -44,6 +51,7 @@ vi.mock("@/features/diary/api", () => ({
   analyzeMealPhoto: vi.fn(),
   restoreMealItem: vi.fn(),
   deleteMeal: vi.fn(),
+  estimatePortion: vi.fn(),
 }))
 // El procesador del navegador (decodificar, canvas y URLs blob:) no se puede
 // ejecutar en jsdom: la pantalla usa `browserPhotoProcessor`, que aquí delega en
@@ -1740,5 +1748,232 @@ describe("DiaryPage - barras al superar el objetivo (REQ-008)", () => {
     for (const name of BAR_NAMES) {
       expect(indicator(name).className).not.toMatch(/destructive|red-/)
     }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Spec 031: chat de porciones en el diario
+// ---------------------------------------------------------------------------
+
+describe("DiaryPage - chat de porciones (spec 031)", () => {
+  const estimateMock = vi.mocked(estimatePortion)
+  const CHAT_TITLE = "Calcular gramos con IA"
+  const EGGS: PortionEstimate = {
+    status: "estimated",
+    grams: 250,
+    unit: "5 huevos grandes",
+    note: "Unos 50 g por huevo sin cáscara.",
+  }
+
+  beforeEach(() => {
+    setUpDay26()
+    estimateMock.mockReset()
+    vi.mocked(getRecentFoods).mockClear()
+    vi.mocked(getFavoriteFoods).mockClear()
+    vi.mocked(setFoodFavorite).mockClear()
+    vi.mocked(deleteCustomFood).mockClear()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  const field = () => screen.getByRole("textbox", { name: "Alimento o porción" })
+  const log = () => screen.getByRole("log", { name: "Conversación sobre gramos" })
+
+  async function ask(user: ReturnType<typeof userEvent.setup>, text: string) {
+    await user.type(field(), `${text}{Enter}`)
+  }
+
+  function follows(first: HTMLElement, second: HTMLElement): boolean {
+    return Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING)
+  }
+
+  // SDD: 031 REQ-001 AC-001.1
+  it("con el diario cargado muestra el título, el texto, el campo «Alimento o porción» y «Preguntar»", async () => {
+    renderAt()
+
+    expect(await screen.findByRole("heading", { level: 2, name: CHAT_TITLE })).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        "Pregunta a la IA cuántos gramos pesa un alimento o una porción, por ejemplo «5 huevos» o «un filete de pescado». La respuesta es una estimación aproximada."
+      )
+    ).toBeInTheDocument()
+    expect(field()).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Preguntar" })).toBeInTheDocument()
+    expect(within(log()).getByText("Todavía no has preguntado nada.")).toBeInTheDocument()
+  })
+
+  // SDD: 031 REQ-001 AC-001.2
+  it("el bloque está después de la tarjeta de totales y antes del encabezado «Desayuno»", async () => {
+    renderAt()
+    const title = await screen.findByRole("heading", { level: 2, name: CHAT_TITLE })
+
+    const lastTotalsBar = screen.getByRole("progressbar", { name: "Grasa" })
+    const breakfast = screen.getByText("Desayuno")
+    expect(follows(lastTotalsBar, title)).toBe(true)
+    expect(follows(title, breakfast)).toBe(true)
+  })
+
+  // SDD: 031 REQ-001 AC-001.3
+  it("en un día de hoy sin comidas, el bloque está antes de «Todavía no has registrado nada hoy.»", async () => {
+    renderAt()
+    const title = await screen.findByRole("heading", { level: 2, name: CHAT_TITLE })
+
+    const empty = screen.getByText("Todavía no has registrado nada hoy.")
+    expect(follows(title, empty)).toBe(true)
+  })
+
+  // SDD: 031 REQ-001 AC-001.3
+  // SDD: 031 REQ-001 AC-001.4
+  it("en un día pasado con `?date=` el bloque aparece, antes de «No hay nada registrado este día.»", async () => {
+    renderAt(["/diary?date=2026-10-20"])
+    const title = await screen.findByRole("heading", { level: 2, name: CHAT_TITLE })
+
+    const empty = screen.getByText("No hay nada registrado este día.")
+    expect(follows(title, empty)).toBe(true)
+    expect(follows(title, screen.getByText("Desayuno"))).toBe(true)
+  })
+
+  // SDD: 031 REQ-001 AC-001.5
+  it("mientras el diario carga, el bloque no aparece", async () => {
+    let resolveDiary: (diary: Diary) => void = () => {}
+    getDiaryMock.mockReturnValue(new Promise<Diary>((resolve) => { resolveDiary = resolve }))
+    renderAt()
+
+    expect(await screen.findByText("Cargando el diario…")).toBeInTheDocument()
+
+    expect(screen.queryByRole("heading", { name: CHAT_TITLE })).not.toBeInTheDocument()
+    expect(screen.queryByRole("textbox", { name: "Alimento o porción" })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Preguntar" })).not.toBeInTheDocument()
+
+    // Contraste: con el diario cargado, el bloque sí aparece.
+    resolveDiary(makeDiary())
+    expect(await screen.findByRole("heading", { level: 2, name: CHAT_TITLE })).toBeInTheDocument()
+  })
+
+  // SDD: 031 REQ-001 AC-001.5
+  it("si la carga del diario falla, el bloque no aparece", async () => {
+    const user = userEvent.setup()
+    getDiaryMock.mockRejectedValueOnce(new ApiError(500, "boom"))
+    getDiaryMock.mockResolvedValueOnce(makeDiary())
+    renderAt()
+
+    expect(await screen.findByText("No se pudo cargar el diario.")).toBeInTheDocument()
+
+    expect(screen.queryByRole("heading", { name: CHAT_TITLE })).not.toBeInTheDocument()
+    expect(screen.queryByRole("textbox", { name: "Alimento o porción" })).not.toBeInTheDocument()
+
+    // Contraste: tras reintentar con éxito, el bloque sí aparece.
+    await user.click(screen.getByRole("button", { name: "Reintentar" }))
+    expect(await screen.findByRole("heading", { level: 2, name: CHAT_TITLE })).toBeInTheDocument()
+  })
+
+  // SDD: 031 REQ-008 AC-008.2
+  it.each([
+    ["«Día anterior»", ["/diary"], "domingo, 25 de octubre", async (user: User) => {
+      await user.click(screen.getByRole("button", { name: "Día anterior" }))
+    }],
+    ["«Día siguiente»", ["/diary?date=2026-10-25"], "lunes, 26 de octubre", async (user: User) => {
+      await user.click(screen.getByRole("button", { name: "Día siguiente" }))
+    }],
+    ["«Hoy»", ["/diary?date=2026-10-20"], "lunes, 26 de octubre", async (user: User) => {
+      await user.click(screen.getByRole("button", { name: "Hoy" }))
+    }],
+    ["el selector de fecha", ["/diary"], "martes, 20 de octubre", async () => {
+      fireEvent.change(screen.getByLabelText("Elegir día"), { target: { value: "2026-10-20" } })
+    }],
+  ])("la conversación sigue mostrando la pregunta y su respuesta al cambiar de día con %s", async (_name, entries, newDay, change) => {
+    const user = userEvent.setup()
+    estimateMock.mockResolvedValue(EGGS)
+    renderAt(entries)
+    await screen.findByRole("heading", { level: 2, name: CHAT_TITLE })
+    await ask(user, "5 huevos")
+    await within(log()).findByText("Unos 250 g")
+
+    await change(user)
+
+    expect(await screen.findByText(newDay)).toBeInTheDocument()
+    await screen.findByRole("heading", { level: 2, name: CHAT_TITLE })
+    expect(within(log()).getByText("5 huevos")).toBeInTheDocument()
+    expect(within(log()).getByText("Unos 250 g")).toBeInTheDocument()
+    expect(within(log()).getByText("Porción: 5 huevos grandes")).toBeInTheDocument()
+    expect(estimateMock).toHaveBeenCalledTimes(1)
+  })
+
+  // SDD: 031 REQ-008 AC-008.3
+  it("si se cambia de día con la pregunta en curso, la respuesta aparece bajo esa pregunta en el día nuevo sin otra petición", async () => {
+    const user = userEvent.setup()
+    const pending = deferred<PortionEstimate>()
+    estimateMock.mockReturnValue(pending.promise)
+    renderAt()
+    await screen.findByRole("heading", { level: 2, name: CHAT_TITLE })
+    await ask(user, "5 huevos")
+    expect(within(log()).getByText("Calculando…")).toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: "Día anterior" }))
+    expect(await screen.findByText("domingo, 25 de octubre")).toBeInTheDocument()
+    await screen.findByRole("heading", { level: 2, name: CHAT_TITLE })
+    expect(within(log()).getByText("5 huevos")).toBeInTheDocument()
+    expect(within(log()).getByText("Calculando…")).toBeInTheDocument()
+    await act(async () => pending.resolve(EGGS))
+
+    const answer = await within(log()).findByText("Unos 250 g")
+    expect(follows(within(log()).getByText("5 huevos"), answer)).toBe(true)
+    expect(within(log()).queryByText("Calculando…")).not.toBeInTheDocument()
+    expect(estimateMock).toHaveBeenCalledTimes(1)
+  })
+
+  // SDD: 031 REQ-008 AC-008.4
+  it("al salir de `/diary` y volver, la conversación está vacía", async () => {
+    const user = userEvent.setup()
+    estimateMock.mockResolvedValue(EGGS)
+    const { router } = renderAt()
+    await screen.findByRole("heading", { level: 2, name: CHAT_TITLE })
+    await ask(user, "5 huevos")
+    await within(log()).findByText("Unos 250 g")
+
+    await act(async () => {
+      await router.navigate("/home")
+    })
+    expect(await screen.findByText("Inicio")).toBeInTheDocument()
+    await act(async () => {
+      await router.navigate("/diary")
+    })
+
+    await screen.findByRole("heading", { level: 2, name: CHAT_TITLE })
+    expect(within(log()).getByText("Todavía no has preguntado nada.")).toBeInTheDocument()
+    expect(within(log()).queryByText("5 huevos")).not.toBeInTheDocument()
+    expect(within(log()).queryByText("Unos 250 g")).not.toBeInTheDocument()
+  })
+
+  // SDD: 031 NFR-002 AC-N002.1
+  it("preguntar no guarda nada, no toca la biblioteca, no relee el diario y los totales no cambian", async () => {
+    const user = userEvent.setup()
+    const goal = targets()
+    estimateMock.mockResolvedValue(EGGS)
+    renderAt()
+    await screen.findByText(`0 / ${intFormat.format(goal.kcal)} kcal`)
+    expect(getDiaryMock).toHaveBeenCalledTimes(1)
+
+    await ask(user, "5 huevos")
+    await within(log()).findByText("Unos 250 g")
+    await settle()
+
+    expect(estimateMock).toHaveBeenCalledTimes(1)
+    expect(estimateMock).toHaveBeenCalledWith("5 huevos")
+    expect(addMock).not.toHaveBeenCalled()
+    expect(updateMock).not.toHaveBeenCalled()
+    expect(removeMock).not.toHaveBeenCalled()
+    expect(restoreMock).not.toHaveBeenCalled()
+    expect(deleteMock).not.toHaveBeenCalled()
+    expect(analyzeMock).not.toHaveBeenCalled()
+    expect(searchMock).not.toHaveBeenCalled()
+    expect(vi.mocked(getRecentFoods)).not.toHaveBeenCalled()
+    expect(vi.mocked(getFavoriteFoods)).not.toHaveBeenCalled()
+    expect(vi.mocked(setFoodFavorite)).not.toHaveBeenCalled()
+    expect(vi.mocked(deleteCustomFood)).not.toHaveBeenCalled()
+    expect(getDiaryMock).toHaveBeenCalledTimes(1)
+    expect(screen.getByText(`0 / ${intFormat.format(goal.kcal)} kcal`)).toBeInTheDocument()
   })
 })
