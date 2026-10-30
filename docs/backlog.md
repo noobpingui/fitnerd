@@ -539,3 +539,7 @@ Detalle en [specs/031-diary-portion-chat-ui/backlog.md](../specs/031-diary-porti
 - [ ] El contador de caracteres cuenta unidades UTF-16 y el servidor cuenta puntos de código: con emojis el frontend puede ser algo más estricto que el servidor.
 - [ ] Comprobación manual en navegador real: disposición visual del bloque (AC-001.2), distinción visual de avisos y errores (AC-007.1 y AC-007.2) y anuncio con lector de pantalla (AC-N001.1).
 - [ ] Proceso: test-author e implementer volvieron a escribir con la shell (B2.4) en esta feature (F1); reforzar la instrucción de esos roles.
+
+## Hotfix · portion-estimate y `temperature` del SDK de Anthropic (2026-10-30)
+- [x] Fijar la versión de `anthropic` (fijada a 1.0.0 y `LLMClient.generate_structured` ya no envía `temperature`) en `backend/requirements.txt` (hoy sin versión): el SDK 1.0.0 quitó `temperature` de `Messages.create()` y `POST /api/meals/portion-estimate` respondía siempre 503; con la versión sin fijar, cualquier reconstrucción de la imagen puede traer otro cambio de API. Decidir la versión y probar el despliegue.
+- [ ] Quitar el parámetro `temperature` (hoy ignorado) de `generate_structured`, `PortionEstimateService`, los fakes y sus tests.

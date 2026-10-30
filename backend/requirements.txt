@@ -9,7 +9,7 @@ cryptography
 pgvector
 boto3
 voyageai
-anthropic
+anthropic==1.0.0
 flask-cors
 google-auth
 yt-dlp
