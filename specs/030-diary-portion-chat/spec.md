@@ -25,10 +25,12 @@ una porción** para **anotar sus gramos sin tener que pesarlo**.
 **Incluye:**
 - Un endpoint con sesión que recibe una pregunta en texto y devuelve una estimación estructurada: estado, gramos,
   porción considerada y una nota breve, o un mensaje fijo cuando no hay estimación.
-- Validación de la pregunta (obligatoria, de hasta 200 caracteres) y del cuerpo de la petición.
+- Validación de la pregunta (obligatoria, de hasta 200 caracteres) y del cuerpo de la petición, con un tamaño
+  máximo del cuerpo de 4096 bytes solo en este endpoint.
 - Validación en el servidor de lo que devuelve el modelo: gramos enteros de 1 a 5000, porción y nota recortadas,
   mensaje fijo cuando la pregunta no es de comida o no hay una estimación válida.
-- Límite de uso de 10 preguntas cada 6 horas por usuario, independiente del coach y del análisis de foto.
+- Límite de uso de 10 preguntas cada 6 horas por usuario, independiente del coach y del análisis de foto; si el
+  contador del límite no está disponible, la pregunta se rechaza con 503 sin consultar el modelo.
 - Coste acotado por pregunta: respuesta corta del modelo, sin aleatoriedad y con un modelo pequeño configurable.
 - Traza de cada pregunta en la observabilidad existente (Langfuse), inactiva si no está configurada.
 - Mensajes al usuario en español.
@@ -41,7 +43,9 @@ una porción** para **anotar sus gramos sin tener que pesarlo**.
 - Calcular calorías o macros de la porción, o relacionarla con el catálogo de alimentos.
 - Usar la base de transcripciones del coach (RAG) o cualquier otra fuente de datos.
 - Unidades distintas de gramos en la respuesta (mililitros, onzas…).
-- Cambios en el coach, en el análisis de foto o en sus límites.
+- Cambios en el coach, en el análisis de foto o en sus límites, incluido su comportamiento cuando el contador del
+  límite no está disponible.
+- Un límite de tamaño del cuerpo para los demás endpoints: su comportamiento y su contrato no cambian.
 
 ## 4. Requisitos funcionales
 
@@ -165,6 +169,36 @@ y sin enviar nada si no está configurada.
 - **AC-009.4:** Given un trazador simulado que falla al cerrar la traza, When el modelo devuelve una estimación
   válida, Then el usuario recibe igualmente 200 con la estimación.
 
+### REQ-010 — Contador del límite no disponible
+IF una pregunta es válida pero no se puede consultar ni actualizar el contador del límite de uso (por ejemplo,
+porque el servicio que lo guarda no responde) THEN THE SYSTEM SHALL responder 503 con el mensaje fijo «No se pudo
+estimar el peso en este momento. Vuelve a intentarlo en unos minutos.», sin consultar el modelo, sin registrar
+traza y registrando el error en el log del servidor sin exponer su detalle al usuario.
+
+- **AC-010.1:** Given un usuario con sesión y un limitador simulado que lanza un error al consultarse, When envía
+  `{"question": "5 huevos"}`, Then recibe 503
+  `{"error": "No se pudo estimar el peso en este momento. Vuelve a intentarlo en unos minutos."}`, el cuerpo no
+  contiene el texto del error original y el modelo no se consulta.
+- **AC-010.2:** Given un trazador simulado y un limitador simulado que lanza un error, When el usuario hace una
+  pregunta válida, Then no se registra ninguna traza.
+- **AC-010.3:** Given un limitador simulado que lanza un error, When el usuario envía `{"question": ""}`, Then recibe
+  400 `{"error": "Escribe qué alimento quieres pesar."}` (la validación de la petición va antes que el límite).
+
+### REQ-011 — Tamaño máximo del cuerpo
+IF el cuerpo de la petición a este endpoint supera los 4096 bytes THEN THE SYSTEM SHALL responder 400 con «La
+petición no es válida», sin leer la pregunta, sin consultar el modelo, sin consumir el límite de uso y sin
+registrar traza. Este tope solo se aplica a este endpoint.
+
+- **AC-011.1:** Given un usuario con sesión, When envía un objeto JSON de 4097 bytes con una pregunta válida de
+  «5 huevos» y un campo adicional de relleno, Then recibe 400 `{"error": "La petición no es válida"}` y el modelo no
+  se consulta.
+- **AC-011.2:** Given un usuario con sesión, When envía un objeto JSON de exactamente 4096 bytes con una pregunta
+  válida y un campo adicional de relleno, Then la petición se acepta y recibe 200.
+- **AC-011.3:** Given un limitador simulado y un trazador simulado, When un usuario envía un cuerpo de 4097 bytes,
+  Then el limitador no se consulta y no se registra ninguna traza.
+- **AC-011.4:** Given un usuario con sesión, When envía a `POST /api/meals` un cuerpo válido de más de 4096 bytes
+  que crea una comida nueva, Then recibe 201 como hasta ahora (el tope no se aplica a los demás endpoints).
+
 ## 5. Requisitos no funcionales
 
 ### NFR-001 — Coste acotado por pregunta
@@ -207,6 +241,9 @@ THE SYSTEM SHALL no guardar en la base de datos las preguntas ni las estimacione
 |---|---|---|
 | `question` | texto | Obligatorio. Se quitan los espacios de los extremos; de 1 a 200 caracteres. Los demás campos se ignoran. |
 
+El cuerpo completo admite como máximo 4096 bytes; por encima, 400. En ese tope cabe de sobra cualquier pregunta válida
+de 200 caracteres, aunque se envíe con todos sus caracteres escapados en JSON.
+
 **Respuesta 200** (todas las claves siempre presentes):
 
 | Campo | Tipo | `estimated` | `not_food` / `unknown` |
@@ -226,12 +263,12 @@ más cercano.
 |---|---|---|
 | No es una pregunta de comida | 200 | `Solo puedo ayudarte a estimar cuántos gramos pesa un alimento.` |
 | Sin estimación válida | 200 | `No he podido estimar el peso. Prueba a describir el alimento de otra forma.` |
-| Cuerpo que no es objeto JSON, o `question` que no es texto | 400 | `La petición no es válida` |
+| Cuerpo que no es objeto JSON, cuerpo de más de 4096 bytes, o `question` que no es texto | 400 | `La petición no es válida` |
 | `question` ausente, vacía o solo espacios | 400 | `Escribe qué alimento quieres pesar.` |
 | `question` de más de 200 caracteres | 400 | `La pregunta no puede superar los 200 caracteres.` |
 | Sin sesión o token no válido | 401 | El de la autenticación existente |
 | Límite de uso alcanzado | 429 | `Alcanzaste el límite de 10 preguntas cada 6 horas. Vuelve a intentarlo más tarde.` |
-| Fallo del proveedor | 503 | `No se pudo estimar el peso en este momento. Vuelve a intentarlo en unos minutos.` |
+| Fallo del proveedor, o contador del límite no disponible | 503 | `No se pudo estimar el peso en este momento. Vuelve a intentarlo en unos minutos.` |
 
 Los errores salen como `{"error": "<mensaje>"}`.
 
@@ -254,9 +291,21 @@ Estado: Q1-Q7 resueltas (iteración 2), todas con la propuesta por defecto. Q1 y
 Q3 en el alcance y AC-N002.2; Q4 en NFR-002; Q5 en REQ-006 (AC-005.6 y AC-006.5); Q6 en REQ-009; Q7 en NFR-001 y
 la configuración del operador. No quedan preguntas pendientes.
 
+Iteración 3 (vuelta desde el gate de review): las dos decisiones de la sección «Comentarios del usuario» están en
+REQ-010 (contador del límite no disponible: 503 con mensaje fijo, sin consultar el modelo) y REQ-011 (tope de 4096
+bytes del cuerpo, solo en este endpoint, con 400). REQ-001 a REQ-009 y los NFR no cambian.
+
 ## 8. Glosario
 
 - **Porción:** cantidad de un alimento descrita en lenguaje natural («un filete de pescado», «5 huevos»).
 - **Estimación:** peso aproximado en gramos de una porción, generado por el modelo y validado por el servidor.
 - **Ventana de 6 horas:** periodo que empieza con la primera pregunta válida del usuario; al terminar, el contador
   vuelve a cero (el mismo tipo de ventana fija que el coach).
+
+
+## Comentarios del usuario
+
+Gate de review, 2026-10-30. El usuario pidió: «Vamos a corregir todos, incluyendo el de Sin comportamiento definido» (todos los puntos del backlog de la feature, incluido el comportamiento si Redis no está disponible). Respuestas a las dos decisiones:
+
+- Si Redis no está disponible al preguntar por gramos: «Responder 503 (Recomendada)». Falla cerrado: sin contador no se puede garantizar el límite de 10 cada 6 horas, así que no se llama al modelo ni se gasta dinero. Mensaje fijo, sin detalles.
+- F6 (límite del tamaño del cuerpo JSON): «Solo en este endpoint (Recomendada)». Se rechaza con 400 un cuerpo grande en portion-estimate. No toca los demás endpoints ni su contrato.

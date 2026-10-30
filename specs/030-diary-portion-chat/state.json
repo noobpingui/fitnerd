@@ -9,25 +9,16 @@
   "branch": "feat/030-diary-portion-chat",
   "base_branch": "main",
   "created_at": "2026-10-30T06:35:46.331Z",
-  "stage": "implement",
+  "stage": "plan",
   "status": "in_progress",
   "approvals": {
     "spec": {
-      "at": "2026-10-30T07:12:14.553Z",
+      "at": "2026-10-30T07:55:52.178Z",
       "note": "Sí, aprobado"
     },
-    "plan": {
-      "at": "2026-10-30T07:17:54.613Z",
-      "note": "auto (gate_mode=flow): plan.md y ADR-0037 (Propuesta)"
-    },
-    "tasks": {
-      "at": "2026-10-30T07:18:49.337Z",
-      "note": "auto (gate_mode=flow): 24 tareas, 35 AC cubiertos"
-    },
-    "tests": {
-      "at": "2026-10-30T07:37:43.192Z",
-      "note": "auto (gate_mode=flow): corrección de lint en tests, sin cambio de comportamiento"
-    },
+    "plan": null,
+    "tasks": null,
+    "tests": null,
     "implement": null,
     "verify": null,
     "review": null,
@@ -38,18 +29,18 @@
     "spec": "4b0725b",
     "plan": "d30f4c1",
     "tasks": "2f60fd7",
-    "tests": "30dfc94",
+    "tests": "c09c6b1",
     "implement": "aba984a"
   },
   "iterations": {
     "tests": 1,
     "implement": 0,
-    "review": 0
+    "review": 1
   },
   "max_iterations": 5,
   "red_check": {
-    "result": "PASS",
-    "at": "2026-10-30T07:25:06.327Z"
+    "result": null,
+    "at": null
   },
   "verify": {
     "result": null,
@@ -281,6 +272,84 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): corrección de lint en tests, sin cambio de comportamiento"
+    },
+    {
+      "at": "2026-10-30T07:37:43.478Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: c09c6b1"
+    },
+    {
+      "at": "2026-10-30T07:37:43.565Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "sin cambios de producción; código de aba984a"
+    },
+    {
+      "at": "2026-10-30T07:37:43.648Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): implement sin cambios tras corregir tests"
+    },
+    {
+      "at": "2026-10-30T07:37:43.795Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa (iteración 2)"
+    },
+    {
+      "at": "2026-10-30T07:41:34.703Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: verify PASS (iteración 2): pytest backend 2827 passed; ratchet backend sin violaciones nuevas (2 E501 corregidos); 35/35 AC con marcador SDD 030 en test verde; 24/24 tareas [x]; 9 REQ y 3 NFR en tareas; sin skip nuevos; sin manuales"
+    },
+    {
+      "at": "2026-10-30T07:41:44.240Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "PASS: 2827 tests, ratchet limpio, 35/35 AC"
+    },
+    {
+      "at": "2026-10-30T07:41:44.329Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-30T07:41:44.486Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review independiente"
+    },
+    {
+      "at": "2026-10-30T07:44:36.648Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-30T07:44:36.729Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED: 0 bloqueantes, 0 mayores, 2 menores, 4 nits"
+    },
+    {
+      "at": "2026-10-30T07:50:53.540Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Usuario pide corregir todo el backlog: Redis caído → 503 fijo (nuevo requisito) y tope de cuerpo solo en este endpoint; el resto son correcciones menores · review 1/5"
+    },
+    {
+      "at": "2026-10-30T07:52:22.115Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec actualizada: REQ-010 (Redis caído) y REQ-011 (tope de cuerpo)"
+    },
+    {
+      "at": "2026-10-30T07:55:52.178Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Sí, aprobado"
     }
   ]
 }
