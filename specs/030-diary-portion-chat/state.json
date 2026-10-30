@@ -9,14 +9,17 @@
   "branch": "feat/030-diary-portion-chat",
   "base_branch": "main",
   "created_at": "2026-10-30T06:35:46.331Z",
-  "stage": "plan",
+  "stage": "tasks",
   "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-10-30T07:55:52.178Z",
       "note": "Sí, aprobado"
     },
-    "plan": null,
+    "plan": {
+      "at": "2026-10-30T08:02:38.604Z",
+      "note": "auto (gate_mode=flow): plan y ADR-0037 ampliados"
+    },
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -26,7 +29,7 @@
     "close": null
   },
   "commits": {
-    "spec": "4b0725b",
+    "spec": "850b7ed",
     "plan": "d30f4c1",
     "tasks": "2f60fd7",
     "tests": "c09c6b1",
@@ -350,6 +353,36 @@
       "stage": "spec",
       "event": "approved",
       "note": "Sí, aprobado"
+    },
+    {
+      "at": "2026-10-30T07:55:52.448Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 850b7ed"
+    },
+    {
+      "at": "2026-10-30T07:55:52.629Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Actualizar plan.md con REQ-010/011 y correcciones del backlog"
+    },
+    {
+      "at": "2026-10-30T08:02:38.496Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan actualizado: REQ-010/011 + correcciones del backlog"
+    },
+    {
+      "at": "2026-10-30T08:02:38.604Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan y ADR-0037 ampliados"
+    },
+    {
+      "at": "2026-10-30T08:02:38.717Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Decisiones: coach_llm = LazyLLMClient (sin ANTHROPIC_API_KEY el coach pasa de 500 a 503); REQ-010 reutiliza PROVIDER_UNAVAILABLE_MESSAGE; REQ-011 con request.max_content_length=4096 en la ruta"
     }
   ]
 }

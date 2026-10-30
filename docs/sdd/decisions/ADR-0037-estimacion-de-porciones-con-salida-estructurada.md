@@ -41,7 +41,18 @@ Opciones para el cliente:
    primera llamada (con `timeout=15` s y `max_retries=1`) y delega. Así un fallo al crearlo ocurre dentro del `try`
    del servicio (503) y los tests sustituyen `portion_llm.llm_client` por un doble.
 4. **`LLMClient` compatible.** El constructor acepta `timeout` y `max_retries` opcionales (solo se pasan al SDK si
-   tienen valor); `generate` y `generate_with_usage` no cambian, ni el coach ni el análisis de progreso.
+   tienen valor); `generate` y `generate_with_usage` no cambian, ni el análisis de progreso.
+5. **Coach con el mismo patrón** (plan, iteración 2). El coach usa un segundo singleton, `coach_llm =
+   LazyLLMClient("ANTHROPIC_MODEL", DEFAULT_ANTHROPIC_MODEL)`, sin `timeout` ni `max_retries` propios (se conservan los
+   del SDK, como hoy). `LazyLLMClient` gana `generate_with_usage`, que delega igual que `generate_structured`.
+   `CoachService` y el contrato de `/api/coach/ask` no cambian. Única diferencia: sin `ANTHROPIC_API_KEY`, el coach
+   responde 503 en lugar de 500.
+6. **Contador no disponible: falla cerrado, solo en este endpoint.** Si `RateLimiter.check_and_increment` lanza (Redis
+   caído), la estimación responde 503 con el mensaje fijo, sin llamar al modelo ni abrir traza. El coach y el análisis
+   de foto no cambian.
+7. **Tope de cuerpo por petición.** La ruta fija `request.max_content_length = 4096` antes de leer el cuerpo (mismo
+   mecanismo que `analyze_photo`) y traduce `RequestEntityTooLarge` a 400 «La petición no es válida». No hay
+   `MAX_CONTENT_LENGTH` global: los demás endpoints no cambian.
 
 ## Consecuencias
 - (+) Una sola llamada barata por pregunta, con salida ya estructurada y validada en el servidor.
@@ -51,5 +62,7 @@ Opciones para el cliente:
   instrucciones y el esquema piden textos cortos para evitarlo.
 - (−) Si Anthropic retira el alias `claude-haiku-4-5`, todas las preguntas darán 503 hasta fijar
   `PORTION_ESTIMATE_MODEL` en el `backend/.env` de EC2.
-- (−) Dos formas de construir clientes de Anthropic conviven (por petición en el coach y perezosa aquí); unificar el
-  coach queda fuera de alcance.
+- (+) El coach se prueba por HTTP hasta el 200 sustituyendo `coach_llm.llm_client`.
+- (−) El análisis de progreso (`body_metric_routes`) sigue construyendo `LLMClient` por petición; unificarlo queda en
+  el backlog.
+- (−) El comportamiento ante Redis caído difiere entre endpoints (503 aquí; el coach y la foto, como estaban).

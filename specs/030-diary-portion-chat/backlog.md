@@ -23,3 +23,11 @@
 - [ ] F5 (NIT, test-author): el test de la nota de 180 caracteres (test_portion_estimate_rules.py:215) no ejercita el rstrip tras recortar.
 - [ ] F6 (NIT, planner): no hay un límite global de tamaño del cuerpo JSON (MAX_CONTENT_LENGTH). Afecta a todos los endpoints JSON, no solo a este.
 - [ ] Pendiente de la sesión principal: aceptar ADR-0037, que sigue en «Propuesta», con la aprobación del usuario (Art. P5.2).
+
+## plan (rework desde review) · planner
+- [ ] Unificar también `_build_progress_analysis_service()` (body_metric_routes) con un LazyLLMClient.
+- [ ] Hacer que RateLimiter ponga incr y expire en una sola operación (pipeline o SET NX EX) para que la clave nunca quede sin caducidad.
+- [ ] Decidir si el coach y el análisis de foto también deben fallar cerrados (503) cuando Redis no está disponible; hoy dan 500.
+- [ ] Paso manual: añadir el precio de Haiku en Langfuse si no aparece en su tabla (etapa docs, runbook).
+- [ ] Etapa docs: documentar PORTION_ESTIMATE_MODEL en backend/.env.example y docs/deploy-runbook.md.
+- [ ] Sesión principal: aceptar ADR-0037 con la aprobación del usuario (P5.2).
