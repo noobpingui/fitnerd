@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "feature": "030-diary-portion-chat",
+  "title": "Chat de porciones del diario: endpoint backend que estima los gramos de un alimento con un LLM, sin RAG y con salida estructurada",
+  "type": "feature",
+  "scope": [
+    "backend"
+  ],
+  "branch": "feat/030-diary-portion-chat",
+  "base_branch": "main",
+  "created_at": "2026-10-30T06:35:46.331Z",
+  "stage": "plan",
+  "status": "in_progress",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-30T07:12:14.553Z",
+      "note": "Sí, aprobado"
+    },
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
+    "verify": null,
+    "review": null,
+    "docs": null,
+    "close": null
+  },
+  "commits": {},
+  "iterations": {
+    "tests": 0,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 5,
+  "red_check": {
+    "result": null,
+    "at": null
+  },
+  "verify": {
+    "result": null,
+    "at": null
+  },
+  "review": {
+    "verdict": null,
+    "at": null
+  },
+  "tests_snapshot": null,
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-30T06:35:46.331Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama feat/030-diary-portion-chat desde main"
+    },
+    {
+      "at": "2026-10-30T06:38:56.836Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Redactar spec.md con spec-writer"
+    },
+    {
+      "at": "2026-10-30T06:41:41.135Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "Q1-Q7 de la spec pendientes de respuesta del usuario"
+    },
+    {
+      "at": "2026-10-30T07:11:58.551Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec.md con 9 REQ y 3 NFR, Q1-Q7 resueltas"
+    },
+    {
+      "at": "2026-10-30T07:12:14.553Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Sí, aprobado"
+    }
+  ]
+}
