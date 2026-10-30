@@ -53,7 +53,29 @@ class LLMClient:
         max_tokens: int,
         temperature: float,
     ) -> "StructuredGenerationResult":
-        raise NotImplementedError("not implemented")
+        response = self.client.messages.create(
+            model=self.model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            system=system_prompt,
+            messages=messages,
+            tools=[tool],
+            tool_choice={"type": "tool", "name": tool["name"]},
+        )
+        input_tokens = response.usage.input_tokens
+        output_tokens = response.usage.output_tokens
+        stop_reason = response.stop_reason
+        if stop_reason in ("refusal", "max_tokens"):
+            return StructuredGenerationResult(None, stop_reason, input_tokens, output_tokens)
+
+        data = None
+        for block in response.content:
+            is_tool_block = getattr(block, "type", None) == "tool_use"
+            if is_tool_block and getattr(block, "name", None) == tool["name"]:
+                candidate = getattr(block, "input", None)
+                data = candidate if isinstance(candidate, dict) else None
+                break
+        return StructuredGenerationResult(data, stop_reason, input_tokens, output_tokens)
 
     #messages: lista de {"role": "user"|"assistant", "content": str}, en el mismo formato
     #que espera la API de Anthropic - permite mandar turnos anteriores de una conversacion,
@@ -107,7 +129,9 @@ class LazyLLMClient:
         self.llm_client = None
 
     def init_app(self, app) -> None:
-        raise NotImplementedError("not implemented")
+        configured = (app.config.get(self.model_config_key) or "").strip()
+        self.model = configured or self.default_model
+        self.llm_client = None
 
     def generate_structured(
         self,
@@ -117,4 +141,11 @@ class LazyLLMClient:
         max_tokens: int,
         temperature: float,
     ) -> StructuredGenerationResult:
-        raise NotImplementedError("not implemented")
+        if self.llm_client is None:
+            factory = self.client_factory or LLMClient
+            self.llm_client = factory(
+                model=self.model, timeout=self.timeout, max_retries=self.max_retries
+            )
+        return self.llm_client.generate_structured(
+            system_prompt, messages, tool, max_tokens, temperature
+        )

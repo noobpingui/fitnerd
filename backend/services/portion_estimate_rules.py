@@ -1,8 +1,11 @@
 """Reglas de la estimación de porciones del diario (spec 030, ADR-0037)."""
 
 from dataclasses import dataclass
+from decimal import ROUND_HALF_UP, Decimal
 
-from services.auth_input_rules import INVALID_REQUEST_MESSAGE  # noqa: F401  «La petición no es válida»
+from exceptions.custom_exceptions import ValidationError
+from services.auth_input_rules import INVALID_REQUEST_MESSAGE  # «La petición no es válida»
+from services.number_validation import is_number
 
 MAX_QUESTION_CHARS = 200
 MIN_GRAMS = 1
@@ -62,24 +65,61 @@ class PortionEstimate:
 
 
 def parse_question(data: object) -> str:
-    raise NotImplementedError("not implemented")
+    if not isinstance(data, dict):
+        raise ValidationError(INVALID_REQUEST_MESSAGE)
+    if "question" not in data:
+        raise ValidationError(QUESTION_REQUIRED_MESSAGE)
+    value = data["question"]
+    if not isinstance(value, str):
+        raise ValidationError(INVALID_REQUEST_MESSAGE)
+    question = value.strip()
+    if not question:
+        raise ValidationError(QUESTION_REQUIRED_MESSAGE)
+    if len(question) > MAX_QUESTION_CHARS:
+        raise ValidationError(QUESTION_TOO_LONG_MESSAGE)
+    return question
 
 
 def parse_grams(value: object) -> int | None:
-    raise NotImplementedError("not implemented")
+    if not is_number(value):
+        return None
+    number = Decimal(repr(value)) if isinstance(value, float) else Decimal(value)
+    rounded = int(number.quantize(Decimal(1), rounding=ROUND_HALF_UP))
+    if rounded < MIN_GRAMS or rounded > MAX_GRAMS:
+        return None
+    return rounded
 
 
 def clean_text(value: object, max_chars: int) -> str | None:
-    raise NotImplementedError("not implemented")
+    if not isinstance(value, str):
+        return None
+    text = value.strip()[:max_chars].rstrip()
+    return text or None
 
 
 def build_estimate(tool_input: object) -> PortionEstimate:
-    raise NotImplementedError("not implemented")
+    if not isinstance(tool_input, dict):
+        return unknown_estimate()
+    is_food = tool_input.get("is_food")
+    if not isinstance(is_food, bool):
+        return unknown_estimate()
+    if not is_food:
+        return not_food_estimate()
+    grams = parse_grams(tool_input.get("grams"))
+    if grams is None:
+        return unknown_estimate()
+    return PortionEstimate(
+        STATUS_ESTIMATED,
+        grams,
+        clean_text(tool_input.get("unit"), MAX_UNIT_CHARS),
+        clean_text(tool_input.get("note"), MAX_NOTE_CHARS),
+        None,
+    )
 
 
 def not_food_estimate() -> PortionEstimate:
-    raise NotImplementedError("not implemented")
+    return PortionEstimate(STATUS_NOT_FOOD, None, None, None, NOT_FOOD_MESSAGE)
 
 
 def unknown_estimate() -> PortionEstimate:
-    raise NotImplementedError("not implemented")
+    return PortionEstimate(STATUS_UNKNOWN, None, None, None, UNKNOWN_MESSAGE)

@@ -3,7 +3,7 @@ from werkzeug.exceptions import RequestEntityTooLarge
 
 from decorators import require_auth
 from exceptions.custom_exceptions import PayloadTooLargeError
-from extensions import db, rate_limiter, tracer, vision_client
+from extensions import db, portion_llm, rate_limiter, tracer, vision_client
 from repositories.catalog_food_repository import CatalogFoodRepository
 from repositories.custom_food_repository import CustomFoodRepository
 from repositories.food_repository import FoodRepository
@@ -14,6 +14,8 @@ from services.meal_image_rules import MealImageAnalysis
 from services.meal_photo import PHOTO_TOO_LARGE_MESSAGE
 from services.meal_rules import NUTRIENT_KEYS
 from services.meal_service import MealService, MealSummary
+from services.portion_estimate_rules import PortionEstimate
+from services.portion_estimate_service import PortionEstimateService
 from unit_of_work.unit_of_work import UnitOfWork
 from utils.clock import current_clock
 from utils.restore_token import RestoreTokenSigner
@@ -50,6 +52,20 @@ def _serialize_analysis(analysis: MealImageAnalysis) -> dict:
             for food in analysis.unmatched
         ],
         "totals": _serialize_numbers(analysis.totals),
+    }
+
+
+def _build_portion_estimate_service() -> PortionEstimateService:
+    return PortionEstimateService(portion_llm, rate_limiter, tracer=tracer)
+
+
+def _serialize_portion_estimate(estimate: PortionEstimate) -> dict:
+    return {
+        "status": estimate.status,
+        "grams": estimate.grams,
+        "unit": estimate.unit,
+        "note": estimate.note,
+        "message": estimate.message,
     }
 
 
@@ -131,6 +147,14 @@ def analyze_photo():
         raise PayloadTooLargeError(PHOTO_TOO_LARGE_MESSAGE) from None
     analysis = _build_meal_image_analysis_service().analyze(g.decoded_token["id"], images)
     return jsonify(_serialize_analysis(analysis)), 200
+
+
+@meal_bp.route("/portion-estimate", methods=["POST"])
+@require_auth
+def estimate_portion():
+    data = request.get_json(silent=True)
+    estimate = _build_portion_estimate_service().estimate(g.decoded_token["id"], data)
+    return jsonify(_serialize_portion_estimate(estimate)), 200
 
 
 @meal_bp.route("/<int:meal_id>/items/<int:item_id>", methods=["PATCH"])
