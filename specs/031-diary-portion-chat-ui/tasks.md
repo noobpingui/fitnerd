@@ -36,13 +36,13 @@ tipos se escriben con su valor final; los esquemas zod (valores) llevan un esque
 
 Orden por dependencia: esquemas → api → errores → lógica pura → hooks → componente → página.
 
-- [ ] T-020 [REQ-002, REQ-003, REQ-005, REQ-006, REQ-007, AC-002.2, AC-005.1, AC-006.1, AC-007.5] (impl) Esquemas reales `portionQuestionFormSchema` (trim, 1–200) y `portionEstimateResponseSchema` (unión estricta, `grams` entero 1–5000) — `frontend/src/features/diary/schemas.ts`
-- [ ] T-021 [REQ-003, REQ-007, NFR-002, AC-003.1, AC-003.3, AC-007.5, AC-N002.1] (impl) `estimatePortion` con `apiFetch` POST `{ question }` y validación zod — `frontend/src/features/diary/api.ts`
-- [ ] T-022 [REQ-007, AC-007.1, AC-007.2, AC-007.3, AC-007.4] (impl) `portionEstimateErrorAnswer` (429 notice; 400/503 error con mensaje; resto genérico) — `frontend/src/features/diary/errors.ts`
-- [ ] T-023 [REQ-005, REQ-006, AC-005.1, AC-005.2, AC-005.3, AC-006.1, AC-006.2] (impl) `formatEstimatedGrams` y `portionAnswerFromEstimate` — `frontend/src/features/diary/portionChat.ts`
-- [ ] T-024 [REQ-003, REQ-004, REQ-007, REQ-008, NFR-002, AC-003.1, AC-003.3, AC-004.1, AC-004.2, AC-007.6, AC-008.2, AC-008.3, AC-N002.1] (impl) `useEstimatePortion` (sin reintentos ni invalidaciones) y `usePortionChat` (formulario, turnos, `inFlightRef`, actualización por id) — `frontend/src/features/diary/hooks.ts`
-- [ ] T-025 [REQ-001, REQ-002, REQ-004, REQ-005, REQ-006, REQ-007, NFR-001, AC-001.1, AC-001.6, AC-002.1, AC-002.3, AC-002.4, AC-004.1, AC-005.1, AC-006.1, AC-007.1, AC-007.2, AC-N001.1, AC-N001.2] (impl) Componente `PortionChat`: título, texto, `role="log"`, turnos, formulario con contador y botón — `frontend/src/features/diary/components/PortionChat.tsx`
-- [ ] T-026 [REQ-001, REQ-008, AC-001.2, AC-001.3, AC-001.4, AC-001.5, AC-008.2, AC-008.3, AC-008.4] (impl) Pintar `afterTotals` en `DiaryDayView` y llamar a `usePortionChat()` en `DiaryPage` pasando `<PortionChat>` solo con diario y objetivos cargados — `frontend/src/features/diary/components/DiaryDayView.tsx`, `frontend/src/features/diary/pages/DiaryPage.tsx`
+- [x] T-020 [REQ-002, REQ-003, REQ-005, REQ-006, REQ-007, AC-002.2, AC-005.1, AC-006.1, AC-007.5] (impl) Esquemas reales `portionQuestionFormSchema` (trim, 1–200) y `portionEstimateResponseSchema` (unión estricta, `grams` entero 1–5000) — `frontend/src/features/diary/schemas.ts`
+- [x] T-021 [REQ-003, REQ-007, NFR-002, AC-003.1, AC-003.3, AC-007.5, AC-N002.1] (impl) `estimatePortion` con `apiFetch` POST `{ question }` y validación zod — `frontend/src/features/diary/api.ts`
+- [x] T-022 [REQ-007, AC-007.1, AC-007.2, AC-007.3, AC-007.4] (impl) `portionEstimateErrorAnswer` (429 notice; 400/503 error con mensaje; resto genérico) — `frontend/src/features/diary/errors.ts`
+- [x] T-023 [REQ-005, REQ-006, AC-005.1, AC-005.2, AC-005.3, AC-006.1, AC-006.2] (impl) `formatEstimatedGrams` y `portionAnswerFromEstimate` — `frontend/src/features/diary/portionChat.ts`
+- [x] T-024 [REQ-003, REQ-004, REQ-007, REQ-008, NFR-002, AC-003.1, AC-003.3, AC-004.1, AC-004.2, AC-007.6, AC-008.2, AC-008.3, AC-N002.1] (impl) `useEstimatePortion` (sin reintentos ni invalidaciones) y `usePortionChat` (formulario, turnos, `inFlightRef`, actualización por id) — `frontend/src/features/diary/hooks.ts`
+- [x] T-025 [REQ-001, REQ-002, REQ-004, REQ-005, REQ-006, REQ-007, NFR-001, AC-001.1, AC-001.6, AC-002.1, AC-002.3, AC-002.4, AC-004.1, AC-005.1, AC-006.1, AC-007.1, AC-007.2, AC-N001.1, AC-N001.2] (impl) Componente `PortionChat`: título, texto, `role="log"`, turnos, formulario con contador y botón — `frontend/src/features/diary/components/PortionChat.tsx`
+- [x] T-026 [REQ-001, REQ-008, AC-001.2, AC-001.3, AC-001.4, AC-001.5, AC-008.2, AC-008.3, AC-008.4] (impl) Pintar `afterTotals` en `DiaryDayView` y llamar a `usePortionChat()` en `DiaryPage` pasando `<PortionChat>` solo con diario y objetivos cargados — `frontend/src/features/diary/components/DiaryDayView.tsx`, `frontend/src/features/diary/pages/DiaryPage.tsx`
 
 ## Matriz de cobertura
 

@@ -3,6 +3,7 @@ import {
   diaryResponseSchema,
   mealPhotoAnalysisSchema,
   mealResponseSchema,
+  portionEstimateResponseSchema,
   removalResponseSchema,
 } from "./schemas"
 import type {
@@ -67,6 +68,11 @@ export async function deleteMeal(mealId: number): Promise<void> {
   await apiFetch<void>(`/api/meals/${mealId}`, { method: "DELETE" })
 }
 
-export async function estimatePortion(_question: string): Promise<PortionEstimate> {
-  throw new Error("not implemented")
+export async function estimatePortion(question: string): Promise<PortionEstimate> {
+  return portionEstimateResponseSchema.parse(
+    await apiFetch<unknown>("/api/meals/portion-estimate", {
+      method: "POST",
+      body: { question },
+    })
+  )
 }

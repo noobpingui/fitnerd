@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { PORTION_QUESTION_MAX_LENGTH } from "./constants"
 import type {
   CustomItemPayload,
   PortionEstimate,
@@ -271,13 +272,19 @@ export const proposalReviewSchema: z.ZodType<ProposalFormValues, ProposalFormVal
 
 export const removalResponseSchema = z.object({ restore_token: z.string().min(1) })
 
-// Esquemas provisionales (scaffold): no validan nada.
-export const portionQuestionFormSchema = z.never() as unknown as z.ZodType<
+// Pregunta sin los espacios de los extremos, obligatoria y de hasta 200 caracteres.
+export const portionQuestionFormSchema: z.ZodType<
   PortionQuestionFormValues,
   PortionQuestionFormValues
->
+> = z.object({ question: z.string().trim().min(1).max(PORTION_QUESTION_MAX_LENGTH) })
 
-export const portionEstimateResponseSchema = z.never() as unknown as z.ZodType<
-  PortionEstimate,
-  unknown
->
+// Respuesta 200 del contrato de la 030; cualquier otra forma lanza.
+export const portionEstimateResponseSchema: z.ZodType<PortionEstimate, unknown> = z.union([
+  z.object({
+    status: z.literal("estimated"),
+    grams: z.number().int().min(1).max(5000),
+    unit: z.string().nullable(),
+    note: z.string().nullable(),
+  }),
+  z.object({ status: z.enum(["not_food", "unknown"]), message: z.string().min(1) }),
+])

@@ -13,7 +13,7 @@ export function DiaryDayView({
   diary,
   targets,
   onDialogOpenChange,
-  afterTotals: _afterTotals,
+  afterTotals,
 }: {
   date: string
   isToday: boolean
@@ -27,6 +27,8 @@ export function DiaryDayView({
   return (
     <>
       <DailyTotals totals={diary.totals} incomplete={diary.incomplete} targets={targets} />
+
+      {afterTotals}
 
       {diary.meals.length === 0 && (
         <p className="mb-4 text-sm text-muted-foreground">

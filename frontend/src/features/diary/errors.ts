@@ -91,7 +91,11 @@ export function undoErrorMessage(error: unknown): string {
 export const PORTION_ESTIMATE_FAILED_MESSAGE = "No se pudo estimar el peso. Vuelve a intentarlo."
 
 export function portionEstimateErrorAnswer(
-  _error: unknown
+  error: unknown
 ): Extract<PortionChatAnswer, { kind: "notice" | "error" }> {
-  throw new Error("not implemented")
+  if (error instanceof ApiError) {
+    if (error.status === 429) return { kind: "notice", text: error.message }
+    if (error.status === 400 || error.status === 503) return { kind: "error", text: error.message }
+  }
+  return { kind: "error", text: PORTION_ESTIMATE_FAILED_MESSAGE }
 }

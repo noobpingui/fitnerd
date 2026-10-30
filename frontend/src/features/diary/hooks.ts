@@ -12,18 +12,23 @@ import {
   addMealItems,
   analyzeMealPhoto,
   deleteMeal,
+  estimatePortion,
   getDiary,
   removeMealItem,
   restoreMealItem,
   updateMealItemGrams,
 } from "./api"
 import { TODAY_CHECK_INTERVAL_MS, UNDO_DURATION_MS } from "./constants"
-import { undoErrorMessage } from "./errors"
-import type { UseFormReturn } from "react-hook-form"
+import { portionEstimateErrorAnswer, undoErrorMessage } from "./errors"
+import { portionAnswerFromEstimate } from "./portionChat"
+import { portionQuestionFormSchema } from "./schemas"
+import { useForm, type UseFormReturn } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import type {
   AddMealItemsPayload,
   Meal,
   MealPhotoAnalysis,
+  PortionChatAnswer,
   PortionChatTurn,
   PortionEstimate,
   PortionQuestionFormValues,
@@ -185,8 +190,12 @@ export function useRemovalUndo(
   }
 }
 
+// Sin reintentos ni invalidaciones: cada pregunta cuenta para el límite y no toca el diario.
 export function useEstimatePortion(): UseMutationResult<PortionEstimate, Error, string> {
-  throw new Error("not implemented")
+  return useMutation<PortionEstimate, Error, string>({
+    mutationFn: (question) => estimatePortion(question),
+    retry: false,
+  })
 }
 
 export type PortionChatState = {
@@ -196,6 +205,40 @@ export type PortionChatState = {
   submit: (values: PortionQuestionFormValues) => void
 }
 
+// El estado vive en DiaryPage (que no se desmonta al cambiar de día) para conservar la conversación.
 export function usePortionChat(): PortionChatState {
-  throw new Error("not implemented")
+  const estimate = useEstimatePortion()
+  const form = useForm<PortionQuestionFormValues>({
+    resolver: zodResolver(portionQuestionFormSchema),
+    mode: "onSubmit",
+    reValidateMode: "onSubmit",
+    defaultValues: { question: "" },
+  })
+  const [turns, setTurns] = useState<PortionChatTurn[]>([])
+  const nextIdRef = useRef(1)
+  const inFlightRef = useRef(false)
+
+  const submit = useCallback(
+    (values: PortionQuestionFormValues) => {
+      if (inFlightRef.current) return
+      inFlightRef.current = true
+      const id = nextIdRef.current++
+      setTurns((current) => [...current, { id, question: values.question, answer: null }])
+      form.setValue("question", "")
+      const setAnswer = (answer: PortionChatAnswer) =>
+        setTurns((current) => current.map((turn) => (turn.id === id ? { ...turn, answer } : turn)))
+      estimate
+        .mutateAsync(values.question)
+        .then(
+          (result) => setAnswer(portionAnswerFromEstimate(result)),
+          (error: unknown) => setAnswer(portionEstimateErrorAnswer(error))
+        )
+        .finally(() => {
+          inFlightRef.current = false
+        })
+    },
+    [estimate, form]
+  )
+
+  return { form, turns, isPending: turns.some((turn) => turn.answer === null), submit }
 }

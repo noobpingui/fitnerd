@@ -1,9 +1,12 @@
 import type { PortionChatAnswer, PortionEstimate } from "./types"
 
-export function formatEstimatedGrams(_grams: number): string {
-  throw new Error("not implemented")
+export function formatEstimatedGrams(grams: number): string {
+  return `Unos ${String(grams)} g`
 }
 
-export function portionAnswerFromEstimate(_estimate: PortionEstimate): PortionChatAnswer {
-  throw new Error("not implemented")
+export function portionAnswerFromEstimate(estimate: PortionEstimate): PortionChatAnswer {
+  if (estimate.status === "estimated") {
+    return { kind: "estimate", grams: estimate.grams, unit: estimate.unit, note: estimate.note }
+  }
+  return { kind: "message", text: estimate.message }
 }
