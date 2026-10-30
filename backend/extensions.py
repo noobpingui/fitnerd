@@ -11,6 +11,13 @@ from utils.rate_limiter import RateLimiter
 from utils.email_sender import EmailSender
 from utils.tracing import Tracer
 from utils.vision_client import BedrockVisionClient
+from utils.llm_client import LazyLLMClient
+from config import (
+    DEFAULT_ANTHROPIC_MODEL,
+    DEFAULT_PORTION_ESTIMATE_MODEL,
+    PORTION_ESTIMATE_MAX_RETRIES,
+    PORTION_ESTIMATE_TIMEOUT_SECONDS,
+)
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -21,3 +28,10 @@ rate_limiter = RateLimiter()
 email_sender = EmailSender()
 tracer = Tracer()
 vision_client = BedrockVisionClient()
+coach_llm = LazyLLMClient("ANTHROPIC_MODEL", DEFAULT_ANTHROPIC_MODEL)
+portion_llm = LazyLLMClient(
+    "PORTION_ESTIMATE_MODEL",
+    DEFAULT_PORTION_ESTIMATE_MODEL,
+    timeout=PORTION_ESTIMATE_TIMEOUT_SECONDS,
+    max_retries=PORTION_ESTIMATE_MAX_RETRIES,
+)

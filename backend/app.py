@@ -7,7 +7,7 @@ from config import config_by_name, resolve_frontend_base_url, resolve_secret_key
 from utils.clock import install_clock
 from extensions import (
     db, migrate, cors, jwt_manager, embedding_client, rate_limiter, email_sender, tracer,
-    vision_client,
+    vision_client, portion_llm, coach_llm,
 )
 from utils.in_memory_request import InMemoryUploadRequest
 from exceptions import error_handlers
@@ -58,6 +58,8 @@ def create_app(config_name=None, config_overrides=None):
     email_sender.init_app(app)
     tracer.init_app(app)
     vision_client.init_app(app)
+    portion_llm.init_app(app)
+    coach_llm.init_app(app)
     error_handlers.register_error_handlers(app)
     register_blueprints(app)
 

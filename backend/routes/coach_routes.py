@@ -1,12 +1,11 @@
 from flask import Blueprint, request, jsonify, current_app, g
 
-from extensions import db, embedding_client, rate_limiter, tracer
+from extensions import coach_llm, db, embedding_client, rate_limiter, tracer
 from repositories.transcript_chunk_repository import TranscriptChunkRepository
 from services.retrieval_service import RetrievalService
 from services.coach_service import CoachService
 from services.coach_feedback_service import CoachFeedbackService
 from utils.feedback_token import FeedbackTokenSigner
-from utils.llm_client import LLMClient
 from decorators import require_auth
 from exceptions.custom_exceptions import ValidationError
 
@@ -50,11 +49,10 @@ def _sanitize_history(history):
 def _build_coach_service():
     transcript_chunk_repository = TranscriptChunkRepository(db.session)
     retrieval_service = RetrievalService(transcript_chunk_repository, embedding_client)
-    llm_client = LLMClient(model=current_app.config["ANTHROPIC_MODEL"])
 
     feedback_signer = FeedbackTokenSigner(current_app.config["SECRET_KEY"])
 
-    return CoachService(retrieval_service, llm_client, rate_limiter, tracer, feedback_signer)
+    return CoachService(retrieval_service, coach_llm, rate_limiter, tracer, feedback_signer)
 
 
 def _build_coach_feedback_service():

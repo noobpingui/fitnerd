@@ -1,0 +1,833 @@
+{
+  "schema_version": 1,
+  "feature": "030-diary-portion-chat",
+  "title": "Chat de porciones del diario: endpoint backend que estima los gramos de un alimento con un LLM, sin RAG y con salida estructurada",
+  "type": "feature",
+  "scope": [
+    "backend"
+  ],
+  "branch": "feat/030-diary-portion-chat",
+  "base_branch": "main",
+  "created_at": "2026-10-30T06:35:46.331Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": {
+      "at": "2026-10-30T07:55:52.178Z",
+      "note": "Sí, aprobado"
+    },
+    "plan": {
+      "at": "2026-10-30T08:02:38.604Z",
+      "note": "auto (gate_mode=flow): plan y ADR-0037 ampliados"
+    },
+    "tasks": {
+      "at": "2026-10-30T08:03:45.124Z",
+      "note": "auto (gate_mode=flow): 41 tareas, 42 AC cubiertos"
+    },
+    "tests": {
+      "at": "2026-10-30T17:45:47.811Z",
+      "note": "auto (gate_mode=flow): solo docstring y marcador AC; red check previo PASS vigente"
+    },
+    "implement": {
+      "at": "2026-10-30T17:45:48.288Z",
+      "note": "auto (gate_mode=flow): F12 implementado, 60 tests en verde"
+    },
+    "verify": {
+      "at": "2026-10-30T17:50:35.257Z",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    "review": {
+      "at": "2026-10-30T19:12:50.152Z",
+      "note": "Sí, apruebo la review y acepto el ADR-0037"
+    },
+    "docs": {
+      "at": "2026-10-30T19:14:09.935Z",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
+    "close": {
+      "at": "2026-10-30T19:19:33.005Z",
+      "note": "Si"
+    }
+  },
+  "commits": {
+    "spec": "850b7ed",
+    "plan": "b770d94",
+    "tasks": "8a1816c",
+    "tests": "b527231",
+    "implement": "d3322d4",
+    "review": "c72198a",
+    "docs": "a8afb68"
+  },
+  "iterations": {
+    "tests": 3,
+    "implement": 0,
+    "review": 2
+  },
+  "max_iterations": 5,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-10-30T08:55:48.881Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-10-30T17:50:23.081Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-10-30T17:52:33.643Z"
+  },
+  "tests_snapshot": {
+    "at": "2026-10-30T17:45:42.315Z",
+    "reason": "F10/F11 corregidos",
+    "sha256": {
+      "backend/tests/fakes.py": "957b67e26fbef6060ff5a6d756151ffa825241685ab1c22b365bf50f5562cbae",
+      "backend/tests/test_routes/test_coach_routes.py": "c384e084759c4af39191a5267f9b3ad1e8558e1dd8f6325ee44d622d5ee41196",
+      "backend/tests/test_routes/test_meal_routes.py": "b8df26779c8321ecc72da1ff98ebcd157c88eaec7be8fea2610fa952e089f967",
+      "backend/tests/test_routes/test_portion_estimate_routes.py": "96e0c3a89128cf832019cf616f6163f90a3923796bf7558bf838b99f41f1e729",
+      "backend/tests/test_services/test_llm_client.py": "7a953b01d1101f3c1ff40dac0f59bdae2e24c85699d767f517344e4b24c08e70",
+      "backend/tests/test_services/test_portion_estimate_rules.py": "86dd3afc6f0cd264e2b552f3cad4095a3d231eb55b15300cb23233997c5a16c3",
+      "backend/tests/test_services/test_portion_estimate_service.py": "5c90f32f2a3c4e1ff7d2e167aa28b1a371f77c43a7d2dcfef9d549ba5ef28f11"
+    }
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-10-30T06:35:46.331Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama feat/030-diary-portion-chat desde main"
+    },
+    {
+      "at": "2026-10-30T06:38:56.836Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Redactar spec.md con spec-writer"
+    },
+    {
+      "at": "2026-10-30T06:41:41.135Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "Q1-Q7 de la spec pendientes de respuesta del usuario"
+    },
+    {
+      "at": "2026-10-30T07:11:58.551Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec.md con 9 REQ y 3 NFR, Q1-Q7 resueltas"
+    },
+    {
+      "at": "2026-10-30T07:12:14.553Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Sí, aprobado"
+    },
+    {
+      "at": "2026-10-30T07:12:17.336Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 4b0725b"
+    },
+    {
+      "at": "2026-10-30T07:12:17.493Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Diseñar plan.md con planner"
+    },
+    {
+      "at": "2026-10-30T07:17:54.523Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md + ADR-0037"
+    },
+    {
+      "at": "2026-10-30T07:17:54.613Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan.md y ADR-0037 (Propuesta)"
+    },
+    {
+      "at": "2026-10-30T07:17:54.694Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Decisiones: salida estructurada con tool_choice forzado (report_portion); singleton perezoso portion_llm; PORTION_ESTIMATE_MODEL opcional (default claude-haiku-4-5); sin migración"
+    },
+    {
+      "at": "2026-10-30T07:17:57.445Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: d30f4c1"
+    },
+    {
+      "at": "2026-10-30T07:17:57.605Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Descomponer plan en tasks.md"
+    },
+    {
+      "at": "2026-10-30T07:18:49.253Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks.md: 24 tareas"
+    },
+    {
+      "at": "2026-10-30T07:18:49.337Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 24 tareas, 35 AC cubiertos"
+    },
+    {
+      "at": "2026-10-30T07:18:49.569Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 2f60fd7"
+    },
+    {
+      "at": "2026-10-30T07:18:52.891Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: esqueletos (scaffold)"
+    },
+    {
+      "at": "2026-10-30T07:19:53.794Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-10-30T07:23:22.653Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (verifier)"
+    },
+    {
+      "at": "2026-10-30T07:25:06.327Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Rojo legítimo en los 146 tests nuevos (118 NotImplementedError de esqueletos, 404 por ruta aún no implementada, 1 aserción de contador). Sin rojos ilegítimos. Esqueletos verificados. 4 tests preexistentes en verde."
+    },
+    {
+      "at": "2026-10-30T07:25:14.903Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "146 tests nuevos en rojo legítimo"
+    },
+    {
+      "at": "2026-10-30T07:25:14.995Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "5 archivo(s) de test: tests aprobados 030"
+    },
+    {
+      "at": "2026-10-30T07:25:15.113Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 146 tests nuevos"
+    },
+    {
+      "at": "2026-10-30T07:25:20.170Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 30dfc94"
+    },
+    {
+      "at": "2026-10-30T07:25:20.326Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar tareas impl/config con implementer"
+    },
+    {
+      "at": "2026-10-30T07:33:11.072Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "2827 tests en verde"
+    },
+    {
+      "at": "2026-10-30T07:33:11.164Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): implementer reporta 2827 passed"
+    },
+    {
+      "at": "2026-10-30T07:33:11.246Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "generate_structured devuelve stop_reason real aun con data=None; 2 E501 en test_portion_estimate_rules.py (L94, L103)"
+    },
+    {
+      "at": "2026-10-30T07:33:11.540Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: aba984a"
+    },
+    {
+      "at": "2026-10-30T07:33:11.699Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa"
+    },
+    {
+      "at": "2026-10-30T07:37:08.168Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify FAIL: Full: pytest backend 2827 passed; ratchet backend FAIL con 2 E501 nuevos en test_portion_estimate_rules.py (L94, L103), origen etapa tests (30dfc94, responsable test-author). Trazabilidad 35/35 AC, 24/24 tareas [x], sin skip nuevos."
+    },
+    {
+      "at": "2026-10-30T07:37:16.388Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "FAIL: 2 E501 en test"
+    },
+    {
+      "at": "2026-10-30T07:37:16.482Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "verify FAIL: 2 E501 nuevos en test_portion_estimate_rules.py (L94, L103) · tests 1/5"
+    },
+    {
+      "at": "2026-10-30T07:37:42.990Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "E501 corregidos en test_portion_estimate_rules.py"
+    },
+    {
+      "at": "2026-10-30T07:37:43.073Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "5 archivo(s) de test: fix E501 en tests (iteración 2)"
+    },
+    {
+      "at": "2026-10-30T07:37:43.192Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección de lint en tests, sin cambio de comportamiento"
+    },
+    {
+      "at": "2026-10-30T07:37:43.478Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: c09c6b1"
+    },
+    {
+      "at": "2026-10-30T07:37:43.565Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "sin cambios de producción; código de aba984a"
+    },
+    {
+      "at": "2026-10-30T07:37:43.648Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): implement sin cambios tras corregir tests"
+    },
+    {
+      "at": "2026-10-30T07:37:43.795Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa (iteración 2)"
+    },
+    {
+      "at": "2026-10-30T07:41:34.703Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: verify PASS (iteración 2): pytest backend 2827 passed; ratchet backend sin violaciones nuevas (2 E501 corregidos); 35/35 AC con marcador SDD 030 en test verde; 24/24 tareas [x]; 9 REQ y 3 NFR en tareas; sin skip nuevos; sin manuales"
+    },
+    {
+      "at": "2026-10-30T07:41:44.240Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "PASS: 2827 tests, ratchet limpio, 35/35 AC"
+    },
+    {
+      "at": "2026-10-30T07:41:44.329Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-30T07:41:44.486Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review independiente"
+    },
+    {
+      "at": "2026-10-30T07:44:36.648Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-30T07:44:36.729Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED: 0 bloqueantes, 0 mayores, 2 menores, 4 nits"
+    },
+    {
+      "at": "2026-10-30T07:50:53.540Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Usuario pide corregir todo el backlog: Redis caído → 503 fijo (nuevo requisito) y tope de cuerpo solo en este endpoint; el resto son correcciones menores · review 1/5"
+    },
+    {
+      "at": "2026-10-30T07:52:22.115Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec actualizada: REQ-010 (Redis caído) y REQ-011 (tope de cuerpo)"
+    },
+    {
+      "at": "2026-10-30T07:55:52.178Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Sí, aprobado"
+    },
+    {
+      "at": "2026-10-30T07:55:52.448Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 850b7ed"
+    },
+    {
+      "at": "2026-10-30T07:55:52.629Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Actualizar plan.md con REQ-010/011 y correcciones del backlog"
+    },
+    {
+      "at": "2026-10-30T08:02:38.496Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan actualizado: REQ-010/011 + correcciones del backlog"
+    },
+    {
+      "at": "2026-10-30T08:02:38.604Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan y ADR-0037 ampliados"
+    },
+    {
+      "at": "2026-10-30T08:02:38.717Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Decisiones: coach_llm = LazyLLMClient (sin ANTHROPIC_API_KEY el coach pasa de 500 a 503); REQ-010 reutiliza PROVIDER_UNAVAILABLE_MESSAGE; REQ-011 con request.max_content_length=4096 en la ruta"
+    },
+    {
+      "at": "2026-10-30T08:02:39.025Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: b770d94"
+    },
+    {
+      "at": "2026-10-30T08:02:39.129Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Actualizar tasks.md con el plan ampliado"
+    },
+    {
+      "at": "2026-10-30T08:03:45.026Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks.md: +17 tareas (T-025..T-041), 42 AC"
+    },
+    {
+      "at": "2026-10-30T08:03:45.124Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 41 tareas, 42 AC cubiertos"
+    },
+    {
+      "at": "2026-10-30T08:03:45.412Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 8a1816c"
+    },
+    {
+      "at": "2026-10-30T08:03:45.586Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: esqueletos nuevos (T-025 a T-028)"
+    },
+    {
+      "at": "2026-10-30T08:04:19.252Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (T-029 a T-037)"
+    },
+    {
+      "at": "2026-10-30T08:06:45.979Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (verifier)"
+    },
+    {
+      "at": "2026-10-30T08:10:20.827Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: red FAIL (iteración 2): 14 tests nuevos, 7 fallan (6 rojo legítimo, 1 ilegítimo: coach llama a Anthropic real, T-041 pendiente) y 7 pasan sin implementación (guardas, B5.2)"
+    },
+    {
+      "at": "2026-10-30T08:50:54.989Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red check FAIL: test del coach llama a la red real; 5 guardas pasan sin implementación (AC-010.3, AC-011.2, AC-011.4, mitad de AC-006.4); F3/F5 con excepción B5.2 aceptada · tests 2/5"
+    },
+    {
+      "at": "2026-10-30T08:52:58.973Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Red check de nuevo (iteración 2)"
+    },
+    {
+      "at": "2026-10-30T08:55:48.881Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red PASS (iteración 2): 11 tests nuevos en rojo legítimo (esqueletos not implemented, ConnectionError sin traducir, 200 donde se espera 400, 500 sin 503, coach con 503 por doble del SDK sin coach_llm); 2 pasan por excepción B5.2 aceptada (F3 AC-N001.1, F5 AC-002.1); 0 llamadas de red reales; 302 pasados en los 6 archivos"
+    },
+    {
+      "at": "2026-10-30T08:56:01.180Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS: 11 rojos legítimos; F3/F5 con excepción B5.2"
+    },
+    {
+      "at": "2026-10-30T08:56:01.284Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "7 archivo(s) de test: tests iteración 2 (REQ-010/011, coach, F3/F5)"
+    },
+    {
+      "at": "2026-10-30T08:56:01.432Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS"
+    },
+    {
+      "at": "2026-10-30T08:56:06.461Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 5b38e7d"
+    },
+    {
+      "at": "2026-10-30T08:56:06.640Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar T-038 a T-041"
+    },
+    {
+      "at": "2026-10-30T09:00:45.077Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "2839 tests, ratchet limpio"
+    },
+    {
+      "at": "2026-10-30T09:00:45.181Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): implementer reporta 2839 passed"
+    },
+    {
+      "at": "2026-10-30T09:00:45.280Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "REQ-010: solo check_and_increment dentro del try; REQ-011: max_content_length en la ruta; coach usa coach_llm"
+    },
+    {
+      "at": "2026-10-30T09:00:45.572Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 7fc3615"
+    },
+    {
+      "at": "2026-10-30T09:00:45.769Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa (tras correcciones de review)"
+    },
+    {
+      "at": "2026-10-30T09:09:11.023Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: verify PASS (full, iteración 2): pytest backend 2839 passed (y 2839 con bloqueo de red, 0 intentos no locales); ratchet backend sin violaciones nuevas; 42/42 AC con marcador SDD 030 en test verde (37 REQ + 5 NFR); 11 REQ y 3 NFR en tareas; 41/41 tareas [x]; sin skip nuevos; excepción B5.2 F3/F5 aceptada por el usuario; sin AC manuales"
+    },
+    {
+      "at": "2026-10-30T09:09:20.601Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "PASS: 2839 tests, ratchet limpio, 42/42 AC, sin red"
+    },
+    {
+      "at": "2026-10-30T09:09:20.696Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-30T09:09:20.875Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review independiente (tras rework)"
+    },
+    {
+      "at": "2026-10-30T09:14:10.237Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "CHANGES_REQUESTED"
+    },
+    {
+      "at": "2026-10-30T09:14:10.337Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "review CHANGES_REQUESTED: MAYOR F1 monkeypatch de anthropic.Anthropic en test_coach_routes.py · review 2/5"
+    },
+    {
+      "at": "2026-10-30T09:15:27.560Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "F1 y F9 corregidos: doble en coach_llm.llm_client, AC-011.4 en dos tests"
+    },
+    {
+      "at": "2026-10-30T09:15:27.656Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "7 archivo(s) de test: fix review F1/F9 (sin monkeypatch)"
+    },
+    {
+      "at": "2026-10-30T09:15:27.800Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección de tests de review"
+    },
+    {
+      "at": "2026-10-30T09:15:28.089Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 606fb9d"
+    },
+    {
+      "at": "2026-10-30T09:15:28.188Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "F6 y F7 (nits) con implementer"
+    },
+    {
+      "at": "2026-10-30T09:19:08.581Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F6/F7: 2840 tests, ratchet limpio"
+    },
+    {
+      "at": "2026-10-30T09:19:08.682Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F6 y F7 corregidos"
+    },
+    {
+      "at": "2026-10-30T09:19:08.986Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 378eb19"
+    },
+    {
+      "at": "2026-10-30T09:19:09.086Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa (iteración 3)"
+    },
+    {
+      "at": "2026-10-30T09:27:11.509Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: verify PASS (full, iteración 3): pytest backend 2840 passed; mismo resultado con bloqueo de conexiones no locales (0 intentos); ratchet backend sin violaciones nuevas; 42/42 AC con marcador SDD 030 en test verde; 41/41 tareas [x]; REQ-001 a REQ-011 y NFR-001 a NFR-003 en tareas; sin skip nuevos; hashes de tests sin cambios; F1, F6, F7 y F9 verificados; sin AC manuales"
+    },
+    {
+      "at": "2026-10-30T09:27:33.605Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "PASS: 2840 tests, ratchet limpio, 42/42 AC, sin red"
+    },
+    {
+      "at": "2026-10-30T09:27:33.699Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-30T09:27:33.794Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review independiente (tercera pasada)"
+    },
+    {
+      "at": "2026-10-30T09:30:15.563Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-30T09:30:15.664Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED: 0 bloqueantes, 0 mayores, 4 menores de proceso, 4 nits"
+    },
+    {
+      "at": "2026-10-30T17:44:26.709Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Usuario: corregir F10 a F12 ahora; F8 se deja tal cual (es de configuración) · tests 3/5"
+    },
+    {
+      "at": "2026-10-30T17:44:26.812Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Corrección F10/F11"
+    },
+    {
+      "at": "2026-10-30T17:45:42.315Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "7 archivo(s) de test: F10/F11 corregidos"
+    },
+    {
+      "at": "2026-10-30T17:45:47.718Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "F10/F11"
+    },
+    {
+      "at": "2026-10-30T17:45:47.811Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): solo docstring y marcador AC; red check previo PASS vigente"
+    },
+    {
+      "at": "2026-10-30T17:45:48.036Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: b527231"
+    },
+    {
+      "at": "2026-10-30T17:45:48.120Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "F12"
+    },
+    {
+      "at": "2026-10-30T17:45:48.201Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F12"
+    },
+    {
+      "at": "2026-10-30T17:45:48.288Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F12 implementado, 60 tests en verde"
+    },
+    {
+      "at": "2026-10-30T17:45:48.475Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: d3322d4"
+    },
+    {
+      "at": "2026-10-30T17:45:48.568Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verify tras F10-F12"
+    },
+    {
+      "at": "2026-10-30T17:50:23.081Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: verify PASS (full, iteración 4, tras F10-F12): pytest backend 2840 passed; ratchet backend sin violaciones nuevas; 42/42 AC con marcador SDD 030 en test verde; 41/41 tareas [x]; REQ-001 a REQ-011 y NFR-001 a NFR-003 en tareas; sin skip nuevos; F10, F11 y F12 verificados; observación de tilde en docstring de test_coach_routes.py (backlog)"
+    },
+    {
+      "at": "2026-10-30T17:50:35.173Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "PASS"
+    },
+    {
+      "at": "2026-10-30T17:50:35.257Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-10-30T17:50:35.342Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review tras F10-F12 (cuarta pasada)"
+    },
+    {
+      "at": "2026-10-30T17:52:33.643Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-10-30T17:52:33.735Z",
+      "stage": "review",
+      "event": "done",
+      "note": "APPROVED cuarta pasada"
+    },
+    {
+      "at": "2026-10-30T19:12:50.152Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Sí, apruebo la review y acepto el ADR-0037"
+    },
+    {
+      "at": "2026-10-30T19:12:50.371Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: c72198a"
+    },
+    {
+      "at": "2026-10-30T19:12:50.460Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Documentar PORTION_ESTIMATE_MODEL"
+    },
+    {
+      "at": "2026-10-30T19:14:09.827Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "docs"
+    },
+    {
+      "at": "2026-10-30T19:14:09.935Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
+    {
+      "at": "2026-10-30T19:14:10.178Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: a8afb68"
+    },
+    {
+      "at": "2026-10-30T19:14:10.281Z",
+      "stage": "close",
+      "event": "started",
+      "note": ""
+    },
+    {
+      "at": "2026-10-30T19:14:26.205Z",
+      "stage": "close",
+      "event": "done",
+      "note": "Cierre propuesto"
+    },
+    {
+      "at": "2026-10-30T19:19:33.005Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Si"
+    },
+    {
+      "at": "2026-10-30T19:19:33.005Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
+    }
+  ]
+}

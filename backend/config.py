@@ -10,6 +10,11 @@ load_dotenv() #To load the variables from the .env file
 
 DEFAULT_LANGFUSE_BASE_URL = "https://us.cloud.langfuse.com"
 
+DEFAULT_PORTION_ESTIMATE_MODEL = "claude-haiku-4-5"
+PORTION_ESTIMATE_TIMEOUT_SECONDS = 15.0
+PORTION_ESTIMATE_MAX_RETRIES = 1
+DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-5"
+
 
 def resolve_langfuse_base_url(value):
     """URL base de Langfuse: la configurada sin la barra final, o la de EE. UU. por defecto."""
@@ -74,7 +79,7 @@ class Config:
     VOYAGE_API_KEY = os.getenv("VOYAGE_API_KEY")
     VOYAGE_EMBEDDING_MODEL = os.getenv("VOYAGE_EMBEDDING_MODEL")
 
-    ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-5")
+    ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", DEFAULT_ANTHROPIC_MODEL)
 
     #Client ID de la app registrada en Google Cloud Console (OAuth 2.0) -
     #se usa para verificar que un ID token de Google realmente fue emitido
@@ -110,6 +115,9 @@ class Config:
     BEDROCK_VISION_MODEL_ID = os.getenv("BEDROCK_VISION_MODEL_ID") or None
     BEDROCK_REGION = os.getenv("BEDROCK_REGION", "us-east-1")
 
+    #Estimación de porciones del diario (spec 030, ADR-0037): modelo propio y opcional.
+    PORTION_ESTIMATE_MODEL = os.getenv("PORTION_ESTIMATE_MODEL") or None
+
 class DevelopmentConfig(Config):
     """Configuración exclusiva para mi pc (Desarrollo)"""
     DEBUG = True
@@ -140,6 +148,7 @@ class TestingConfig(Config):
     LANGFUSE_PUBLIC_KEY = None
     LANGFUSE_SECRET_KEY = None
     BEDROCK_VISION_MODEL_ID = None
+    PORTION_ESTIMATE_MODEL = None
     OBSERVABILITY_ENVIRONMENT = "testing"
 
 

@@ -517,3 +517,18 @@ Detalle en [`specs/029-edit-favorite-foods/`](specs/029-edit-favorite-foods/back
 - [ ] Comprobación manual en navegador real de foco y anuncio a lectores de pantalla (AC-N001.1 a AC-N001.5 y aviso role="status" de AC-009.1); los tests lo cubren solo en jsdom.
 - [ ] accountSwitch.test.tsx dio timeout bajo carga en la iteración 4 (pasó al reejecutar; no reproducido en esta ejecución). Problema ajeno a la feature: anotar en docs/backlog.md.
 - [ ] R6 (NIT, test-author): alinear el marcador de `frontend/src/features/diary/components/MealPhotoDialog.test.tsx:2758` (T-047), por ejemplo como `REQ-010 AC-010.4`, o separar REQ-011 en su propio marcador
+
+## 030-diary-portion-chat · Chat de porciones del diario: endpoint backend que estima los gramos de un alimento con un LLM (2026-10-30)
+Detalle en [specs/030-diary-portion-chat/backlog.md](../specs/030-diary-portion-chat/backlog.md).
+- [ ] Siguiente feature: frontend de la ventana de chat en `/diary` (ubicación y texto de aviso sobre la caja), que consume `POST /api/meals/portion-estimate`.
+- [ ] Tras el despliegue: añadir el precio de Haiku en Langfuse si no aparece; probar a mano una pregunta con varios alimentos (NFR-002) y el 503 con Redis caído.
+- [ ] Revisar en la consola de Anthropic el coste de las 3 llamadas reales del red check (`claude-sonnet-5`, iteración 2).
+- [ ] Sin `ANTHROPIC_API_KEY` el coach pasa de 500 a 503 tras consumir el límite y llamar a Voyage (F8; aceptado por ser de configuración).
+- [ ] Unificar `_build_progress_analysis_service()` (`body_metric_routes`) con un `LazyLLMClient`.
+- [ ] Hacer que `RateLimiter` ponga incr y expire en una sola operación (pipeline o `SET NX EX`) para que la clave nunca quede sin caducidad.
+- [ ] Decidir si el coach y el análisis de foto también deben fallar cerrados (503) con Redis caído; hoy dan 500.
+- [ ] No hay un límite global de tamaño del cuerpo JSON (`MAX_CONTENT_LENGTH`); afecta a todos los endpoints.
+- [ ] Tilde en «inválidas» en el docstring de `backend/tests/test_routes/test_coach_routes.py:2` (F13).
+- [ ] `test_llm_client.py` L27, L41, L55, L66 usan marcadores `SDD:` sin el número de la spec (preexistentes).
+- [ ] Reforzar la aserción casi tautológica de `test_llm_client_passes_timeout_and_max_retries_to_the_sdk_client`.
+- [ ] Proceso: test-author e implementer escribieron con la shell (B2.4) en varias iteraciones; reforzar la instrucción de esos roles.

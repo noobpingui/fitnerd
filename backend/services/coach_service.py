@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from services.retrieval_service import DEFAULT_TOP_K, RetrievalService
 from utils.feedback_token import FeedbackTokenSigner
 from utils.tracing import Tracer
-from utils.llm_client import LLMClient
+from utils.llm_client import GenerativeClient
 from utils.rate_limiter import RateLimiter
 from exceptions.custom_exceptions import ServiceUnavailableError, RateLimitError
 
@@ -49,7 +49,7 @@ class CoachAnswer:
 
 
 class CoachService:
-    def __init__(self, retrieval_service: RetrievalService, llm_client: LLMClient, rate_limiter: RateLimiter, tracer: Tracer | None = None, feedback_signer: FeedbackTokenSigner | None = None):
+    def __init__(self, retrieval_service: RetrievalService, llm_client: GenerativeClient, rate_limiter: RateLimiter, tracer: Tracer | None = None, feedback_signer: FeedbackTokenSigner | None = None):
         self.feedback_signer = feedback_signer
         self.retrieval_service = retrieval_service
         self.llm_client = llm_client
