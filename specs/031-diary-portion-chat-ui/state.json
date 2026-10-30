@@ -9,14 +9,17 @@
   "branch": "feat/031-diary-portion-chat-ui",
   "base_branch": "main",
   "created_at": "2026-10-30T20:55:25.327Z",
-  "stage": "plan",
+  "stage": "tasks",
   "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-10-30T21:06:25.516Z",
       "note": "Aprobado"
     },
-    "plan": null,
+    "plan": {
+      "at": "2026-10-30T21:10:34.056Z",
+      "note": "auto (gate_mode=flow): plan sin ADR, solo frontend"
+    },
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -25,7 +28,9 @@
     "docs": null,
     "close": null
   },
-  "commits": {},
+  "commits": {
+    "spec": "0373244"
+  },
   "iterations": {
     "tests": 0,
     "implement": 0,
@@ -76,6 +81,30 @@
       "stage": "spec",
       "event": "approved",
       "note": "Aprobado"
+    },
+    {
+      "at": "2026-10-30T21:06:25.790Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 0373244"
+    },
+    {
+      "at": "2026-10-30T21:06:26.019Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Diseñar plan.md del chat de porciones"
+    },
+    {
+      "at": "2026-10-30T21:10:33.946Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan 031 frontend: usePortionChat en DiaryPage, PortionChat, estimatePortion"
+    },
+    {
+      "at": "2026-10-30T21:10:34.056Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan sin ADR, solo frontend"
     }
   ]
 }
