@@ -2,13 +2,14 @@ from flask import Blueprint, current_app, g, jsonify, request
 from werkzeug.exceptions import RequestEntityTooLarge
 
 from decorators import require_auth
-from exceptions.custom_exceptions import PayloadTooLargeError
+from exceptions.custom_exceptions import PayloadTooLargeError, ValidationError
 from extensions import db, portion_llm, rate_limiter, tracer, vision_client
 from repositories.catalog_food_repository import CatalogFoodRepository
 from repositories.custom_food_repository import CustomFoodRepository
 from repositories.food_repository import FoodRepository
 from repositories.meal_repository import MealRepository
 from repositories.user_repository import UserRepository
+from services.auth_input_rules import INVALID_REQUEST_MESSAGE
 from services.meal_image_analysis_service import MealImageAnalysisService
 from services.meal_image_rules import MealImageAnalysis
 from services.meal_photo import PHOTO_TOO_LARGE_MESSAGE
@@ -153,7 +154,11 @@ def analyze_photo():
 @meal_bp.route("/portion-estimate", methods=["POST"])
 @require_auth
 def estimate_portion():
-    data = request.get_json(silent=True)
+    request.max_content_length = MAX_PORTION_REQUEST_BYTES
+    try:
+        data = request.get_json(silent=True)
+    except RequestEntityTooLarge:
+        raise ValidationError(INVALID_REQUEST_MESSAGE) from None
     estimate = _build_portion_estimate_service().estimate(g.decoded_token["id"], data)
     return jsonify(_serialize_portion_estimate(estimate)), 200
 

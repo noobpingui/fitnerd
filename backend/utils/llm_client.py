@@ -52,7 +52,7 @@ class LLMClient:
         tool: dict,
         max_tokens: int,
         temperature: float,
-    ) -> "StructuredGenerationResult":
+    ) -> StructuredGenerationResult:
         response = self.client.messages.create(
             model=self.model,
             max_tokens=max_tokens,
@@ -110,7 +110,7 @@ class LLMClient:
 
 
 #Cliente perezoso con modelo propio (spec 030, ADR-0037): el modelo sale de la
-#configuracion de la app y el cliente real se crea en la primera llamada.
+#configuración de la app y el cliente real se crea en la primera llamada.
 class LazyLLMClient:
     def __init__(
         self,
@@ -133,10 +133,18 @@ class LazyLLMClient:
         self.model = configured or self.default_model
         self.llm_client = None
 
+    def _get_client(self):
+        if self.llm_client is None:
+            factory = self.client_factory or LLMClient
+            self.llm_client = factory(
+                model=self.model, timeout=self.timeout, max_retries=self.max_retries
+            )
+        return self.llm_client
+
     def generate_with_usage(
-        self, _system_prompt: str, _messages: list[dict], _max_tokens: int = 2048
+        self, system_prompt: str, messages: list[dict], max_tokens: int = 2048
     ) -> GenerationResult:
-        raise NotImplementedError("not implemented")
+        return self._get_client().generate_with_usage(system_prompt, messages, max_tokens)
 
     def generate_structured(
         self,
@@ -146,11 +154,6 @@ class LazyLLMClient:
         max_tokens: int,
         temperature: float,
     ) -> StructuredGenerationResult:
-        if self.llm_client is None:
-            factory = self.client_factory or LLMClient
-            self.llm_client = factory(
-                model=self.model, timeout=self.timeout, max_retries=self.max_retries
-            )
-        return self.llm_client.generate_structured(
+        return self._get_client().generate_structured(
             system_prompt, messages, tool, max_tokens, temperature
         )

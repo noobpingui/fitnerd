@@ -36,16 +36,20 @@ class PortionEstimateService:
     def estimate(self, user_id: str, data: object) -> PortionEstimate:
         question = parse_question(data)
 
-        allowed = self.rate_limiter.check_and_increment(
-            f"{RATE_LIMIT_KEY_PREFIX}{user_id}",
-            MAX_QUESTIONS_PER_WINDOW,
-            RATE_LIMIT_WINDOW_SECONDS,
-        )
+        tracer = self.tracer or Tracer()
+        logger = self.logger or logging.getLogger(__name__)
+        try:
+            allowed = self.rate_limiter.check_and_increment(
+                f"{RATE_LIMIT_KEY_PREFIX}{user_id}",
+                MAX_QUESTIONS_PER_WINDOW,
+                RATE_LIMIT_WINDOW_SECONDS,
+            )
+        except Exception as exc:
+            logger.error("Falló el límite de preguntas de porciones: %s", format_error(exc))
+            raise ServiceUnavailableError(PROVIDER_UNAVAILABLE_MESSAGE) from None
         if not allowed:
             raise RateLimitError(RATE_LIMIT_MESSAGE)
 
-        tracer = self.tracer or Tracer()
-        logger = self.logger or logging.getLogger(__name__)
         trace = tracer.start_trace(TRACE_NAME, user_id=str(user_id), input=question)
 
         messages = [{"role": "user", "content": question}]
