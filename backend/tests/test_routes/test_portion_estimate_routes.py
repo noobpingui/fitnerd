@@ -4,12 +4,15 @@ singleton `portion_llm` y Redis, un `FakeRedisClient` instalado en
 `rate_limiter` (ambos se restauran al terminar): nada sale a la red.
 """
 
+import json
+
 import pytest
 from sqlalchemy import func, select
 
-from extensions import db, jwt_manager, portion_llm, rate_limiter
+from extensions import db, jwt_manager, portion_llm, rate_limiter, tracer
 from models import CustomFood, FoodFavorite, Meal, MealItem
 from tests.fakes import FakeRedisClient, FakeStructuredLLMClient
+from tests.fakes_observability import FakeTraceBackend
 
 URL = "/api/meals/portion-estimate"
 INVALID = "La petición no es válida"
@@ -340,3 +343,106 @@ def test_a_question_does_not_change_any_diary_or_library_row(client, app, regist
 
     assert response.status_code == 200
     assert _row_counts(app) == before
+
+
+# --- Contador no disponible (REQ-010) ---------------------------------------
+
+
+# SDD: 030 REQ-010 AC-010.1
+def test_a_failing_counter_returns_503_without_the_original_error(client, app, model, redis_fake):
+    """Redis que lanza un error: 503 con el mensaje fijo, sin el texto original y
+    sin consultar el modelo."""
+    redis_fake.raise_error = ConnectionError("detalle-redis")
+
+    response = ask(client, app)
+
+    assert response.status_code == 503
+    assert response.get_json() == {"error": UNAVAILABLE}
+    assert "detalle-redis" not in response.get_data(as_text=True)
+    assert model.calls == []
+
+
+# SDD: 030 REQ-010 AC-010.3
+def test_a_blank_question_returns_400_even_when_the_counter_fails(client, app, model, redis_fake):
+    """Con Redis caído y la pregunta vacía: 400 de validación, no 503."""
+    redis_fake.raise_error = ConnectionError("detalle-redis")
+
+    response = ask(client, app, question="")
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": REQUIRED}
+    assert model.calls == []
+
+    valid = ask(client, app)
+
+    assert valid.status_code == 503
+    assert valid.get_json() == {"error": UNAVAILABLE}
+    assert model.calls == []
+
+
+# --- Tamaño máximo del cuerpo (REQ-011) -------------------------------------
+
+
+@pytest.fixture
+def trace_backend():
+    """Instala un destino de trazas de mentira en el `tracer` y lo restaura."""
+    original = tracer.backend
+    fake = FakeTraceBackend()
+    tracer.backend = fake
+    yield fake
+    tracer.backend = original
+
+
+def body_of_size(size):
+    """Objeto JSON con una pregunta válida y un relleno, de exactamente `size` bytes."""
+    base = len(json.dumps({"question": "5 huevos", "pad": ""}).encode("utf-8"))
+    body = json.dumps({"question": "5 huevos", "pad": "x" * (size - base)}).encode("utf-8")
+    assert len(body) == size
+    return body
+
+
+def post_sized(client, app, size):
+    return client.post(
+        URL,
+        data=body_of_size(size),
+        content_type="application/json",
+        headers=auth_headers(app),
+    )
+
+
+# SDD: 030 REQ-011 AC-011.1
+def test_a_body_of_4097_bytes_returns_400_without_calling_the_model(client, app, model):
+    """4097 bytes: 400 «La petición no es válida» y el modelo no se consulta."""
+    response = post_sized(client, app, 4097)
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": INVALID}
+    assert model.calls == []
+
+
+# SDD: 030 REQ-011 AC-011.2
+def test_a_body_of_exactly_4096_bytes_is_accepted(client, app, model):
+    """4096 bytes exactos con una pregunta válida: 200; con 4097, 400."""
+    response = post_sized(client, app, 4096)
+
+    assert response.status_code == 200
+    assert response.get_json()["status"] == "estimated"
+    assert len(model.calls) == 1
+
+    over = post_sized(client, app, 4097)
+
+    assert over.status_code == 400
+    assert len(model.calls) == 1
+
+
+# SDD: 030 REQ-011 AC-011.3
+def test_a_body_of_4097_bytes_touches_neither_the_counter_nor_the_tracer(
+    client, app, redis_fake, trace_backend
+):
+    """Un cuerpo de 4097 bytes no incrementa el contador ni registra traza."""
+    response = post_sized(client, app, 4097)
+
+    assert response.status_code == 400
+    assert redis_fake.counts == {}
+    assert redis_fake.expirations == []
+    assert trace_backend.traces == []

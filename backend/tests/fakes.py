@@ -62,12 +62,15 @@ class FakeRateLimiter:
     check_and_increment devuelve True o False, sin tocar Redis para nada.
     `calls` guarda los argumentos de cada llamada, para poder verificar
     CON QUÉ key se está limitando (ej: que incluya el user_id correcto)."""
-    def __init__(self, allowed=True):
+    def __init__(self, allowed=True, raise_error=None):
         self.allowed = allowed
+        self.raise_error = raise_error
         self.calls = []
 
     def check_and_increment(self, key, limit, window_seconds):
         self.calls.append((key, limit, window_seconds))
+        if self.raise_error is not None:
+            raise self.raise_error
         return self.allowed
 
 
@@ -76,11 +79,14 @@ class FakeRedisClient:
     (`limiter.client = FakeRedisClient()`): `incr` cuenta por key en `counts`
     y `expire` registra cada llamada en `expirations`. Así se prueba la lógica
     real de la ventana sin Redis."""
-    def __init__(self):
+    def __init__(self, raise_error=None):
+        self.raise_error = raise_error
         self.counts = {}
         self.expirations = []
 
     def incr(self, key):
+        if self.raise_error is not None:
+            raise self.raise_error
         self.counts[key] = self.counts.get(key, 0) + 1
         return self.counts[key]
 

@@ -384,3 +384,64 @@ def test_the_second_question_does_not_carry_the_first_one_or_its_answer():
     assert second["messages"] == [{"role": "user", "content": "una manzana"}]
     assert "5 huevos" not in repr(second["messages"])
     assert "250" not in repr(second["messages"])
+
+
+# --- Contador del límite no disponible (REQ-010) ----------------------------
+
+
+def make_failing_limiter_service(with_tracer=False):
+    llm = FakeStructuredLLMClient(data=dict(EGGS))
+    limiter = FakeRateLimiter(raise_error=ConnectionError("detalle-redis"))
+    logger = FakeLogger()
+    backend = FakeTraceBackend()
+    tracer = Tracer(backend=backend) if with_tracer else None
+    service = PortionEstimateService(llm, limiter, tracer=tracer, logger=logger)
+    return service, llm, limiter, logger, backend
+
+
+# SDD: 030 REQ-010 AC-010.1
+def test_a_failing_limiter_becomes_a_service_unavailable_error_without_calling_the_model():
+    """Si el limitador lanza un error: 503 con mensaje fijo, sin el texto original,
+    sin consultar el modelo y con el fallo registrado en el log."""
+    service, llm, limiter, logger, _ = make_failing_limiter_service()
+
+    with pytest.raises(ServiceUnavailableError) as error:
+        service.estimate("user-1", {"question": "5 huevos"})
+
+    assert str(error.value) == PROVIDER_UNAVAILABLE_MESSAGE
+    assert "detalle-redis" not in str(error.value)
+    assert error.value.status_code == 503
+    assert len(limiter.calls) == 1
+    assert llm.calls == []
+    assert len(logger.records) == 1
+    assert "ConnectionError" in logger.records[0]
+
+
+# SDD: 030 REQ-010 AC-010.2
+def test_no_trace_is_recorded_when_the_limiter_fails():
+    """Con el limitador caído no se abre ninguna traza."""
+    service, _, _, _, backend = make_failing_limiter_service(with_tracer=True)
+
+    with pytest.raises(ServiceUnavailableError):
+        service.estimate("user-1", {"question": "5 huevos"})
+
+    assert backend.traces == []
+
+
+# SDD: 030 REQ-010 AC-010.3
+def test_validation_goes_before_the_limiter_even_when_it_fails():
+    """Una pregunta vacía da ValidationError y el limitador no se consulta; con
+    una pregunta válida, en cambio, el limitador caído da 503."""
+    service, llm, limiter, _, _ = make_failing_limiter_service()
+
+    with pytest.raises(ValidationError):
+        service.estimate("user-1", {"question": ""})
+
+    assert limiter.calls == []
+    assert llm.calls == []
+
+    with pytest.raises(ServiceUnavailableError):
+        service.estimate("user-1", {"question": "5 huevos"})
+
+    assert len(limiter.calls) == 1
+    assert llm.calls == []

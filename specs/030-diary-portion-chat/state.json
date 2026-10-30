@@ -9,7 +9,7 @@
   "branch": "feat/030-diary-portion-chat",
   "base_branch": "main",
   "created_at": "2026-10-30T06:35:46.331Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -24,7 +24,10 @@
       "at": "2026-10-30T08:03:45.124Z",
       "note": "auto (gate_mode=flow): 41 tareas, 42 AC cubiertos"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-10-30T08:56:01.432Z",
+      "note": "auto (gate_mode=flow): red check PASS"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -34,19 +37,19 @@
   "commits": {
     "spec": "850b7ed",
     "plan": "b770d94",
-    "tasks": "2f60fd7",
+    "tasks": "8a1816c",
     "tests": "c09c6b1",
     "implement": "aba984a"
   },
   "iterations": {
-    "tests": 1,
+    "tests": 2,
     "implement": 0,
     "review": 1
   },
   "max_iterations": 5,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-10-30T08:55:48.881Z"
   },
   "verify": {
     "result": null,
@@ -57,14 +60,16 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-10-30T07:37:43.073Z",
-    "reason": "fix E501 en tests (iteración 2)",
+    "at": "2026-10-30T08:56:01.284Z",
+    "reason": "tests iteración 2 (REQ-010/011, coach, F3/F5)",
     "sha256": {
-      "backend/tests/fakes.py": "238a66ccef916c20882a9b79f5f686bd6c235948b4ba42a56a238318a3cb4fa2",
-      "backend/tests/test_routes/test_portion_estimate_routes.py": "4bb47fc0bc553ba266ef0421b776543ac3e686611add3c8f1b795ffeb5b3eb0f",
-      "backend/tests/test_services/test_llm_client.py": "61bc4fb942c6972748dcc603eed090dcd05eefea2a61c64b5feed910070d964d",
-      "backend/tests/test_services/test_portion_estimate_rules.py": "d683e4290366bda6f7dab875c59df9f5421322cc5a405ea2094f979c177ab154",
-      "backend/tests/test_services/test_portion_estimate_service.py": "ace4472cfd3af5e02c46e065b9cc44e37a719c9ec8e55766299fdfa034b9c730"
+      "backend/tests/fakes.py": "957b67e26fbef6060ff5a6d756151ffa825241685ab1c22b365bf50f5562cbae",
+      "backend/tests/test_routes/test_coach_routes.py": "63c14b9c8344b86c40b56e7eb230ae1038207b69adaf9242a0db79cac2abc4d9",
+      "backend/tests/test_routes/test_meal_routes.py": "ec17820ae071827f03364230dcf160298dce44a98b8d11885ea16b908f0d1e2f",
+      "backend/tests/test_routes/test_portion_estimate_routes.py": "96e0c3a89128cf832019cf616f6163f90a3923796bf7558bf838b99f41f1e729",
+      "backend/tests/test_services/test_llm_client.py": "7a953b01d1101f3c1ff40dac0f59bdae2e24c85699d767f517344e4b24c08e70",
+      "backend/tests/test_services/test_portion_estimate_rules.py": "86dd3afc6f0cd264e2b552f3cad4095a3d231eb55b15300cb23233997c5a16c3",
+      "backend/tests/test_services/test_portion_estimate_service.py": "5c90f32f2a3c4e1ff7d2e167aa28b1a371f77c43a7d2dcfef9d549ba5ef28f11"
     }
   },
   "bypass": false,
@@ -410,6 +415,72 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): 41 tareas, 42 AC cubiertos"
+    },
+    {
+      "at": "2026-10-30T08:03:45.412Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 8a1816c"
+    },
+    {
+      "at": "2026-10-30T08:03:45.586Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: esqueletos nuevos (T-025 a T-028)"
+    },
+    {
+      "at": "2026-10-30T08:04:19.252Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (T-029 a T-037)"
+    },
+    {
+      "at": "2026-10-30T08:06:45.979Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (verifier)"
+    },
+    {
+      "at": "2026-10-30T08:10:20.827Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: red FAIL (iteración 2): 14 tests nuevos, 7 fallan (6 rojo legítimo, 1 ilegítimo: coach llama a Anthropic real, T-041 pendiente) y 7 pasan sin implementación (guardas, B5.2)"
+    },
+    {
+      "at": "2026-10-30T08:50:54.989Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red check FAIL: test del coach llama a la red real; 5 guardas pasan sin implementación (AC-010.3, AC-011.2, AC-011.4, mitad de AC-006.4); F3/F5 con excepción B5.2 aceptada · tests 2/5"
+    },
+    {
+      "at": "2026-10-30T08:52:58.973Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Red check de nuevo (iteración 2)"
+    },
+    {
+      "at": "2026-10-30T08:55:48.881Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red PASS (iteración 2): 11 tests nuevos en rojo legítimo (esqueletos not implemented, ConnectionError sin traducir, 200 donde se espera 400, 500 sin 503, coach con 503 por doble del SDK sin coach_llm); 2 pasan por excepción B5.2 aceptada (F3 AC-N001.1, F5 AC-002.1); 0 llamadas de red reales; 302 pasados en los 6 archivos"
+    },
+    {
+      "at": "2026-10-30T08:56:01.180Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS: 11 rojos legítimos; F3/F5 con excepción B5.2"
+    },
+    {
+      "at": "2026-10-30T08:56:01.284Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "7 archivo(s) de test: tests iteración 2 (REQ-010/011, coach, F3/F5)"
+    },
+    {
+      "at": "2026-10-30T08:56:01.432Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS"
     }
   ]
 }

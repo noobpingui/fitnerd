@@ -214,13 +214,14 @@ def test_build_estimate_leaves_unit_and_note_none_when_blank(blank):
 # SDD: 030 REQ-002 AC-002.1
 def test_build_estimate_truncates_a_long_note_to_100():
     """Una nota de 180 caracteres sale con 100 como máximo y sin espacio final."""
-    note = ("palabra " * 30).strip()[:180]
+    note = "a" * 99 + " " + "b" * 80
 
     estimate = build_estimate(food(100, "x", note))
 
     assert len(estimate.note) <= 100
     assert note.startswith(estimate.note)
     assert not estimate.note.endswith(" ")
+    assert estimate.note == "a" * 99
 
 
 # SDD: 030 REQ-002 AC-002.2

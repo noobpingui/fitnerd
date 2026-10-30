@@ -5,6 +5,7 @@ usuarios se registran por `/api/auth/register` porque `meals.user_id` tiene
 FK a `users`. Los alimentos de USDA se siembran con `db.session.add(Food(...))`.
 """
 
+import json
 from datetime import datetime, timezone
 from decimal import Decimal
 
@@ -573,6 +574,47 @@ def test_post_rejects_items_beyond_50_per_meal_and_keeps_the_meal(client, app, h
     assert fits.status_code == 200
     assert len(fits.get_json()["items"]) == 50
     assert counts(app) == (1, 50)
+
+
+# SDD: 030 REQ-011 AC-011.4
+def test_post_accepts_a_valid_body_larger_than_4096_bytes(client, app, headers):
+    """30 alimentos propios con nombres distintos (más de 4096 bytes): 201, porque
+    el tope de la 030 solo se aplica a la estimación de porciones."""
+    items = [
+        {**GALLO, "name": f"Alimento personalizado de prueba número {number:02d} para el tope"}
+        for number in range(30)
+    ]
+    payload = {"date": TODAY, "meal_type": "lunch", "items": items}
+    assert len(json.dumps(payload).encode("utf-8")) > 4096
+
+    response = client.post(URL, json=payload, headers=headers)
+
+    assert response.status_code == 201
+    assert len(response.get_json()["items"]) == 30
+    assert counts(app) == (1, 30)
+
+    # Caso rojo del mismo tope: el mismo tamaño sí se rechaza en la estimación
+    # de porciones (aislada con dobles: nada sale a la red).
+    from extensions import portion_llm, rate_limiter
+    from tests.fakes import FakeRedisClient, FakeStructuredLLMClient
+
+    original_llm, original_client = portion_llm.llm_client, rate_limiter.client
+    portion_llm.llm_client = FakeStructuredLLMClient(
+        data={"is_food": True, "grams": 250, "unit": "5 huevos", "note": "x"}
+    )
+    rate_limiter.client = FakeRedisClient()
+    try:
+        oversized = json.dumps({"question": "5 huevos", "pad": "x" * 4100}).encode("utf-8")
+        capped = client.post(
+            "/api/meals/portion-estimate",
+            data=oversized,
+            content_type="application/json",
+            headers=headers,
+        )
+    finally:
+        portion_llm.llm_client = original_llm
+        rate_limiter.client = original_client
+    assert capped.status_code == 400
 
 
 # SDD: 022 REQ-003 AC-003.14

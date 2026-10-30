@@ -5,10 +5,11 @@ asignado a `client` - sin red ni mocks. Cubre `generate_with_usage` y que
 
 from types import SimpleNamespace
 
+import anthropic
 import pytest
 
 from config import DEFAULT_PORTION_ESTIMATE_MODEL
-from tests.fakes import FakeStructuredLLMClient
+from tests.fakes import FakeLLMClient, FakeStructuredLLMClient
 from tests.fakes_observability import FakeAnthropicClient, FakeApp
 from utils.llm_client import (
     GenerationResult,
@@ -24,7 +25,7 @@ def make_client(fake):
     return client
 
 
-# SDD: REQ-004 AC-004.1
+# SDD: 004 REQ-004 AC-004.1
 def test_generate_with_usage_returns_text_and_tokens_from_the_response():
     """Devuelve el texto y los tokens de entrada y salida de `response.usage`."""
     fake = FakeAnthropicClient(text="Haz 3 series de 10.", input_tokens=850, output_tokens=40)
@@ -38,7 +39,7 @@ def test_generate_with_usage_returns_text_and_tokens_from_the_response():
     assert fake.calls[0]["messages"] == [{"role": "user", "content": "hola"}]
 
 
-# SDD: REQ-004 AC-004.4
+# SDD: 004 REQ-004 AC-004.4
 def test_generate_with_usage_marks_a_refusal_with_none_text_and_keeps_tokens():
     """Con `stop_reason == "refusal"` el texto es `None` y los tokens se
     conservan."""
@@ -52,7 +53,7 @@ def test_generate_with_usage_marks_a_refusal_with_none_text_and_keeps_tokens():
     assert result.output_tokens == 0
 
 
-# SDD: REQ-005 AC-005.3
+# SDD: 004 REQ-005 AC-005.3
 def test_generate_keeps_returning_the_text_and_none_on_refusal():
     """`generate()` mantiene su comportamiento: texto normal y `None` si hay
     rechazo."""
@@ -63,7 +64,7 @@ def test_generate_keeps_returning_the_text_and_none_on_refusal():
     assert refused.generate("sistema", [{"role": "user", "content": "hola"}]) is None
 
 
-# SDD: REQ-004 AC-004.4
+# SDD: 004 REQ-004 AC-004.4
 def test_generate_returns_an_empty_string_when_the_response_has_no_text_block():
     """Sin bloque de texto, `generate()` devuelve cadena vacia como hoy."""
     fake = FakeAnthropicClient(content=[SimpleNamespace(type="tool_use")])
@@ -261,3 +262,54 @@ def test_lazy_client_init_app_discards_a_previously_created_client():
     lazy.generate_structured("sistema", [], TOOL, 150, 0)
 
     assert [c["model"] for c in factory.created] == [DEFAULT_PORTION_ESTIMATE_MODEL, "modelo-y"]
+
+
+class FakeTextClientFactory:
+    """Invocable que reemplaza a `LLMClient` con un `FakeLLMClient` (texto)."""
+
+    def __init__(self):
+        self.created = []
+        self.clients = []
+
+    def __call__(self, **kwargs):
+        self.created.append(kwargs)
+        client = FakeLLMClient(answer="Haz 3 series de 10.", input_tokens=12, output_tokens=7)
+        self.clients.append(client)
+        return client
+
+
+# SDD: 030 REQ-006 AC-006.4
+def test_lazy_client_generate_with_usage_creates_the_client_once_and_delegates():
+    """El cliente del coach se crea una vez con el modelo configurado, delega
+    `generate_with_usage` y se reutiliza en la segunda llamada."""
+    factory = FakeTextClientFactory()
+    lazy = LazyLLMClient("ANTHROPIC_MODEL", "claude-sonnet-5", client_factory=factory)
+    lazy.init_app(FakeApp({"ANTHROPIC_MODEL": "claude-sonnet-5"}))
+    messages = [{"role": "user", "content": "hola"}]
+
+    first = lazy.generate_with_usage("sistema", messages, 512)
+    second = lazy.generate_with_usage("sistema", messages)
+
+    assert lazy.model == "claude-sonnet-5"
+    assert factory.created == [{"model": "claude-sonnet-5", "timeout": None, "max_retries": None}]
+    assert first == GenerationResult("Haz 3 series de 10.", 12, 7)
+    assert second == first
+    assert factory.clients[0].calls == [("sistema", messages), ("sistema", messages)]
+
+
+# SDD: 030 NFR-001 AC-N001.1
+def test_llm_client_passes_timeout_and_max_retries_to_the_sdk_client():
+    """Con timeout y max_retries, el cliente del SDK los expone; sin ellos usa
+    los valores por defecto del SDK."""
+    configured = LLMClient(
+        model="m", api_key="clave-de-prueba", timeout=15.0, max_retries=1
+    )
+    default = LLMClient(model="m", api_key="clave-de-prueba")
+
+    assert configured.client.timeout == 15.0
+    assert configured.client.max_retries == 1
+    reference = anthropic.Anthropic(api_key="clave-de-prueba")
+    assert default.client.timeout == reference.timeout
+    assert default.client.max_retries == reference.max_retries
+    assert default.client.max_retries != configured.client.max_retries
+    assert default.client.timeout != configured.client.timeout

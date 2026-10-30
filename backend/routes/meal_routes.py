@@ -23,6 +23,7 @@ from utils.restore_token import RestoreTokenSigner
 meal_bp = Blueprint("meals", __name__, url_prefix="/api/meals")
 
 MAX_ANALYZE_REQUEST_BYTES = 4 * 1024 * 1024
+MAX_PORTION_REQUEST_BYTES = 4096
 
 
 def _build_meal_image_analysis_service() -> MealImageAnalysisService:

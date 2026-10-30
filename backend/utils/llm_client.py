@@ -133,6 +133,11 @@ class LazyLLMClient:
         self.model = configured or self.default_model
         self.llm_client = None
 
+    def generate_with_usage(
+        self, _system_prompt: str, _messages: list[dict], _max_tokens: int = 2048
+    ) -> GenerationResult:
+        raise NotImplementedError("not implemented")
+
     def generate_structured(
         self,
         system_prompt: str,
