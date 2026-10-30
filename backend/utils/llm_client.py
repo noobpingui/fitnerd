@@ -112,7 +112,8 @@ class LLMClient:
 
 #Contrato mínimo que usa CoachService: lo cumplen LLMClient y LazyLLMClient.
 class GenerativeClient(Protocol):
-    model: str | None
+    @property
+    def model(self) -> str | None: ...
 
     def generate_with_usage(
         self, system_prompt: str, messages: list[dict], max_tokens: int = 2048
