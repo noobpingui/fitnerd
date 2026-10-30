@@ -5,8 +5,17 @@ asignado a `client` - sin red ni mocks. Cubre `generate_with_usage` y que
 
 from types import SimpleNamespace
 
-from tests.fakes_observability import FakeAnthropicClient
-from utils.llm_client import GenerationResult, LLMClient
+import pytest
+
+from config import DEFAULT_PORTION_ESTIMATE_MODEL
+from tests.fakes import FakeStructuredLLMClient
+from tests.fakes_observability import FakeAnthropicClient, FakeApp
+from utils.llm_client import (
+    GenerationResult,
+    LazyLLMClient,
+    LLMClient,
+    StructuredGenerationResult,
+)
 
 
 def make_client(fake):
@@ -61,3 +70,194 @@ def test_generate_returns_an_empty_string_when_the_response_has_no_text_block():
     client = make_client(fake)
 
     assert client.generate("sistema", [{"role": "user", "content": "hola"}]) == ""
+
+
+# --- Spec 030: salida estructurada y cliente perezoso ---------------------
+
+TOOL = {
+    "name": "report_portion",
+    "description": "Informa del peso.",
+    "input_schema": {"type": "object", "properties": {}},
+}
+
+
+def tool_use_block(data, name="report_portion"):
+    return SimpleNamespace(type="tool_use", name=name, input=data)
+
+
+# SDD: 030 NFR-001 AC-N001.1
+def test_generate_structured_forces_the_tool_and_returns_data_and_tokens():
+    """Pasa max_tokens, temperature, tools y tool_choice forzado, y devuelve el
+    input de la herramienta con los tokens."""
+    fake = FakeAnthropicClient(
+        content=[tool_use_block({"is_food": True, "grams": 250})],
+        stop_reason="tool_use",
+        input_tokens=70,
+        output_tokens=25,
+    )
+    client = make_client(fake)
+    messages = [{"role": "user", "content": "5 huevos"}]
+
+    result = client.generate_structured("sistema", messages, TOOL, 150, 0)
+
+    assert isinstance(result, StructuredGenerationResult)
+    assert result.data == {"is_food": True, "grams": 250}
+    assert result.stop_reason == "tool_use"
+    assert result.input_tokens == 70
+    assert result.output_tokens == 25
+    assert len(fake.calls) == 1
+    call = fake.calls[0]
+    assert call["model"] == "claude-sonnet-5"
+    assert call["max_tokens"] == 150
+    assert call["temperature"] == 0
+    assert call["system"] == "sistema"
+    assert call["messages"] == messages
+    assert call["tools"] == [TOOL]
+    assert call["tool_choice"] == {"type": "tool", "name": "report_portion"}
+
+
+# SDD: 030 REQ-004 AC-004.2
+@pytest.mark.parametrize("stop_reason", ["refusal", "max_tokens"])
+def test_generate_structured_returns_no_data_on_refusal_or_truncation(stop_reason):
+    """Con refusal o max_tokens no hay datos, aunque el contenido traiga algo."""
+    fake = FakeAnthropicClient(
+        content=[tool_use_block({"is_food": True, "grams": 250})], stop_reason=stop_reason
+    )
+    client = make_client(fake)
+
+    result = client.generate_structured("sistema", [], TOOL, 150, 0)
+
+    assert result.data is None
+    assert result.stop_reason == stop_reason
+
+
+# SDD: 030 REQ-004 AC-004.3
+def test_generate_structured_returns_no_data_without_a_tool_use_block():
+    """Sin bloque tool_use, data es None."""
+    fake = FakeAnthropicClient(text="hola", stop_reason="end_turn")
+    client = make_client(fake)
+
+    assert client.generate_structured("sistema", [], TOOL, 150, 0).data is None
+
+
+# SDD: 030 REQ-004 AC-004.3
+def test_generate_structured_ignores_a_tool_use_block_of_another_tool():
+    """Un bloque tool_use con otro nombre no cuenta."""
+    fake = FakeAnthropicClient(content=[tool_use_block({"is_food": True}, name="otra")])
+    client = make_client(fake)
+
+    assert client.generate_structured("sistema", [], TOOL, 150, 0).data is None
+
+
+# SDD: 030 REQ-004 AC-004.3
+@pytest.mark.parametrize("bad_input", ["texto", ["lista"], None, 5])
+def test_generate_structured_returns_no_data_when_the_input_is_not_a_dict(bad_input):
+    """Un input que no es dict no se acepta."""
+    fake = FakeAnthropicClient(content=[tool_use_block(bad_input)])
+    client = make_client(fake)
+
+    assert client.generate_structured("sistema", [], TOOL, 150, 0).data is None
+
+
+# SDD: 030 REQ-004 AC-004.3
+def test_generate_structured_uses_the_first_matching_tool_use_block():
+    """Toma el primer bloque tool_use con el nombre de la herramienta."""
+    fake = FakeAnthropicClient(
+        content=[
+            SimpleNamespace(type="text", text="pensando"),
+            tool_use_block({"is_food": False}),
+            tool_use_block({"is_food": True}),
+        ]
+    )
+    client = make_client(fake)
+
+    assert client.generate_structured("sistema", [], TOOL, 150, 0).data == {"is_food": False}
+
+
+class FakeClientFactory:
+    """Invocable que reemplaza a `LLMClient`: guarda los kwargs de cada
+    creación y devuelve un cliente de mentira con `generate_structured`."""
+
+    def __init__(self):
+        self.created = []
+        self.clients = []
+
+    def __call__(self, **kwargs):
+        self.created.append(kwargs)
+        client = FakeStructuredLLMClient(data={"is_food": False})
+        self.clients.append(client)
+        return client
+
+
+def make_lazy(factory=None, **kwargs):
+    return LazyLLMClient(
+        "PORTION_ESTIMATE_MODEL",
+        DEFAULT_PORTION_ESTIMATE_MODEL,
+        client_factory=factory,
+        **kwargs,
+    )
+
+
+# SDD: 030 NFR-001 AC-N001.2
+def test_lazy_client_uses_the_default_small_model_when_not_configured():
+    """Sin PORTION_ESTIMATE_MODEL usa el modelo pequeño por defecto, no el del coach."""
+    lazy = make_lazy()
+
+    lazy.init_app(FakeApp({"ANTHROPIC_MODEL": "claude-sonnet-5"}))
+
+    assert lazy.model == DEFAULT_PORTION_ESTIMATE_MODEL
+    assert lazy.model != "claude-sonnet-5"
+    assert "haiku" in lazy.model
+
+
+# SDD: 030 NFR-001 AC-N001.2
+@pytest.mark.parametrize("configured", [None, "", "   "])
+def test_lazy_client_falls_back_to_the_default_for_an_empty_value(configured):
+    """Un valor vacío o de espacios equivale a no configurarlo."""
+    lazy = make_lazy()
+
+    lazy.init_app(FakeApp({"PORTION_ESTIMATE_MODEL": configured}))
+
+    assert lazy.model == DEFAULT_PORTION_ESTIMATE_MODEL
+
+
+# SDD: 030 NFR-001 AC-N001.2
+def test_lazy_client_uses_the_configured_model():
+    """Con PORTION_ESTIMATE_MODEL definido, usa ese modelo."""
+    lazy = make_lazy()
+
+    lazy.init_app(FakeApp({"PORTION_ESTIMATE_MODEL": "modelo-x", "ANTHROPIC_MODEL": "otro"}))
+
+    assert lazy.model == "modelo-x"
+
+
+# SDD: 030 NFR-001 AC-N001.2
+def test_lazy_client_creates_the_real_client_on_the_first_call_with_model_and_options():
+    """El cliente se crea perezosamente, con modelo, timeout y max_retries, y se reutiliza."""
+    factory = FakeClientFactory()
+    lazy = make_lazy(factory, timeout=15.0, max_retries=1)
+    lazy.init_app(FakeApp({"PORTION_ESTIMATE_MODEL": "modelo-x"}))
+    assert factory.created == []
+
+    first = lazy.generate_structured("sistema", [{"role": "user", "content": "a"}], TOOL, 150, 0)
+    lazy.generate_structured("sistema", [{"role": "user", "content": "b"}], TOOL, 150, 0)
+
+    assert factory.created == [{"model": "modelo-x", "timeout": 15.0, "max_retries": 1}]
+    assert first.data == {"is_food": False}
+    assert len(factory.clients[0].calls) == 2
+    assert factory.clients[0].calls[0]["max_tokens"] == 150
+    assert factory.clients[0].calls[0]["temperature"] == 0
+
+
+# SDD: 030 NFR-001 AC-N001.2
+def test_lazy_client_init_app_discards_a_previously_created_client():
+    """Volver a llamar a init_app descarta el cliente creado."""
+    factory = FakeClientFactory()
+    lazy = make_lazy(factory)
+    lazy.init_app(FakeApp({}))
+    lazy.generate_structured("sistema", [], TOOL, 150, 0)
+
+    lazy.init_app(FakeApp({"PORTION_ESTIMATE_MODEL": "modelo-y"}))
+    lazy.generate_structured("sistema", [], TOOL, 150, 0)
+
+    assert [c["model"] for c in factory.created] == [DEFAULT_PORTION_ESTIMATE_MODEL, "modelo-y"]

@@ -761,3 +761,51 @@ class FakeFoodFavoriteRepository:
     def delete(self, favorite):
         self.favorites.remove(favorite)
         self.deleted.append(favorite)
+
+
+# --- Spec 030: estimación de porciones del diario -------------------------
+
+
+class FakeStructuredLLMClient:
+    """Doble de `LLMClient`/`LazyLLMClient` con `generate_structured` (spec 030):
+    `data` es el dict que "devuelve" el modelo (el input de la herramienta);
+    con `stop_reason` `refusal` o `max_tokens` el resultado lleva `data=None`.
+    Lanza `raise_error` si lo hay. `calls` guarda, por llamada, un dict con
+    `system_prompt`, `messages`, `tool`, `max_tokens` y `temperature`. Sus
+    atributos son mutables: un test puede cambiarlos entre peticiones."""
+
+    def __init__(
+        self,
+        data=None,
+        stop_reason="tool_use",
+        raise_error=None,
+        input_tokens=60,
+        output_tokens=30,
+        model="fake-portion-model",
+    ):
+        self.data = data
+        self.stop_reason = stop_reason
+        self.raise_error = raise_error
+        self.input_tokens = input_tokens
+        self.output_tokens = output_tokens
+        self.model = model
+        self.calls = []
+
+    def generate_structured(self, system_prompt, messages, tool, max_tokens, temperature):
+        from utils.llm_client import StructuredGenerationResult
+
+        self.calls.append(
+            {
+                "system_prompt": system_prompt,
+                "messages": messages,
+                "tool": tool,
+                "max_tokens": max_tokens,
+                "temperature": temperature,
+            }
+        )
+        if self.raise_error is not None:
+            raise self.raise_error
+        data = None if self.stop_reason in ("refusal", "max_tokens") else self.data
+        return StructuredGenerationResult(
+            data, self.stop_reason, self.input_tokens, self.output_tokens
+        )

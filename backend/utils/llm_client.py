@@ -10,6 +10,14 @@ class GenerationResult:
     output_tokens: int | None
 
 
+@dataclass(frozen=True)
+class StructuredGenerationResult:
+    data: dict | None  #input del bloque tool_use de la herramienta, o None
+    stop_reason: str | None
+    input_tokens: int | None
+    output_tokens: int | None
+
+
 #Envoltorio sobre el SDK de Anthropic - aisla al resto de la app de su forma especifica
 #(messages.create, stop_reason, response.content) para que cambiar de proveedor de LLM el
 #dia de manana signifique escribir una clase nueva con este mismo metodo generate(), no
@@ -17,12 +25,35 @@ class GenerationResult:
 #espiritu que EmbeddingClient en embeddings.py, aplicado a generacion de texto en vez de
 #embeddings.
 class LLMClient:
-    def __init__(self, model: str, api_key: str = None):
+    def __init__(
+        self,
+        model: str,
+        api_key: str = None,
+        timeout: float | None = None,
+        max_retries: int | None = None,
+    ):
         #api_key=None -> el SDK de Anthropic busca ANTHROPIC_API_KEY en las variables de
         #entorno solo, igual que hacia el codigo anterior con anthropic.Anthropic() sin
         #argumentos.
-        self.client = anthropic.Anthropic(api_key=api_key)
+        #timeout y max_retries solo se pasan al SDK si no son None.
+        sdk_options = {}
+        if timeout is not None:
+            sdk_options["timeout"] = timeout
+        if max_retries is not None:
+            sdk_options["max_retries"] = max_retries
+        self.client = anthropic.Anthropic(api_key=api_key, **sdk_options)
         self.model = model
+
+    #Salida estructurada con una herramienta forzada (spec 030, ADR-0037).
+    def generate_structured(
+        self,
+        system_prompt: str,
+        messages: list[dict],
+        tool: dict,
+        max_tokens: int,
+        temperature: float,
+    ) -> "StructuredGenerationResult":
+        raise NotImplementedError("not implemented")
 
     #messages: lista de {"role": "user"|"assistant", "content": str}, en el mismo formato
     #que espera la API de Anthropic - permite mandar turnos anteriores de una conversacion,
@@ -54,3 +85,36 @@ class LLMClient:
 
         text = next((block.text for block in response.content if block.type == "text"), "")
         return GenerationResult(text, input_tokens, output_tokens)
+
+
+#Cliente perezoso con modelo propio (spec 030, ADR-0037): el modelo sale de la
+#configuracion de la app y el cliente real se crea en la primera llamada.
+class LazyLLMClient:
+    def __init__(
+        self,
+        model_config_key: str,
+        default_model: str,
+        timeout: float | None = None,
+        max_retries: int | None = None,
+        client_factory=None,
+    ):
+        self.model_config_key = model_config_key
+        self.default_model = default_model
+        self.timeout = timeout
+        self.max_retries = max_retries
+        self.client_factory = client_factory
+        self.model = None
+        self.llm_client = None
+
+    def init_app(self, app) -> None:
+        raise NotImplementedError("not implemented")
+
+    def generate_structured(
+        self,
+        system_prompt: str,
+        messages: list[dict],
+        tool: dict,
+        max_tokens: int,
+        temperature: float,
+    ) -> StructuredGenerationResult:
+        raise NotImplementedError("not implemented")
