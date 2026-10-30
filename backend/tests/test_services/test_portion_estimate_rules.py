@@ -91,7 +91,16 @@ def test_parse_question_counts_the_length_after_stripping():
 # SDD: 030 REQ-001 AC-001.2
 @pytest.mark.parametrize(
     "value, expected",
-    [(152.6, 153), (152.4, 152), (0.5, 1), (2.5, 3), (250, 250), (1, 1), (5000, 5000), (5000.4, 5000)],
+    [
+        (152.6, 153),
+        (152.4, 152),
+        (0.5, 1),
+        (2.5, 3),
+        (250, 250),
+        (1, 1),
+        (5000, 5000),
+        (5000.4, 5000),
+    ],
 )
 def test_parse_grams_rounds_half_up_to_an_integer(value, expected):
     """Redondea al entero más cercano; las mitades suben."""
@@ -100,7 +109,22 @@ def test_parse_grams_rounds_half_up_to_an_integer(value, expected):
 
 # SDD: 030 REQ-004 AC-004.1
 @pytest.mark.parametrize(
-    "value", [0, 0.4, -10, 5001, 5000.5, None, "250", True, False, float("nan"), float("inf"), [], {}]
+    "value",
+    [
+        0,
+        0.4,
+        -10,
+        5001,
+        5000.5,
+        None,
+        "250",
+        True,
+        False,
+        float("nan"),
+        float("inf"),
+        [],
+        {},
+    ],
 )
 def test_parse_grams_returns_none_when_not_valid(value):
     """Fuera de 1 a 5000 tras redondear, o no numérico: no hay gramos."""
