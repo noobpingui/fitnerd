@@ -15,7 +15,8 @@ import type { MealType, NutrientTotals } from "../types"
 export function DiaryPage(): ReactElement {
   // Con un diálogo abierto, «hoy» no avanza: el día y el diálogo no cambian (AC-005.4).
   const [openDialogs, setOpenDialogs] = useState<ReadonlySet<MealType>>(new Set())
-  const today = useToday(openDialogs.size > 0)
+  const [portionDialogOpen, setPortionDialogOpen] = useState(false)
+  const today = useToday(openDialogs.size > 0 || portionDialogOpen)
   const [searchParams, setSearchParams] = useSearchParams()
   const { date, normalize } = resolveDiaryDate(searchParams.get("date"), today)
   const diary = useDiary(date)
@@ -92,7 +93,13 @@ export function DiaryPage(): ReactElement {
           diary={diary.data}
           targets={targets}
           onDialogOpenChange={handleDialogOpenChange}
-          afterTotals={<PortionChat chat={portionChat} />}
+          afterTotals={(
+            <PortionChat
+              chat={portionChat}
+              date={date}
+              onDialogOpenChange={setPortionDialogOpen}
+            />
+          )}
         />
       )}
     </div>

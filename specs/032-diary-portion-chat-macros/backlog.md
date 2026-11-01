@@ -20,3 +20,7 @@
 
 ## verifier (tests, red)
 - [ ] Confirmar en implement/review que el cambio de contrato de los tres tests de ruta existentes (name y per_100g en la respuesta) está cubierto por REQ-001 y REQ-004.
+
+## implementer (implement)
+- [ ] Anotar en ADR-0037 (lo hace la sesión principal) que el máximo de tokens pasó de 150 a 250.
+- [ ] Revisar en Langfuse tras desplegar si hay respuestas cortadas por `max_tokens` (`stop_reason` en `step.end`).

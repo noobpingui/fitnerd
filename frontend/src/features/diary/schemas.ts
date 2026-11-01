@@ -285,6 +285,8 @@ export const portionEstimateResponseSchema: z.ZodType<PortionEstimate, unknown> 
     grams: z.number().int().min(1).max(5000),
     unit: z.string().nullable(),
     note: z.string().nullable(),
+    name: z.string().nullable().default(null),
+    per_100g: per100g.nullable().default(null),
   }),
   z.object({ status: z.enum(["not_food", "unknown"]), message: z.string().min(1) }),
 ])

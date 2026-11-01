@@ -68,6 +68,12 @@ def _serialize_portion_estimate(estimate: PortionEstimate) -> dict:
         "unit": estimate.unit,
         "note": estimate.note,
         "message": estimate.message,
+        "name": estimate.name,
+        "per_100g": (
+            None
+            if estimate.per_100g is None
+            else {key: getattr(estimate.per_100g, key) for key in NUTRIENT_KEYS}
+        ),
     }
 
 

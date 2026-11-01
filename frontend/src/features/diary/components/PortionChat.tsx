@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type ReactElement } from "react"
+import { useEffect, useId, useRef, useState, type ReactElement } from "react"
 import { useWatch } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -6,8 +6,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { Input } from "@/components/ui/input"
 import { PORTION_QUESTION_MAX_LENGTH } from "../constants"
 import type { PortionChatState } from "../hooks"
-import { formatEstimatedGrams } from "../portionChat"
-import type { PortionChatAnswer } from "../types"
+import { formatEstimatedGrams, formatPer100gLine, latestEstimateAnswer } from "../portionChat"
+import type { PortionChatAnswer, PortionEstimateAnswer } from "../types"
+import { PortionAddFoodDialog } from "./PortionAddFoodDialog"
 
 function AnswerView({ answer }: { answer: PortionChatAnswer | null }): ReactElement {
   if (answer === null) return <p>Calculando…</p>
@@ -18,6 +19,7 @@ function AnswerView({ answer }: { answer: PortionChatAnswer | null }): ReactElem
           <p>{formatEstimatedGrams(answer.grams)}</p>
           {answer.unit && <p>Porción: {answer.unit}</p>}
           {answer.note && <p>{answer.note}</p>}
+          {answer.per100g && <p>{formatPer100gLine(answer.per100g)}</p>}
         </>
       )
     case "message":
@@ -31,6 +33,8 @@ function AnswerView({ answer }: { answer: PortionChatAnswer | null }): ReactElem
 
 export function PortionChat({
   chat,
+  date,
+  onDialogOpenChange,
 }: {
   chat: PortionChatState
   date: string
@@ -38,6 +42,26 @@ export function PortionChat({
 }): ReactElement {
   const titleId = useId()
   const logRef = useRef<HTMLDivElement>(null)
+  const addButtonRef = useRef<HTMLButtonElement>(null)
+  const [adding, setAdding] = useState<PortionEstimateAnswer | null>(null)
+  const latest = latestEstimateAnswer(chat.turns)
+  const dialogOpen = adding !== null
+
+  const notifyRef = useRef(onDialogOpenChange)
+  useEffect(() => {
+    notifyRef.current = onDialogOpenChange
+  })
+  useEffect(() => {
+    notifyRef.current?.(dialogOpen)
+  }, [dialogOpen])
+  useEffect(() => {
+    return () => notifyRef.current?.(false)
+  }, [])
+
+  function closeDialog() {
+    setAdding(null)
+    requestAnimationFrame(() => addButtonRef.current?.focus())
+  }
   const value = useWatch({ control: chat.form.control, name: "question" }) ?? ""
 
   useEffect(() => {
@@ -105,12 +129,25 @@ export function PortionChat({
                 <span className="text-xs text-muted-foreground">
                   {value.length}/{PORTION_QUESTION_MAX_LENGTH}
                 </span>
-                <Button type="submit" disabled={value.trim() === "" || chat.isPending}>
-                  Preguntar
-                </Button>
+                <div className="flex items-center gap-2">
+                  {latest && (
+                    <Button
+                      ref={addButtonRef}
+                      type="button"
+                      variant="outline"
+                      onClick={() => setAdding({ ...latest })}
+                    >
+                      Añadir alimento
+                    </Button>
+                  )}
+                  <Button type="submit" disabled={value.trim() === "" || chat.isPending}>
+                    Preguntar
+                  </Button>
+                </div>
               </div>
             </form>
           </Form>
+          {adding && <PortionAddFoodDialog answer={adding} date={date} onClose={closeDialog} />}
         </section>
       </CardContent>
     </Card>

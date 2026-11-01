@@ -26,15 +26,15 @@
 - [x] T-022 [REQ-007, REQ-009, AC-007.7, AC-009.2, AC-009.3] (test) Página: guardar cierra el diálogo, muestra el alimento y conserva la conversación; fecha de `?date=`; «hoy» no cambia con el diálogo abierto — `frontend/src/features/diary/pages/DiaryPage.test.tsx`
 
 ## Fase B — Implementación (implementer)
-- [ ] T-030 [REQ-002] (impl) Implementar `round_to_tenth` y `parse_per_100g` con los rangos de `meal_rules` validados tras redondear — `backend/services/portion_estimate_rules.py`
-- [ ] T-031 [REQ-001, REQ-003, REQ-004, NFR-001, NFR-002] (impl) `PORTION_TOOL` con `name` y `per_100g`, `SYSTEM_PROMPT` ampliado, `MAX_OUTPUT_TOKENS = 250` y `build_estimate` que rellena nombre y valores solo en `estimated` — `backend/services/portion_estimate_rules.py`
-- [ ] T-032 [REQ-001, REQ-004] (impl) `_serialize_portion_estimate` devuelve siempre `name` y `per_100g` — `backend/routes/meal_routes.py`
-- [ ] T-033 [REQ-011] (impl) `portionEstimateResponseSchema` con `name` y `per_100g` (`.nullable().default(null)`) — `frontend/src/features/diary/schemas.ts`
-- [ ] T-034 [REQ-005, REQ-006, REQ-007] (impl) Implementar `portionAnswerFromEstimate` con las claves nuevas, `formatPer100gLine`, `latestEstimateAnswer` y `portionFoodFormDefaults` — `frontend/src/features/diary/portionChat.ts`
-- [ ] T-035 [REQ-007, REQ-008] (impl) `CustomFoodForm` con `defaultNutrients` y `onSubmitAttempt` antes de la validación — `frontend/src/features/diary/components/CustomFoodForm.tsx`
-- [ ] T-036 [REQ-007, REQ-008, REQ-009, REQ-010, NFR-003] (impl) Implementar `PortionAddFoodDialog` con radios «Comida», guardado con `useAddMealItems(date)`, errores y cierre — `frontend/src/features/diary/components/PortionAddFoodDialog.tsx`
-- [ ] T-037 [REQ-005, REQ-006, REQ-007, NFR-003] (impl) `PortionChat` con línea «Por 100 g», botón «Añadir alimento», diálogo con copia de la respuesta, foco de vuelta y aviso `onDialogOpenChange` — `frontend/src/features/diary/components/PortionChat.tsx`
-- [ ] T-038 [REQ-007, REQ-009] (impl) `DiaryPage` pasa `date` y `onDialogOpenChange` al chat y pausa `useToday` con el diálogo abierto — `frontend/src/features/diary/pages/DiaryPage.tsx`
+- [x] T-030 [REQ-002] (impl) Implementar `round_to_tenth` y `parse_per_100g` con los rangos de `meal_rules` validados tras redondear — `backend/services/portion_estimate_rules.py`
+- [x] T-031 [REQ-001, REQ-003, REQ-004, NFR-001, NFR-002] (impl) `PORTION_TOOL` con `name` y `per_100g`, `SYSTEM_PROMPT` ampliado, `MAX_OUTPUT_TOKENS = 250` y `build_estimate` que rellena nombre y valores solo en `estimated` — `backend/services/portion_estimate_rules.py`
+- [x] T-032 [REQ-001, REQ-004] (impl) `_serialize_portion_estimate` devuelve siempre `name` y `per_100g` — `backend/routes/meal_routes.py`
+- [x] T-033 [REQ-011] (impl) `portionEstimateResponseSchema` con `name` y `per_100g` (`.nullable().default(null)`) — `frontend/src/features/diary/schemas.ts`
+- [x] T-034 [REQ-005, REQ-006, REQ-007] (impl) Implementar `portionAnswerFromEstimate` con las claves nuevas, `formatPer100gLine`, `latestEstimateAnswer` y `portionFoodFormDefaults` — `frontend/src/features/diary/portionChat.ts`
+- [x] T-035 [REQ-007, REQ-008] (impl) `CustomFoodForm` con `defaultNutrients` y `onSubmitAttempt` antes de la validación — `frontend/src/features/diary/components/CustomFoodForm.tsx`
+- [x] T-036 [REQ-007, REQ-008, REQ-009, REQ-010, NFR-003] (impl) Implementar `PortionAddFoodDialog` con radios «Comida», guardado con `useAddMealItems(date)`, errores y cierre — `frontend/src/features/diary/components/PortionAddFoodDialog.tsx`
+- [x] T-037 [REQ-005, REQ-006, REQ-007, NFR-003] (impl) `PortionChat` con línea «Por 100 g», botón «Añadir alimento», diálogo con copia de la respuesta, foco de vuelta y aviso `onDialogOpenChange` — `frontend/src/features/diary/components/PortionChat.tsx`
+- [x] T-038 [REQ-007, REQ-009] (impl) `DiaryPage` pasa `date` y `onDialogOpenChange` al chat y pausa `useToday` con el diálogo abierto — `frontend/src/features/diary/pages/DiaryPage.tsx`
 
 ## Matriz de cobertura
 | REQ / NFR | AC | Tareas test | Tareas impl |

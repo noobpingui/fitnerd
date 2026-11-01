@@ -37,6 +37,8 @@ export function CustomFoodForm({
   submitLabel = "Añadir",
   isSaving,
   onSubmit,
+  defaultNutrients,
+  onSubmitAttempt,
   children,
 }: {
   defaultName: string
@@ -53,10 +55,10 @@ export function CustomFoodForm({
     defaultValues: {
       name: defaultName,
       grams: defaultGrams,
-      calories: "",
-      protein: "",
-      carbs: "",
-      fat: "",
+      calories: defaultNutrients?.calories ?? "",
+      protein: defaultNutrients?.protein ?? "",
+      carbs: defaultNutrients?.carbs ?? "",
+      fat: defaultNutrients?.fat ?? "",
     },
   })
   const values = useWatch({ control: form.control })
@@ -88,7 +90,16 @@ export function CustomFoodForm({
 
   return (
     <Form {...form}>
-      <form autoComplete="off" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
+      <form
+        autoComplete="off"
+        onSubmit={(event) => {
+          const allowed = onSubmitAttempt?.() ?? true
+          return form.handleSubmit((submitted) => {
+            if (allowed) handleSubmit(submitted)
+          })(event)
+        }}
+        className="space-y-3"
+      >
         <FormField
           control={form.control}
           name="name"
