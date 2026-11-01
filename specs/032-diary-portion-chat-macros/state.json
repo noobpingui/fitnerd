@@ -10,14 +10,17 @@
   "branch": "feat/032-diary-portion-chat-macros",
   "base_branch": "main",
   "created_at": "2026-11-01T05:29:06.199Z",
-  "stage": "plan",
+  "stage": "tasks",
   "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-11-01T05:36:23.824Z",
       "note": "Sí, aprobado"
     },
-    "plan": null,
+    "plan": {
+      "at": "2026-11-01T05:41:27.645Z",
+      "note": "auto (gate_mode=flow): plan.md sin migración ni ADR nueva"
+    },
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -26,7 +29,9 @@
     "docs": null,
     "close": null
   },
-  "commits": {},
+  "commits": {
+    "spec": "b6a212e"
+  },
   "iterations": {
     "tests": 0,
     "implement": 0,
@@ -77,6 +82,36 @@
       "stage": "spec",
       "event": "approved",
       "note": "Sí, aprobado"
+    },
+    {
+      "at": "2026-11-01T05:36:24.103Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: b6a212e"
+    },
+    {
+      "at": "2026-11-01T05:36:24.280Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Diseñar plan.md a partir de la spec aprobada"
+    },
+    {
+      "at": "2026-11-01T05:41:27.452Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md: ampliación de ADR-0037, sin migración ni dependencias"
+    },
+    {
+      "at": "2026-11-01T05:41:27.547Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Decisiones: per_100g validado tras redondear half-up; campo Comida con radios nativos; PortionChat recibe date; sin ADR nueva"
+    },
+    {
+      "at": "2026-11-01T05:41:27.645Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan.md sin migración ni ADR nueva"
     }
   ]
 }
