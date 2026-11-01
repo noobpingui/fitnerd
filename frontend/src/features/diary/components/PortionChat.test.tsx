@@ -7,17 +7,22 @@ import userEvent from "@testing-library/user-event"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ZodError } from "zod"
 import { ApiError } from "@/lib/apiClient"
-import { estimatePortion } from "@/features/diary/api"
-import { makePortionEstimate } from "@/test/portionEstimateFixtures"
+import { addMealItems, estimatePortion, getDiary } from "@/features/diary/api"
+import { makeEggsWithPer100g, makePortionEstimate } from "@/test/portionEstimateFixtures"
 import { usePortionChat } from "../hooks"
 import type { PortionEstimate } from "../types"
 import { PortionChat } from "./PortionChat"
 
 vi.mock("@/features/diary/api", () => ({
   estimatePortion: vi.fn(),
+  // Spec 032: el diálogo «Añadir alimento» guarda con addMealItems.
+  addMealItems: vi.fn(),
+  getDiary: vi.fn(),
 }))
 
 const estimateMock = vi.mocked(estimatePortion)
+const addMock = vi.mocked(addMealItems)
+const getDiaryMock = vi.mocked(getDiary)
 
 const EXPLANATION =
   "Pregunta a la IA cuántos gramos pesa un alimento o una porción, por ejemplo «5 huevos» o «un filete de pescado». La respuesta es una estimación aproximada."
@@ -28,7 +33,7 @@ const UNKNOWN_MESSAGE =
 
 function Harness() {
   const chat = usePortionChat()
-  return <PortionChat chat={chat} />
+  return <PortionChat chat={chat} date="2026-10-31" />
 }
 
 function renderChat() {
@@ -426,5 +431,300 @@ describe("PortionChat - respuestas y errores", () => {
         order[i].compareDocumentPosition(order[i + 1]) & Node.DOCUMENT_POSITION_FOLLOWING
       ).toBeTruthy()
     }
+  })
+})
+
+describe("PortionChat - valores por 100 g y «Añadir alimento» (spec 032)", () => {
+  const PER_100G_LINE =
+    "Por 100 g: 143 kcal · 12,6 g proteína · 0,7 g carbohidratos · 9,5 g grasa"
+  const SAVE_FAILED = "No se pudo guardar. Vuelve a intentarlo."
+
+  beforeEach(() => {
+    estimateMock.mockReset()
+    addMock.mockReset()
+    getDiaryMock.mockReset()
+  })
+
+  const chatBlock = () => screen.getByRole("region", { name: "Calcular gramos con IA" })
+  const chatAddButton = () => within(chatBlock()).queryByRole("button", { name: "Añadir alimento" })
+  const getChatAddButton = () =>
+    within(chatBlock()).getByRole("button", { name: "Añadir alimento" })
+
+  async function ask(text = "5 huevos") {
+    const user = userEvent.setup()
+    await user.type(field(), `${text}{Enter}`)
+    return user
+  }
+
+  function follows(first: HTMLElement, second: HTMLElement): boolean {
+    return Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING)
+  }
+
+  // SDD: 032 REQ-005 AC-005.1
+  it("muestra los gramos, la porción, la nota y «Por 100 g: …» en ese orden", async () => {
+    estimateMock.mockResolvedValue(makeEggsWithPer100g())
+    renderChat()
+
+    await ask()
+
+    const grams = await within(log()).findByText("Unos 250 g")
+    const unit = within(log()).getByText("Porción: 5 huevos grandes")
+    const note = within(log()).getByText("Unos 50 g por huevo sin cáscara.")
+    const per100g = within(log()).getByText(PER_100G_LINE)
+    expect(follows(grams, unit)).toBe(true)
+    expect(follows(unit, note)).toBe(true)
+    expect(follows(note, per100g)).toBe(true)
+  })
+
+  // SDD: 032 REQ-005 AC-005.2
+  it("una estimación con per_100g null no muestra «Por 100 g:»", async () => {
+    estimateMock.mockResolvedValue(makePortionEstimate())
+    renderChat()
+
+    await ask()
+
+    await within(log()).findByText("Unos 250 g")
+    expect(within(log()).queryByText(/Por 100 g:/)).not.toBeInTheDocument()
+
+    estimateMock.mockResolvedValue(makeEggsWithPer100g())
+    await ask("5 huevos")
+    expect(await within(log()).findByText(/Por 100 g: 143 kcal/)).toBeInTheDocument()
+  })
+
+  // SDD: 032 REQ-005 AC-005.3
+  it("52,4 kcal, 0 g, 13,8 g y 0,2 g se muestran como «52 kcal · 0,0 g …»", async () => {
+    estimateMock.mockResolvedValue(
+      makeEggsWithPer100g({
+        per_100g: { calories_kcal: 52.4, protein_g: 0, carbs_g: 13.8, fat_g: 0.2 },
+      } as Partial<PortionEstimate>)
+    )
+    renderChat()
+
+    await ask("una manzana")
+
+    expect(
+      await within(log()).findByText(
+        "Por 100 g: 52 kcal · 0,0 g proteína · 13,8 g carbohidratos · 0,2 g grasa"
+      )
+    ).toBeInTheDocument()
+  })
+
+  // SDD: 032 REQ-006 AC-006.1
+  it("con la conversación vacía no hay botón «Añadir alimento» en el bloque", async () => {
+    estimateMock.mockResolvedValue(makeEggsWithPer100g())
+    renderChat()
+
+    expect(chatAddButton()).not.toBeInTheDocument()
+
+    await ask()
+    await within(log()).findByText("Unos 250 g")
+    expect(getChatAddButton()).toBeInTheDocument()
+  })
+
+  // SDD: 032 REQ-006 AC-006.2
+  it("tras una estimación aparece «Añadir alimento» justo antes de «Preguntar»", async () => {
+    estimateMock.mockResolvedValue(makeEggsWithPer100g())
+    renderChat()
+
+    await ask()
+
+    await within(log()).findByText("Unos 250 g")
+    const buttons = within(chatBlock()).getAllByRole("button")
+    const add = getChatAddButton()
+    expect(buttons.indexOf(add)).toBeGreaterThanOrEqual(0)
+    expect(buttons[buttons.indexOf(add) + 1]).toBe(sendButton())
+    expect(follows(add, sendButton())).toBe(true)
+  })
+
+  // SDD: 032 REQ-006 AC-006.3
+  it("mientras la siguiente pregunta está en curso el botón desaparece", async () => {
+    const user = userEvent.setup()
+    const pending = deferred<PortionEstimate>()
+    estimateMock.mockResolvedValueOnce(makeEggsWithPer100g())
+    estimateMock.mockReturnValueOnce(pending.promise)
+    renderChat()
+    await user.type(field(), "5 huevos{Enter}")
+    await within(log()).findByText("Unos 250 g")
+    expect(getChatAddButton()).toBeInTheDocument()
+
+    await user.type(field(), "un plátano{Enter}")
+
+    expect(await within(log()).findByText("Calculando…")).toBeInTheDocument()
+    expect(chatAddButton()).not.toBeInTheDocument()
+    await act(async () => pending.resolve(estimated(120)))
+  })
+
+  // SDD: 032 REQ-006 AC-006.4
+  it.each([
+    ["not_food", () => Promise.resolve({ status: "not_food", message: NOT_FOOD_MESSAGE } as PortionEstimate)],
+    ["unknown", () => Promise.resolve({ status: "unknown", message: UNKNOWN_MESSAGE } as PortionEstimate)],
+    ["un 429", () => Promise.reject(new ApiError(429, "Alcanzaste el límite."))],
+    ["un error", () => Promise.reject(new ApiError(500, "boom"))],
+  ])("si la siguiente pregunta recibe %s, el botón desaparece", async (_name, next) => {
+    const user = userEvent.setup()
+    estimateMock.mockResolvedValueOnce(makeEggsWithPer100g())
+    estimateMock.mockImplementationOnce(next)
+    renderChat()
+    await user.type(field(), "5 huevos{Enter}")
+    await within(log()).findByText("Unos 250 g")
+    expect(getChatAddButton()).toBeInTheDocument()
+
+    await user.type(field(), "otra cosa{Enter}")
+
+    await vi.waitFor(() => expect(within(log()).queryByText("Calculando…")).not.toBeInTheDocument())
+    expect(within(log()).getByText("otra cosa")).toBeInTheDocument()
+    expect(chatAddButton()).not.toBeInTheDocument()
+  })
+
+  // SDD: 032 REQ-006 AC-006.5
+  it("una estimación sin nombre ni per_100g también muestra el botón", async () => {
+    estimateMock.mockResolvedValue(makePortionEstimate())
+    renderChat()
+
+    await ask()
+
+    await within(log()).findByText("Unos 250 g")
+    expect(getChatAddButton()).toBeInTheDocument()
+  })
+
+  // SDD: 032 REQ-011 AC-011.1
+  it("la respuesta de un backend anterior (sin las claves nuevas) muestra los gramos, no «Por 100 g:» y el botón", async () => {
+    estimateMock.mockResolvedValue(estimated(250))
+    renderChat()
+
+    await ask()
+
+    expect(await within(log()).findByText("Unos 250 g")).toBeInTheDocument()
+    expect(within(log()).queryByText(/Por 100 g:/)).not.toBeInTheDocument()
+    expect(getChatAddButton()).toBeInTheDocument()
+  })
+
+  // SDD: 032 REQ-011 AC-011.2
+  it("una respuesta con forma inesperada muestra el mensaje genérico y no el botón", async () => {
+    estimateMock.mockRejectedValue(
+      new ZodError([{ code: "custom", path: ["per_100g"], message: "Invalid input" }])
+    )
+    renderChat()
+
+    await ask()
+
+    expect(await within(log()).findByText(GENERIC_ERROR)).toBeInTheDocument()
+    expect(chatAddButton()).not.toBeInTheDocument()
+
+    estimateMock.mockResolvedValue(makeEggsWithPer100g())
+    await ask("5 huevos")
+    expect(await within(log()).findByText(/Por 100 g: 143 kcal/)).toBeInTheDocument()
+    expect(getChatAddButton()).toBeInTheDocument()
+  })
+
+  // SDD: 032 REQ-007 AC-007.1
+  it("pulsar «Añadir alimento» abre el diálogo con los datos de la estimación", async () => {
+    estimateMock.mockResolvedValue(makeEggsWithPer100g())
+    renderChat()
+    const user = await ask()
+    await within(log()).findByText("Unos 250 g")
+
+    await user.click(getChatAddButton())
+
+    const dialog = await screen.findByRole("dialog", { name: "Añadir alimento" })
+    expect(within(dialog).getByLabelText("Nombre")).toHaveValue("Huevo")
+    expect(within(dialog).getByLabelText("Gramos")).toHaveValue("250")
+    expect(within(dialog).getByLabelText("Calorías por 100 g (kcal)")).toHaveValue("143")
+    expect(within(dialog).getByLabelText("Proteína por 100 g (g)")).toHaveValue("12,6")
+    expect(within(dialog).getByLabelText("Carbohidratos por 100 g (g)")).toHaveValue("0,7")
+    expect(within(dialog).getByLabelText("Grasa por 100 g (g)")).toHaveValue("9,5")
+  })
+
+  // SDD: 032 REQ-007 AC-007.5
+  it("con dos estimaciones el diálogo se precarga con la de la última pregunta", async () => {
+    const user = userEvent.setup()
+    estimateMock.mockResolvedValueOnce(makeEggsWithPer100g())
+    estimateMock.mockResolvedValueOnce(
+      makeEggsWithPer100g({
+        grams: 120,
+        unit: null,
+        note: null,
+        name: "Plátano",
+        per_100g: { calories_kcal: 89, protein_g: 1.1, carbs_g: 22.8, fat_g: 0.3 },
+      } as Partial<PortionEstimate>)
+    )
+    renderChat()
+    await user.type(field(), "5 huevos{Enter}")
+    await within(log()).findByText("Unos 250 g")
+    await user.type(field(), "un plátano{Enter}")
+    await within(log()).findByText("Unos 120 g")
+
+    await user.click(getChatAddButton())
+
+    const dialog = await screen.findByRole("dialog", { name: "Añadir alimento" })
+    expect(within(dialog).getByLabelText("Nombre")).toHaveValue("Plátano")
+    expect(within(dialog).getByLabelText("Gramos")).toHaveValue("120")
+    expect(within(dialog).getByLabelText("Calorías por 100 g (kcal)")).toHaveValue("89")
+  })
+
+  // SDD: 032 REQ-010 AC-010.3
+  it("«Cancelar» cierra el diálogo sin enviar nada y la conversación no cambia", async () => {
+    estimateMock.mockResolvedValue(makeEggsWithPer100g())
+    renderChat()
+    const user = await ask()
+    await within(log()).findByText("Unos 250 g")
+    await user.click(getChatAddButton())
+    const dialog = await screen.findByRole("dialog", { name: "Añadir alimento" })
+
+    await user.click(within(dialog).getByRole("button", { name: "Cancelar" }))
+
+    await vi.waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument())
+    expect(addMock).not.toHaveBeenCalled()
+    expect(within(log()).getByText("5 huevos")).toBeInTheDocument()
+    expect(within(log()).getByText("Unos 250 g")).toBeInTheDocument()
+    expect(estimateMock).toHaveBeenCalledTimes(1)
+  })
+
+  // SDD: 032 REQ-010 AC-010.3
+  it("Escape cierra el diálogo sin enviar nada y la conversación no cambia", async () => {
+    estimateMock.mockResolvedValue(makeEggsWithPer100g())
+    renderChat()
+    const user = await ask()
+    await within(log()).findByText("Unos 250 g")
+    await user.click(getChatAddButton())
+    await screen.findByRole("dialog", { name: "Añadir alimento" })
+
+    await user.keyboard("{Escape}")
+
+    await vi.waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument())
+    expect(addMock).not.toHaveBeenCalled()
+    expect(within(log()).getByText("Unos 250 g")).toBeInTheDocument()
+    expect(getChatAddButton()).toBeInTheDocument()
+  })
+
+  // SDD: 032 NFR-003 AC-N003.2
+  it("al cancelar, el foco vuelve al botón «Añadir alimento» del chat", async () => {
+    estimateMock.mockResolvedValue(makeEggsWithPer100g())
+    renderChat()
+    const user = await ask()
+    await within(log()).findByText("Unos 250 g")
+    await user.click(getChatAddButton())
+    const dialog = await screen.findByRole("dialog", { name: "Añadir alimento" })
+
+    await user.click(within(dialog).getByRole("button", { name: "Cancelar" }))
+
+    await vi.waitFor(() => expect(getChatAddButton()).toHaveFocus())
+  })
+
+  // SDD: 032 REQ-010 AC-010.2
+  it("un fallo al guardar desde el chat mantiene el diálogo con el mensaje genérico", async () => {
+    addMock.mockRejectedValue(new ApiError(500, "boom"))
+    estimateMock.mockResolvedValue(makeEggsWithPer100g())
+    renderChat()
+    const user = await ask()
+    await within(log()).findByText("Unos 250 g")
+    await user.click(getChatAddButton())
+    const dialog = await screen.findByRole("dialog", { name: "Añadir alimento" })
+    await user.click(within(dialog).getByRole("radio", { name: "Cena" }))
+
+    await user.click(within(dialog).getByRole("button", { name: "Añadir" }))
+
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent(SAVE_FAILED)
+    expect(screen.getByRole("dialog", { name: "Añadir alimento" })).toBeInTheDocument()
   })
 })

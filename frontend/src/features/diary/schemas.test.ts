@@ -840,4 +840,75 @@ describe("portionEstimateResponseSchema", () => {
       }).success
     ).toBe(true)
   })
+
+  const BASE = { status: "estimated", grams: 250, unit: null, note: null, message: null }
+  const PER_100G = { calories_kcal: 143, protein_g: 12.6, carbs_g: 0.7, fat_g: 9.5 }
+
+  // SDD: 032 REQ-011 AC-011.1
+  it("sin las claves name y per_100g las rellena con null", () => {
+    const result = portionEstimateResponseSchema.safeParse(BASE)
+
+    expect(result.success).toBe(true)
+    expect(result.data).toMatchObject({ status: "estimated", grams: 250, name: null, per_100g: null })
+  })
+
+  // SDD: 032 REQ-001 AC-001.1
+  it("acepta la respuesta completa con nombre y valores por 100 g", () => {
+    const result = portionEstimateResponseSchema.safeParse({
+      ...BASE,
+      unit: "5 huevos grandes",
+      note: "Unos 50 g por huevo sin cáscara.",
+      name: "Huevo",
+      per_100g: PER_100G,
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data).toMatchObject({ name: "Huevo", per_100g: PER_100G })
+  })
+
+  // SDD: 032 REQ-011 AC-011.1
+  it("acepta name y per_100g nulos", () => {
+    const result = portionEstimateResponseSchema.safeParse({ ...BASE, name: null, per_100g: null })
+
+    expect(result.success).toBe(true)
+    expect(result.data).toMatchObject({ name: null, per_100g: null })
+  })
+
+  // SDD: 032 REQ-011 AC-011.2
+  it.each([
+    ["per_100g como texto", { per_100g: "143" }],
+    ["per_100g sin fat_g", { per_100g: { calories_kcal: 143, protein_g: 12.6, carbs_g: 0.7 } }],
+    ["un valor de per_100g como texto", { per_100g: { ...PER_100G, fat_g: "9,5" } }],
+    ["name numérico", { name: 5 }],
+  ])("rechaza una estimación con %s", (_name, extra) => {
+    expect(portionEstimateResponseSchema.safeParse({ ...BASE, ...extra }).success).toBe(false)
+    // Contraste: sin la clave mal formada, la misma respuesta se acepta.
+    expect(portionEstimateResponseSchema.safeParse({ ...BASE, name: "Huevo", per_100g: PER_100G }).success).toBe(true)
+  })
+
+  // SDD: 032 REQ-004 AC-004.1
+  it("acepta not_food con name y per_100g nulos", () => {
+    expect(
+      portionEstimateResponseSchema.safeParse({
+        status: "not_food",
+        grams: null,
+        unit: null,
+        note: null,
+        message: "Solo puedo ayudarte a estimar cuántos gramos pesa un alimento.",
+        name: null,
+        per_100g: null,
+      }).success
+    ).toBe(true)
+    const estimated = portionEstimateResponseSchema.safeParse({
+      status: "estimated",
+      grams: 250,
+      unit: null,
+      note: null,
+      message: null,
+      name: "Huevo",
+      per_100g: { calories_kcal: 143, protein_g: 12.6, carbs_g: 0.7, fat_g: 9.5 },
+    })
+    expect(estimated.success).toBe(true)
+    expect(estimated.data).toMatchObject({ name: "Huevo", per_100g: { calories_kcal: 143 } })
+  })
 })

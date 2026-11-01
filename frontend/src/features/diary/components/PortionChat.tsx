@@ -29,7 +29,13 @@ function AnswerView({ answer }: { answer: PortionChatAnswer | null }): ReactElem
   }
 }
 
-export function PortionChat({ chat }: { chat: PortionChatState }): ReactElement {
+export function PortionChat({
+  chat,
+}: {
+  chat: PortionChatState
+  date: string
+  onDialogOpenChange?: (open: boolean) => void
+}): ReactElement {
   const titleId = useId()
   const logRef = useRef<HTMLDivElement>(null)
   const value = useWatch({ control: chat.form.control, name: "question" }) ?? ""

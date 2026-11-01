@@ -1977,3 +1977,150 @@ describe("DiaryPage - chat de porciones (spec 031)", () => {
     expect(screen.getByText(`0 / ${intFormat.format(goal.kcal)} kcal`)).toBeInTheDocument()
   })
 })
+
+// ---------------------------------------------------------------------------
+// Spec 032: «Añadir alimento» desde el chat de porciones
+// ---------------------------------------------------------------------------
+
+describe("DiaryPage - añadir alimento desde el chat (spec 032)", () => {
+  const estimateMock = vi.mocked(estimatePortion)
+  const EGGS: PortionEstimate = {
+    status: "estimated",
+    grams: 250,
+    unit: "5 huevos grandes",
+    note: "Unos 50 g por huevo sin cáscara.",
+    name: "Huevo",
+    per_100g: { calories_kcal: 143, protein_g: 12.6, carbs_g: 0.7, fat_g: 9.5 },
+  } as PortionEstimate
+  const EGG_ITEM = makeCustomItem({
+    id: 61,
+    name: "Huevo",
+    grams: 250,
+    per_100g: { calories_kcal: 143, protein_g: 12.6, carbs_g: 0.7, fat_g: 9.5 },
+    nutrients: { calories_kcal: 357.5, protein_g: 31.5, carbs_g: 1.75, fat_g: 23.75 },
+  })
+
+  beforeEach(() => {
+    setUpDay26()
+    estimateMock.mockReset()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  const chatBlock = () => screen.getByRole("region", { name: "Calcular gramos con IA" })
+  const log = () => screen.getByRole("log", { name: "Conversación sobre gramos" })
+
+  async function askAndOpen(user: User) {
+    await user.type(
+      screen.getByRole("textbox", { name: "Alimento o porción" }),
+      "5 huevos{Enter}"
+    )
+    await within(log()).findByText("Unos 250 g")
+    await user.click(within(chatBlock()).getByRole("button", { name: "Añadir alimento" }))
+    return screen.findByRole("dialog", { name: "Añadir alimento" })
+  }
+
+  // SDD: 032 REQ-009 AC-009.3
+  it("guardar cierra el diálogo, muestra el alimento en la sección y conserva la conversación y el botón", async () => {
+    const user = userEvent.setup()
+    const dinner = mealOn(TODAY, { id: 21, meal_type: "dinner", items: [EGG_ITEM] })
+    estimateMock.mockResolvedValue(EGGS)
+    getDiaryMock.mockResolvedValueOnce(dayOf(TODAY))
+    getDiaryMock.mockResolvedValue(dayOf(TODAY, [dinner]))
+    addMock.mockResolvedValue(dinner)
+    renderAt()
+    await screen.findByRole("heading", { level: 2, name: "Calcular gramos con IA" })
+    const dialog = await askAndOpen(user)
+
+    await user.click(within(dialog).getByRole("radio", { name: "Cena" }))
+    await user.click(within(dialog).getByRole("button", { name: "Añadir" }))
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument())
+    expect(addMock).toHaveBeenCalledTimes(1)
+    expect(addMock).toHaveBeenCalledWith({
+      date: TODAY,
+      meal_type: "dinner",
+      items: [
+        {
+          name: "Huevo",
+          grams: 250,
+          per_100g: { calories_kcal: 143, protein_g: 12.6, carbs_g: 0.7, fat_g: 9.5 },
+        },
+      ],
+    })
+    expect(await screen.findByText("Huevo")).toBeInTheDocument()
+    expect(within(log()).getByText("5 huevos")).toBeInTheDocument()
+    expect(within(log()).getByText("Unos 250 g")).toBeInTheDocument()
+    expect(within(chatBlock()).getByRole("button", { name: "Añadir alimento" })).toBeInTheDocument()
+  })
+
+  // SDD: 032 REQ-009 AC-009.2
+  it("en un día pasado elegido con `?date=` guarda en esa fecha en Desayuno", async () => {
+    const user = userEvent.setup()
+    const breakfast = mealOn("2026-10-20", { id: 22, meal_type: "breakfast", items: [EGG_ITEM] })
+    estimateMock.mockResolvedValue(EGGS)
+    getDiaryMock.mockResolvedValueOnce(dayOf("2026-10-20"))
+    getDiaryMock.mockResolvedValue(dayOf("2026-10-20", [breakfast]))
+    addMock.mockResolvedValue(breakfast)
+    renderAt(["/diary?date=2026-10-20"])
+    await screen.findByRole("heading", { level: 2, name: "Calcular gramos con IA" })
+    const dialog = await askAndOpen(user)
+
+    await user.click(within(dialog).getByRole("radio", { name: "Desayuno" }))
+    await user.click(within(dialog).getByRole("button", { name: "Añadir" }))
+
+    await waitFor(() => expect(addMock).toHaveBeenCalledTimes(1))
+    expect(addMock.mock.calls[0][0]).toMatchObject({
+      date: "2026-10-20",
+      meal_type: "breakfast",
+    })
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument())
+  })
+
+  describe("a medianoche", () => {
+    beforeEach(() => {
+      vi.useRealTimers()
+      vi.useFakeTimers({ toFake: ["Date", "setInterval", "clearInterval"] })
+      vi.setSystemTime(new Date(2026, 9, 26, 23, 59, 30))
+    })
+
+    // SDD: 032 REQ-007 AC-007.7
+    it("con el diálogo abierto el día del diario no cambia y, al cerrarlo, pasa al nuevo día", async () => {
+      const user = userEvent.setup()
+      estimateMock.mockResolvedValue(EGGS)
+      renderAt()
+      await settle()
+      expect(screen.getByText("lunes, 26 de octubre")).toBeInTheDocument()
+      await user.type(
+        screen.getByRole("textbox", { name: "Alimento o porción" }),
+        "5 huevos{Enter}"
+      )
+      await settle()
+      await user.click(within(chatBlock()).getByRole("button", { name: "Añadir alimento" }))
+      await settle()
+      const dialog = screen.getByRole("dialog", { name: "Añadir alimento" })
+
+      await act(async () => {
+        vi.advanceTimersByTime(60_000)
+      })
+      await settle()
+
+      expect(screen.getByRole("dialog", { name: "Añadir alimento" })).toBeInTheDocument()
+      expect(screen.getByText("lunes, 26 de octubre")).toBeInTheDocument()
+      expect(getDiaryMock).not.toHaveBeenCalledWith("2026-10-27")
+      expect(addMock).not.toHaveBeenCalled()
+
+      await user.click(within(dialog).getByRole("button", { name: "Cancelar" }))
+      await settle()
+      await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument())
+      await act(async () => {
+        vi.advanceTimersByTime(60_000)
+      })
+      await settle()
+
+      expect(screen.getByText("martes, 27 de octubre")).toBeInTheDocument()
+    })
+  })
+})

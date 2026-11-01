@@ -71,7 +71,8 @@ def post_raw(client, app, **kwargs):
 
 # SDD: 030 REQ-001 AC-001.1
 def test_valid_question_returns_the_exact_estimation(client, app, model):
-    """200 con las cinco claves de una estimación."""
+    """200 con las claves de una estimación; sin nombre ni valores del modelo,
+    `name` y `per_100g` salen como null (spec 032)."""
     response = ask(client, app, "5 huevos")
 
     assert response.status_code == 200
@@ -81,8 +82,67 @@ def test_valid_question_returns_the_exact_estimation(client, app, model):
         "unit": "5 huevos grandes",
         "note": "Unos 50 g por huevo sin cáscara.",
         "message": None,
+        "name": None,
+        "per_100g": None,
     }
     assert len(model.calls) == 1
+
+
+# SDD: 032 REQ-001 AC-001.1
+def test_valid_question_returns_the_name_and_the_values_per_100g(client, app, model):
+    """200 con las siete claves, incluidos el nombre y los valores por 100 g."""
+    model.data = {
+        **EGGS,
+        "name": "Huevo",
+        "per_100g": {
+            "calories_kcal": 143,
+            "protein_g": 12.6,
+            "carbs_g": 0.7,
+            "fat_g": 9.5,
+        },
+    }
+
+    response = ask(client, app, "5 huevos")
+
+    assert response.status_code == 200
+    assert response.get_json() == {
+        "status": "estimated",
+        "grams": 250,
+        "unit": "5 huevos grandes",
+        "note": "Unos 50 g por huevo sin cáscara.",
+        "message": None,
+        "name": "Huevo",
+        "per_100g": {
+            "calories_kcal": 143,
+            "protein_g": 12.6,
+            "carbs_g": 0.7,
+            "fat_g": 9.5,
+        },
+    }
+
+
+# SDD: 032 REQ-002 AC-002.3
+def test_invalid_values_per_100g_are_returned_as_null(client, app, model):
+    """Con kcal fuera de rango, la estimación sigue y per_100g sale null."""
+    model.data = {
+        **EGGS,
+        "name": "Huevo",
+        "per_100g": {
+            "calories_kcal": 900.1,
+            "protein_g": 12.6,
+            "carbs_g": 0.7,
+            "fat_g": 9.5,
+        },
+    }
+
+    response = ask(client, app, "5 huevos")
+
+    assert response.status_code == 200
+    body = response.get_json()
+    assert body["status"] == "estimated"
+    assert body["grams"] == 250
+    assert body["name"] == "Huevo"
+    assert body["per_100g"] is None
 
 
 # SDD: 030 REQ-003 AC-003.1
@@ -99,6 +159,36 @@ def test_not_food_question_returns_the_fixed_message(client, app, model):
         "unit": None,
         "note": None,
         "message": NOT_FOOD_MESSAGE,
+        "name": None,
+        "per_100g": None,
+    }
+
+
+# SDD: 032 REQ-004 AC-004.1
+def test_not_food_ignores_the_name_and_values_of_the_model(client, app, model):
+    """Aunque el modelo incluya nombre y valores, not_food los devuelve null."""
+    model.data = {
+        "is_food": False,
+        "name": "Huevo",
+        "per_100g": {
+            "calories_kcal": 143,
+            "protein_g": 12.6,
+            "carbs_g": 0.7,
+            "fat_g": 9.5,
+        },
+    }
+
+    response = ask(client, app, "¿Quién ganó el mundial?")
+
+    assert response.status_code == 200
+    assert response.get_json() == {
+        "status": "not_food",
+        "grams": None,
+        "unit": None,
+        "note": None,
+        "message": NOT_FOOD_MESSAGE,
+        "name": None,
+        "per_100g": None,
     }
 
 
@@ -116,6 +206,8 @@ def test_invalid_grams_return_unknown(client, app, model):
         "unit": None,
         "note": None,
         "message": UNKNOWN_MESSAGE,
+        "name": None,
+        "per_100g": None,
     }
 
 

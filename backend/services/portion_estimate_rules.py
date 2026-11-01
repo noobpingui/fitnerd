@@ -56,12 +56,30 @@ SYSTEM_PROMPT = (
 
 
 @dataclass(frozen=True)
+class PortionPer100g:
+    calories_kcal: float
+    protein_g: float
+    carbs_g: float
+    fat_g: float
+
+
+@dataclass(frozen=True)
 class PortionEstimate:
     status: str
     grams: int | None
     unit: str | None
     note: str | None
     message: str | None
+    name: str | None = None
+    per_100g: PortionPer100g | None = None
+
+
+def round_to_tenth(_value: int | float) -> Decimal:
+    raise NotImplementedError("not implemented")
+
+
+def parse_per_100g(_value: object) -> PortionPer100g | None:
+    raise NotImplementedError("not implemented")
 
 
 def parse_question(data: object) -> str:

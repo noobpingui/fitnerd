@@ -23,3 +23,6 @@ export const UNDO_DURATION_MS = 10_000
 export const TODAY_CHECK_INTERVAL_MS = 30_000
 
 export const PORTION_QUESTION_MAX_LENGTH = 200
+export const PORTION_ADD_FOOD_TITLE = "Añadir alimento"
+export const PORTION_ADD_FOOD_DESCRIPTION = "Revisa los datos de la IA y elige en qué comida añadirlo."
+export const PORTION_MEAL_REQUIRED_MESSAGE = "Elige en qué comida añadirlo."

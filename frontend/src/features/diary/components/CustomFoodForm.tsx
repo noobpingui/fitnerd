@@ -44,6 +44,8 @@ export function CustomFoodForm({
   submitLabel?: string
   isSaving: boolean
   onSubmit: (payload: CustomItemPayload) => void
+  defaultNutrients?: Pick<CustomFoodFormValues, "calories" | "protein" | "carbs" | "fat">
+  onSubmitAttempt?: () => boolean
   children?: ReactNode
 }): ReactElement {
   const form = useForm<CustomFoodFormValues>({
