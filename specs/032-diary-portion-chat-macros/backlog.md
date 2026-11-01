@@ -24,3 +24,17 @@
 ## implementer (implement)
 - [ ] Anotar en ADR-0037 (lo hace la sesión principal) que el máximo de tokens pasó de 150 a 250.
 - [ ] Revisar en Langfuse tras desplegar si hay respuestas cortadas por `max_tokens` (`stop_reason` en `step.end`).
+
+## verifier (verify)
+- [ ] Normalizar a LF los archivos comprometidos con CRLF (Art. P5.1), tarea del repo, no de esta feature.
+- [ ] Revisión visual manual en navegador de la posición del botón «Añadir alimento» (AC-006.2) y del diálogo en móvil.
+
+## reviewer (review)
+- [ ] F1 (MENOR, test-author): escribió tests con scripts de Python desde Bash y marcó tasks.md con sed (Art. B2.4); en adelante, solo Write/Edit.
+- [ ] F2 (NIT, test-author): 4 archivos de test en CRLF en la copia de trabajo (en LF en el índice); normalizarlos.
+- [ ] F3 (NIT, implementer): el nombre se recorta a 100 puntos de código en el backend y maxLength/zod cuentan unidades UTF-16 en el frontend; afecta a nombres con emojis cerca del límite.
+- [ ] F4 (NIT, implementer, deuda de la 030): parse_grams no captura InvalidOperation; un entero como 10**30 en grams daría 500 en lugar de unknown.
+- [ ] Revisión visual en el navegador de la posición del botón «Añadir alimento» (AC-006.2) y del diálogo en móvil.
+
+## usuario (revisión visual)
+- [x] Revisión visual en el navegador de AC-006.2 y del diálogo: el usuario confirmó que se ve y funciona bien (2026-11-01).
