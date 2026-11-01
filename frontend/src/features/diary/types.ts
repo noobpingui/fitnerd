@@ -82,14 +82,30 @@ export type AddMealItemsPayload = {
 }
 export type RemovalUndo = { token: string; name: string; mealType: MealType }
 
+export type PortionPer100g = Record<NutrientKey, number>
 export type PortionEstimate =
-  | { status: "estimated"; grams: number; unit: string | null; note: string | null }
+  | {
+      status: "estimated"
+      grams: number
+      unit: string | null
+      note: string | null
+      name?: string | null
+      per_100g?: PortionPer100g | null
+    }
   | { status: "not_food" | "unknown"; message: string }
 // Respuesta mostrada debajo de una pregunta.
 export type PortionChatAnswer =
-  | { kind: "estimate"; grams: number; unit: string | null; note: string | null }
+  | {
+      kind: "estimate"
+      grams: number
+      unit: string | null
+      note: string | null
+      name?: string
+      per100g?: PortionPer100g
+    }
   | { kind: "message"; text: string } // not_food / unknown
   | { kind: "notice"; text: string } // 429, estilo neutro
   | { kind: "error"; text: string } // 400, 503 y cualquier otro fallo
+export type PortionEstimateAnswer = Extract<PortionChatAnswer, { kind: "estimate" }>
 export type PortionChatTurn = { id: number; question: string; answer: PortionChatAnswer | null } // null = en curso
 export type PortionQuestionFormValues = { question: string }

@@ -10,9 +10,11 @@ from services.portion_estimate_rules import (
     QUESTION_TOO_LONG_MESSAGE,
     UNKNOWN_MESSAGE,
     PortionEstimate,
+    PortionPer100g,
     build_estimate,
     clean_text,
     parse_grams,
+    parse_per_100g,
     parse_question,
 )
 
@@ -296,3 +298,216 @@ def test_build_estimate_is_unknown_when_the_grams_are_missing():
 def test_build_estimate_is_unknown_when_the_structure_is_not_the_expected(tool_input):
     """Sin estructura esperada (sin is_food, is_food no booleano, no dict): unknown."""
     assert build_estimate(tool_input) == unknown()
+
+
+# --- Spec 032: nombre y valores por 100 g ------------------------------------
+
+
+def per_100g(calories=143, protein=12.6, carbs=0.7, fat=9.5):
+    return {
+        "calories_kcal": calories,
+        "protein_g": protein,
+        "carbs_g": carbs,
+        "fat_g": fat,
+    }
+
+
+# SDD: 032 REQ-001 AC-001.1
+def test_build_estimate_includes_the_name_and_the_values_per_100g():
+    """Estimación completa: lleva el nombre y los valores por 100 g."""
+    estimate = build_estimate(
+        food(
+            250,
+            "5 huevos grandes",
+            "Unos 50 g por huevo sin cáscara.",
+            name="Huevo",
+            per_100g=per_100g(),
+        )
+    )
+
+    assert estimate == PortionEstimate(
+        "estimated",
+        250,
+        "5 huevos grandes",
+        "Unos 50 g por huevo sin cáscara.",
+        None,
+        "Huevo",
+        PortionPer100g(143, 12.6, 0.7, 9.5),
+    )
+
+
+# SDD: 032 REQ-001 AC-001.2
+def test_build_estimate_leaves_name_and_values_none_when_the_model_omits_them():
+    """Sin nombre ni valores por 100 g, ambos son None y el resto se mantiene."""
+    estimate = build_estimate(food())
+
+    assert estimate.status == "estimated"
+    assert estimate.grams == 250
+    assert estimate.name is None
+    assert estimate.per_100g is None
+    valid = build_estimate(food(name="Huevo", per_100g=per_100g()))
+    assert valid.name == "Huevo"
+    assert valid.per_100g == PortionPer100g(143, 12.6, 0.7, 9.5)
+
+
+# SDD: 032 REQ-001 AC-001.3
+def test_build_estimate_keeps_the_name_when_there_are_no_values():
+    """Con nombre y sin valores: el nombre sale y per_100g es None."""
+    estimate = build_estimate(food(name="Huevo"))
+
+    assert estimate.name == "Huevo"
+    assert estimate.per_100g is None
+
+
+# SDD: 032 REQ-001 AC-001.3
+def test_build_estimate_keeps_the_values_when_there_is_no_name():
+    """Con valores válidos y sin nombre: los valores salen y name es None."""
+    estimate = build_estimate(food(per_100g=per_100g()))
+
+    assert estimate.name is None
+    assert estimate.per_100g == PortionPer100g(143, 12.6, 0.7, 9.5)
+
+
+# SDD: 032 REQ-002 AC-002.1
+def test_parse_per_100g_rounds_each_value_half_up_to_a_tenth():
+    """143,26 / 12,65 / 0,74 / 9,549 salen como 143,3 / 12,7 / 0,7 / 9,5."""
+    result = parse_per_100g(per_100g(143.26, 12.65, 0.74, 9.549))
+
+    assert result == PortionPer100g(143.3, 12.7, 0.7, 9.5)
+
+
+# SDD: 032 REQ-002 AC-002.1
+def test_build_estimate_rounds_the_values_per_100g():
+    """El redondeo ocurre también dentro de la estimación."""
+    estimate = build_estimate(food(per_100g=per_100g(143.26, 12.65, 0.74, 9.549)))
+
+    assert estimate.per_100g == PortionPer100g(143.3, 12.7, 0.7, 9.5)
+
+
+# SDD: 032 REQ-002 AC-002.2
+@pytest.mark.parametrize(
+    "values",
+    [per_100g(0, 0, 0, 0), per_100g(900, 0, 0, 100), per_100g(0, 100, 0, 0)],
+)
+def test_parse_per_100g_accepts_the_extremes(values):
+    """Los extremos de los rangos son válidos."""
+    result = parse_per_100g(values)
+
+    assert result == PortionPer100g(
+        values["calories_kcal"], values["protein_g"], values["carbs_g"], values["fat_g"]
+    )
+
+
+# SDD: 032 REQ-002 AC-002.2
+def test_parse_per_100g_validates_after_rounding():
+    """900,04 se redondea a 900,0 y es válido; 900,05 sube a 900,1 y no lo es."""
+    assert parse_per_100g(per_100g(900.04, 0, 0, 0)) == PortionPer100g(900.0, 0, 0, 0)
+    assert parse_per_100g(per_100g(900.05, 0, 0, 0)) is None
+
+
+# SDD: 032 REQ-002 AC-002.3
+@pytest.mark.parametrize(
+    "values",
+    [
+        per_100g(calories=900.1),
+        per_100g(calories=-1),
+        per_100g(protein=100.1),
+        per_100g(protein=-0.5),
+        per_100g(calories="143"),
+        per_100g(fat=True),
+        per_100g(fat=None),
+        {"calories_kcal": 143, "protein_g": 12.6, "fat_g": 9.5},
+        per_100g(100, 50, 40, 10.1),
+        per_100g(calories=float("nan")),
+        per_100g(calories=float("inf")),
+        per_100g(calories=10**400),
+    ],
+)
+def test_build_estimate_gives_no_values_when_per_100g_is_not_valid(values):
+    """Valores fuera de rango, de otro tipo, ausentes o con suma > 100: per_100g
+    es None y gramos, porción y nota quedan como en una estimación válida."""
+    estimate = build_estimate(food(250, "5 huevos grandes", "Nota.", per_100g=values))
+
+    assert estimate.status == "estimated"
+    assert estimate.grams == 250
+    assert estimate.unit == "5 huevos grandes"
+    assert estimate.note == "Nota."
+    assert estimate.per_100g is None
+    assert build_estimate(food(per_100g=per_100g())).per_100g is not None
+
+
+# SDD: 032 REQ-002 AC-002.3
+@pytest.mark.parametrize(
+    "values",
+    [per_100g(calories=900.1), per_100g(50, 50, 40, 10.1), per_100g(fat=True)],
+)
+def test_parse_per_100g_returns_none_when_not_valid(values):
+    """La función de reglas devuelve None ante valores no válidos."""
+    assert parse_per_100g(values) is None
+
+
+# SDD: 032 REQ-002 AC-002.4
+@pytest.mark.parametrize("value", ["143", ["143", 12], 5, None, True])
+def test_build_estimate_gives_no_values_when_per_100g_is_not_an_object(value):
+    """per_100g que no es un objeto: la estimación sigue y per_100g es None."""
+    estimate = build_estimate(food(per_100g=value))
+
+    assert estimate.status == "estimated"
+    assert estimate.grams == 250
+    assert estimate.per_100g is None
+    assert build_estimate(food(per_100g=per_100g())).per_100g is not None
+
+
+# SDD: 032 REQ-003 AC-003.1
+def test_build_estimate_strips_the_name():
+    """El nombre se devuelve sin espacios en los extremos."""
+    assert build_estimate(food(name="  Huevo cocido  ")).name == "Huevo cocido"
+
+
+# SDD: 032 REQ-003 AC-003.2
+def test_build_estimate_truncates_a_long_name_to_100():
+    """Un nombre de 140 caracteres sale con 100 como máximo y sin espacio final."""
+    name = "a" * 99 + " " + "b" * 40
+
+    result = build_estimate(food(name=name)).name
+
+    assert result is not None
+    assert len(result) <= 100
+    assert name.startswith(result)
+    assert not result.endswith(" ")
+    assert result == "a" * 99
+
+
+# SDD: 032 REQ-003 AC-003.3
+@pytest.mark.parametrize("value", ["", "   ", 5, None])
+def test_build_estimate_leaves_the_name_none_when_blank_or_not_text(value):
+    """Nombre vacío, de espacios, numérico o null: None, y sigue siendo estimated."""
+    estimate = build_estimate(food(name=value))
+
+    assert estimate.status == "estimated"
+    assert estimate.name is None
+    assert build_estimate(food(name="Huevo")).name == "Huevo"
+
+
+# SDD: 032 REQ-004 AC-004.1
+def test_build_estimate_drops_name_and_values_when_not_food():
+    """Si no es comida, el nombre y los valores del modelo no salen."""
+    estimate = build_estimate(
+        {"is_food": False, "name": "Huevo", "per_100g": per_100g()}
+    )
+
+    assert estimate == PortionEstimate("not_food", None, None, None, NOT_FOOD_MESSAGE)
+    assert estimate.name is None
+    assert estimate.per_100g is None
+    assert build_estimate(food(name="Huevo", per_100g=per_100g())).name == "Huevo"
+
+
+# SDD: 032 REQ-004 AC-004.2
+def test_build_estimate_drops_name_and_values_when_the_grams_are_zero():
+    """Comida con 0 gramos: unknown, sin nombre ni valores aunque sean válidos."""
+    estimate = build_estimate(food(0, name="Huevo", per_100g=per_100g()))
+
+    assert estimate == unknown()
+    assert estimate.name is None
+    assert estimate.per_100g is None
+    assert build_estimate(food(250, name="Huevo", per_100g=per_100g())).name == "Huevo"

@@ -9,6 +9,10 @@ de su peso en gramos (`status`, `grams`, `unit`, `note`, `message`), sin RAG, co
 Haiku) distinto del coach, como mucho 150 tokens de salida y temperatura 0 (NFR-001), instrucciones fijas (NFR-002) y
 validación en el servidor de todo lo que devuelva el modelo (REQ-001 a REQ-004).
 
+> **Actualización (spec 032, 2026-11-01):** la respuesta `estimated` añade `name` y `per_100g`, así que el máximo de
+> tokens de salida pasó de 150 a **250** (NFR-001 de la 032), con una sola consulta y el mismo modelo. Donde esta ADR
+> habla de 150 tokens, léase 250. Lo demás no cambia. La temperatura ya no se envía (hotfix del 2026-10-30).
+
 Restricciones del código vigente:
 - `LLMClient` (`backend/utils/llm_client.py`) solo devuelve texto libre, sin temperatura ni herramientas, y crea el
   cliente de Anthropic en el constructor. El coach lo construye en cada petición dentro de `_build_coach_service()`,
@@ -58,7 +62,7 @@ Opciones para el cliente:
 - (+) Una sola llamada barata por pregunta, con salida ya estructurada y validada en el servidor.
 - (+) La ruta se prueba de punta a punta (400, 401, 429, 200 y 503) sin red ni `monkeypatch`.
 - (+) Sin dependencias nuevas ni migraciones; reutiliza `LLMClient`, `RateLimiter` y `Tracer` (Art. P2.5).
-- (−) Con 150 tokens, una respuesta que se corte (`max_tokens`) se trata como «sin estimación» (`unknown`); las
+- (−) Con 150 tokens (250 desde la spec 032), una respuesta que se corte (`max_tokens`) se trata como «sin estimación» (`unknown`); las
   instrucciones y el esquema piden textos cortos para evitarlo.
 - (−) Si Anthropic retira el alias `claude-haiku-4-5`, todas las preguntas darán 503 hasta fijar
   `PORTION_ESTIMATE_MODEL` en el `backend/.env` de EC2.

@@ -1,0 +1,392 @@
+{
+  "schema_version": 1,
+  "feature": "032-diary-portion-chat-macros",
+  "title": "Macros por 100 g en el chat de porciones y botón «Añadir alimento» precargado",
+  "type": "feature",
+  "scope": [
+    "backend",
+    "frontend"
+  ],
+  "branch": "feat/032-diary-portion-chat-macros",
+  "base_branch": "main",
+  "created_at": "2026-11-01T05:29:06.199Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": {
+      "at": "2026-11-01T05:36:23.824Z",
+      "note": "Sí, aprobado"
+    },
+    "plan": {
+      "at": "2026-11-01T05:41:27.645Z",
+      "note": "auto (gate_mode=flow): plan.md sin migración ni ADR nueva"
+    },
+    "tasks": {
+      "at": "2026-11-01T05:42:13.202Z",
+      "note": "auto (gate_mode=flow): 28 tareas, 43 AC cubiertos"
+    },
+    "tests": {
+      "at": "2026-11-01T05:56:37.864Z",
+      "note": "auto (gate_mode=flow): red PASS, 46 backend y 65 frontend en rojo legítimo"
+    },
+    "implement": {
+      "at": "2026-11-01T06:01:23.590Z",
+      "note": "auto (gate_mode=flow): tests en verde según el implementer"
+    },
+    "verify": {
+      "at": "2026-11-01T06:06:49.162Z",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    "review": {
+      "at": "2026-11-01T06:49:39.172Z",
+      "note": "Se ve y funciona bien... Sigamos"
+    },
+    "docs": {
+      "at": "2026-11-01T06:50:23.599Z",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
+    "close": {
+      "at": "2026-11-01T06:54:57.001Z",
+      "note": "Aprobado"
+    }
+  },
+  "commits": {
+    "spec": "b6a212e",
+    "plan": "0c3f38c",
+    "tasks": "f91ff2a",
+    "tests": "0b38379",
+    "implement": "2d51faf",
+    "review": "e21de4d",
+    "docs": "1630e2d"
+  },
+  "iterations": {
+    "tests": 1,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 5,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-11-01T05:56:26.733Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-11-01T06:06:39.591Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-11-01T06:09:25.469Z"
+  },
+  "tests_snapshot": {
+    "at": "2026-11-01T05:56:37.635Z",
+    "reason": "tests 032 tras red check PASS",
+    "sha256": {
+      "backend/tests/test_routes/test_portion_estimate_routes.py": "01fa7b0e5d9df856e0f1123ccd7425ffcb2e674d1e8abd78e6798670e8112198",
+      "backend/tests/test_services/test_portion_estimate_rules.py": "a2fe5635870cb2422779e199afaca1e1549145edac00369068fa9a725d2d890d",
+      "backend/tests/test_services/test_portion_estimate_service.py": "3ee9fcce3c3b133365b3fd469dd29247184d7f4e07d839fe217dbe5e66879c83",
+      "frontend/src/features/diary/components/PortionAddFoodDialog.test.tsx": "d88433a0937dd6a4088dd51db3cbc0c8da2d39ad39faf1a69d2004a5524e7686",
+      "frontend/src/features/diary/components/PortionChat.test.tsx": "f414f642e7f4779adb272a61caf67aa494afa66f9b49806e379587bd35882679",
+      "frontend/src/features/diary/pages/DiaryPage.test.tsx": "41f5ff6ab3f800922c6abaca09eb270c6c37ce5e073c7d52ac6f41696b7df6dd",
+      "frontend/src/features/diary/portionChat.test.ts": "ab8f7806e241845336df626b7f627d1b103855b452241f158c68b7a02ee496af",
+      "frontend/src/features/diary/schemas.test.ts": "6becd4657199c8dc8d7354bbc66552f2f9431ce94457e837eaa620f5e21fdb39",
+      "frontend/src/test/portionEstimateFixtures.ts": "5c5fe99861a132db763203cb91f682e0c6e35092c54683cd7829b40d6dfe3d2f"
+    }
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-11-01T05:29:06.199Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama feat/032-diary-portion-chat-macros desde main"
+    },
+    {
+      "at": "2026-11-01T05:29:30.785Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Redactar spec.md a partir de idea.md"
+    },
+    {
+      "at": "2026-11-01T05:32:42.374Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "Q1-Q7 de spec.md pendientes de respuesta del usuario"
+    },
+    {
+      "at": "2026-11-01T05:35:54.436Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec 032: 11 REQ (39 AC) y 3 NFR (4 AC), Q1-Q7 resueltas"
+    },
+    {
+      "at": "2026-11-01T05:36:23.824Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Sí, aprobado"
+    },
+    {
+      "at": "2026-11-01T05:36:24.103Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: b6a212e"
+    },
+    {
+      "at": "2026-11-01T05:36:24.280Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Diseñar plan.md a partir de la spec aprobada"
+    },
+    {
+      "at": "2026-11-01T05:41:27.452Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan.md: ampliación de ADR-0037, sin migración ni dependencias"
+    },
+    {
+      "at": "2026-11-01T05:41:27.547Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Decisiones: per_100g validado tras redondear half-up; campo Comida con radios nativos; PortionChat recibe date; sin ADR nueva"
+    },
+    {
+      "at": "2026-11-01T05:41:27.645Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan.md sin migración ni ADR nueva"
+    },
+    {
+      "at": "2026-11-01T05:41:27.882Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 0c3f38c"
+    },
+    {
+      "at": "2026-11-01T05:41:28.060Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Descomponer plan.md en tareas"
+    },
+    {
+      "at": "2026-11-01T05:42:12.998Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "28 tareas: 6 scaffold, 13 test, 9 impl; 43 AC cubiertos"
+    },
+    {
+      "at": "2026-11-01T05:42:13.106Z",
+      "stage": "tasks",
+      "event": "note",
+      "note": "Ajustes a tests 030/031 dentro de T-014 y T-016; T-006 agrupa andamiajes de props"
+    },
+    {
+      "at": "2026-11-01T05:42:13.202Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 28 tareas, 43 AC cubiertos"
+    },
+    {
+      "at": "2026-11-01T05:42:13.450Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: f91ff2a"
+    },
+    {
+      "at": "2026-11-01T05:42:13.628Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold"
+    },
+    {
+      "at": "2026-11-01T05:43:07.432Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (scaffold T-001..T-006 hecho)"
+    },
+    {
+      "at": "2026-11-01T05:47:36.960Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: verifier red"
+    },
+    {
+      "at": "2026-11-01T05:50:48.610Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: Red: 22 pytest y 60 vitest nuevos fallan legítimo; 24 casos backend y 5 tests frontend nuevos pasan sin implementación (test-author); 1 aviso menor AC-003.2 (TypeError len(None))"
+    },
+    {
+      "at": "2026-11-01T05:51:04.315Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Red check FAIL: 24 casos backend y 5 frontend pasan sin implementación; AC-003.2 falla por TypeError · tests 1/5"
+    },
+    {
+      "at": "2026-11-01T05:52:45.038Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3 (iteración 2): verifier red"
+    },
+    {
+      "at": "2026-11-01T05:56:26.733Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red check 2: 46 pytest y 65 vitest nuevos o modificados fallan todos por comportamiento ausente (NotImplementedError de scaffold, aserciones, botón o claves ausentes); 0 tests nuevos pasan; scaffolds solo lanzan not implemented; sin skip/xfail/.only nuevos. Observación: 3 tests existentes ampliados con name/per_100g."
+    },
+    {
+      "at": "2026-11-01T05:56:37.537Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red PASS: 46 pytest y 65 vitest nuevos fallan por comportamiento ausente"
+    },
+    {
+      "at": "2026-11-01T05:56:37.635Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "9 archivo(s) de test: tests 032 tras red check PASS"
+    },
+    {
+      "at": "2026-11-01T05:56:37.769Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Red FAIL en iteración 1 (29 tests pasaban sin implementación) corregido en iteración 2; 3 tests de ruta de la 030 cambian de contrato (REQ-001/REQ-004)"
+    },
+    {
+      "at": "2026-11-01T05:56:37.864Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red PASS, 46 backend y 65 frontend en rojo legítimo"
+    },
+    {
+      "at": "2026-11-01T05:56:38.203Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 0b38379"
+    },
+    {
+      "at": "2026-11-01T05:56:38.378Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar T-030.. hasta tests en verde"
+    },
+    {
+      "at": "2026-11-01T06:01:23.497Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "9 tareas impl hechas; pytest 2882 y vitest 1871 en verde, tsc y lint limpios"
+    },
+    {
+      "at": "2026-11-01T06:01:23.590Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): tests en verde según el implementer"
+    },
+    {
+      "at": "2026-11-01T06:01:23.870Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 2d51faf"
+    },
+    {
+      "at": "2026-11-01T06:01:24.062Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa: tests, lint, typecheck, build y trazabilidad"
+    },
+    {
+      "at": "2026-11-01T06:06:39.591Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Verificación completa 032: backend pytest 2882 passed; lint-ratchet backend sin violaciones nuevas; frontend npm test 1871 passed; lint, tsc -b y build OK. Trazabilidad: 42 AC con marcador SDD y en verde, todos los REQ/NFR con tarea, tareas [x], sin skip/xfail/.only nuevos. Sin AC manual obligatorio. Observación no bloqueante: CRLF en archivos comprometidos (P5.1, condición previa del repo)."
+    },
+    {
+      "at": "2026-11-01T06:06:49.068Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify PASS: pytest 2882, vitest 1871, lint, tsc, build OK; 42 AC trazados"
+    },
+    {
+      "at": "2026-11-01T06:06:49.162Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-11-01T06:06:49.334Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review independiente del diff contra spec, plan y constitución"
+    },
+    {
+      "at": "2026-11-01T06:09:25.469Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-11-01T06:09:25.579Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED: 0 bloqueantes, 0 mayores, 1 menor, 3 NIT"
+    },
+    {
+      "at": "2026-11-01T06:49:39.172Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Se ve y funciona bien... Sigamos"
+    },
+    {
+      "at": "2026-11-01T06:49:39.428Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: e21de4d"
+    },
+    {
+      "at": "2026-11-01T06:49:39.612Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Actualizar documentación afectada"
+    },
+    {
+      "at": "2026-11-01T06:50:23.508Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "README, CLAUDE.md (Proyecto) y runbook actualizados; ADR-0037 pendiente"
+    },
+    {
+      "at": "2026-11-01T06:50:23.599Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
+    {
+      "at": "2026-11-01T06:50:23.842Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: 1630e2d"
+    },
+    {
+      "at": "2026-11-01T06:50:24.010Z",
+      "stage": "close",
+      "event": "started",
+      "note": ""
+    },
+    {
+      "at": "2026-11-01T06:50:36.313Z",
+      "stage": "close",
+      "event": "done",
+      "note": "Checklist de hecho completo; backlog global actualizado"
+    },
+    {
+      "at": "2026-11-01T06:54:57.001Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Aprobado"
+    },
+    {
+      "at": "2026-11-01T06:54:57.001Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
+    }
+  ]
+}

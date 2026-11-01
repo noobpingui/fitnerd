@@ -341,19 +341,44 @@ def test_a_failure_closing_the_trace_does_not_change_the_response():
 
 
 # SDD: 030 NFR-001 AC-N001.1
-def test_the_model_is_called_once_with_150_tokens_and_temperature_0():
-    """Una sola llamada, con 150 tokens de salida como máximo y temperatura 0."""
+# SDD: 032 NFR-001 AC-N001.1
+def test_the_model_is_called_once_with_250_tokens_and_temperature_0():
+    """Una sola llamada, con 250 tokens de salida como máximo y temperatura 0."""
     service, llm, _, _, _ = make_service()
 
     service.estimate("user-1", {"question": "5 huevos"})
 
     assert len(llm.calls) == 1
     call = llm.calls[0]
-    assert call["max_tokens"] == 150
+    assert call["max_tokens"] == 250
     assert call["temperature"] == 0
-    assert MAX_OUTPUT_TOKENS == 150
+    assert MAX_OUTPUT_TOKENS == 250
     assert TEMPERATURE == 0
     assert call["tool"] == PORTION_TOOL
+
+
+# SDD: 032 NFR-002 AC-N002.1
+def test_the_instructions_are_identical_and_the_tool_asks_for_name_and_values_per_100g():
+    """Dos preguntas distintas reciben las mismas instrucciones, y la herramienta
+    describe el nombre y los cuatro valores por 100 g."""
+    service, llm, _, _, _ = make_service()
+
+    service.estimate("user-1", {"question": "5 huevos"})
+    service.estimate("user-1", {"question": "una manzana"})
+
+    first, second = llm.calls
+    assert first["system_prompt"] == second["system_prompt"] == SYSTEM_PROMPT
+    properties = first["tool"]["input_schema"]["properties"]
+    assert "name" in properties
+    assert "per_100g" in properties
+    assert set(properties["per_100g"]["properties"]) == {
+        "calories_kcal",
+        "protein_g",
+        "carbs_g",
+        "fat_g",
+    }
+    assert "per_100g" in SYSTEM_PROMPT
+    assert "name" in SYSTEM_PROMPT
 
 
 # SDD: 030 NFR-002 AC-N002.1
