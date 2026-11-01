@@ -318,6 +318,17 @@ Migración `e6a8c0d2f4b7` (ADR-0036): crea `public.custom_foods` y `public.food_
    - El coach (`POST /api/coach/ask`) sigue respondiendo con normalidad.
 6. **Marcha atrás:** revertir el merge basta. No hay migración que deshacer.
 
+### Caso A (sin migraciones): 032, macros por 100 g en el chat de porciones
+
+Amplía la respuesta de `POST /api/meals/portion-estimate` con `name` y `per_100g` (ADR-0037) y añade en `/diary` el botón «Añadir alimento» del chat. No hay migración ni variables nuevas; el máximo de tokens de salida pasa de 150 a 250 con el mismo modelo (`PORTION_ESTIMATE_MODEL`). Backend y frontend se despliegan por separado (CD y Vercel): con un backend antiguo el chat funciona, pero sin la línea «Por 100 g» y con el formulario precargado solo con los gramos.
+
+1. **Merge y CD** (paso 6). No requiere pasos manuales previos.
+2. **Comprobaciones manuales tras el CD**, con una cuenta real:
+   - Pregunta «5 huevos»: la respuesta muestra «Por 100 g: …» y aparece «Añadir alimento» a la izquierda de «Preguntar».
+   - Pulsa «Añadir alimento»: el diálogo trae nombre, gramos y valores por 100 g; sin elegir «Comida» no guarda; con una elegida, el alimento aparece en esa sección y el chat conserva la conversación.
+   - Con el diálogo en móvil, comprueba que se ve entero y que Cancelar devuelve el foco al botón.
+3. **Marcha atrás:** revertir el merge basta. No hay migración que deshacer.
+
 ### Caso C (destructiva): migración después del CD
 
 1. Backup completo (paso 3) **verificado**, con el recuento de filas de lo que se va a borrar.

@@ -10,7 +10,7 @@
   "branch": "feat/032-diary-portion-chat-macros",
   "base_branch": "main",
   "created_at": "2026-11-01T05:29:06.199Z",
-  "stage": "docs",
+  "stage": "close",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -41,7 +41,10 @@
       "at": "2026-11-01T06:49:39.172Z",
       "note": "Se ve y funciona bien... Sigamos"
     },
-    "docs": null,
+    "docs": {
+      "at": "2026-11-01T06:50:23.599Z",
+      "note": "auto (gate_mode=flow): docs actualizados"
+    },
     "close": null
   },
   "commits": {
@@ -49,7 +52,8 @@
     "plan": "0c3f38c",
     "tasks": "f91ff2a",
     "tests": "0b38379",
-    "implement": "2d51faf"
+    "implement": "2d51faf",
+    "review": "e21de4d"
   },
   "iterations": {
     "tests": 1,
@@ -325,6 +329,30 @@
       "stage": "review",
       "event": "approved",
       "note": "Se ve y funciona bien... Sigamos"
+    },
+    {
+      "at": "2026-11-01T06:49:39.428Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: e21de4d"
+    },
+    {
+      "at": "2026-11-01T06:49:39.612Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Actualizar documentación afectada"
+    },
+    {
+      "at": "2026-11-01T06:50:23.508Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "README, CLAUDE.md (Proyecto) y runbook actualizados; ADR-0037 pendiente"
+    },
+    {
+      "at": "2026-11-01T06:50:23.599Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): docs actualizados"
     }
   ]
 }

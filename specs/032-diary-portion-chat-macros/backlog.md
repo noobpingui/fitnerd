@@ -38,3 +38,6 @@
 
 ## usuario (revisión visual)
 - [x] Revisión visual en el navegador de AC-006.2 y del diálogo: el usuario confirmó que se ve y funciona bien (2026-11-01).
+
+## doc-keeper (docs)
+- [ ] Corregir en ADR-0037 el límite de tokens (150 a 250) cuando el usuario apruebe editarla.
