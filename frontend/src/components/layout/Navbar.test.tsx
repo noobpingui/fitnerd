@@ -25,7 +25,7 @@ describe("Navbar", () => {
 
   // SDD: 012 REQ-005 AC-005.1
   // SDD: 022 REQ-015 AC-015.1
-  it("muestra Diario, Macros, Métricas, Coach y Tienda, en ese orden, sin Catálogo ni Favoritos", () => {
+  it("muestra Diario, Métricas, Coach y Tienda, en ese orden, sin Catálogo ni Favoritos", () => {
     render(
       <QueryClientProvider client={new QueryClient()}>
         <MemoryRouter>
@@ -40,7 +40,7 @@ describe("Navbar", () => {
       .filter((link) => link.getAttribute("href") !== "/home")
       .map((link) => link.textContent)
 
-    expect(sectionLinks).toEqual(["Diario", "Macros", "Métricas", "Coach", "Tienda"])
+    expect(sectionLinks).toEqual(["Diario", "Métricas", "Coach", "Tienda"])
     expect(screen.queryByRole("link", { name: "Catálogo" })).not.toBeInTheDocument()
     expect(screen.queryByRole("link", { name: "Favoritos" })).not.toBeInTheDocument()
   })
@@ -69,6 +69,6 @@ describe("Navbar", () => {
     )
 
     expect(screen.getByRole("link", { name: "Diario" })).toHaveAttribute("aria-current", "page")
-    expect(screen.getByRole("link", { name: "Macros" })).not.toHaveAttribute("aria-current")
+    expect(screen.getByRole("link", { name: "Métricas" })).not.toHaveAttribute("aria-current")
   })
 })

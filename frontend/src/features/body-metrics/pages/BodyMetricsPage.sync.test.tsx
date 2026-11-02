@@ -17,7 +17,7 @@ import { ProfilePage } from "@/features/profile/pages/ProfilePage"
 import type { BodyMetric } from "@/features/body-metrics/types"
 import { BodyMetricsPage } from "./BodyMetricsPage"
 import { createFakeMetricsServer } from "@/test/fakeMetricsServer"
-import { makeProfileResponse } from "@/test/profileFixtures"
+import { makeProfileResponse, targetKcalPattern } from "@/test/profileFixtures"
 
 vi.mock("@/features/profile/api", () => ({
   getProfile: vi.fn(),
@@ -153,7 +153,7 @@ describe("Sincronización del peso del perfil con el servidor de prueba con esta
   })
 
   // SDD: 020 REQ-004 AC-004.1
-  it("registrar una medición más reciente (77) deja 'Peso actual' en '77 kg' en el home", async () => {
+  it("registrar una medición más reciente (77) recalcula el objetivo del home con 77 kg", async () => {
     const user = userEvent.setup()
     connectServer({
       profile: makeProfileResponse({}, { weight_unit: "kg", weight: 78, goal: "lose" }),
@@ -164,8 +164,14 @@ describe("Sincronización del peso del perfil con el servidor de prueba con esta
     await register(user, "2026-10-05", "77", "kg")
     await user.click(screen.getByRole("link", { name: "Ir a Home" }))
 
-    const label = await screen.findByText("Peso actual")
-    await waitFor(() => expect(label.parentElement).toHaveTextContent("77 kg"))
+    const label = await screen.findByText("Objetivo de hoy")
+    await waitFor(() =>
+      expect(label.parentElement).toHaveTextContent(
+        targetKcalPattern(
+          makeProfileResponse({}, { weight_unit: "kg", weight: 77, goal: "lose" })
+        )
+      )
+    )
   })
 
   // SDD: 020 REQ-004 AC-004.2

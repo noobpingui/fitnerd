@@ -19,7 +19,6 @@ const ResetPasswordPage = lazyNamed(
   () => import("@/features/auth/pages/ResetPasswordPage"),
   "ResetPasswordPage"
 )
-const MacrosPage = lazyNamed(() => import("@/features/macros/pages/MacrosPage"), "MacrosPage")
 const BodyMetricsPage = lazyNamed(
   () => import("@/features/body-metrics/pages/BodyMetricsPage"),
   "BodyMetricsPage"
@@ -173,11 +172,7 @@ function AnimatedRoutes() {
               />
               <Route
                 path="/macros"
-                element={
-                  <RouteSuspense className={IN_LAYOUT}>
-                    <MacrosPage />
-                  </RouteSuspense>
-                }
+                element={<Navigate to="/home" replace />}
               />
               <Route
                 path="/body-metrics"

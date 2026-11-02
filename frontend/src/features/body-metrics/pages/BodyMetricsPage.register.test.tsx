@@ -16,7 +16,11 @@ import { getProfile } from "@/features/profile/api"
 import { ProfilePage } from "@/features/profile/pages/ProfilePage"
 import type { BodyMetric } from "@/features/body-metrics/types"
 import { BodyMetricsPage } from "./BodyMetricsPage"
-import { makePendingResponse, makeProfileResponse } from "@/test/profileFixtures"
+import {
+  makePendingResponse,
+  makeProfileResponse,
+  targetKcalPattern,
+} from "@/test/profileFixtures"
 
 vi.mock("@/features/profile/api", () => ({
   getProfile: vi.fn(),
@@ -556,7 +560,7 @@ describe("BodyMetricsPage - otras pantallas tras registrar (REQ-008)", () => {
   })
 
   // SDD: 016 REQ-008 AC-008.2
-  it("el home muestra 'Peso actual' con 77 kg sin recargar", async () => {
+  it("el home recalcula el objetivo con el peso de 77 kg sin recargar", async () => {
     const user = userEvent.setup()
     const m01 = metric("2026-10-01", 78)
     const m05 = metric("2026-10-05", 77)
@@ -570,8 +574,12 @@ describe("BodyMetricsPage - otras pantallas tras registrar (REQ-008)", () => {
     await register(user, { date: "2026-10-05", weight: "77" })
     await user.click(screen.getByRole("link", { name: "Ir a Home" }))
 
-    const label = await screen.findByText("Peso actual")
-    await waitFor(() => expect(label.parentElement).toHaveTextContent("77 kg"))
+    const label = await screen.findByText("Objetivo de hoy")
+    await waitFor(() =>
+      expect(label.parentElement).toHaveTextContent(
+        targetKcalPattern(makeProfileResponse({}, { weight: 77, goal: "lose" }))
+      )
+    )
   })
 
   // SDD: 016 REQ-008 AC-008.4

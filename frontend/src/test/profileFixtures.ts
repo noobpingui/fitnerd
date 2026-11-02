@@ -1,5 +1,7 @@
 // Fábricas compartidas por los tests de la feature 006 (perfil en el
 // servidor): respuestas de GET /api/profile y respuestas del onboarding.
+import { calculateMacros } from "@/features/macros/calculations"
+import { answersFromProfile } from "@/features/profile/mappers"
 import { EMPTY_ANSWERS } from "@/features/onboarding/constants"
 import type { OnboardingAnswers } from "@/features/onboarding/types"
 import type { ProfileResponse, ServerProfile } from "@/features/profile/types"
@@ -64,4 +66,13 @@ export function makeAnswers(
     dateOfBirth: "1998-04-03",
     ...overrides,
   } as unknown as OnboardingAnswers
+}
+
+// Texto del objetivo calórico (p. ej. /1\.?858/) que el home muestra para este
+// perfil, con el mismo cálculo que usa la app. Sirve para comprobar que el
+// home refleja un peso nuevo sin escribir la cifra a mano.
+export function targetKcalPattern(profile: ProfileResponse): RegExp {
+  const kcal = String(calculateMacros(answersFromProfile(profile)).targetKcal)
+  // En es-ES el separador de miles puede aparecer o no según el entorno.
+  return new RegExp(kcal.length > 3 ? `${kcal[0]}[.]?${kcal.slice(1)}` : kcal)
 }

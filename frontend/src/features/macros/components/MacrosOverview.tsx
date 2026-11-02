@@ -1,57 +1,37 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { motion } from "motion/react"
 import { Info } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { UnitToggle } from "@/features/onboarding/components/UnitToggle"
-import { GOAL_OPTIONS } from "@/features/onboarding/constants"
-import { useProfile } from "@/features/profile/hooks"
-import { answersFromProfile } from "@/features/profile/mappers"
 import { Pie3D } from "@/features/macros/components/Pie3D"
 import { MACRO_META } from "@/features/macros/constants"
 import {
-  calculateMacros,
   KJ_PER_KCAL,
   type MacroKey,
+  type MacrosSummary,
 } from "@/features/macros/calculations"
 
 type EnergyUnit = "kcal" | "kj"
 
 const numberFormat = new Intl.NumberFormat("es-ES")
 
-export function MacrosPage() {
+// Objetivo de hoy con su reparto de macros: la cifra grande, el gráfico y las
+// tarjetas, el selector kcal/kJ y la nota de cómo se calcula. Vive en el home
+// (antes era la pantalla /macros).
+export function MacrosOverview({ summary }: { summary: MacrosSummary }) {
   const [unit, setUnit] = useState<EnergyUnit>("kcal")
   // Macro resaltado: lo comparten el gráfico y las tarjetas, así que pasar
   // el ratón por una porción ilumina su tarjeta y viceversa.
   const [activeKey, setActiveKey] = useState<MacroKey | null>(null)
 
-  // OnboardingGuard garantiza que el perfil existe antes de llegar aquí.
-  const { data: profile } = useProfile()
-  const answers = useMemo(
-    () => (profile ? answersFromProfile(profile) : null),
-    [profile]
-  )
-  const summary = useMemo(
-    () => (answers ? calculateMacros(answers) : null),
-    [answers]
-  )
-
-  if (!answers || !summary) return null
-
   const energy = (kcal: number) =>
     numberFormat.format(unit === "kcal" ? kcal : Math.round(kcal * KJ_PER_KCAL))
   const unitLabel = unit === "kcal" ? "kcal" : "kJ"
-  const goalLabel = GOAL_OPTIONS.find((g) => g.value === answers.goal)?.label
 
   return (
-    <div className="mx-auto max-w-4xl p-4 sm:p-8">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="mb-1 text-2xl font-bold">Macros</h1>
-          <p className="text-muted-foreground">
-            Tu objetivo diario según tus datos y tu meta.
-          </p>
-        </div>
+    <>
+      <div className="mb-3 flex justify-end">
         <UnitToggle
           units={[
             { value: "kcal", label: "kcal" },
@@ -61,7 +41,6 @@ export function MacrosPage() {
           onChange={setUnit}
         />
       </div>
-
       {/* Número protagonista: el objetivo calórico es lo primero que el
           usuario necesita ver, así que va solo y en grande. */}
       <motion.div
@@ -72,7 +51,7 @@ export function MacrosPage() {
         <Card className="mb-4">
           <CardContent className="flex flex-col items-center gap-1 py-2 text-center">
             <span className="text-sm text-muted-foreground">
-              Objetivo diario
+              Objetivo de hoy
             </span>
             <span className="text-5xl font-bold tabular-nums tracking-tight">
               {energy(summary.targetKcal)}
@@ -81,8 +60,7 @@ export function MacrosPage() {
               </span>
             </span>
             <span className="text-sm text-muted-foreground">
-              Meta: {goalLabel} · Mantenimiento:{" "}
-              {energy(summary.maintenanceKcal)} {unitLabel}
+              Mantenimiento: {energy(summary.maintenanceKcal)} {unitLabel}
             </span>
           </CardContent>
         </Card>
@@ -164,6 +142,6 @@ export function MacrosPage() {
           como punto de partida y ajústala según tu progreso.
         </p>
       </div>
-    </div>
+    </>
   )
 }

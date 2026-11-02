@@ -21,7 +21,7 @@ import type { ProfileResponse } from "@/features/profile/types"
 import { ProfilePage } from "@/features/profile/pages/ProfilePage"
 import type { BodyMetric } from "@/features/body-metrics/types"
 import { BodyMetricsPage } from "./BodyMetricsPage"
-import { makeProfileResponse } from "@/test/profileFixtures"
+import { makeProfileResponse, targetKcalPattern } from "@/test/profileFixtures"
 
 vi.mock("@/features/profile/api", () => ({
   getProfile: vi.fn(),
@@ -321,7 +321,7 @@ describe("BodyMetricsPage - las demás pantallas reflejan los cambios sin recarg
   })
 
   // SDD: REQ-011 AC-011.3
-  it("tras borrar la última medición, el home muestra 'Peso actual' con 80 kg", async () => {
+  it("tras borrar la última medición, el home recalcula el objetivo con 80 kg", async () => {
     const user = userEvent.setup()
     arrangeDeleteOfLatest()
     renderPage(links)
@@ -329,9 +329,11 @@ describe("BodyMetricsPage - las demás pantallas reflejan los cambios sin recarg
     await deleteMetric(user, "2026-10-11")
     await user.click(screen.getByRole("link", { name: "Ir a Home" }))
 
-    const label = await screen.findByText("Peso actual")
+    const label = await screen.findByText("Objetivo de hoy")
     await waitFor(() =>
-      expect(label.parentElement).toHaveTextContent("80 kg")
+      expect(label.parentElement).toHaveTextContent(
+        targetKcalPattern(makeProfileResponse({}, { weight: 80, goal: "lose" }))
+      )
     )
   })
 
