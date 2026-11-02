@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "feature": "033-profile-first-name",
+  "title": "Nombre editable en el perfil, saludo en Home y registro sin fecha de nacimiento",
+  "type": "feature",
+  "scope": [
+    "backend",
+    "frontend"
+  ],
+  "branch": "feat/033-profile-first-name",
+  "base_branch": "main",
+  "created_at": "2026-11-02T20:27:01.978Z",
+  "stage": "plan",
+  "status": "in_progress",
+  "approvals": {
+    "spec": {
+      "at": "2026-11-02T21:15:22.618Z",
+      "note": "Si"
+    },
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
+    "verify": null,
+    "review": null,
+    "docs": null,
+    "close": null
+  },
+  "commits": {},
+  "iterations": {
+    "tests": 0,
+    "implement": 0,
+    "review": 0
+  },
+  "max_iterations": 5,
+  "red_check": {
+    "result": null,
+    "at": null
+  },
+  "verify": {
+    "result": null,
+    "at": null
+  },
+  "review": {
+    "verdict": null,
+    "at": null
+  },
+  "tests_snapshot": null,
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-11-02T20:27:01.978Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama feat/033-profile-first-name desde main"
+    },
+    {
+      "at": "2026-11-02T20:45:32.595Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Delegar en spec-writer"
+    },
+    {
+      "at": "2026-11-02T20:47:56.296Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "Q1 ubicación de Nombre en /profile; Q2 coma en el saludo; Q3 mensajes del nombre en el navegador"
+    },
+    {
+      "at": "2026-11-02T21:09:32.125Z",
+      "stage": "spec",
+      "event": "started",
+      "note": "Respuestas del usuario copiadas; redelegar a spec-writer"
+    },
+    {
+      "at": "2026-11-02T21:10:14.903Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec 033: 9 REQ, 37 AC, sin preguntas abiertas"
+    },
+    {
+      "at": "2026-11-02T21:15:22.618Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Si"
+    }
+  ]
+}
