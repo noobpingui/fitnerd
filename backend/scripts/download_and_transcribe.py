@@ -35,6 +35,7 @@ import argparse
 import re
 import tempfile
 from pathlib import Path
+from urllib.parse import quote
 
 import boto3
 import yt_dlp
@@ -97,9 +98,17 @@ def transcribe(audio_path: Path, model: WhisperModel) -> str:
     return " ".join(segment.text.strip() for segment in segments)
 
 
-def upload_transcript(s3_client, bucket: str, slug: str, text: str) -> str:
+def upload_transcript(s3_client, bucket: str, slug: str, text: str, title: str) -> str:
     key = f"transcripts/{slug}.txt"
-    s3_client.put_object(Bucket=bucket, Key=key, Body=text.encode("utf-8"))
+    # El titulo real viaja como metadato del objeto para que
+    # ingest_transcripts.py lo use tal cual (el slug pierde tildes y mayusculas).
+    # Los metadatos de S3 solo admiten ASCII, de ahi el quote().
+    s3_client.put_object(
+        Bucket=bucket,
+        Key=key,
+        Body=text.encode("utf-8"),
+        Metadata={"title": quote(title, safe="")},
+    )
     return key
 
 
@@ -125,7 +134,7 @@ def process_video(
             # de pisarse entre si. Se renombra a mano despues, ya revisado
             # el contenido de cada transcripcion.
             slug = f"{slug}-{audio_path.stem}"
-        key = upload_transcript(s3_client, bucket, slug, text)
+        key = upload_transcript(s3_client, bucket, slug, text, title)
         print(f"  -> Subido a s3://{bucket}/{key} ({len(text)} caracteres)\n")
         # El audio temporal se borra solo al salir de este "with" -
         # ya cumplio su proposito.
