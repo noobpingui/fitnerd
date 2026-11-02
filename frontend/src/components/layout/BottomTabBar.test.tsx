@@ -7,7 +7,7 @@ import { BottomTabBar } from "./BottomTabBar"
 describe("BottomTabBar", () => {
   // SDD: 012 REQ-005 AC-005.2
   // SDD: 022 REQ-015 AC-015.2
-  it("muestra Inicio, Diario, Macros, Métricas, Coach y Tienda, en ese orden", () => {
+  it("muestra Inicio, Diario, Métricas, Coach y Tienda, en ese orden", () => {
     render(
       <MemoryRouter>
         <BottomTabBar />
@@ -18,7 +18,7 @@ describe("BottomTabBar", () => {
       .getAllByRole("link")
       .map((link) => link.textContent)
 
-    expect(tabs).toEqual(["Inicio", "Diario", "Macros", "Métricas", "Coach", "Tienda"])
+    expect(tabs).toEqual(["Inicio", "Diario", "Métricas", "Coach", "Tienda"])
     expect(screen.queryByText("Catálogo")).not.toBeInTheDocument()
     expect(screen.queryByText("Favoritos")).not.toBeInTheDocument()
   })
@@ -43,6 +43,6 @@ describe("BottomTabBar", () => {
     )
 
     expect(screen.getByRole("link", { name: "Diario" })).toHaveAttribute("aria-current", "page")
-    expect(screen.getByRole("link", { name: "Macros" })).not.toHaveAttribute("aria-current")
+    expect(screen.getByRole("link", { name: "Métricas" })).not.toHaveAttribute("aria-current")
   })
 })

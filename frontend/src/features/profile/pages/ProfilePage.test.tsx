@@ -10,7 +10,6 @@ import { createBodyMetric, listBodyMetrics } from "@/features/body-metrics/api"
 import { formatDate } from "@/features/body-metrics/dateUtils"
 import { getProfile, saveProfile } from "@/features/profile/api"
 import { HomePage } from "@/features/home/pages/HomePage"
-import { MacrosPage } from "@/features/macros/pages/MacrosPage"
 import { ProfilePage } from "./ProfilePage"
 import { bodyMetricsKeys } from "@/features/body-metrics/hooks"
 import { PhysicalDataForm } from "@/features/profile/components/PhysicalDataForm"
@@ -72,7 +71,6 @@ function renderPage(extra?: React.ReactNode) {
         {extra}
         <Routes>
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/macros" element={<MacrosPage />} />
           <Route path="/home" element={<HomePage />} />
         </Routes>
       </MemoryRouter>
@@ -328,7 +326,7 @@ describe("ProfilePage - las cifras de otras pantallas se actualizan sin recargar
   })
 
   // SDD: 006 REQ-011 AC-011.7
-  it("tras guardar, /macros y /home muestran las cifras nuevas con una sola lectura del perfil", async () => {
+  it("tras guardar, /home muestra las cifras nuevas con una sola lectura del perfil", async () => {
     // Hombre, 28 años el 11-10-2026, 175 cm, 72,5 kg, moderado:
     // mantener = 2315 kcal; aumentar peso (x1,2) = 2778 kcal.
     const user = userEvent.setup()
@@ -336,7 +334,6 @@ describe("ProfilePage - las cifras de otras pantallas se actualizan sin recargar
     saveMock.mockResolvedValue(makeProfileResponse({}, { goal: "gain" }))
     renderPage(
       <nav>
-        <Link to="/macros">Ir a Macros</Link>
         <Link to="/home">Ir a Home</Link>
       </nav>
     )
@@ -346,13 +343,10 @@ describe("ProfilePage - las cifras de otras pantallas se actualizan sin recargar
     await user.click(saveButton())
     await screen.findByText("Cambios guardados")
 
-    await user.click(screen.getByRole("link", { name: "Ir a Macros" }))
-    const target = await screen.findByText("Objetivo diario")
-    expect(target.parentElement).toHaveTextContent(/2\.?778/)
-
     await user.click(screen.getByRole("link", { name: "Ir a Home" }))
     expect(await screen.findByText("Meta: Aumentar peso")).toBeInTheDocument()
-    expect(screen.getByText(/2\.?778/)).toBeInTheDocument()
+    const target = await screen.findByText("Objetivo de hoy")
+    expect(target.parentElement).toHaveTextContent(/2\.?778/)
     expect(getProfileMock).toHaveBeenCalledTimes(1)
   })
 })

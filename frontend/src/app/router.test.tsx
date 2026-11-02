@@ -141,9 +141,20 @@ describe("AppRouter - secciones retiradas y secciones activas (spec 012)", () =>
     await waitFor(() => expect(window.location.pathname).toBe("/login"))
   })
 
+  it("con sesion, /macros redirige a /home", async () => {
+    setToken("token")
+    window.history.pushState({}, "", "/macros")
+
+    renderRouter()
+
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Hola de nuevo" })
+    ).toBeInTheDocument()
+    expect(window.location.pathname).toBe("/home")
+  })
+
   // SDD: 012 REQ-008 AC-008.1 AC-008.2
   it.each([
-    ["/macros", "Macros"],
     ["/body-metrics", "Métricas"],
     ["/coach", "AI Coach"],
     ["/store", "Visita las diferentes tiendas"],

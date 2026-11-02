@@ -3,7 +3,6 @@ import {
   BookOpen,
   Home,
   LineChart,
-  PieChart,
   Sparkles,
   Store,
 } from "lucide-react"
@@ -15,7 +14,6 @@ import { cn } from "@/lib/utils"
 const tabs = [
   { to: "/home", label: "Inicio", icon: Home },
   { to: "/diary", label: "Diario", icon: BookOpen },
-  { to: "/macros", label: "Macros", icon: PieChart },
   { to: "/body-metrics", label: "Métricas", icon: LineChart },
   { to: "/coach", label: "Coach", icon: Sparkles },
   { to: "/store", label: "Tienda", icon: Store },
