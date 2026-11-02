@@ -3,7 +3,7 @@
 <!-- sdd-beto:proyecto:start -->
 ## Proyecto
 
-App de fitness full-stack con un **coach de IA basado en contenido real**: responde solo con transcripciones de vídeos de entrenamiento y, si la respuesta no está ahí, dice "no lo sé". Es un proyecto de portfolio personal. En producción está en https://fitnerd.betofallas.dev. El "por qué" de cada decisión está en `README.md`, que está en inglés.
+App de fitness full-stack con un **coach de IA basado en contenido real**: responde solo con transcripciones de vídeos de un curso de nutrición (el corpus se sustituyó en noviembre de 2026: 35 vídeos y 66 chunks) y, si la respuesta no está ahí, dice "no lo sé". Es un proyecto de portfolio personal. En producción está en https://fitnerd.betofallas.dev. El "por qué" de cada decisión está en `README.md`, que está en inglés.
 
 **Áreas funcionales:**
 
@@ -38,7 +38,7 @@ App de fitness full-stack con un **coach de IA basado en contenido real**: respo
   - Toda llamada HTTP pasa por `src/lib/apiClient.ts` (`apiFetch`).
 - **Pipeline RAG** (`backend/scripts/`, se ejecuta fuera de la app):
   1. Descarga el audio con yt-dlp y lo transcribe con faster-whisper.
-  2. Sube la transcripción a S3.
+  2. Sube la transcripción a S3, con el título real del vídeo como metadato `title` del objeto (`ingest_transcripts.py` lo lee; sin él, deriva el título del nombre del archivo).
   3. La divide en fragmentos y calcula sus embeddings con Voyage.
   4. Guarda los embeddings en pgvector.
 
