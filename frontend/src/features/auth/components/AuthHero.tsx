@@ -1,53 +1,24 @@
-import { useEffect, useState } from "react"
-import { AnimatePresence, motion } from "motion/react"
-import { Camera, Sparkles, UtensilsCrossed } from "lucide-react"
-
-const rotatingWords = [
-  "con criterio",
-  "con eficiencia",
-  "con propósito",
-]
+import { motion } from "motion/react"
+import { ChartPie, Sparkles, TrendingUp } from "lucide-react"
+import { TextAnimate } from "@/components/ui/text-animate"
 
 const features = [
-  { icon: UtensilsCrossed, label: "Diario de comidas" },
-  { icon: Camera, label: "Análisis de fotos" },
-  { icon: Sparkles, label: "AI Coach online" },
+  { icon: ChartPie, label: "Trackeo de macros" },
+  { icon: TrendingUp, label: "Análisis de progreso" },
+  { icon: Sparkles, label: "AI Coach nutricional" },
 ]
 
 export function AuthHero() {
-  const [wordIndex, setWordIndex] = useState(0)
-
-  // Rota la palabra destacada del titular cada ~2.2s - efecto tipico de
-  // landing pages modernas, sin depender de que el usuario interactue.
-  useEffect(() => {
-    const id = setInterval(() => {
-      setWordIndex((current) => (current + 1) % rotatingWords.length)
-    }, 2200)
-    return () => clearInterval(id)
-  }, [])
-
   return (
     <div className="mb-6 flex flex-col items-center gap-4 text-center">
-      <motion.h2
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
+      <TextAnimate
+        as="h2"
         className="text-2xl font-bold sm:text-3xl"
+        highlightFrom={3}
+        highlightClassName="text-glint"
       >
-        Come{" "}
-        <AnimatePresence mode="wait">
-          <motion.span
-            key={rotatingWords[wordIndex]}
-            className="inline-block text-primary"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.3 }}
-          >
-            {rotatingWords[wordIndex]}
-          </motion.span>
-        </AnimatePresence>
-      </motion.h2>
+        Cumple con tus objetivos nutricionales
+      </TextAnimate>
 
       <motion.p
         initial={{ opacity: 0, y: 8 }}
@@ -55,8 +26,8 @@ export function AuthHero() {
         transition={{ duration: 0.3, delay: 0.1 }}
         className="max-w-sm text-sm text-white"
       >
-        Registra tus comidas, sigue tu progreso y resuelve tus dudas con un coach de IA basado en información real - no
-        más respuestas genéricas ni mitos de internet
+        Entrenar es solo la mitad del trabajo: lo que comes define tu energía, tu recuperación y tus resultados.
+        Registra tus comidas y apóyate en un coach de IA experto en nutrición.
       </motion.p>
 
       <div className="flex flex-wrap justify-center gap-2">

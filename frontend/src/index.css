@@ -167,3 +167,39 @@
   color: transparent;
   animation: text-shine 3.5s linear infinite;
 }
+/* Destello puntual: texto dorado con una banda brillante que lo cruza de
+   izquierda a derecha cada pocos segundos (entre pasada y pasada queda en
+   el tono base). Usado en el titular de las pantallas de acceso. */
+@keyframes text-glint {
+  0%,
+  35% {
+    background-position: 100% center;
+  }
+  75%,
+  100% {
+    background-position: 0% center;
+  }
+}
+
+.text-glint {
+  background: linear-gradient(
+    105deg,
+    oklch(0.72 0.13 85) 0%,
+    oklch(0.72 0.13 85) 42%,
+    oklch(0.97 0.1 95) 50%,
+    oklch(0.72 0.13 85) 58%,
+    oklch(0.72 0.13 85) 100%
+  );
+  background-size: 250% auto;
+  background-position: 100% center;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: text-glint 4.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .text-glint {
+    animation: none;
+  }
+}

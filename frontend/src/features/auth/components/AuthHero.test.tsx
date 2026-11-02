@@ -20,10 +20,10 @@ describe("AuthHero en las pantallas de acceso", () => {
   })
 
   // SDD: 012 REQ-006 AC-006.1
-  it("/login muestra 'AI Coach online' y no los textos del catálogo ni de favoritos", () => {
+  it("/login muestra 'AI Coach nutricional' y no los textos del catálogo ni de favoritos", () => {
     renderPage(<LoginPage />)
 
-    expect(screen.getByText("AI Coach online")).toBeInTheDocument()
+    expect(screen.getByText("AI Coach nutricional")).toBeInTheDocument()
     expect(
       screen.queryByText("Catálogo de ejercicios con técnica de ejecución")
     ).not.toBeInTheDocument()
@@ -31,10 +31,10 @@ describe("AuthHero en las pantallas de acceso", () => {
   })
 
   // SDD: 012 REQ-006 AC-006.2
-  it("/register muestra 'AI Coach online' y no los textos del catálogo ni de favoritos", () => {
+  it("/register muestra 'AI Coach nutricional' y no los textos del catálogo ni de favoritos", () => {
     renderPage(<RegisterPage />)
 
-    expect(screen.getByText("AI Coach online")).toBeInTheDocument()
+    expect(screen.getByText("AI Coach nutricional")).toBeInTheDocument()
     expect(
       screen.queryByText("Catálogo de ejercicios con técnica de ejecución")
     ).not.toBeInTheDocument()
