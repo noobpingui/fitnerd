@@ -156,7 +156,7 @@ describe("AppRouter - secciones retiradas y secciones activas (spec 012)", () =>
   // SDD: 012 REQ-008 AC-008.1 AC-008.2
   it.each([
     ["/body-metrics", "Métricas"],
-    ["/coach", "AI Coach"],
+    ["/coach", "AI Coach Nutricional"],
     ["/store", "Visita las diferentes tiendas"],
     ["/profile", "Mi perfil"],
   ])("con sesion, %s se mantiene y muestra su pantalla", async (path, heading) => {

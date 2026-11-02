@@ -126,7 +126,7 @@ describe("AppRouter - pantallas bajo demanda con sesión", () => {
   it.each([
     ["/home", "Hola de nuevo"],
     ["/body-metrics", "Métricas"],
-    ["/coach", "AI Coach"],
+    ["/coach", "AI Coach Nutricional"],
     ["/store", "Visita las diferentes tiendas"],
     ["/profile", "Mi perfil"],
   ])(
