@@ -2,8 +2,13 @@ import { AuthLayout } from "@/features/auth/components/AuthLayout"
 import { LoginForm } from "@/features/auth/components/LoginForm"
 import { Logo } from "@/components/layout/Logo"
 import logo from "@/assets/logo.png"
+import { useRandomQuote } from "@/features/home/useRandomQuote"
 
 export function LoginPage() {
+  // Misma frase aleatoria que el home (y comparten la memoria de la última
+  // mostrada, así no se repite entre una pantalla y otra).
+  const quote = useRandomQuote()
+
   return (
     <AuthLayout
       title={
@@ -16,7 +21,7 @@ export function LoginPage() {
           <img src={logo} alt="" className="h-[70px] w-[70px] object-contain" />
         </div>
       }
-      description="Tu nutrición, con datos y sin mitos"
+      description={quote}
     >
       <LoginForm />
     </AuthLayout>
