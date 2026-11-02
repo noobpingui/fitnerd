@@ -70,10 +70,10 @@ export function CoachPage() {
 
   return (
     <div className="mx-auto max-w-2xl p-4 sm:p-8">
-      <h1 className="mb-2 text-2xl font-bold">AI Coach</h1>
+      <h1 className="mb-2 text-2xl font-bold">AI Coach Nutricional</h1>
       <p className="mb-6 text-muted-foreground">
-        Pregunta lo que quieras sobre fitness, respuestas basadas en pruebas realizadas con electromiografía (EMG) y medición
-        de glucosa en sangre.
+        Resuelve tus dudas sobre alimentación, calorías y macros. Las respuestas salen de contenido real de nutrición, no de
+        opiniones genéricas.
       </p>
 
       {/* Altura fija (65dvh) en vez de calcular "resto de la pantalla
