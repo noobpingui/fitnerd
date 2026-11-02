@@ -1,4 +1,6 @@
 
+from urllib.parse import unquote
+
 import boto3
 
 from app import create_app
@@ -20,6 +22,14 @@ def derive_title_from_key(source_key: str) -> str:
 
     words = name_without_ext.replace("_", " ").replace("-", " ").split()
     return " ".join(word.capitalize() for word in words)
+
+
+def read_title_from_s3(s3_client, bucket: str, key: str) -> str:
+    #download_and_transcribe.py guarda el titulo real como metadato "title" (con quote()).
+    #Si el objeto no lo tiene (subidas antiguas), reconstruimos uno desde el nombre del archivo.
+    metadata = s3_client.head_object(Bucket=bucket, Key=key).get("Metadata", {})
+    title = unquote(metadata.get("title", "")).strip()
+    return title or derive_title_from_key(key)
 
 
 def read_text_from_s3(s3_client, bucket: str, key: str) -> str:
@@ -63,7 +73,7 @@ def ingest():
 
             try:
                 text = read_text_from_s3(s3, bucket, source_key)
-                title = derive_title_from_key(source_key)
+                title = read_title_from_s3(s3, bucket, source_key)
 
                 video = Video(title=title, source_key=source_key)
                 video_repository.create(video)
