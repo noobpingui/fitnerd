@@ -26,3 +26,6 @@
 ## implement · implementer
 - [ ] Corregir las 18 líneas E501 de los tests nuevos de la 034 (`test_coach_routes.py`, `test_coach_personal_context.py` y `test_coach_service.py`). Lo debe hacer quien pueda editar tests, el test-author, o relajar el ratchet.
 - [ ] Las ramas de `redact_name` en el paso `retrieval` de `coach_service.py` quedaron con una indentación poco elegante dentro del `dict`. Es solo estética.
+
+## verify · verifier
+- [ ] Comprobación manual en navegador de AC-010.1, AC-010.2, AC-010.5 y AC-011.1 a AC-011.3 (ver §3 del verify-report.md), tras el PASS.

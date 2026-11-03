@@ -1,55 +1,65 @@
 # Verify report 034 — El coach conoce tu perfil, nombre, macros y progreso al responder
 
-- **Modo:** red (tras la etapa tests)
-- **Fecha:** 2026-11-03T03:45:15.410Z · **Rama:** `feat/034-coach-personal-context` @ `f1cc059` · **Base:** `main`
-- **Resultado:** PASS
+- **Modo:** full (etapa verify)
+- **Fecha:** 2026-11-03T03:54:05.769Z · **Rama:** `feat/034-coach-personal-context` @ `56b4019` · **Base:** `main`
+- **Resultado:** FAIL
 
 ## 1. Comandos ejecutados
 | Ámbito | Comando (cwd) | Resultado | Resumen de la salida |
 |---|---|---|---|
-| backend | `".venv/Scripts/python.exe" -m pytest -q` sobre `tests/test_services/test_coach_personal_context.py`, `tests/test_services/test_coach_service.py`, `tests/test_services/test_coach_observability.py` y `tests/test_routes/test_coach_routes.py` (`backend`) | ✅ rojo legítimo | 149 failed, 47 passed. Los 47 pasados son tests anteriores a la feature, sin marcador `SDD: 034`. Ningún test nuevo pasa. Errores de fixture, sintaxis o import: ninguno. |
-| frontend | `npx vitest run` sobre `src/features/coach/personalContext.test.ts`, `src/features/coach/personalContextPreference.test.ts`, `src/features/coach/pages/CoachPage.personalContext.test.tsx` y `src/features/legal/pages/PrivacyPolicyPage.test.tsx` (`frontend`) | ✅ rojo legítimo | 36 failed, 16 passed. Los 16 pasados son de `PrivacyPolicyPage.test.tsx`, anteriores a la feature y sin marcador. Ningún test nuevo pasa. |
-| backend | lint_ratchet | — | No se ejecuta en modo red. |
-| frontend | `npm run lint`, `npx tsc -b`, `npm run build` | — | No se ejecutan en modo red. |
+| backend | `".venv/Scripts/python.exe" -m pytest -q` (`backend`) | ✅ | 3048 passed, exit 0 |
+| backend | lint_ratchet: `node …/lint-ratchet.mjs backend` (raíz del repo) | ❌ | 9 violaciones E501 nuevas (base 0) en archivos de test: `test_coach_routes.py` (6), `test_coach_personal_context.py` (1), `test_coach_service.py` (2). Los archivos de producción del ámbito cumplen (solo violaciones previas toleradas). |
+| frontend | `npm test` (`frontend`) | ✅ | 97 archivos, 1946 passed, exit 0 |
+| frontend | `npm run lint` (`frontend`) | ✅ | oxlint sin errores ni warnings, exit 0 |
+| frontend | `npx tsc -b` (`frontend`) | ✅ | exit 0, sin errores de tipos |
+| frontend | `npm run build` (`frontend`) | ✅ | build correcto, exit 0 |
 
-Notas sobre el rojo:
-- Backend: 89 `NotImplementedError: not implemented` (esqueletos de `coach_personal_context.py`), 19 `TypeError` por el kwarg `personal_context_reader` ausente en `CoachService.__init__` (previsto en tasks, A0), y aserciones sobre el bloque «Nombre: …», «Meta: …» y «Objetivo diario: …» que aún no llegan al modelo. Los `ERROR` del log de `coach_service` son los fallos simulados que los tests provocan a propósito, no errores de entorno.
-- Frontend: 15 `Error: not implemented` (`personalContext.ts`, `personalContextPreference.ts`, `hooks.ts`, `switch.tsx`, `PersonalContextToggle.tsx`), 5 `Unable to find ... role "switch"` y 6 esperas que agotan el tiempo de `waitFor` sin petición con contexto (`expected undefined to be defined`), además de 4 aserciones de texto en la Política de privacidad.
+Detalle del ratchet (backend, violaciones nuevas):
+- `backend/tests/test_routes/test_coach_routes.py`: L565 (111 > 100), L574 (104), L591 (102), L653 (106), L678 (102), L693 (106).
+- `backend/tests/test_services/test_coach_personal_context.py`: L448 (101 > 100).
+- `backend/tests/test_services/test_coach_service.py`: L249 (105 > 100), L258 (102).
+
+Nota: el implementer indicó 18 líneas E501; la medición del ratchet da 9 violaciones nuevas, todas en archivos de test (no en producción).
 
 ## 2. Trazabilidad
-Parcial, en modo red: solo se comprueba que cada tests nuevo falle y que cada AC tenga marcador.
-
 | REQ / NFR | AC | Tareas | Tests con `SDD: 034` | Estado del test |
 |---|---|---|---|---|
-| REQ-010 | AC-010.4 | T-014 | `backend/tests/test_services/test_coach_service.py::test_without_a_reader_the_service_behaves_as_before` | ✅ falla (kwarg ausente y comportamiento nuevo) |
-| REQ-010 | AC-010.4 | T-019 | `backend/tests/test_routes/test_coach_routes.py::test_with_the_context_off_the_model_receives_no_personal_data` [False, no, 0] | ✅ falla (aserción de conservación seguida de la aserción nueva) |
-| REQ-012 | AC-012.1 | T-020 | `backend/tests/test_routes/test_coach_routes.py::test_asking_without_a_session_returns_401` | ✅ falla en la aserción de contexto personal, tras pasar el 401 |
-| REQ-012 | AC-012.4 | T-020 | `backend/tests/test_routes/test_coach_routes.py::test_the_answer_carries_a_feedback_id_that_can_be_rated` | ✅ falla en la aserción de contexto personal |
-| REQ-012 | AC-012.5 | T-020 | `backend/tests/test_routes/test_coach_routes.py::test_an_invalid_question_gets_400_even_with_valid_personal_data` [empty, 501-characters] | ✅ falla (kwarg ausente / aserción de contexto) |
-| REQ-012 | AC-012.2 | T-016 | `backend/tests/test_routes/test_coach_routes.py::test_with_20_questions_in_the_last_hour_the_next_one_is_429_without_calling_providers` | ✅ falla en la aserción de contexto personal |
-| REQ-012 | AC-012.3 | T-016 | `backend/tests/test_routes/test_coach_routes.py::test_a_model_failure_gets_503_with_the_current_message` | ✅ falla en la aserción de contexto personal |
-| NFR-002 | AC-N002.1 | T-015 | `backend/tests/test_routes/test_coach_routes.py::test_voyage_only_receives_the_question` | ✅ falla en la aserción de contexto personal |
-| REQ-010 | AC-010.1 | T-022 | `frontend/src/features/coach/personalContextPreference.test.ts` › «la clave de almacenamiento es fitnerd_coach_personal_context» | ✅ falla (`not implemented`) |
-| REQ-011 | AC-011.1 | T-025 | `frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx` › «el punto de Anthropic menciona el nombre, el perfil, las macros y el progreso, y que se puede desactivar en el coach» | ✅ falla (texto nuevo ausente) |
-| REQ-011 | AC-011.2 | T-025 | `frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx` › «el punto de Langfuse añade el perfil, las macros y el progreso y sigue diciendo que nunca se envían el email ni el nombre» | ✅ falla (texto nuevo ausente) |
-| REQ-011 | AC-011.3 | T-025 | `frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx` › «el punto de Voyage AI sigue diciendo que recibe el texto de las preguntas y no menciona el perfil ni el progreso» | ✅ falla (`not implemented` / texto ausente) |
-| REQ-011 | AC-011.1 | T-025 | `frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx` › «sigue sin formas de voseo tras añadir el texto del contexto personal» | ✅ falla (texto nuevo ausente) |
+| REQ-001 | AC-001.1, AC-001.2, AC-001.3, AC-001.4, AC-001.5 | T-009, T-010, T-013, T-019, T-030 | `backend/tests/test_services/test_coach_personal_context.py`, `backend/tests/test_routes/test_coach_routes.py` | ✅ pasan |
+| REQ-002 | AC-002.1, AC-002.2 | T-010, T-021, T-028, T-036 | `test_coach_personal_context.py`, `frontend/src/features/coach/personalContext.test.ts` | ✅ pasan |
+| REQ-003 | AC-003.1 a AC-003.6 | T-011, T-021, T-026, T-028, T-036 | `test_coach_personal_context.py`, `personalContext.test.ts` | ✅ pasan |
+| REQ-004 | AC-004.1, AC-004.2 | T-014, T-019, T-024, T-030, T-032, T-040 | `test_coach_service.py`, `test_coach_routes.py`, `frontend/src/features/coach/pages/CoachPage.personalContext.test.tsx` | ✅ pasan |
+| REQ-005 | AC-005.1 a AC-005.4 | T-010, T-013, T-016, T-020, T-028, T-030, T-032 | `test_coach_personal_context.py`, `test_coach_service.py`, `test_coach_routes.py` | ✅ pasan |
+| REQ-006 | AC-006.1, AC-006.2, AC-006.3 | T-009, T-010, T-020, T-024, T-026, T-027, T-034, T-040 | `test_coach_personal_context.py`, `test_coach_routes.py`, `CoachPage.personalContext.test.tsx` | ✅ pasan |
+| REQ-007 | AC-007.1, AC-007.2, AC-007.3 | T-021, T-024, T-036, T-040 | `personalContext.test.ts`, `CoachPage.personalContext.test.tsx` | ✅ pasan |
+| REQ-008 | AC-008.1, AC-008.2 | T-015, T-031, T-032 | `backend/tests/test_services/test_coach_service.py` | ✅ pasan |
+| REQ-009 | AC-009.1 a AC-009.6 | T-017, T-031 | `test_coach_service.py` | ✅ pasan |
+| REQ-010 | AC-010.1, AC-010.2, AC-010.3, AC-010.4, AC-010.5, AC-010.6 | T-009, T-014, T-019, T-022, T-023, T-024, T-027, T-034, T-037, T-038, T-039, T-040 | `test_coach_personal_context.py`, `test_coach_service.py`, `test_coach_routes.py`, `personalContextPreference.test.ts`, `CoachPage.personalContext.test.tsx` | ✅ pasan |
+| REQ-011 | AC-011.1, AC-011.2, AC-011.3 | T-025, T-041 | `frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx` | ✅ pasan |
+| REQ-012 | AC-012.1 a AC-012.5 | T-016, T-020, T-032, T-034 | `test_coach_routes.py`, `test_coach_service.py` | ✅ pasan |
+| NFR-001 | AC-N001.1 | T-013, T-020, T-030 | `test_coach_personal_context.py`, `test_coach_routes.py` | ✅ pasan |
+| NFR-002 | AC-N002.1, AC-N002.2 | T-015, T-032 | `test_coach_service.py` | ✅ pasan |
+| NFR-003 | AC-N003.1, AC-N003.2, AC-N003.3 | T-012, T-018, T-029, T-033 | `test_coach_observability.py`, `test_coach_personal_context.py` | ✅ pasan |
+| NFR-004 | AC-N004.1 | T-013, T-020, T-030 | `test_coach_personal_context.py`, `test_coach_routes.py` | ✅ pasan |
+| NFR-005 | AC-N005.1 | T-015, T-032 | `test_coach_service.py` | ✅ pasan |
 
-Cruce de AC: los 55 AC de `spec.md` aparecen en al menos un marcador `SDD: 034`.
+Cruce de AC: los 55 AC de `spec.md` aparecen en al menos un marcador `SDD: 034`, y todos los tests marcados pasan en la suite completa.
 
 - AC sin test: —
-- REQ sin tarea: no comprobado en modo red
-- Tareas sin marcar `[x]`: no comprobado en modo red (T-001 a T-025 están marcadas; T-026 a T-041 pendientes, como corresponde)
-- `skip`, `xfail`, `.only`, `.skip` o equivalentes nuevos en el diff: ninguno (comprobado con grep sobre el diff y los archivos de test nuevos)
-
-Esqueletos (Art. B5.6): ✅ `backend/services/coach_personal_context.py` (todas las funciones lanzan `NotImplementedError("not implemented")`; el `__init__` de `CoachPersonalContextReader` solo guarda dependencias), `backend/services/coach_service.py` (solo `DONT_KNOW_ANSWER` real y `build_coach_user_message` con `_`-prefijos y `not implemented`), `frontend/src/components/ui/switch.tsx`, `frontend/src/features/coach/personalContext.ts`, `frontend/src/features/coach/personalContextPreference.ts` (constante de clave real; el resto, `not implemented`), `frontend/src/features/coach/hooks.ts` y `frontend/src/features/coach/components/PersonalContextToggle.tsx`. Sin lógica.
+- REQ sin tarea: —
+- Tareas sin marcar `[x]`: — (41 de 41 marcadas)
+- `skip`, `xfail`, `.only`, `.skip` o equivalentes nuevos en el diff (`main...HEAD`, `backend/tests` y `frontend/src`): ninguno
 
 ## 3. Criterios de aceptación manuales
-Ninguno en modo red. En modo full conviene revisar en navegador el interruptor de `/coach` (AC-010.1, AC-010.2) y el texto de la Política de privacidad (AC-011.1 a AC-011.3), porque los tests solo comprueban el texto y no el aspecto.
+Estos AC tienen cobertura automática del texto y del comportamiento, pero el aspecto y la persistencia en un navegador real no se comprueban con los tests. Los revisa el usuario en el gate:
+- AC-010.1 y AC-010.2: el interruptor «Usar mis datos para personalizar las respuestas» se ve bajo la descripción de `/coach`, activado por defecto, y el texto de ayuda cambia al desactivarlo sin borrar la conversación.
+- AC-010.5: tras recargar `/coach` en el mismo navegador, el interruptor sigue desactivado (la prueba automática usa un almacenamiento simulado).
+- AC-011.1, AC-011.2 y AC-011.3: el texto de la Política de privacidad se ve correcto en la página.
 
 ## 4. Fallos (si los hay)
 | # | Qué falló | Salida relevante (recortada) | Responsable probable (test-author · implementer · entorno) |
 |---|---|---|---|
-| — | Ninguno. Todos los tests nuevos con `SDD: 034` fallan por comportamiento ausente. | — | ninguno |
+| 1 | Lint ratchet del ámbito backend: 9 violaciones E501 nuevas (base 0), todas en archivos de test. Impide cumplir B5.7 y el resultado PASS. | `NUEVO backend/tests/test_routes/test_coach_routes.py E501 +6` (L565, L574, L591, L653, L678, L693); `NUEVO backend/tests/test_services/test_coach_personal_context.py E501 +1` (L448); `NUEVO backend/tests/test_services/test_coach_service.py E501 +2` (L249, L258). `lint-ratchet [backend]: 9 violación(es) nueva(s) respecto a main. FAIL` | test-author (las líneas son de archivos de test escritos en la etapa tests; el número real es 9, no 18) |
 
-Iteración 2 (red): la iteración 1 dejaba 14 tests nuevos en verde sin implementación (11 de backend y 3 de frontend). Tras reformularlos, ninguno pasa. Los tests de conservación (401, 429, 503, 400, `feedback_id`, contexto desactivado) ahora fallan en su aserción de contexto personal, y siguen fallando por comportamiento ausente.
+Ningún otro comando falló. Pytest (3048), Vitest (1946), oxlint, `tsc -b` y `npm run build` están en verde.
+
+Iteración de verify: 1 de 5. La corrección la hace el test-author (solo reformatear las líneas de test indicadas, sin cambiar aserciones ni marcadores `SDD:`). Después hay que repetir la verificación.

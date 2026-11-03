@@ -246,7 +246,7 @@ def test_personal_data_is_read_again_on_every_question():
 
 
 # SDD: 034 REQ-010 AC-010.4
-def test_with_the_personal_context_off_the_message_is_the_one_from_before_and_the_reader_is_not_called():
+def test_with_the_personal_context_off_the_message_is_the_old_one_and_the_reader_is_not_called():
     """Con `use_personal_context=False` el mensaje es idéntico al de antes de la
     feature y no se consulta al lector."""
     service, _, llm, _, reader = make_personal_service()
@@ -255,7 +255,8 @@ def test_with_the_personal_context_off_the_message_is_the_one_from_before_and_th
 
     content = sent_messages(llm)[-1]["content"]
     assert content == build_coach_user_message(CHUNK_TEXT, "¿Cuánta proteína necesito?")
-    assert content == f"Fragmentos de contexto:\n{CHUNK_TEXT}\n\nPregunta: ¿Cuánta proteína necesito?"
+    question = "¿Cuánta proteína necesito?"
+    assert content == f"Fragmentos de contexto:\n{CHUNK_TEXT}\n\nPregunta: {question}"
     assert "Carlos" not in content
     assert "<datos_del_usuario>" not in content
     assert reader.calls == []

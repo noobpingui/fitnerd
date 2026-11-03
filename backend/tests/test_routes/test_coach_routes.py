@@ -562,7 +562,8 @@ def test_with_the_context_off_the_model_receives_no_personal_data(
 
     assert response.status_code == 200
     message = sent_message(coach_model)
-    for private in ("Carlos", "hombre", "30 años", "Perder peso", "2200", "2750", "79,4", "datos_del_usuario"):
+    privates = ("Carlos", "hombre", "30 años", "Perder peso", "2200", "2750", "79,4")
+    for private in (*privates, "datos_del_usuario"):
         assert private not in message
     assert message.startswith("Fragmentos de contexto:")
     assert message.endswith(f"Pregunta: {QUESTION}")
@@ -571,7 +572,9 @@ def test_with_the_context_off_the_model_receives_no_personal_data(
 
 
 # SDD: 034 REQ-010 AC-010.6
-@pytest.mark.parametrize("fields", [{}, {"use_personal_context": None}, {"use_personal_context": True}])
+@pytest.mark.parametrize(
+    "fields", [{}, {"use_personal_context": None}, {"use_personal_context": True}]
+)
 def test_a_request_without_the_flag_or_with_it_on_counts_as_active(
     client, carlos, coach_model, fields
 ):
@@ -588,7 +591,8 @@ def test_a_request_without_the_flag_or_with_it_on_counts_as_active(
 # SDD: 034 REQ-012 AC-012.1
 def test_asking_without_a_session_returns_401(client, carlos, coach_model):
     """Sin sesión, 401 y no se llama al modelo."""
-    response = client.post(ASK_URL, json={"question": QUESTION, "personal_context": client_context()})
+    body = {"question": QUESTION, "personal_context": client_context()}
+    response = client.post(ASK_URL, json=body)
 
     assert response.status_code == 401
     assert coach_model.calls == []
@@ -650,7 +654,8 @@ def test_with_20_questions_in_the_last_hour_the_next_one_is_429_without_calling_
     """Con 20 preguntas en la hora: 429 con el mensaje actual y sin llamar a
     Voyage ni al modelo."""
     with client.application.app_context():
-        user_id = str(db.session.scalars(select(User.id).where(User.email == "carlos@example.com")).one())
+        query = select(User.id).where(User.email == "carlos@example.com")
+        user_id = str(db.session.scalars(query).one())
     redis_fake.counts[f"ratelimit:coach:ask:{user_id}"] = 20
 
     response = ask(client, carlos, personal_context=client_context())
@@ -675,7 +680,10 @@ def test_a_model_failure_gets_503_with_the_current_message(client, carlos, coach
 
     assert response.status_code == 503
     assert response.get_json() == {
-        "error": "No se pudo generar una respuesta en este momento. Intenta de nuevo en unos minutos."
+        "error": (
+            "No se pudo generar una respuesta en este momento. "
+            "Intenta de nuevo en unos minutos."
+        )
     }
     # El modelo sí recibió la pregunta con el contexto personal antes de fallar.
     assert "Nombre: Carlos" in sent_message(coach_model)
@@ -690,7 +698,8 @@ def test_the_model_never_receives_surname_email_birth_date_id_or_notes(
     de nacimiento, identificador ni la nota; sí «Carlos» y «30 años»."""
     add_measurement(client, carlos, 79.4, "2026-10-11", notes="me duele la rodilla")
     with client.application.app_context():
-        user_id = str(db.session.scalars(select(User.id).where(User.email == "carlos@example.com")).one())
+        query = select(User.id).where(User.email == "carlos@example.com")
+        user_id = str(db.session.scalars(query).one())
 
     response = ask(client, carlos, personal_context=client_context())
 
