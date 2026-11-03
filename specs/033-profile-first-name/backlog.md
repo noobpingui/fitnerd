@@ -34,3 +34,10 @@
 - [ ] state.json indica 37 AC y spec.md define 36; corregir el dato.
 - [ ] Marcador SDD: 033 de AC-009.4 está en ProfilePage.test.tsx; revisar en review.
 - [ ] tasks.md marca T-028 como hecha pero PhysicalDataForm.refresh.test.tsx no se modificó; revisar la casilla.
+
+## review · reviewer
+- [ ] F1: corregir la casilla de T-028 (no hizo falta adaptar PhysicalDataForm.refresh.test.tsx) (test-author)
+- [ ] F2: corregir el formato de spec.md:81 y el recuento de AC registrado (37 → 36) (spec-writer)
+- [ ] F3: el marcador de AC-009.4 solo está en ProfilePage.test.tsx; añadir una referencia en HomePage.test.tsx (test-author)
+- [ ] F4: AuthService guarda self.clock pero ya no lo usa; retirarlo en una limpieza (implementer)
+- [ ] F5: quitar date_of_birth de los helpers de registro de los tests (conftest.registered_user y otros), donde se ignora (test-author)
