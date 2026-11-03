@@ -10,14 +10,17 @@
   "branch": "feat/034-coach-personal-context",
   "base_branch": "main",
   "created_at": "2026-11-03T03:04:33.745Z",
-  "stage": "plan",
+  "stage": "tasks",
   "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-11-03T03:18:22.550Z",
       "note": "Apruebo la spec"
     },
-    "plan": null,
+    "plan": {
+      "at": "2026-11-03T03:25:28.544Z",
+      "note": "auto (gate_mode=flow): plan sin decisiones mayores (sin migración, variables ni dependencias nuevas)"
+    },
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -26,7 +29,9 @@
     "docs": null,
     "close": null
   },
-  "commits": {},
+  "commits": {
+    "spec": "0b7db87"
+  },
   "iterations": {
     "tests": 0,
     "implement": 0,
@@ -65,6 +70,36 @@
       "stage": "spec",
       "event": "approved",
       "note": "Apruebo la spec"
+    },
+    {
+      "at": "2026-11-03T03:18:27.414Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 0b7db87"
+    },
+    {
+      "at": "2026-11-03T03:18:27.619Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Diseñar el plan técnico de 034"
+    },
+    {
+      "at": "2026-11-03T03:25:28.435Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan 034 + ADR-0038 (Propuesta)"
+    },
+    {
+      "at": "2026-11-03T03:25:28.544Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan sin decisiones mayores (sin migración, variables ni dependencias nuevas)"
+    },
+    {
+      "at": "2026-11-03T03:25:28.656Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Decisiones: use_personal_context ausente/null/true activa; sin perfil se ignoran los datos del cliente; nombre saneado y anonimizado como [nombre] en Langfuse; extracción de funciones de progress_analysis_context; SYSTEM_PROMPT único sin voseo; ADR-0038 en Propuesta"
     }
   ]
 }
