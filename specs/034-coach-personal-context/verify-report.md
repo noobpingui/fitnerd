@@ -1,66 +1,73 @@
 # Verify report 034 — El coach conoce tu perfil, nombre, macros y progreso al responder
 
-- **Modo:** red (tras la etapa tests, iteración 5 de la revisión 2: T-055 a T-066, con T-052 a T-054 como esqueletos)
-- **Fecha:** 2026-11-03T05:53:47.387Z · **Rama:** `feat/034-coach-personal-context` @ `d3dbd53` · **Base:** `main`
+- **Modo:** full (etapa verify, iteración 4 de 6)
+- **Fecha:** 2026-11-03T07:25:40.068Z · **Rama:** `feat/034-coach-personal-context` @ `092d472` · **Base:** `main`
 - **Resultado:** PASS
 
 ## 1. Comandos ejecutados
 | Ámbito | Comando (cwd) | Resultado | Resumen de la salida |
 |---|---|---|---|
-| backend | `".venv/Scripts/python.exe" -m pytest -q` sobre `test_coach_personal_context.py`, `test_coach_service.py`, `test_coach_observability.py` y `test_coach_routes.py` (`backend`) | ✅ | 69 failed, 215 passed en 12,69 s. Los 69 fallos son tests nuevos o endurecidos de la revisión 2, todos en rojo legítimo. El único test de la revisión que pasa es la excepción F8 (ver abajo) |
-| frontend | `npx vitest run` sobre `previousNames.test.ts`, `CoachPage.personalContext.test.tsx` y `PrivacyPolicyPage.test.tsx` (`frontend`) | ✅ | 19 failed, 34 passed de 53. Los 19 fallos son de la revisión 2, todos en rojo legítimo |
-| backend | lint ratchet | — | No se ejecuta en modo red |
-| frontend | `npm run lint`, `npx tsc -b`, `npm run build` | — | No se ejecutan en modo red |
+| backend | `".venv/Scripts/python.exe" -m pytest -q` (`backend`) | ✅ | 3136 passed, 0 failed (217,6 s). Incluye los 69 AC de la feature y los tests previos |
+| backend | lint ratchet `lint-ratchet.mjs backend` | ✅ | Sin violaciones nuevas respecto a `main` (exit 0). Los cuatro archivos de coach y `test_coach_routes.py` están en OK; las violaciones previas se toleran |
+| backend | `typecheck`, `build` | — | `null` en la config, no aplican |
+| frontend | `npm test` (`frontend`) | ✅ | 98 archivos, 1963 passed, 0 failed (70 s) |
+| frontend | `npm run lint` (`frontend`) | ✅ | oxlint sin errores ni warnings (exit 0) |
+| frontend | `npx tsc -b` (`frontend`) | ✅ | Sin errores de tipos (exit 0) |
+| frontend | `npm run build` (`frontend`) | ✅ | Build correcto en 870 ms. Chunk de entrada `index` 384,73 kB (gzip 122,95 kB), por debajo de 500 kB (ADR-0026) |
 
-Alcance: se ejecutaron los cuatro archivos de backend y los tres de frontend completos, y los fallos se filtraron a los tests nuevos o endurecidos de la revisión 2. Los 215 backend y 34 frontend que pasan incluyen los tests previos de la feature, que siguen en verde.
-
-Clasificación de los 88 fallos de la revisión 2:
-- Backend, 69 fallos: `NotImplementedError: not implemented` de los esqueletos `name_redaction_terms` y `parse_previous_names` (29); `TypeError` por el argumento nuevo `previous_names` de `ask`/`ask_with_feedback` o `other_names` de `redact_name` (13); aserciones de comportamiento nuevo (anonimizar partes del nombre, nombres anteriores, lista no válida ignorada, partículas, traza) (27). No hay errores de sintaxis, de fixtures, de configuración ni de imports fuera del plan.
-- Frontend, 19 fallos: `not implemented` de `previousNames.ts` (12); texto de ayuda nuevo de F5 en el interruptor (4); `previous_names` ausente en el payload (2); frase nueva de Anthropic en la Política (1).
-
-Esqueletos (B5.6): `parse_previous_names` y `name_redaction_terms` (`backend/services/coach_personal_context.py`, líneas 179 y 185) lanzan solo `raise NotImplementedError("not implemented")`, sin lógica. `rememberName` y `previousNamesFor` (`frontend/src/features/coach/previousNames.ts`) lanzan solo `throw new Error("not implemented")`. `previous_names?: string[]` en `frontend/src/features/coach/types.ts` es solo tipo. Las constantes `NAME_PARTICLES` (17), `MIN_NAME_PART_LETTERS`, `MAX_PREVIOUS_NAMES` y `MAX_NAME_LENGTH` son reales, como admite el plan §3.2.
-
-Excepción declarada: `test_a_failing_read_with_the_context_on_gives_the_usual_503_without_calling_voyage_or_the_model` (`backend/tests/test_services/test_coach_service.py`, línea 562, marcador `REQ-012 AC-012.3`) pasa antes de implementar, como indica el plan §5 (F8). Su docstring lo declara. No cuenta como fallo. El test `test_a_failing_reader_gives_the_usual_503...` (línea 538, T-059) también pasa: solo cambia el docstring y es regresión existente.
-
-Corrección verificada: `test_name_redaction_terms_removes_duplicates_ignoring_case_and_handles_empties`, `backend/tests/test_services/test_coach_personal_context.py` línea 994, ahora espera `name_redaction_terms("Ana María", ["María"]) == ["Ana María", "María", "Ana"]`. Coincide con el plan §3.3 (partes de 3 letras o más que no son partícula, sin duplicados con `casefold`, orden de más largo a más corto). El test sigue en rojo por `not implemented`, que es legítimo.
-
-Revisión de expectativas frente al plan §3.3: se comprobaron las de `name_redaction_terms` (ejemplos de «María José», «María de la Paz», «Jo Ann», «José-Luis», «Mª José», «Carlos»/«Carlitos», «Ana», «Al»), las de `parse_previous_names` (listas válidas, `"<>"` que se omite tras sanear, y todas las listas no válidas que dan `()`), las de `redact_name` (palabra completa, partes, partículas en cualquier caso, una sola pasada y nombres anteriores) y las de la traza y la ruta. Ninguna contradice el plan §3.3. Las de `redact_name` que exigen anonimizar una parte (por ejemplo «Alto», «José») son el comportamiento nuevo del plan y no son errores de expectativa.
+Comprobaciones adicionales sobre el diff `main..HEAD` (backend y frontend):
+- `skip`, `xfail`, `.only`, `.skip`, `skipif`, `xit`, `xdescribe` y equivalentes nuevos: ninguno.
+- Archivos de la feature con CRLF: ninguno (Art. P5.1 cumplido).
+- Cambios en modelos o migraciones: ninguno (plan §7, P4 sin paso manual en producción).
 
 ## 2. Trazabilidad
-Abreviaturas: **P** = `backend/tests/test_services/test_coach_personal_context.py`; **S** = `backend/tests/test_services/test_coach_service.py`; **O** = `backend/tests/test_services/test_coach_observability.py`; **R** = `backend/tests/test_routes/test_coach_routes.py`; **F-PN** = `frontend/src/features/coach/previousNames.test.ts`; **F-CP** = `frontend/src/features/coach/pages/CoachPage.personalContext.test.tsx`; **F-LEG** = `frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx`.
+Totales: 69 AC (56 de REQ y 13 de NFR, contados en `spec.md`), 19 REQ/NFR (NFR-001 a NFR-005 y REQ-001 a REQ-013), 74 tareas (T-001 a T-074).
 
-| REQ / NFR | AC | Tareas | Tests con `SDD: 034` | Estado del test (red) |
+Nota de recuento: la petición mencionaba 66 AC. `spec.md` define 69 (REQ: 001.1–013.6 con 56 AC; NFR: N001.1, N002.1–2, N003.1–8, N004.1, N005.1 con 13 AC). Se verifican los 69.
+
+| REQ / NFR | AC | Tareas | Tests con `SDD: 034` (archivo) | Estado del test |
 |---|---|---|---|---|
-| NFR-003 | AC-N003.4 | T-055, T-060, T-061 | P (`test_redact_name_anonymizes_the_full_name_once_and_each_part_apart`, `test_name_redaction_terms_lists_…`), O (`test_compound_name_is_anonymized_part_by_part_end_to_end`), R (`test_a_compound_name_changed_in_the_profile_…`) | ❌ rojo legítimo (`not implemented`, `TypeError`, aserción) |
-| NFR-003 | AC-N003.5 | T-055, T-060 | P (`test_redact_name_splits_a_hyphenated_name_into_parts`), O (`test_hyphenated_name_part_is_anonymized_in_the_trace`) | ❌ rojo legítimo (aserción) |
-| NFR-003 | AC-N003.6 | T-055 | P (`test_redact_name_keeps_particles_…`, `test_redact_name_never_anonymizes_a_particle_on_its_own` ×17, `test_redact_name_particles_are_compared_ignoring_case`) | ❌ rojo legítimo (aserción) |
-| NFR-003 | AC-N003.7 | T-055 | P (`test_redact_name_ignores_parts_of_less_than_three_letters`) | ❌ rojo legítimo (aserción) |
-| NFR-003 | AC-N003.8 | T-055 | P (`test_redact_name_does_not_touch_words_that_only_contain_a_part`) | ❌ rojo legítimo (aserción) |
-| REQ-013 | AC-013.3 | T-055, T-056, T-060, T-061 | P (`test_redact_name_also_anonymizes_the_previous_names`, `test_parse_previous_names_accepts_a_valid_list`), O (`test_a_previous_name_is_kept_out_of_the_trace_but_reaches_the_model` ×2), R (`test_previous_names_sent_over_http_are_kept_out_of_the_trace`) | ❌ rojo legítimo (`TypeError` por `previous_names`/`other_names`, `not implemented`, aserción) |
-| REQ-013 | AC-013.4 | T-060 | O (`test_a_previous_name_is_kept_out_of_the_trace_but_reaches_the_model[False]`) | ❌ rojo legítimo (`TypeError`: `previous_names` ausente) |
-| REQ-013 | AC-013.5 | T-057, T-060, T-061 | S (`test_previous_names_never_reach_the_model_the_block_or_the_search_text`), O (`test_a_previous_name_in_the_question_is_anonymized_but_never_replaces_the_name`), R (`test_a_previous_name_never_replaces_the_account_name_over_http`) | ❌ rojo legítimo (`TypeError` y aserción) |
-| REQ-013 | AC-013.6 | T-056, T-060, T-061 | P (`test_parse_previous_names_ignores_an_invalid_list_entirely` ×14, `test_parse_previous_names_accepts_a_valid_list` ×6), O (`test_an_invalid_previous_names_list_is_ignored_entirely` ×4), R (`test_an_invalid_previous_names_list_is_ignored_and_a_valid_one_is_used`) | ❌ rojo legítimo (`not implemented`, `TypeError`, aserción) |
-| REQ-013 | AC-013.1, AC-013.2 | T-062, T-065 | F-PN (12 tests), F-CP (`envía el nombre anterior solo cuando hay conversación y el nombre cambió`, `envía el nombre anterior también con el interruptor desactivado`) | ❌ rojo legítimo (`not implemented`; `previous_names` ausente) |
-| REQ-010 | AC-010.7 | T-063, T-064 | F-CP (`al desactivarlo, el párrafo enlazado con aria-describedby tiene exactamente el texto nuevo`) | ❌ rojo legítimo (texto de ayuda nuevo) |
-| REQ-010 | AC-010.8 | T-060, T-064 | O (`test_with_the_context_off_a_compound_name_in_the_history_is_kept_out_of_the_trace`), F-CP (`tras desactivarlo, el historial con el nombre y las cifras se reenvía idéntico y sin contexto`) | ❌ rojo legítimo (aserción sobre la traza y el texto de ayuda) |
-| REQ-010 | AC-010.2, AC-010.5 (endurecidos por T-063) | T-063 | F-CP (`al desactivarlo cambia el texto…`, `tras desactivarlo y volver a montar…`) | ❌ rojo legítimo (texto de ayuda antiguo: `HELP_OFF` completo) |
-| REQ-011 | AC-011.4 | T-066 | F-LEG (`el punto de Anthropic avisa de que los mensajes anteriores…`) | ❌ rojo legítimo (frase ausente en el punto de Anthropic) |
-| REQ-012 | AC-012.3 | T-058 (regresión, excepción F8) | S (`test_a_failing_read_with_the_context_on_gives_the_usual_503_without_calling_voyage_or_the_model`) | ✅ pasa, excepción declarada en plan §5 |
-| REQ-012 | AC-012.3 | T-059 (solo docstring) | S (`test_a_failing_reader_gives_the_usual_503_without_calling_voyage_or_the_model`) | ✅ pasa, regresión existente |
+| REQ-001 | AC-001.1 a 001.5 | T-009, T-010, T-013, T-019, T-020, T-027, T-028, T-030, T-034 | `test_coach_personal_context.py`, `test_coach_routes.py` | ✅ |
+| REQ-002 | AC-002.1, 002.2 | T-010, T-021, T-028, T-036 | `personalContext.test.ts`, `test_coach_personal_context.py`, `test_coach_routes.py`, `CoachPage.personalContext.test.tsx` | ✅ |
+| REQ-003 | AC-003.1 a 003.6 | T-011, T-021, T-026, T-028, T-036 | `personalContext.test.ts`, `test_coach_personal_context.py`, `test_coach_routes.py`, `CoachPage.personalContext.test.tsx` | ✅ |
+| REQ-004 | AC-004.1, 004.2 | T-014, T-019, T-024, T-030, T-032, T-040 | `CoachPage.personalContext.test.tsx`, `test_coach_routes.py`, `test_coach_service.py` | ✅ |
+| REQ-005 | AC-005.1 a 005.4 | T-010, T-013, T-016, T-020, T-028, T-030, T-032 | `test_coach_personal_context.py`, `test_coach_routes.py`, `test_coach_service.py` | ✅ |
+| REQ-006 | AC-006.1, 006.2 | T-009, T-020, T-026, T-027, T-034, T-046, T-050 | `personalContext.test.ts`, `test_coach_personal_context.py`, `test_coach_routes.py` | ✅ |
+| REQ-006 | AC-006.3 | T-024, T-040 | `CoachPage.personalContext.test.tsx` | ✅ |
+| REQ-007 | AC-007.1 a 007.3 | T-021, T-024, T-036, T-040 | `CoachPage.personalContext.test.tsx`, `personalContext.test.ts` | ✅ |
+| REQ-008 | AC-008.1, 008.2 | T-015, T-031, T-032 | `test_coach_service.py` | ✅ |
+| REQ-009 | AC-009.1 a 009.6 | T-017, T-031 | `test_coach_service.py` | ✅ |
+| REQ-010 | AC-010.1, 010.2, 010.3 | T-023, T-024, T-038, T-039, T-040 | `CoachPage.personalContext.test.tsx`, `personalContextPreference.test.ts` | ✅ |
+| REQ-010 | AC-010.4, 010.6 | T-009, T-014, T-019, T-027, T-032, T-034, T-044, T-045, T-049 | `test_coach_personal_context.py`, `test_coach_routes.py`, `test_coach_service.py`, `test_coach_observability.py` | ✅ |
+| REQ-010 | AC-010.5 | T-022, T-023, T-037, T-063 | `CoachPage.personalContext.test.tsx`, `personalContextPreference.test.ts` | ✅ |
+| REQ-010 | AC-010.7 (nuevo) | T-063, T-064, T-072 | `CoachPage.personalContext.test.tsx` | ✅ |
+| REQ-010 | AC-010.8 (nuevo) | T-060, T-064, T-067, T-069, T-073 | `CoachPage.personalContext.test.tsx`, `test_coach_observability.py` | ✅ |
+| REQ-011 | AC-011.1 a 011.3 | T-025, T-041, T-047, T-051 | `PrivacyPolicyPage.test.tsx` | ✅ |
+| REQ-011 | AC-011.4 (nuevo) | T-066, T-074 | `PrivacyPolicyPage.test.tsx` | ✅ |
+| REQ-012 | AC-012.1, 012.2, 012.4, 012.5 | T-016, T-020, T-032, T-034 | `test_coach_routes.py` | ✅ |
+| REQ-012 | AC-012.3 | T-016, T-032, T-044, T-049, T-058 (F8), T-059 | `test_coach_routes.py`, `test_coach_service.py` | ✅ (T-058 es la excepción F8 declarada en plan §5: pasa antes de implementar, regresión; T-059 también pasa, solo cambia el docstring) |
+| REQ-013 | AC-013.1, 013.2 (nuevos) | T-062, T-065, T-071, T-073 | `CoachPage.personalContext.test.tsx`, `previousNames.test.ts` | ✅ |
+| REQ-013 | AC-013.3 (nuevo) | T-055, T-056, T-060, T-061, T-067, T-068, T-069, T-070 | `test_coach_personal_context.py`, `test_coach_observability.py`, `test_coach_routes.py` | ✅ |
+| REQ-013 | AC-013.4 (nuevo) | T-060, T-067, T-069 | `test_coach_observability.py` | ✅ |
+| REQ-013 | AC-013.5 (nuevo) | T-057, T-060, T-061, T-069, T-070 | `test_coach_service.py`, `test_coach_observability.py`, `test_coach_routes.py` | ✅ |
+| REQ-013 | AC-013.6 (nuevo) | T-056, T-060, T-061, T-068, T-069, T-070 | `test_coach_personal_context.py`, `test_coach_observability.py`, `test_coach_routes.py` | ✅ |
+| NFR-001 | AC-N001.1 | T-013, T-020, T-030 | `test_coach_personal_context.py`, `test_coach_routes.py` | ✅ |
+| NFR-002 | AC-N002.1, N002.2 | T-015, T-032 | `test_coach_service.py`, `test_coach_routes.py` | ✅ |
+| NFR-003 | AC-N003.1, N003.2, N003.3 | T-012, T-018, T-029, T-033, T-043, T-045, T-048, T-049 | `test_coach_observability.py`, `test_coach_personal_context.py` | ✅ |
+| NFR-003 | AC-N003.4 a N003.8 (nuevos) | T-055, T-060, T-061, T-067, T-069 | `test_coach_personal_context.py`, `test_coach_observability.py`, `test_coach_routes.py` | ✅ |
+| NFR-004 | AC-N004.1 | T-013, T-020, T-030, T-043, T-048 | `test_coach_personal_context.py`, `test_coach_routes.py` | ✅ |
+| NFR-005 | AC-N005.1 | T-015, T-032 | `test_coach_service.py` | ✅ |
 
-- AC sin test: — (todos los AC de la revisión 2 tienen marcador `SDD: 034`)
-- REQ sin tarea: — (REQ-013 y AC-N003.4 a AC-N003.8 aparecen en `tasks.md`, T-055 a T-066)
-- Tareas sin marcar `[x]`: — (T-052 a T-066 están marcadas; T-067 a T-074 son de implementación y se esperan sin marcar)
-- `skip`, `xfail`, `.only` o equivalentes nuevos: no se ha buscado en esta etapa de red.
+- AC sin test: — (los 69 AC tienen al menos un marcador `SDD: 034` y todos pasan)
+- REQ/NFR sin tarea: — (REQ-001 a REQ-013 y NFR-001 a NFR-005 aparecen en `tasks.md`)
+- Tareas sin marcar `[x]`: — (74 de 74 marcadas)
+- Marcadores `SDD:` sin AC de `spec.md`: —
+- `skip`, `xfail`, `.only`, `.skip` o equivalentes nuevos en el diff: —
 
 ## 3. Criterios de aceptación manuales
-— (no aplica en modo red)
+- **AC-010.1 (parcial):** el interruptor «Usar mis datos para personalizar las respuestas» aparece activado por defecto y con su texto de ayuda (cubierto por test). Falta comprobar en el navegador su **posición visual** («bajo la descripción de la pantalla») y su aspecto en `/coach`, en escritorio y en móvil.
 
 ## 4. Fallos (si los hay)
 | # | Qué falló | Salida relevante (recortada) | Responsable probable (test-author · implementer · entorno) |
 |---|---|---|---|
-| — | Ninguno. Los 88 tests nuevos o endurecidos de la revisión 2 que fallan lo hacen por comportamiento ausente. Los 2 que pasan son T-058 (F8, excepción declarada en plan §5) y T-059 (solo docstring, regresión existente). | — | — |
-
-Notas (no son fallos):
-- Working copy: `git diff` avisa de que cuatro archivos de test (`test_coach_personal_context.py`, `test_coach_service.py`, `CoachPage.personalContext.test.tsx` y `PrivacyPolicyPage.test.tsx`) tienen CRLF en el disco. Art. P5.1 exige LF en el repositorio. `.gitattributes` lo normaliza al hacer commit, pero conviene comprobarlo antes del commit de la etapa tests.
-- El red check de la revisión 1 (T-043 a T-047) y todos los tests previos de la feature siguen en verde.
+| — | Ninguno. Todas las comprobaciones automáticas están en verde. | — | — |

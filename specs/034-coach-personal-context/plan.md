@@ -2,8 +2,10 @@
 
 - **Spec:** [spec.md](spec.md) (aprobada el 2026-11-03; enmendada y aprobada de nuevo tras la review, con Q11 y Q12)
 - **Ámbitos:** backend, frontend
-- **Revisiones del plan:** 1 (review iteración 1: F1, F2, F3 y F7) y 2 (gate de review: F4, F5, F8, F9 y F10; spec
-  enmendada con NFR-003 AC-N003.4 a AC-N003.8, REQ-010 AC-010.7 y AC-010.8, REQ-011 AC-011.4 y REQ-013)
+- **Revisiones del plan:** 1 (review iteración 1: F1, F2, F3 y F7), 2 (gate de review: F4, F5, F8, F9 y F10; spec
+  enmendada con NFR-003 AC-N003.4 a AC-N003.8, REQ-010 AC-010.7 y AC-010.8, REQ-011 AC-011.4 y REQ-013) y 3 (gate de
+  review de la iteración 3: F11, F12 y F13; ver §9). **F13 está pendiente de una decisión del usuario** porque
+  cualquier corrección cambia NFR-003 o REQ-013 de la spec aprobada (§9.3).
 
 ## 1. Resumen de la solución
 
@@ -922,7 +924,7 @@ La red se simula con `vi.mock` de las capas `api.ts` (Art. P1.4). `globals: fals
 | El nombre llega a Langfuse en el historial con el interruptor desactivado (revisión 1, F1) | Alta si se cambia el interruptor a mitad de conversación | Alto | Con el contexto desactivado se lee solo el nombre (`read_first_name`) para anonimizar; el mensaje al modelo no cambia; test con un historial que contiene «Carlos» |
 | Una parte del nombre que también es palabra común («Paz», «Rosa», «Mar») borra esa palabra de la traza (revisión 2, F4) | Media | Bajo | Aceptado en Q11: solo afecta a la traza de ese usuario, nunca a lo que ve ni a lo que recibe el modelo; las partículas y las partes de menos de 3 letras se excluyen |
 | Sustituciones encadenadas que rompen el marcador (`[[nombre]]`) o parten el nombre completo en varios `[nombre]` | Baja | Bajo | Un único patrón con alternancia de más largo a más corto y una sola pasada; test con el nombre «Nombre» y con «María José» |
-| Un cliente manipulado envía en `previous_names` palabras que no son nombres | Baja | Bajo | Solo anonimiza su propia traza (Q12); no cambia lo que recibe el modelo; máximo 5 textos de 100 caracteres |
+| Un cliente manipulado envía en `previous_names` palabras que no son nombres (F13: con `["de"]` desaparece «de» de toda su traza; con un nombre de 100 caracteres hecho de palabras comunes, cada una de 3 letras o más) | Baja | Bajo | Solo anonimiza su propia traza (Q12); no cambia lo que recibe el modelo; máximo 5 textos de 100 caracteres. Revisión 3: mitigación pendiente de decisión (§9.3); ninguna opción elimina el riesgo frente a un cliente manipulado a propósito, que también controla el historial |
 | Un nombre anterior que la pantalla no llegó a leer (cambio de nombre en otra pestaña sin refetch) no se anonimiza | Baja | Bajo | Limitación aceptada en Q12; la alternativa del token firmado queda en el backlog |
 | Una caída de la base al leer la cuenta convierte en 503 una pregunta con el interruptor desactivado | Baja | Bajo | Con la base caída la búsqueda en pgvector falla igual; mismo 503 y mensaje de REQ-012, registrado en el log (F7); test de regresión para `read` y `read_first_name` (F8) |
 | Romper el análisis de progreso al extraer `parse_indicators`, `profile_lines` e `indicator_lines` | Baja | Medio | Extracción sin cambios de comportamiento; los tests existentes de la 010 y la 011 deben seguir verdes sin tocarlos |
@@ -963,7 +965,8 @@ La red se simula con `vi.mock` de las capas `api.ts` (Art. P1.4). `globals: fals
 - **P3.3:** el rate limiting existente sigue delante de toda llamada a proveedores, y los fallos siguen dando 503.
 - **P3.4:** sin SQL nuevo.
 - **P2, General.1:** textos visibles en español correcto y sin voseo («desactivas», no «desactivás»). Las
-  instrucciones nuevas también.
+  instrucciones nuevas también. Revisión 3: los docstrings de `coach_personal_context.py` (F11) y los comentarios de
+  sección de `test_coach_personal_context.py` (F12) recuperan las tildes (§9.1 y §9.2).
 - **P4:** no hay paso manual en producción (ni migración ni variables). El doc-keeper debe actualizar `CLAUDE.md`
   (área del coach: contexto personal, interruptor, anonimización por partes y `previous_names`) y la mención a
   Langfuse.
@@ -980,3 +983,107 @@ No se incumple ningún «DEBERÍA».
   interruptor en `localStorage` y 503 si falla la lectura de la cuenta. Actualizada en la revisión 1 (F1 y F7) y en
   la revisión 2 (anonimización por partes con la lista cerrada de partículas, nombres anteriores enviados por el
   cliente solo para la traza y aviso del historial en la ayuda y la Política).
+- Revisión 3: F11 y F12 no cambian ninguna decisión de la ADR. F13 sí la cambiaría (la consecuencia «un cliente
+  manipulado puede enviar palabras que no son nombres») si el usuario elige las opciones A, B o C de §9.3; en ese caso
+  el planner añadirá el cambio al cuerpo de ADR-0038 **sin tocar su «Estado»**, que cambia la sesión principal. Con la
+  opción D la ADR no cambia.
+
+## 9. Revisión 3 (gate de review, iteración 3: F11, F12 y F13)
+
+El usuario pidió en el gate «Corrijamos F11, F12 y F13». F11 y F12 son de forma y no cambian el comportamiento. F13
+necesita una decisión porque toca la spec aprobada (§9.3).
+
+### 9.1 F11 (MENOR, implementer): tildes en los docstrings de `coach_personal_context.py`
+
+Solo cambia el texto de los docstrings; el código, las firmas y el comportamiento no cambian.
+
+| Línea | Hoy | Pasa a |
+|---|---|---|
+| `backend/services/coach_personal_context.py:180-181` (`parse_previous_names`) | «Valida los nombres anteriores que envia el cliente. Nunca lanza: una lista no valida se ignora entera.» | «Valida los nombres anteriores que envía el cliente. Nunca lanza: una lista no válida se ignora entera.» |
+| `:197-198` (`name_redaction_terms`) | «Textos a buscar en la traza: nombre completo y partes de 3 letras o mas que no sean particulas, sin duplicados, de mas largo a mas corto.» | «Textos a buscar en la traza: nombre completo y partes de 3 letras o más que no sean partículas, sin duplicados, de más largo a más corto.» |
+| `:224-225` (`redact_name`) | «Sustituye el nombre (palabra completa, sin distinguir mayusculas) por «[nombre]» en textos, listas, tuplas y valores de diccionarios.» | «Sustituye el nombre (palabra completa, sin distinguir mayúsculas) por «[nombre]» en textos, listas, tuplas y valores de diccionarios.» (recupera la tilde que tenía en `main`) |
+
+- El implementer revisa además el resto de docstrings y comentarios **nuevos** del archivo en esta feature y corrige
+  cualquier otra palabra sin tilde (la búsqueda de la revisión 3 no encontró más). No toca el texto de
+  `DONT_KNOW_ANSWER` de `coach_service.py` (está en el backlog de la spec: cambiarlo cambia lo que ve el usuario).
+- Las líneas siguen dentro de 100 columnas (ratchet de ruff, E501).
+
+### 9.2 F12 (NIT, test-author): «Revisión 2» en los comentarios de sección de los tests
+
+- `backend/tests/test_services/test_coach_personal_context.py:882`:
+  `# --- Revision 2: redact_name por partes (F4) y nombres anteriores (F10) --------` pasa a
+  `# --- Revisión 2: redact_name por partes (F4) y nombres anteriores (F10) --------`.
+- `:1000`: `# --- Revision 2: parse_previous_names (REQ-013) --------------------------------` pasa a
+  `# --- Revisión 2: parse_previous_names (REQ-013) --------------------------------`.
+- Solo cambian dos comentarios: ninguna aserción, nombre de test ni marcador `SDD:`. Los guiones de relleno pueden
+  ajustarse para no pasar de 100 columnas (la «ó» cuenta como un carácter).
+- El test-author revisa también los demás comentarios y docstrings **nuevos** de los cuatro archivos de test backend de
+  la 034 y corrige otras palabras sin tilde si las hay, sin tocar código.
+- **Integridad de los tests (B5):** es un cambio de test posterior al snapshot. La sesión principal lo registra como
+  `rework` de la etapa `tests` y toma un `snapshot` nuevo tras el cambio, como en `f89091e` y `092d472`. No hace falta
+  red check: no hay comportamiento nuevo y los tests deben seguir en verde.
+
+### 9.3 F13 (NIT, planner): `previous_names` manipulado y palabras comunes en la traza — PENDIENTE DE DECISIÓN
+
+**Problema.** `name_redaction_terms` añade siempre el nombre anterior completo y, si tiene varias partes, cada parte
+de 3 letras o más que no sea partícula. Así:
+
+- `previous_names=["de"]` hace que «de» se sustituya por «[nombre]» en toda la traza de ese usuario (el ejemplo de la
+  review);
+- un único nombre anterior de 100 caracteres formado por palabras comunes («proteína grasa calorías dieta …»)
+  anonimiza cada una de ellas, porque cada parte de 3 letras o más se anonimiza por separado. Este segundo vector es
+  más amplio que el de la review.
+
+**Por qué no se puede corregir sin tocar la spec.** NFR-003 dice que cada aparición del nombre como palabra completa
+se sustituye por «[nombre]» y que «lo mismo vale para los nombres anteriores de REQ-013». Las excepciones de partículas
+y de menos de 3 letras de NFR-003 son solo para las **partes** de un nombre, no para el nombre completo. La sección 6
+fija qué lista es válida (de 1 a 5 textos con la regla de la 018). Por tanto, dejar de anonimizar un nombre anterior
+válido (o rechazar la lista por un criterio nuevo) cambia NFR-003 o la sección 6 de la spec aprobada, y además afecta
+a la privacidad: un nombre real que se deje de anonimizar llegaría a Langfuse, y la Política dice «nunca tu nombre»
+(categorías 1 y 4 de decisión mayor). Ninguna opción elimina el riesgo frente a un cliente manipulado a propósito: el
+cliente también controla el historial y sin un diccionario no se puede distinguir un nombre de una palabra.
+
+**Opciones** (todas solo cambian `name_redaction_terms`; ni el modelo, ni Voyage, ni la respuesta, ni la validación del
+nombre actual cambian):
+
+| Opción | Regla | Cambio en la spec | AC existentes afectados | Coste para la privacidad |
+|---|---|---|---|---|
+| **A (recomendada)** | Un nombre anterior que, entero y con `casefold`, sea una de las 17 partículas de `NAME_PARTICLES` no aporta ningún término (ni completo ni partes). El resto de nombres anteriores sigue igual. El nombre actual de la cuenta no cambia. | NFR-003: «… Lo mismo vale para los nombres anteriores de REQ-013, salvo un nombre anterior que sea solo una de las partículas de la lista, que se ignora.» REQ-013: AC nuevo **AC-013.7**: «Given la cuenta base y una petición con los nombres anteriores «de» y «Carlitos», When pregunta al coach, Then la traza conserva «de» como palabra y sustituye «Carlitos» y «Carlos» por «[nombre]».» | Ninguno cambia: AC-013.3 a AC-013.6 usan «Carlitos» y «Ana», y AC-N003.1 a AC-N003.8 son del nombre actual. | Mínimo: solo una cuenta que se llamara literalmente «De», «Di», «Le», «Do»… y cambiara de nombre a mitad de conversación dejaría ese nombre anterior en su traza. |
+| B | A, y además un nombre anterior de **una sola parte** con menos de 3 letras (`MIN_NAME_PART_LETTERS`) se ignora («Jo», «Mª», «yo», «el», «mi»). | NFR-003 con las dos excepciones y AC-013.7 con un caso de partícula y otro de 2 letras. | Ninguno de los existentes. | Mayor: un nombre anterior real corto («Jo», «Mª», «Bo») llegaría a Langfuse, contra «nunca tu nombre» de la Política. |
+| C | A (o B), y además un nombre anterior aporta sus partes solo si tiene como mucho 4 partes; con más, solo se anonimiza el texto completo (que casi nunca aparecerá tal cual). Cubre el vector del nombre largo de palabras comunes. | NFR-003 con el tope de partes para nombres anteriores y AC-013.7/AC-013.8. | Ninguno de los existentes (los casos usan nombres de 1 o 2 partes). | Un nombre anterior real de 5 partes o más («María de los Ángeles del Carmen») dejaría sus partes sueltas en la traza. |
+| D | No cambiar el código: F13 se cierra como riesgo aceptado (ya lo está en Q12 y en ADR-0038). Se refuerza solo la documentación: el doc-keeper lo menciona en `CLAUDE.md` (área del coach) para quien lea trazas raras en Langfuse. | Ninguno. | Ninguno. | Ninguno. |
+
+Descartada: ignorar **toda** la lista si algún elemento es una partícula (variante de AC-013.6). Es peor para la
+privacidad que A: un cliente que envíe un nombre real junto a una partícula perdería también la anonimización del
+nombre real.
+
+**Diseño si se elige A** (el planner lo completará en la revisión 3 definitiva tras la enmienda de la spec):
+
+- Firma sin cambios: `name_redaction_terms(first_name, other_names=())`.
+- Lógica: en el bucle, para los elementos de `other_names` (no para `first_name`), si
+  `name.strip().casefold() in NAME_PARTICLES`, se salta el nombre entero. `first_name` conserva el comportamiento de
+  hoy.
+- Tests (test-author, `test_coach_personal_context.py`, marcador `# SDD: 034 REQ-013 AC-013.7`):
+  - `name_redaction_terms("Carlos", ["de"])` → `["Carlos"]`; parametrizado sobre las 17 partículas, también en
+    mayúsculas («De», «LA»): ninguna aporta términos;
+  - `redact_name("la proteína de la dieta, Carlitos", "Carlos", ("de", "Carlitos"))` → `"la proteína de la dieta,
+    [nombre]"`;
+  - con `first_name="de"` (nombre actual de una sola parte), «de» se sigue anonimizando (conservación, dentro del mismo
+    test que exige el comportamiento nuevo para no pasar en rojo sin implementación);
+  - en `test_coach_observability.py`, de extremo a extremo: `previous_names=["de", "Carlitos"]`, historial «Hola,
+    Carlitos: la proteína de la dieta…»; la traza contiene « de » y no contiene «carlitos» ni «carlos».
+  - Todos fallan antes de implementar porque hoy «de» se anonimiza.
+- ADR-0038: se añade al cuerpo la excepción y se actualiza la consecuencia del cliente manipulado (sin tocar «Estado»).
+
+**Diseño si se elige B o C:** como A, con la condición extra (`sum(ch.isalpha() for ch in parts[0]) < 3` cuando el
+nombre anterior tiene una sola parte; o `len(parts) > 4` para no añadir sus partes) y un caso de test por cada regla.
+
+**Diseño si se elige D:** sin tareas de código ni de tests para F13; solo la mención en `CLAUDE.md` (doc-keeper) y la
+fila de F13 en `docs/backlog.md` como riesgo aceptado.
+
+### 9.4 Mapa y cobertura de la revisión 3
+
+- F11 y F12 no añaden ni cambian REQ, NFR ni AC; el mapa de §4 y la cobertura de §5 no cambian.
+- F13, según la opción elegida: A, B o C añaden AC-013.7 (y AC-013.8 en C) a REQ-013/NFR-003, cubiertos por los tests
+  de §9.3 (`name_redaction_terms`, `redact_name` y observabilidad). D no cambia el mapa.
+- No hay migraciones, variables, dependencias ni contratos nuevos en ninguna opción.

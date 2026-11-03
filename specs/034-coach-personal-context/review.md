@@ -1,132 +1,115 @@
 # Review 034 — El coach conoce tu perfil, nombre, macros y progreso al responder
 
-- **Iteración:** 2 de 5
-- **Diff revisado:** `git diff main...feat/034-coach-personal-context` @ `ec5e486`, con atención a `git diff f89091e ec5e486` (correcciones de la iteración 1). Cambios sin commitear solo en `specs/034-coach-personal-context/{state.json,verify-report.md}`
+- **Iteración:** 3 de 6
+- **Diff revisado:** `git diff main...feat/034-coach-personal-context` @ `092d472`, con atención a `git diff ec5e486 092d472` (ronda de F4, F5, F8, F9 y F10). Cambios sin commitear solo en `specs/034-coach-personal-context/{backlog.md,state.json,verify-report.md}`
 - **Veredicto:** APPROVED
 
 ## 1. Resumen
 
-La iteración 2 resuelve los dos hallazgos MAYORES de la revisión anterior y la corrección menor F3:
-- **F1:** con el interruptor desactivado, el servicio lee solo el nombre de la cuenta (`read_first_name`) y lo usa
-  únicamente en `redact_name`. El mensaje al modelo es el de antes de la feature y el perfil no se lee.
-- **F2:** la Política de privacidad tiene una fecha de actualización nueva, y su test se sustituyó de forma explícita.
-- **F3:** la lista blanca de textos de indicador usa `fullmatch`.
+La iteración 3 resuelve todo lo que el usuario pidió en la revisión anterior:
+- **F4:** anonimización por partes del nombre, con mínimo de 3 letras y la lista cerrada de 17 partículas.
+- **F5:** la aclaración del historial en la ayuda del interruptor y en la Política.
+- **F8:** test de regresión del 503 cuando falla `read`.
+- **F9:** el espacio tras `#` en el comentario.
+- **F10:** los nombres anteriores (`previous_names`) se usan solo para la traza.
 
-No hay regresiones: 175 tests de servicio del coach en verde (ejecutados en esta revisión) y verify full en PASS
-(pytest 3066, vitest 1946, ratchet, oxlint, `tsc -b` y build). La integridad de los tests es correcta. Quedan F4 y F5
-(MENOR, decisiones de la spec para el gate del usuario) y un hallazgo MENOR nuevo de cobertura de tests (F8).
+`previous_names` no llega al modelo, a Voyage ni a la respuesta. Su validación cumple la sección 6 de la spec, y los textos coinciden literalmente con la spec. La integridad de los tests es correcta (`snapshot --check` idéntico y `commits.tests` = HEAD). En esta revisión ejecuté los 241 tests de servicio del coach, en verde; verify full está en PASS. Solo quedan hallazgos MENOR y NIT.
 
 ## 2. Cumplimiento de la spec
 
 | REQ / AC | ¿Implementado como se especificó? | Evidencia (archivo:línea o test) |
 |---|---|---|
-| REQ-001 (AC-001.1 a AC-001.5) | Sí | `backend/services/coach_personal_context.py:212-229` (`read` usa `_load_user`, que filtra por el id del token); sin cambios de comportamiento respecto a la iteración 1 |
-| REQ-002 (AC-002.1, AC-002.2) | Sí | Sin cambios (`coach_personal_context.py:142-152`; `frontend/src/features/coach/personalContext.ts`) |
-| REQ-003 (AC-003.1 a AC-003.6) | Sí | `backend/services/progress_analysis_context.py:132` (`_TEXT_PATTERN.fullmatch`); `test_coach_personal_context.py:805` (salto de línea al final en los cuatro textos) |
-| REQ-004 (AC-004.1, AC-004.2) | Sí | `backend/services/coach_service.py:225-232` (bloque solo en el turno nuevo, historial intacto) |
-| REQ-005 (AC-005.1 a AC-005.4) | Sí | `coach_personal_context.py:222` (sin perfil se ignora el cliente); límite antes del lector (`coach_service.py:128-137`) |
-| REQ-006 (AC-006.1 a AC-006.3) | Sí | `progress_analysis_context.py:129-135`. Comprobado: `"79,4 kg\n"` ya no pasa |
-| REQ-007 (AC-007.1 a AC-007.3) | Sí | Sin cambios en el frontend del coach desde la iteración 1 |
-| REQ-008 (AC-008.1, AC-008.2) | Sí | `coach_service.py:214-218` |
-| REQ-009 (AC-009.1 a AC-009.6) | Sí | `SYSTEM_PROMPT` sin cambios desde la iteración 1 |
-| REQ-010 (AC-010.1 a AC-010.6) | Sí, con F5 pendiente de decisión | `coach_service.py:145-151`: desactivado, solo `read_first_name`; `personal` queda en `None` y el mensaje es `build_coach_user_message(context, question)` (`:227-230`). Tests: `test_coach_service.py:518` (`reader.calls == []`, `name_calls == ["u-1"]`, mensaje sin «Carlos» ni bloque) y `test_coach_observability.py:814` |
-| REQ-011 (AC-011.1 a AC-011.3) | Sí | `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx:5` (`updatedAt="3 de noviembre de 2026"`); `PrivacyPolicyPage.test.tsx:83-93` |
-| REQ-012 (AC-012.1 a AC-012.5) | Sí | `coach_service.py:144-156` (fallo del lector: 503 con el mensaje de siempre y sin traza); `test_coach_service.py:539` (solo para `read_first_name`, ver F8) |
-| NFR-001 (AC-N001.1) | Sí | `read_first_name` (`coach_personal_context.py:206-210`) solo lee la cuenta y devuelve el nombre saneado; `test_coach_personal_context.py:869-876` comprueba que no consulta perfiles |
-| NFR-002 (AC-N002.1, AC-N002.2) | Sí | Sin cambios: a Voyage le llega `retrieval_query` sin tocar (`coach_service.py:175`) |
-| NFR-003 (AC-N003.1 a AC-N003.3) | Sí, con F4 pendiente de decisión | `redact_name(..., name)` con `name` del lector en los dos modos (`coach_service.py:148`, `:151`). `test_coach_observability.py:814-845`: con el contexto desactivado y «Hola, Carlos» en el historial, la traza serializada no contiene «carlos» (sin distinguir mayúsculas) y sí «[nombre]», mientras el usuario recibe la respuesta sin tocar |
-| NFR-004 (AC-N004.1) | Sí | `_load_user` (`coach_personal_context.py:197-204`) compartido por `read` y `read_first_name`; `test_coach_personal_context.py:820-847` (dos usuarios; id no UUID sin tocar repositorios) |
-| NFR-005 (AC-N005.1) | Sí | `read_first_name` es una consulta a la base; no hay llamadas nuevas a proveedores |
+| REQ-001 a REQ-009, REQ-012, NFR-001, NFR-002, NFR-004, NFR-005 | Sí | Sin cambios funcionales desde la iteración 2 (ver review anterior). F8: `test_coach_service.py:562` hace fallar `read` con el contexto activado y comprueba el 503 con el mensaje de siempre, `reader.calls` = 1, `name_calls == []` y ninguna llamada a Voyage ni al modelo |
+| REQ-010 (AC-010.1 a AC-010.6) | Sí | `frontend/src/features/coach/components/PersonalContextToggle.tsx:5-8,31`; AC-010.2 sigue cumpliéndose, porque el texto nuevo empieza por «El coach no usa tus datos personales.» |
+| AC-010.7 | Sí | `PERSONAL_CONTEXT_HELP_OFF` (`PersonalContextToggle.tsx:7-8`) es literal al texto de la spec, sección 6; test `CoachPage.personalContext.test.tsx` («al desactivarlo, el párrafo enlazado…», con igualdad exacta de `textContent`) |
+| AC-010.8 | Sí | El historial se reenvía sin tocar (`coach_service.py`, `messages = [*(history or []), …]`). Tests: `CoachPage.personalContext.test.tsx` («tras desactivarlo, el historial…») y `test_coach_observability.py:953` |
+| REQ-011 (AC-011.1 a AC-011.4) | Sí | `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx:79-82`, frase literal de la spec; `PrivacyPolicyPage.test.tsx` (AC-011.4). La fecha de actualización sigue en «3 de noviembre de 2026», la de hoy (decisión del plan) |
+| REQ-013 (AC-013.1, AC-013.2) | Sí | `CoachPage.tsx:34-40`: los nombres se recuerdan solo mientras hay conversación. `CoachPage.tsx:59-72`: `previous_names` solo si `history.length > 0` y hay algún nombre distinto del actual. `previousNames.ts` acota a 5 y descarta los vacíos y los de más de 100 code points. Tests en `CoachPage.personalContext.test.tsx` (también con el interruptor desactivado) y `previousNames.test.ts` |
+| REQ-013 (AC-013.3, AC-013.4) | Sí | `coach_service.py:166-169`: `redact` aplica `redact_name(value, name, previous)` a la entrada, a los pasos y a la salida en los dos modos. Tests en `test_coach_observability.py:986` (parametrizado activado y desactivado) y en `test_coach_routes.py` (por HTTP) |
+| REQ-013 (AC-013.5) | Sí | `previous` solo se usa en `redact` (`coach_service.py:166-169`): ni el bloque, ni `messages`, ni `retrieval_query`, ni la respuesta JSON (`coach_routes.py:112`, `answer` y `feedback_id`). El nombre del bloque sigue saliendo del lector. Test `test_coach_service.py` (`test_previous_names_never_reach_the_model_the_block_or_the_search_text`: «Nombre: Carlos», sin «Ana» en los mensajes ni en el system prompt, y búsqueda sin cambios) |
+| REQ-013 (AC-013.6) | Sí | `coach_personal_context.py:179-191`: lista (no `dict` ni texto) de 1 a 5 elementos; cada uno pasa `validate_first_name` (regla 018: texto, sin vacíos ni espacios solos, como mucho 100 caracteres tras recortar). Cualquier elemento no válido devuelve `()` y nunca lanza. Se valida después del límite de uso y del lector, así que no puede provocar un 400 ni un 500. Tests en `test_coach_personal_context.py:1040` (14 casos, `[True]` y mezclas válido/no válido incluidos), `test_coach_observability.py` y `test_coach_routes.py` |
+| NFR-003 (AC-N003.1 a AC-N003.3) | Sí | El nombre completo sigue anonimizándose como palabra completa; «Anabel» con «Ana» no se toca |
+| NFR-003 (AC-N003.4 a AC-N003.8) | Sí | `coach_personal_context.py:194-228`. El nombre completo y las partes (separadas por espacios o guiones, `:212`) de 3 letras o más que no sean partículas (`:214-217`) se deduplican con `casefold` y se ordenan de más largo a más corto en una sola alternancia de palabra completa: «María José» da un único `[nombre]` y `[nombre]` nunca se vuelve a sustituir. Tests en `test_coach_personal_context.py:886-991`, más los de extremo a extremo en `test_coach_observability.py:922,940` |
 
 ## 3. Cumplimiento del plan
 
-- La corrección sigue el plan revisado (`plan.md`, §3, «`CoachPersonalContextReader.read_first_name`» y paso 2 de
-  `ask_with_feedback`):
-  - helper privado común para la comprobación del UUID y la lectura del usuario, de modo que el nombre anonimizado es
-    el mismo en los dos modos;
-  - `read_first_name` no lee el perfil ni `client_data`;
-  - el nombre no entra en ningún bloque ni en el mensaje al modelo.
-- F7 de la iteración 1 (503 si el lector falla) queda documentado en el plan y en ADR-0038, con su motivo (sin nombre
-  no se puede garantizar la anonimización). Resuelto.
-- F6 de la iteración 1 (sangría del `dict` del paso `retrieval`) está corregido (`coach_service.py:192-206`).
-- ADR-0038 recoge la anonimización con el interruptor desactivado y sus consecuencias: una lectura de la cuenta por
-  pregunta, y el historial que sigue llegando al modelo, enlazado con F5. Sigue en «Propuesta» (Art. P5.2).
-- **Desviación del plan en los tests:** el plan pedía probar que «si `read` o `read_first_name` lanzan» se responde
-  503. El caso de `read` se retiró en el red check (pasaba sin implementación porque `read` ya estaba dentro del `try`
-  desde la iteración 1), pero no se sustituyó por ningún otro test. Ver F8.
+- La implementación sigue el plan, revisión 2 (§3.3, `name_redaction_terms`, `parse_previous_names` y `redact_name(…, other_names)`):
+  - `NAME_PARTICLES` con las 17 partículas de la spec;
+  - `MIN_NAME_PART_LETTERS = 3`, contando solo letras (`isalpha`), así que «Mª» no se anonimiza suelto;
+  - `MAX_PREVIOUS_NAMES = 5`.
+- `parse_previous_names` reutiliza `validate_first_name` (spec 018) y `sanitize_first_name`: el nombre anterior se compara con el texto saneado, el mismo que recibió el modelo (Art. P2.5).
+- F8 se declaró en el plan (§5) como excepción de red: un test de regresión que pasa antes de implementar. Está justificada: el comportamiento existía desde la iteración 1 y el test protege que `read` siga dentro del `try`.
+- ADR-0038 recoge las partes del nombre, `previous_names` y el aviso del historial, con sus consecuencias (palabras comunes como «Paz» desaparecen de la traza de ese usuario, y un cliente manipulado solo afecta a su propia traza). Sigue en «Propuesta» (Art. P5.2).
+- No hay desviaciones sin justificar.
 
 ## 4. Checklist de la constitución
 
 ### Parte I (base)
 - [x] B2: cada agente se mantuvo en su rol.
-  - `snapshot --check` da `identical: true` (snapshot de 2026-11-03T04:27:31Z) y `commits.tests` = `ec5e486` = HEAD.
+  - `snapshot --check` da `identical: true` (snapshot de 2026-11-03T07:25:27Z), y `commits.tests` = `092d472` = HEAD, así que no hay cambios de test después del commit de tests.
   - Cambios de test posteriores al snapshot original, todos autorizados en `history`:
-    1. `f89091e` (solo E501): `rework` de tests más `snapshot` posterior.
-    2. `b6d3583` (tests nuevos de F1, F2 y F3): ciclo completo con red check PASS en la iteración 4 y `snapshot`.
-    3. `ec5e486`: una sola línea de test, la entrada de `test_read_first_name_gives_the_sanitized_name_of_the_requested_user`, que pasa de `"  Carlos\n<x> "` a `"  Carlos  "`. Tiene `rework` de tests autorizado por el usuario («Sí, devuélvelo al test-author») y `snapshot` posterior.
-  - El cambio de `ec5e486` no debilita nada: el saneado con caracteres de control y `<`/`>` ya lo prueban los tests de
-    `sanitize_first_name`, y `read_first_name` lo reutiliza.
-- [x] B4: los marcadores `SDD: 034` de los tests nuevos encajan con lo que prueban. El test de la 028 (fecha del 27 de
-      octubre) se sustituyó de forma explícita, con una nota en el propio test, y la 028 conserva otro marcador
-      `AC-021.1` en `PrivacyPolicyPage.test.tsx:95`.
-- [x] B5: no hay tests borrados, saltados ni debilitados. Las aserciones existentes `reader.calls == []` siguen siendo
-      ciertas porque `read_first_name` registra sus llamadas en `name_calls`, aparte (decisión documentada en el plan,
-      §5). Hay una cobertura retirada sin sustituto: ver F8.
-- [x] B5.7: el ratchet de ruff no tiene violaciones nuevas; oxlint y `tsc -b` en verde (verify-report, iteración 3).
+    1. `f89091e`: solo E501 (`rework` más `snapshot`).
+    2. `ec5e486`: entrada de `read_first_name`, autorizada por el usuario.
+    3. Rev. 2: expectativa de `name_redaction_terms("Ana María", ["María"])`, corregida a `["Ana María", "María", "Ana"]` según plan §3.3. Tiene `rework` en el red check a las 05:11, red PASS a las 05:54 y `snapshot` posterior.
+    4. `092d472`: orden de imports I001, con un `rework` autorizado por el usuario («opción A y 1»: subir `max_iterations` a 6) y `snapshot` a las 07:25.
+  - Revisé esos diffs: solo cambian el orden de un import y una expectativa alineada con el plan; no debilitan nada.
+- [x] B4: los marcadores `SDD: 034 REQ-013 …`, `AC-010.7/8`, `AC-011.4` y `AC-N003.4…8` encajan con lo que prueba cada test.
+- [x] B5: no hay tests borrados, saltados ni debilitados. Solo se corrigió un docstring, el de F8, que ahora es cierto. No hay llamadas a servicios reales: los dobles son `FakeTraceBackend` y `FakePersonalContextReader`.
+- [x] B5.7: el ratchet no tiene violaciones nuevas; oxlint, `tsc -b` y build en verde (verify-report, iteración 4). El `# noqa: E501` del nombre del test de F8 es aceptable.
 - [x] B6.5: sin secretos ni variables nuevas.
 
 ### Parte II (proyecto)
-- [x] P1: los dobles son escritos a mano (`FakePersonalContextReader` con `read_first_name` y `name_calls`), sin
-      `unittest.mock`.
-- [x] P2.1 y P2.2: la ruta no cambia en esta iteración; el lector sigue inyectado por constructor desde
-      `_build_coach_service()` y solo lee, sin hacer commit.
-- [x] P2.3: el 503 reutiliza `ServiceUnavailableError` con el mensaje existente.
-- [x] P2.4: sin cambios de modelo ni migraciones.
-- [x] P2.5: `read_first_name` reutiliza `sanitize_first_name` y `UserRepository.get_by_id`.
-- [x] P2 General.1: el texto nuevo (fecha de la Política) está en español correcto.
-- [x] P3.1: `read_first_name` filtra por el `user_id` del token y rechaza los ids que no son UUID antes de tocar la base.
-- [x] P3.2: la lista blanca de indicadores ya no admite un `\n` final.
-- [x] P3.3: el rate limiting sigue antes del lector (un 429 no toca la base) y de cualquier proveedor.
+- [x] P1: dobles escritos a mano, sin `unittest.mock`; nombres de test en inglés (backend) y en español (frontend).
+- [x] P2.1 y P2.2: la ruta solo pasa `data.get("previous_names")` (`coach_routes.py:107`); la validación vive en el servicio.
+- [x] P2.3: sin errores nuevos; una lista no válida se ignora sin error, como pide la spec.
+- [x] P2.4: sin cambios de modelo ni migraciones (comprobado en el diff).
+- [x] P2.5: reutiliza `validate_first_name` y `sanitize_first_name`.
+- [ ] P2 General.1: los textos visibles nuevos están en español correcto, pero varios docstrings nuevos no llevan tildes, y uno las perdió (ver F11).
+- [x] P3.1: el nombre actual sale siempre de la cuenta del token; `previous_names` nunca lo sustituye.
+- [x] P3.2: `previous_names` se valida en el servicio, y el frontend genera listas que ya cumplen la regla.
+- [x] P3.3: el rate limiting sigue antes de todo.
 - [x] P4: sin pasos manuales en producción.
-- [x] P5.1: los archivos de código siguen en UTF-8 con LF (`git diff --check` limpio).
-- [x] P5.2: ADR-0038 sigue en «Propuesta» en el archivo y en el índice; el planner solo amplió su contenido.
+- [x] P5.1: LF (`git diff --check main...HEAD` limpio).
+- [x] P5.2: ADR-0038 sigue en «Propuesta», en el archivo y en el índice.
 - [x] P5.3: no toca `backend/scripts/data/**`.
 
 ## 5. Hallazgos
 
-### Hallazgos de la iteración 1
+### Hallazgos de iteraciones anteriores
 
 | # | Estado |
 |---|---|
-| F1 (MAYOR) | **Resuelto.** `coach_service.py:145-151`, `coach_personal_context.py:206-210`; tests en `test_coach_observability.py:814`, `test_coach_service.py:518` y `test_coach_personal_context.py:816-876`. Desactivado, `read_first_name` no lee el perfil (`profile_repository.calls == []`) y el nombre no llega al modelo (mensaje idéntico al de antes de la feature) |
-| F2 (MAYOR) | **Resuelto.** `PrivacyPolicyPage.tsx:5`; test `PrivacyPolicyPage.test.tsx:83-93` |
-| F3 (MENOR) | **Resuelto.** `progress_analysis_context.py:132`; test `test_coach_personal_context.py:805` |
-| F4 (MENOR) | Abierto, para el gate del usuario (decisión de la spec) |
-| F5 (MENOR) | Abierto, para el gate del usuario (decisión de la spec); ahora documentado como consecuencia en ADR-0038 |
-| F6 (NIT) | **Resuelto.** `coach_service.py:192-206` |
-| F7 (NIT) | **Resuelto.** Documentado en el plan (paso 2) y en ADR-0038 |
+| F4 (MENOR) | **Resuelto.** `coach_personal_context.py:194-228`; AC-N003.4 a AC-N003.8 probados |
+| F5 (MENOR) | **Resuelto.** `PersonalContextToggle.tsx:7-8` y `PrivacyPolicyPage.tsx:79-82`, textos literales de la spec |
+| F8 (MENOR) | **Resuelto.** `test_coach_service.py:562`, docstring corregido en `:540-544` |
+| F9 (NIT) | **Resuelto.** `coach_service.py:157` |
+| F10 (NIT) | **Resuelto.** REQ-013: `coach_service.py:166-169` y `CoachPage.tsx:34-72` |
 
 ### Hallazgos de esta iteración
 
 | # | Severidad | Archivo:línea | Hallazgo | Responsable |
 |---|---|---|---|---|
-| F4 | MENOR | `backend/services/coach_personal_context.py:175` | Sin cambios desde la iteración 1. `redact_name` solo sustituye el nombre completo: con «María José», un «Hola, María» llega a Langfuse. Encaja con la letra de NFR-003 («como palabra completa»), pero no con la frase «nunca tu nombre» de la Política. El usuario debe decidir en el gate si se acepta y se documenta, o si se anonimiza cada parte del nombre. | spec-writer |
-| F5 | MENOR | `frontend/src/features/coach/pages/CoachPage.tsx:52-64`; spec REQ-004 frente a REQ-010 | Sin cambios desde la iteración 1. Con el interruptor desactivado a mitad de conversación, Anthropic sigue recibiendo en `history` respuestas anteriores con el nombre o las cifras, aunque la ayuda diga «El coach no usa tus datos personales.». Langfuse ya está cubierto (F1). Opciones para el usuario: aceptarlo y aclararlo en la ayuda o en la Política, o vaciar o filtrar el historial al desactivar. | spec-writer |
-| F8 | MENOR | `backend/tests/test_services/test_coach_service.py:539-556` | **Ningún test cubre que un fallo de `read` (contexto activado) dé 503.** El docstring del test afirma que «el caso activado con `read` fallando ya lo cubren otros tests de la feature», pero no es así: `test_coach_routes.py:674` y `test_coach_service.py:405` prueban un fallo del modelo, no del lector, y ningún test hace fallar `read`. El caso `[True]` se retiró en el red check porque pasaba sin implementación, pero el comportamiento existe desde la iteración 1 (`coach_service.py:144-156`) y el plan lo pide (§5, «si `read` o `read_first_name` lanzan»). Si alguien saca `read` del `try`, el fallo sería un 500 sin que se entere ningún test. Corrección: añadir un test de regresión (no tiene que estar en rojo) con `FakePersonalContextReader(raise_error=...)` y `use_personal_context=True`, y corregir el docstring. | test-author |
-| F9 | NIT | `backend/services/coach_service.py:150` | Comentario sin espacio tras `#` (`#Solo para anonimizar…`). Es coherente con el estilo del resto del archivo y ruff no lo marca con las reglas activas, así que no hace falta cambiarlo. | implementer |
-| F10 | NIT | `backend/services/coach_service.py:145-151` | Si el usuario cambia su nombre a mitad de conversación (por ejemplo, de «Carlitos» a «Carlos»), el nombre anterior que traiga el historial no se anonimiza, porque solo se usa el nombre actual de la cuenta. Es un caso raro y equivale a la limitación de diminutivos ya anotada en ADR-0038; basta con dejarlo en el backlog. | planner |
+| F11 | MENOR | `backend/services/coach_personal_context.py:180-181`, `:197-198`, `:224` | Los docstrings nuevos de `parse_previous_names` y `name_redaction_terms` están sin tildes («envia», «no valida», «o mas», «particulas», «de mas largo a mas corto»). Además, el de `redact_name` perdió la tilde que tenía en `main` («mayúsculas» pasó a «mayusculas»). Incumple el Art. P2 General.1. Corrección: «envía», «válida», «más», «partículas» y «mayúsculas». | implementer |
+| F12 | NIT | `backend/tests/test_services/test_coach_personal_context.py:882`, `:1000` | Los comentarios de sección «Revision 2» de los tests no llevan tilde («Revisión», Art. P1 General.2 y P2 General.1). | test-author |
+| F13 | NIT | `backend/services/coach_personal_context.py:204-206` | Un nombre de la lista que sea una sola palabra común o una partícula (por ejemplo, `previous_names=["de"]`) se anonimiza entero en toda la traza, porque el nombre completo se sustituye siempre. La spec lo acepta («Un cliente manipulado solo puede anonimizar palabras de su propia traza», Q12) y ADR-0038 lo documenta. Solo lo anoto por si conviene tenerlo en cuenta al leer trazas raras en Langfuse; no hace falta cambiarlo. | planner |
+
+**Para el gate (sin responsable de rol):** el commit `092d472` cambia también `.sdd/config.json` (`max_iterations` de 5 a 6). Es un ajuste de todo el proyecto que llegará a `main` con el merge. El historial registra la aprobación del usuario para subir el límite de esta feature («edición puntual de state.json»). Conviene confirmar en el gate si el 6 debe quedarse en la configuración del proyecto o volver a 5 antes del cierre.
 
 ## 6. Decisión
 
-**APPROVED.** No quedan hallazgos BLOQUEANTES ni MAYORES: F1 y F2 están resueltos y probados, F3, F6 y F7 también,
-y no hay regresiones.
+**APPROVED.** No quedan hallazgos BLOQUEANTES ni MAYORES. F4, F5, F8, F9 y F10 están resueltos y probados, y no hay regresiones.
+
+Comprobaciones en esta revisión:
+- `previous_names` no llega al modelo, al system prompt, a Voyage ni a la respuesta.
+- Su validación (1 a 5 nombres con la regla 018; si la lista no es válida, se ignora sin error) cumple la sección 6 de la spec.
+- La regla de partes no produce falsos positivos fuera de lo que la spec acepta: «Mariano», «Josefina», «Joan» y «Anabel» no se tocan, y las partículas tampoco.
 
 Para el gate del usuario:
-- **F4 y F5 (MENOR, spec-writer):** decisiones de la spec sobre nombres compuestos y sobre el historial con el
-  interruptor desactivado.
-- **F8 (MENOR, test-author):** el test de regresión del fallo de `read` y la corrección del docstring. Se puede hacer
-  ahora o llevar al backlog.
-- **AC manuales del verify-report:** AC-010.1, AC-010.2, AC-010.5 y AC-011.1 a AC-011.3.
+- **F11 (MENOR, implementer):** tildes de tres docstrings. Se puede corregir ahora o llevar al backlog.
+- **F12 y F13 (NIT):** opcionales.
+- **`max_iterations` en `.sdd/config.json`:** confirmar si se queda en 6.
+- **ADR-0038:** decidir si pasa a «Aceptada» (Art. P5.2).
+- **AC manual del verify-report:** AC-010.1, posición visual del interruptor en escritorio y en móvil.
 
 ## Comentarios del usuario
 
@@ -135,3 +118,7 @@ Para el gate del usuario:
 > F4: De acuerdo F5: Aclararlo en ambos. Y vamos a arreglar de F8, F9, F10
 
 > No, vamos a resolver tambien F4, no solo documentarlo.
+
+> 1. Corrijamos F11, F12 Y F13. 2. max_iterations queda en 6, mejor que quede aumentado. 3. Aceptada
+
+> F13 (opciones A, B, C o D de plan.md §9.3): A

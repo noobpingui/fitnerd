@@ -68,3 +68,16 @@
 
 ## implement (rev. 2) · implementer
 - [ ] Ordenar los imports (I001, L7) de `backend/tests/test_services/test_coach_personal_context.py`. Es un archivo de tests y el ratchet lo cuenta como violación nueva, así que debe corregirlo quien pueda editar tests (etapa tests) antes de que el ratchet pase limpio.
+
+## verify (iteración 4) · verifier
+- [ ] Revisar en navegador (escritorio y móvil) la posición y el aspecto del interruptor de `/coach` (AC-010.1).
+- [ ] El recuento de AC: el spec-writer informó de 66, `spec.md` define 69 (se verificaron los 69).
+
+## review (iteración 3) · reviewer
+- [ ] F11 (MENOR, implementer): poner las tildes en los docstrings de `parse_previous_names`, `name_redaction_terms` y `redact_name` (`backend/services/coach_personal_context.py`; «envia», «valida», «mas», «particulas» y la «mayúsculas» que se perdió en `redact_name`).
+- [ ] F12 (NIT, test-author): «Revisión 2» en los comentarios de sección de `test_coach_personal_context.py` (líneas 882 y 1000).
+- [ ] F13 (NIT, planner): un `previous_names` manipulado puede anonimizar palabras comunes de la traza de ese usuario; tenerlo en cuenta al leer trazas en Langfuse.
+- [ ] Confirmar o revertir `max_iterations: 6` en `.sdd/config.json` antes del cierre (el commit 092d472 lo sube y llegaría a `main`).
+
+## plan (iteración 4) · planner
+- [ ] Ninguna regla sin diccionario distingue un nombre de una palabra común en previous_names: si F13 vuelve a importar, valorar el token firmado por respuesta (alternativa (a) de Q12, ya en el backlog).

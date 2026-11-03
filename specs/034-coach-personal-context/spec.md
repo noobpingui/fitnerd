@@ -26,7 +26,7 @@ Como **usuario con el onboarding completado que pregunta al AI Coach**, quiero *
 - Un interruptor en `/coach` para desactivar el uso de datos personales, con una ayuda que aclara que los mensajes anteriores de la conversación se siguen enviando (REQ-010).
 - Actualizar la Política de privacidad, también con esa aclaración (REQ-011).
 - Conservar el resto del comportamiento del coach: límite de uso, validaciones, errores y valoraciones 👍/👎 (REQ-012).
-- Anonimizar en la traza también cada parte de un nombre compuesto (F4, NFR-003) y los nombres anteriores de la cuenta que sigan en la conversación tras un cambio de nombre (F10, REQ-013).
+- Anonimizar en la traza también cada parte de un nombre compuesto (F4, NFR-003) y los nombres anteriores de la cuenta que sigan en la conversación tras un cambio de nombre (F10, REQ-013), salvo un nombre anterior que sea solo una partícula de la lista de NFR-003, que se ignora (F13, opción A).
 - Privacidad de los datos que llegan a Voyage AI, Anthropic y Langfuse (NFR-001 a NFR-003) y aislamiento entre usuarios (NFR-004).
 
 **Fuera de alcance:**
@@ -42,6 +42,7 @@ Como **usuario con el onboarding completado que pregunta al AI Coach**, quiero *
 - Anonimizar en la traza diminutivos, variantes sin tildes o partes de un nombre de menos de 3 letras o que sean partículas (NFR-003, Q11). Las partes de un nombre compuesto sí se anonimizan (F4, NFR-003).
 - Vaciar o filtrar el historial de la conversación al desactivar el interruptor: los mensajes anteriores se siguen enviando sin cambios y se avisa de ello en la ayuda y en la Política (F5, REQ-010 y REQ-011).
 - Anonimizar nombres que el propio usuario escriba en sus preguntas y que no sean el nombre actual de su cuenta ni uno anterior (REQ-013).
+- Anonimizar en la traza un nombre anterior que, entero, sea una de las partículas de NFR-003 (por ejemplo, «De» o «Le»): se ignora para que un cliente manipulado no borre esas palabras de su traza (F13, opción A, REQ-013 y NFR-003).
 
 ## 4. Requisitos funcionales
 
@@ -205,6 +206,8 @@ WHEN el usuario envía una pregunta en `/coach` y, mientras esa conversación es
 
 Los nombres anteriores sirven solo para anonimizar la traza: nunca se envían al modelo de IA ni a Voyage AI, no cambian lo que reciben y no se guardan en el servidor. El nombre actual se sigue tomando siempre de la cuenta (REQ-001), nunca de esta lista.
 
+IF un nombre anterior de la lista es, entero (sin contar los espacios de los extremos y sin distinguir mayúsculas, como en las partes del nombre), una de las 17 partículas de NFR-003 THEN THE SYSTEM SHALL ignorar ese nombre anterior (ni completo ni por partes) y seguir anonimizando el resto de la lista y el nombre actual (F13, opción A). El nombre actual de la cuenta no tiene esta excepción. Coste aceptado: una cuenta que se llamara literalmente como una partícula («De», «Di», «Le», «Do»…) y cambiara de nombre con la conversación en curso dejaría ese nombre anterior en su traza.
+
 IF la lista de nombres anteriores no cumple el formato de la sección 6 THEN THE SYSTEM SHALL ignorarla entera, sin error, y anonimizar solo el nombre actual de la cuenta.
 
 - **AC-013.1:** Given la pantalla `/coach` con una conversación en curso y el perfil leído con el nombre «Carlitos», When el perfil se vuelve a leer con el nombre «Carlos» y el usuario envía otra pregunta, Then la petición incluye «Carlitos» como nombre anterior.
@@ -213,6 +216,7 @@ IF la lista de nombres anteriores no cumple el formato de la sección 6 THEN THE
 - **AC-013.4:** Given el caso de AC-013.3 con el contexto personal desactivado, When pregunta al coach, Then ningún texto enviado a la traza contiene «Carlitos» ni «Carlos».
 - **AC-013.5:** Given la cuenta base y una petición con «Ana» como nombre anterior, When pregunta al coach, Then el modelo de IA recibe el nombre «Carlos» y no recibe «Ana» en ningún dato personal.
 - **AC-013.6:** Given la cuenta base y una petición con una lista de nombres anteriores no válida (seis nombres, un nombre vacío, uno de 101 caracteres o un valor que no es texto), When pregunta al coach, Then responde 200 y la traza anonimiza «Carlos» pero no ninguno de los nombres de esa lista.
+- **AC-013.7:** Given la cuenta base (nombre actual «Carlos»), una conversación con la respuesta anterior «Hola, Carlitos: la proteína de la dieta…» y una petición con los nombres anteriores «de» y «Carlitos», When pregunta al coach, Then la traza conserva «de» como palabra y sustituye «Carlitos» y «Carlos» por «[nombre]». Lo mismo ocurre con cualquiera de las 17 partículas como nombre anterior, también en mayúsculas («De», «LA»).
 
 ## 5. Requisitos no funcionales
 
@@ -231,7 +235,7 @@ THE SYSTEM SHALL enviar a Voyage AI solo el texto de búsqueda que se usa hoy (l
 
 ### NFR-003 — Langfuse no recibe el nombre
 
-THE SYSTEM SHALL enviar a la traza de Langfuse el resto del contexto personal que recibe el modelo de IA, pero nunca el nombre del usuario: cada aparición del nombre como palabra completa (sin distinguir mayúsculas) en la entrada, los pasos y la salida de la traza se sustituye por «[nombre]» (Q1). Lo mismo vale para los nombres anteriores de REQ-013.
+THE SYSTEM SHALL enviar a la traza de Langfuse el resto del contexto personal que recibe el modelo de IA, pero nunca el nombre del usuario: cada aparición del nombre como palabra completa (sin distinguir mayúsculas) en la entrada, los pasos y la salida de la traza se sustituye por «[nombre]» (Q1). Lo mismo vale para los nombres anteriores de REQ-013, salvo un nombre anterior que, entero y sin distinguir mayúsculas, sea solo una de las partículas de la lista de abajo, que se ignora (F13, opción A, AC-013.7). Coste aceptado: una cuenta que se llamara literalmente como una partícula y cambiara de nombre con la conversación en curso dejaría ese nombre anterior en su traza.
 
 Si el nombre tiene varias partes (separadas por espacios o guiones), THE SYSTEM SHALL anonimizar además cada parte por separado, con la misma regla de palabra completa y sin distinguir mayúsculas, salvo las partes de menos de 3 letras y las partículas «de», «del», «la», «las», «los», «y», «e», «da», «das», «do», «dos», «di», «du», «van», «von», «der» y «le», que solo se anonimizan como parte del nombre completo (F4, Q11). El nombre completo se sustituye antes que sus partes, de modo que «María José» da un único «[nombre]». No se anonimizan diminutivos ni variantes sin tildes («Maria» con el nombre «María»).
 
@@ -265,7 +269,7 @@ THE SYSTEM SHALL atender cada pregunta con las mismas llamadas a proveedores de 
 - las calorías y macros del día: mantenimiento y objetivo en kcal (enteros de 1 a 10000) y gramos de proteína, carbohidratos y grasa (enteros de 0 a 2000);
 - los indicadores de progreso, con las mismas reglas que el análisis de progreso (spec 010): textos de 1 a 32 caracteres con dígitos, letras, signos numéricos, espacios, «%» y «/» (sin saltos de línea), el estado del ritmo como uno de los códigos de la spec 010 (incluido el de ritmo no realista de la spec 011), contadores enteros de 0 a 100000, fecha del último registro y fecha de hoy del dispositivo en formato `AAAA-MM-DD`, esta a un día como mucho de la fecha del servidor.
 
-- los nombres anteriores de la cuenta vistos en la conversación (REQ-013): una lista de 1 a 5 textos, cada uno de 1 a 100 caracteres (la regla del nombre de la spec 018); solo se usan para anonimizar la traza y, si la lista no es válida, se ignora entera sin error.
+- los nombres anteriores de la cuenta vistos en la conversación (REQ-013): una lista de 1 a 5 textos, cada uno de 1 a 100 caracteres (la regla del nombre de la spec 018); solo se usan para anonimizar la traza y, si la lista no es válida, se ignora entera sin error. Un nombre de una lista válida que, entero y sin distinguir mayúsculas, sea una de las partículas de NFR-003 se ignora solo él, sin error (F13, opción A); el resto de la lista se sigue usando.
 
 El nombre, el perfil y la edad nunca se toman de la petición: salen de la cuenta del usuario de la sesión (REQ-001). Unos datos de cliente no válidos se descartan en bloque sin error (REQ-006). No se añaden mensajes de error nuevos.
 
