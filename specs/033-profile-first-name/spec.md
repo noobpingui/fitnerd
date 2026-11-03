@@ -78,13 +78,15 @@ IF `PUT /api/profile` trae la clave `first_name` con un valor que no es texto, q
 ### REQ-007 — Ver y editar el nombre en /profile
 THE SYSTEM SHALL mostrar en `/profile`, como primer campo de la sección «Datos personales» (antes «Datos físicos», con la misma descripción), un campo «Nombre» precargado con el nombre de la cuenta (vacío si no tiene) y guardarlo con el mismo «Guardar cambios» y «Descartar» que el resto de la sección; IF el nombre no cumple la regla THEN THE SYSTEM SHALL mostrar el aviso correspondiente bajo el campo y no permitir guardar.
 
-- **AC-007.1:** Given un perfil con `first_name: "Ana"`, When se abre `/profile`, Then se ve un campo con la etiqueta «Nombre» y el valor «Ana».- **AC-007.2:** Given un perfil con `first_name: null`, When se abre `/profile`, Then el campo «Nombre» aparece vacío, con el aviso «El nombre es obligatorio», y el resto de la pantalla se puede usar.
+- **AC-007.1:** Given un perfil con `first_name: "Ana"`, When se abre `/profile`, Then se ve un campo con la etiqueta «Nombre» y el valor «Ana».
+- **AC-007.2:** Given un perfil con `first_name: null`, When se abre `/profile`, Then el campo «Nombre» aparece vacío, con el aviso «El nombre es obligatorio», y el resto de la pantalla se puede usar.
 - **AC-007.3:** Given un perfil con `first_name: "Ana"`, When el usuario cambia solo el nombre a «Beatriz» y pulsa «Guardar cambios», Then se envía un `PUT /api/profile` cuyo cuerpo incluye `"first_name": "Beatriz"` y el resto de datos del perfil sin cambios, no se registra ninguna medición corporal y aparece «Cambios guardados».
 - **AC-007.4:** Given el campo «Nombre» con «  Beatriz  », When se guarda, Then el cuerpo enviado lleva `"first_name": "Beatriz"`.
 - **AC-007.5:** Given el campo «Nombre» vacío o solo con espacios, When se muestra el formulario, Then aparece «El nombre es obligatorio» bajo el campo y «Guardar cambios» está desactivado.
 - **AC-007.6:** Given el campo «Nombre» con 101 caracteres, When se muestra el formulario, Then aparece «El nombre no puede superar los 100 caracteres» bajo el campo y «Guardar cambios» está desactivado.
 - **AC-007.7:** Given un perfil con `first_name: "Ana"` y el nombre cambiado a «Beatriz» sin guardar, When se pulsa «Descartar», Then el campo vuelve a «Ana».
 - **AC-007.8:** Given un perfil cargado, When se abre `/profile`, Then la sección que contiene los datos físicos se titula «Datos personales» (no aparece el título «Datos físicos»), conserva la descripción que tenía y su primer campo es «Nombre», antes que el resto de campos de la sección.
+
 ### REQ-008 — Una sola regla para el nombre en el navegador
 THE SYSTEM SHALL validar el nombre en el formulario de registro y en el de perfil con la misma regla que el servidor: se recortan los espacios de los extremos y el resultado debe tener entre 1 y 100 caracteres, contados como caracteres y no como unidades de codificación.
 

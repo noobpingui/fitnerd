@@ -10,33 +10,18 @@
   "branch": "feat/033-profile-first-name",
   "base_branch": "main",
   "created_at": "2026-11-02T20:27:01.978Z",
-  "stage": "review",
-  "status": "awaiting_approval",
+  "stage": "plan",
+  "status": "in_progress",
   "approvals": {
     "spec": {
-      "at": "2026-11-02T21:15:22.618Z",
-      "note": "Si"
+      "at": "2026-11-03T01:44:37.075Z",
+      "note": "Sí, apruebo la spec"
     },
-    "plan": {
-      "at": "2026-11-02T21:20:26.019Z",
-      "note": "auto (gate_mode=flow): plan sin preguntas ni ADR"
-    },
-    "tasks": {
-      "at": "2026-11-02T21:21:22.060Z",
-      "note": "auto (gate_mode=flow): 33 tareas, cobertura completa"
-    },
-    "tests": {
-      "at": "2026-11-03T01:22:06.266Z",
-      "note": "auto (gate_mode=flow): correccion de lint en tests"
-    },
-    "implement": {
-      "at": "2026-11-03T01:22:13.883Z",
-      "note": "auto (gate_mode=flow): sin cambios de produccion tras fix de lint en tests"
-    },
-    "verify": {
-      "at": "2026-11-03T01:27:37.573Z",
-      "note": "auto (gate_mode=flow): verify PASS"
-    },
+    "plan": null,
+    "tasks": null,
+    "tests": null,
+    "implement": null,
+    "verify": null,
     "review": null,
     "docs": null,
     "close": null
@@ -51,20 +36,20 @@
   "iterations": {
     "tests": 2,
     "implement": 0,
-    "review": 0
+    "review": 1
   },
   "max_iterations": 5,
   "red_check": {
-    "result": "PASS",
-    "at": "2026-11-03T01:06:14.723Z"
+    "result": null,
+    "at": null
   },
   "verify": {
-    "result": "PASS",
-    "at": "2026-11-03T01:27:28.548Z"
+    "result": null,
+    "at": null
   },
   "review": {
-    "verdict": "APPROVED",
-    "at": "2026-11-03T01:29:35.914Z"
+    "verdict": null,
+    "at": null
   },
   "tests_snapshot": {
     "at": "2026-11-03T01:22:06.114Z",
@@ -385,6 +370,24 @@
       "stage": "review",
       "event": "done",
       "note": "APPROVED: 0 bloqueantes, 0 mayores, 2 menores, 3 NIT"
+    },
+    {
+      "at": "2026-11-03T01:42:24.265Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "Usuario pide corregir F1 a F5; F2 (formato de spec.md y recuento de AC) es de spec-writer · review 1/5"
+    },
+    {
+      "at": "2026-11-03T01:42:55.762Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "F2: formato de spec.md corregido; 9 REQ, 36 AC"
+    },
+    {
+      "at": "2026-11-03T01:44:37.075Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Sí, apruebo la spec"
     }
   ]
 }
