@@ -89,6 +89,54 @@ Tareas nuevas tras la review. Las 41 anteriores siguen hechas. Los `FakePersonal
 - [x] T-050 [REQ-006, REQ-003, AC-006.2] (impl) `_TEXT_PATTERN` con `fullmatch` o `\Z` para rechazar el salto de línea final, sin cambiar el resto del análisis (tests de las specs 010 y 011 en verde) — `backend/services/progress_analysis_context.py`
 - [x] T-051 [REQ-011] (impl) `updatedAt` pasa a «3 de noviembre de 2026» — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
 
+## Iteración 3 — Revisión 2 del plan (F4, F5, F8, F9, F10)
+
+Tareas nuevas tras el gate de review y la spec enmendada (REQ-013, AC-N003.4 a AC-N003.8, AC-010.7, AC-010.8, AC-011.4). Las 51 anteriores siguen hechas. Orden: scaffold, test, impl. Los tests de esta iteración están en rojo por comportamiento ausente, con **una excepción declarada** en el plan (§5): T-058 (F8).
+
+### Fase A0 — Esqueletos (iteración 3)
+
+`CoachService.ask` y `ask_with_feedback` no necesitan esqueleto: `previous_names=` falla por kwarg ausente. `redact_name` ya existe; su parámetro nuevo `other_names` no se añade aquí, así que los tests que lo usan fallan por kwarg ausente y los de partes del nombre, por comportamiento ausente.
+
+- [ ] T-052 [REQ-013, NFR-003] (scaffold) Constantes reales `NAME_PARTICLES` (17 partículas del plan), `MIN_NAME_PART_LETTERS = 3` y `MAX_PREVIOUS_NAMES = 5`; `parse_previous_names(value)` y `name_redaction_terms(first_name, other_names=())` con cuerpo `raise NotImplementedError("not implemented")` — `backend/services/coach_personal_context.py`
+- [ ] T-053 [REQ-013] (scaffold) Constantes reales `MAX_PREVIOUS_NAMES = 5` y `MAX_NAME_LENGTH = 100`; `rememberName` y `previousNamesFor` que lanzan `throw new Error("not implemented")` — `frontend/src/features/coach/previousNames.ts`
+- [ ] T-054 [REQ-013] (scaffold) `AskCoachPayload` gana `previous_names?: string[]` — `frontend/src/features/coach/types.ts`
+
+### Fase A — Tests (rojo, iteración 3)
+
+#### backend
+
+- [ ] T-055 [NFR-003, REQ-013, AC-N003.4, AC-N003.5, AC-N003.6, AC-N003.7, AC-N003.8, AC-013.3] (test) `redact_name` y `name_redaction_terms` por partes: «María José» (un único `[nombre]`, «Gracias, maría», «Mariano» y «Josefina» intactos), «José-Luis», «María de la Paz» (parametrizado sobre las 17 partículas y con mayúsculas), «Jo Ann» y «Mª José», una sola pasada con el nombre «Nombre», orden y duplicados de los términos, y nombres anteriores («Carlitos», «Ana María») — `backend/tests/test_services/test_coach_personal_context.py`
+- [ ] T-056 [REQ-013, AC-013.3, AC-013.6] (test) `parse_previous_names`: lista válida, recortes, 5 nombres, 100 caracteres, `None`, y `()` para no lista, vacía, 6 nombres, vacío, solo espacios, 101 caracteres, elementos que no son texto y lista mixta; `["<>", "Carlitos"]` da `("Carlitos",)` — `backend/tests/test_services/test_coach_personal_context.py`
+- [ ] T-057 [REQ-013, NFR-002, AC-013.5] (test) Servicio con `previous_names=["Ana"]`: el bloque lleva «Nombre: Carlos», ningún mensaje al modelo contiene «Ana» y el texto de búsqueda no cambia — `backend/tests/test_services/test_coach_service.py`
+- [ ] T-058 [REQ-012, AC-012.3] (test) **Excepción declarada en el plan §5 (F8): este test de regresión PASA antes de implementar** (el comportamiento existe desde la revisión 1; el red check debe aceptarlo, y su docstring lo dice). `test_a_failing_read_with_the_context_on_gives_the_usual_503_without_calling_voyage_or_the_model`: `read` fallando con el contexto activado da `ServiceUnavailableError` con el mensaje de siempre, `reader.name_calls == []` y sin llamadas a Voyage ni al modelo — `backend/tests/test_services/test_coach_service.py`
+- [ ] T-059 [REQ-012, AC-012.3] (test) Corregir solo el docstring de `test_a_failing_reader_gives_the_usual_503_without_calling_voyage_or_the_model` (sustituir la frase sobre el caso activado por la referencia al test de T-058); cuerpo y aserciones sin cambios — `backend/tests/test_services/test_coach_service.py`
+- [ ] T-060 [NFR-003, REQ-010, REQ-013, AC-N003.4, AC-N003.5, AC-010.8, AC-013.3, AC-013.4, AC-013.5, AC-013.6] (test) Observabilidad: «María José» de extremo a extremo, «José-Luis», contexto desactivado con «Carlos Alberto» y historial idéntico al modelo, «Carlitos» como nombre anterior (activado y desactivado), listas no válidas parametrizadas (traza conserva «Carlitos» y anonimiza «Carlos») y «Soy Ana» con `previous_names=["Ana"]` — `backend/tests/test_services/test_coach_observability.py`
+- [ ] T-061 [REQ-013, NFR-003, AC-013.3, AC-013.5, AC-013.6, AC-N003.4] (test) Integración: `previous_names` pasado por la ruta con historial «Hola, Carlitos»; «Soy Ana» con `["Ana"]`; lista no válida seguida de una válida en el mismo test; opcional «María José» cambiado con `PUT /api/profile` — `backend/tests/test_routes/test_coach_routes.py`
+
+#### frontend
+
+- [ ] T-062 [REQ-013, AC-013.1, AC-013.2] (test) `rememberName` y `previousNamesFor`: recorte, reordenado sin duplicar, nulos, vacíos y 101 puntos de código sin cambios, máximo 6 guardados, `["Carlitos", "Carlos"]` con «Carlos» da `["Carlitos"]`, igual da `[]`, `current` nulo y los 5 últimos de 6 — `frontend/src/features/coach/previousNames.test.ts`
+- [ ] T-063 [REQ-010, AC-010.2, AC-010.5] (test) Ajuste obligatorio por F5: la constante `HELP_OFF` pasa al texto completo de la spec (más estricto, con comentario «(revisión 2, F5: texto de ayuda nuevo)»); sin otro cambio en los casos existentes — `frontend/src/features/coach/pages/CoachPage.personalContext.test.tsx`
+- [ ] T-064 [REQ-010, AC-010.7, AC-010.8] (test) `CoachPage`: al desactivar, el párrafo de ayuda (por `aria-describedby`) tiene exactamente el texto nuevo; tras responder «Hola, Carlos: con tu objetivo de 2200 kcal…» y desactivar, el payload lleva `use_personal_context: false`, sin `personal_context` y con los dos turnos idénticos — `frontend/src/features/coach/pages/CoachPage.personalContext.test.tsx`
+- [ ] T-065 [REQ-013, AC-013.1, AC-013.2] (test) `CoachPage`: sin `previous_names` en la primera pregunta ni con el nombre sin cambios; tras `setQueryData` con «Carlos», `previous_names` es `["Carlitos"]`, también con el interruptor desactivado — `frontend/src/features/coach/pages/CoachPage.personalContext.test.tsx`
+- [ ] T-066 [REQ-011, AC-011.4] (test) Política de privacidad: el punto de Anthropic contiene la frase de los mensajes anteriores (espacios normalizados) — `frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx`
+
+### Fase B — Implementación (iteración 3)
+
+#### backend (lógica → interfaz)
+
+- [ ] T-067 [NFR-003, REQ-013, AC-N003.4, AC-N003.5, AC-N003.6, AC-N003.7, AC-N003.8, AC-013.3] (impl) `name_redaction_terms` (nombre completo y partes de 3 letras o más que no son partículas, separadas por espacio o guion, sin duplicados, de más largo a más corto) y `redact_name(value, first_name, other_names=())` con un único patrón en una sola pasada, recursivo — `backend/services/coach_personal_context.py`
+- [ ] T-068 [REQ-013, AC-013.6] (impl) `parse_previous_names` con `validate_first_name` y `sanitize_first_name`; nunca lanza, lista no válida ignorada entera — `backend/services/coach_personal_context.py`
+- [ ] T-069 [REQ-013, NFR-003, NFR-002, REQ-010, AC-013.3, AC-013.4, AC-013.5, AC-010.8, AC-N003.4] (impl) `CoachService.ask` y `ask_with_feedback` aceptan `previous_names`, lo validan con `parse_previous_names`, lo pasan a `redact_name` en cada paso de la traza (helper local) y nunca al mensaje, a Voyage ni al bloque; F9: espacio tras `#` en el comentario de la línea ~150 — `backend/services/coach_service.py`
+- [ ] T-070 [REQ-013, AC-013.3, AC-013.5, AC-013.6] (impl) La ruta lee `previous_names` del cuerpo y lo pasa como argumento con nombre, sin validarlo — `backend/routes/coach_routes.py`
+
+#### frontend
+
+- [ ] T-071 [REQ-013, AC-013.1, AC-013.2] (impl) `rememberName` y `previousNamesFor` según el plan §3.4 — `frontend/src/features/coach/previousNames.ts`
+- [ ] T-072 [REQ-010, AC-010.7] (impl) `PERSONAL_CONTEXT_HELP_OFF` pasa al texto completo, en el mismo `<p>` enlazado con `aria-describedby` — `frontend/src/features/coach/components/PersonalContextToggle.tsx`
+- [ ] T-073 [REQ-013, REQ-010, AC-013.1, AC-013.2, AC-010.8] (impl) `CoachPage`: ref de nombres vistos, `useEffect` con `rememberName` y `previous_names` en el payload solo si hay conversación y cambió el nombre, con el interruptor activado o desactivado; el historial se reenvía tal cual — `frontend/src/features/coach/pages/CoachPage.tsx`
+- [ ] T-074 [REQ-011, AC-011.4] (impl) Frase nueva del punto de Anthropic; `updatedAt` sin cambios — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
+
 ## Matriz de cobertura
 
 | AC | Test | Impl |
@@ -130,22 +178,36 @@ Tareas nuevas tras la review. Las 41 anteriores siguen hechas. Los `FakePersonal
 | AC-010.2 | T-023 | T-038, T-039 |
 | AC-010.3 | T-024 | T-040 |
 | AC-010.4 | T-009, T-014, T-019, T-044, T-045 | T-027, T-032, T-049 |
-| AC-010.5 | T-022, T-023 | T-037 |
+| AC-010.5 | T-022, T-023, T-063 | T-037 |
 | AC-010.6 | T-009, T-019 | T-027, T-034 |
+| AC-010.7 | T-063, T-064 | T-072 |
+| AC-010.8 | T-060, T-064 | T-067, T-069, T-073 |
 | REQ-011 (fecha) | T-047 | T-051 |
 | AC-011.1 | T-025 | T-041 |
 | AC-011.2 | T-025 | T-041 |
 | AC-011.3 | T-025 | T-041 |
+| AC-011.4 | T-066 | T-074 |
 | AC-012.1 | T-020 | T-034 |
 | AC-012.2 | T-016 | T-032 |
-| AC-012.3 | T-016, T-044 | T-032, T-049 |
+| AC-012.3 | T-016, T-044, T-058 (regresión, excepción F8: pasa antes de implementar), T-059 | T-032, T-049 |
 | AC-012.4 | T-020 | T-034 |
 | AC-012.5 | T-020 | T-034 |
+| AC-013.1 | T-062, T-065 | T-071, T-073 |
+| AC-013.2 | T-062, T-065 | T-071, T-073 |
+| AC-013.3 | T-055, T-056, T-060, T-061 | T-067, T-068, T-069, T-070 |
+| AC-013.4 | T-060 | T-067, T-069 |
+| AC-013.5 | T-057, T-060, T-061 | T-069, T-070 |
+| AC-013.6 | T-056, T-060, T-061 | T-068, T-069, T-070 |
 | AC-N001.1 | T-013, T-020 | T-030 |
 | AC-N002.1 | T-015 | T-032 |
 | AC-N002.2 | T-015 | T-032 |
 | AC-N003.1 | T-018, T-043, T-045 | T-033, T-048, T-049 |
 | AC-N003.2 | T-018 | T-033 |
 | AC-N003.3 | T-012 | T-029 |
+| AC-N003.4 | T-055, T-060, T-061 | T-067, T-069 |
+| AC-N003.5 | T-055, T-060 | T-067 |
+| AC-N003.6 | T-055 | T-067 |
+| AC-N003.7 | T-055 | T-067 |
+| AC-N003.8 | T-055 | T-067 |
 | AC-N004.1 | T-013, T-020, T-043 | T-030, T-048 |
 | AC-N005.1 | T-015 | T-032 |
