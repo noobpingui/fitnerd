@@ -38,7 +38,6 @@ def register_payload(**overrides):
         "password": PASSWORD,
         "first_name": "Ana",
         "last_name": "Pérez",
-        "date_of_birth": "1990-01-01",
     }
     payload.update(overrides)
     return payload

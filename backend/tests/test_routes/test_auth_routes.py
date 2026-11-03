@@ -25,7 +25,6 @@ def test_register_creates_a_user_and_returns_a_token(client):
             "password": "password123",
             "first_name": "Nueva",
             "last_name": "Usuaria",
-            "date_of_birth": "1995-05-20",
         },
     )
 
@@ -39,7 +38,6 @@ def test_register_rejects_a_duplicate_email(client):
         "password": "password123",
         "first_name": "Una",
         "last_name": "Persona",
-        "date_of_birth": "1990-01-01",
     }
 
     first_attempt = client.post("/api/auth/register", json=payload)
@@ -57,7 +55,6 @@ def test_login_with_the_wrong_password_fails(client):
             "password": "correcta123",
             "first_name": "Login",
             "last_name": "Test",
-            "date_of_birth": "1990-01-01",
         },
     )
 
@@ -77,7 +74,6 @@ def test_login_with_the_right_credentials_returns_a_token(client):
             "password": "correcta123",
             "first_name": "Login",
             "last_name": "Test",
-            "date_of_birth": "1990-01-01",
         },
     )
 

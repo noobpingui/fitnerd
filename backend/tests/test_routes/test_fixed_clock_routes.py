@@ -22,14 +22,16 @@ INVALID_LINK = {"error": "El enlace no es válido o ha caducado. Solicita uno nu
 PROD_URL = "https://fitnerd.betofallas.dev"
 
 
-def register_payload(email="ana@example.com", date_of_birth="2000-01-01"):
-    return {
+def register_payload(email="ana@example.com", date_of_birth=None):
+    payload = {
         "email": email,
         "password": PASSWORD,
         "first_name": "Ana",
         "last_name": "Pérez",
-        "date_of_birth": date_of_birth,
     }
+    if date_of_birth is not None:
+        payload["date_of_birth"] = date_of_birth
+    return payload
 
 
 def register_headers(client, email="ana@example.com"):

@@ -71,7 +71,6 @@ def register(client, email, password=OLD_PASSWORD):
             "password": password,
             "first_name": "Test",
             "last_name": "User",
-            "date_of_birth": "2000-01-01",
         },
     )
     assert response.status_code == 201

@@ -99,6 +99,9 @@ describe("HomePage - perfil del servidor", () => {
   })
 })
 
+// Nota: el AC-009.4 de la 033 (saludo actualizado tras guardar el nombre en
+// /profile sin otra lectura del perfil) se prueba en
+// features/profile/pages/ProfilePage.test.tsx (marcador «SDD: 033 REQ-009 AC-009.4»).
 describe("HomePage - saludo con el nombre (spec 033)", () => {
   beforeEach(() => {
     getProfileMock.mockReset()

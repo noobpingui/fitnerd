@@ -4,7 +4,7 @@ inyectados por constructor: no hay Postgres ni llamadas a Google.
 """
 
 import uuid
-from datetime import date, datetime
+from datetime import date
 
 import bcrypt
 import pytest
@@ -16,7 +16,7 @@ from exceptions.custom_exceptions import (
 )
 from models.user import User, UserRoles
 from services.auth_service import AuthService
-from tests.fakes import FakeClock, FakeUnitOfWork
+from tests.fakes import FakeUnitOfWork
 
 PASSWORD = "Clave123"
 INVALID_EMAIL = "Email inválido"
@@ -26,7 +26,6 @@ EMAIL_TAKEN = "Ya existe una cuenta con este correo"
 INVALID_REQUEST = "La petición no es válida"
 FIRST_NAME_REQUIRED = "El nombre es obligatorio"
 LAST_NAME_REQUIRED = "El apellido es obligatorio"
-NOW = datetime(2026, 10, 18, 12, 0)
 
 
 class FakeUserRepository:
@@ -108,7 +107,6 @@ def make_service(users=None, verifier=None):
         jwt,
         "client-id",
         google_token_verifier=verifier or FakeGoogleVerifier(),
-        clock=FakeClock(NOW),
     )
     return service, repo, uow, jwt
 

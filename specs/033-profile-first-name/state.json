@@ -10,16 +10,25 @@
   "branch": "feat/033-profile-first-name",
   "base_branch": "main",
   "created_at": "2026-11-02T20:27:01.978Z",
-  "stage": "plan",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-11-03T01:44:37.075Z",
       "note": "Sí, apruebo la spec"
     },
-    "plan": null,
-    "tasks": null,
-    "tests": null,
+    "plan": {
+      "at": "2026-11-03T01:44:37.691Z",
+      "note": "auto (gate_mode=flow): spec solo cambio de formato"
+    },
+    "tasks": {
+      "at": "2026-11-03T01:44:38.018Z",
+      "note": "auto (gate_mode=flow): spec solo cambio de formato"
+    },
+    "tests": {
+      "at": "2026-11-03T02:25:13.839Z",
+      "note": "auto (gate_mode=flow): red check PASS citando e9db40a, autorizado por el usuario"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -27,7 +36,7 @@
     "close": null
   },
   "commits": {
-    "spec": "6c8285f",
+    "spec": "2f1242d",
     "plan": "c7ca9d4",
     "tasks": "41af941",
     "tests": "e9db40a",
@@ -40,8 +49,8 @@
   },
   "max_iterations": 5,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-11-03T02:25:01.264Z"
   },
   "verify": {
     "result": null,
@@ -52,13 +61,20 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-11-03T01:22:06.114Z",
-    "reason": "tests 033: E501 partidas tras verify FAIL",
+    "at": "2026-11-03T02:25:13.669Z",
+    "reason": "tests 033: correcciones de review F1, F3, F4, F5",
     "sha256": {
-      "backend/tests/test_routes/test_auth_routes.py": "7c1812e3ee22f66be749ca7d5ecb58f88fa77689a9710669493f116a3a0425bf",
-      "backend/tests/test_routes/test_fixed_clock_routes.py": "ccbacaef597b95832478af26d57a74f2d86cf3669d6ed0ab0536532509fd9c0a",
+      "backend/tests/conftest.py": "75b01c7aaf9a31963763b136434fb52a79b8f31af2bee7aa24bed02ffc63f7fc",
+      "backend/tests/test_routes/test_auth_routes.py": "6c17b291f32379ef5b3927ec182e016415934e6068f1455b65edd259f4904a78",
+      "backend/tests/test_routes/test_canonical_email_routes.py": "adfebe76512af8e20e9fabbe4c3987f1f017accbf70a5a3cb90f6d6232ecc34d",
+      "backend/tests/test_routes/test_fixed_clock_routes.py": "617fa8ad4313f9a387bb5504d11e7c06fd562b37403247a39eed2c11d477a273",
+      "backend/tests/test_routes/test_food_library_routes.py": "f6dca19bac81d0bcdaeb114b4a91617c997ce0dd5b7cdb7bcfc61edb9bfa44ea",
+      "backend/tests/test_routes/test_meal_library_routes.py": "61d32cc0d92e5e88a0230058c2cbe035c07c4ba8906ada99737b6b07a0292332",
+      "backend/tests/test_routes/test_meal_routes.py": "fc3d98903ab82a9f9fa5385f33b14d57378a170a3e8fb6b3bfdf179c75ac4e55",
+      "backend/tests/test_routes/test_password_reset_routes.py": "c8de8278ea5b98aa90118389b677e2d2ab05d5d8225c2aa08b2691151dc189d9",
       "backend/tests/test_routes/test_profile_routes.py": "f6d8f787cf67542dcfa9799c2eb5cb3e5736ea16d9f62d1e77dfa2f718b15194",
-      "backend/tests/test_services/test_auth_service.py": "f41e84d18426f9b0fd7d993e3fb0c76ce0d2513536f48889f493b407f584abb8",
+      "backend/tests/test_routes/test_resend_email_routes.py": "6854311a3433064c60a61849e3b58b49e8ecc3d9cac720e54de2f0b3d8a91afa",
+      "backend/tests/test_services/test_auth_service.py": "9166c85acbe79d172d3ee9e83be7d65bb9e58c42826b501a9e3b9d6f67e4532a",
       "backend/tests/test_services/test_profile_service.py": "4f0f74c0a1c099fe5703952bd394203f455c8ca77a7b4e0b78590c3f5d6dedd6",
       "frontend/src/app/diaryRoute.test.tsx": "f3be4d7b9f857486ab5f51115bc42af7bacbd2be3b5b0f93247e345880eeb9e8",
       "frontend/src/app/lazyRoutes.test.tsx": "560ac808c7f02e5d5d68b2d1cf86925bc9cc7e2a6374801b74843f84b32a7a5d",
@@ -66,7 +82,7 @@
       "frontend/src/features/auth/components/RegisterForm.test.tsx": "700926facf63e357283a2fc5ab8df51ee2ef1e86671e7bfdc43b2afc44048578",
       "frontend/src/features/auth/schemas.test.ts": "241d16fd87a590262c523150f099652e6aa61eba6d45ef88ddd627319b86f094",
       "frontend/src/features/home/greeting.test.ts": "059d5425bb5eb0567775995959f49a57c8f052ef7fb897af0de551f21d1eec2c",
-      "frontend/src/features/home/pages/HomePage.test.tsx": "99fc220d536b21e886807c8b4f443bc3bf718c41e19063dc0dc29bb08defec47",
+      "frontend/src/features/home/pages/HomePage.test.tsx": "cff661aba5af591b4938a19aa49c537139a63d6379ce421ae018ae39e3b5e634",
       "frontend/src/features/onboarding/pages/OnboardingPage.test.tsx": "15518beffb250e1860f171397f224a995de986bf6182c000cf81b3796f46c1ad",
       "frontend/src/features/profile/mappers.test.ts": "0b6559d7151291b8ca3141af9c9e0d03eb205b8f1e34e6edcedccf98fc4d1a35",
       "frontend/src/features/profile/pages/ProfilePage.test.tsx": "a7ccd0043141cfb9d4bfc346a3b3ab107e754dd1726ee2771abad7cb7de83d10",
@@ -388,6 +404,96 @@
       "stage": "spec",
       "event": "approved",
       "note": "Sí, apruebo la spec"
+    },
+    {
+      "at": "2026-11-03T01:44:37.367Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 2f1242d"
+    },
+    {
+      "at": "2026-11-03T01:44:37.471Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Spec solo cambio de formato; plan sin cambios, se reaprueba"
+    },
+    {
+      "at": "2026-11-03T01:44:37.581Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan sin cambios tras la correccion de formato de la spec (F2)"
+    },
+    {
+      "at": "2026-11-03T01:44:37.691Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): spec solo cambio de formato"
+    },
+    {
+      "at": "2026-11-03T01:44:37.807Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Spec solo cambio de formato; tasks sin cambios, se reaprueba"
+    },
+    {
+      "at": "2026-11-03T01:44:37.911Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "tasks sin cambios tras la correccion de formato de la spec (F2)"
+    },
+    {
+      "at": "2026-11-03T01:44:38.018Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): spec solo cambio de formato"
+    },
+    {
+      "at": "2026-11-03T01:44:38.225Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "F1, F3 y F5 (test-author)"
+    },
+    {
+      "at": "2026-11-03T01:50:33.897Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "F1, F3, F5 corregidos; backend 2899 passed"
+    },
+    {
+      "at": "2026-11-03T01:50:34.013Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "25 archivo(s) de test: tests 033: F3 y F5 de review"
+    },
+    {
+      "at": "2026-11-03T02:23:25.684Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "Reabrir tests para registrar el red check (opcion 1) tras F4 parte de tests"
+    },
+    {
+      "at": "2026-11-03T02:25:01.264Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: Red check reaprobado por decision del usuario (opcion 1). Red PASS original en e9db40a (2026-11-03T01:06Z): backend 90 failed y frontend 51 failed, en rojo legitimo; AC-003.1 por excepcion B5.2 aprobada. Desde e9db40a solo cambian: lineas largas (b1e03ac y reflow), helpers y payloads de registro sin date_of_birth, comentarios y docstrings, y quitar clock de make_service en test_auth_service.py (F4). Sin cambios de aserciones ni skip/xfail/.only. test_auth_service.py: 62 passed, sin TypeError (AuthService conserva clock por defecto)."
+    },
+    {
+      "at": "2026-11-03T02:25:13.549Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red PASS registrado (opcion 1, e9db40a); F1, F3, F5 y parte de tests de F4"
+    },
+    {
+      "at": "2026-11-03T02:25:13.669Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "25 archivo(s) de test: tests 033: correcciones de review F1, F3, F4, F5"
+    },
+    {
+      "at": "2026-11-03T02:25:13.839Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS citando e9db40a, autorizado por el usuario"
     }
   ]
 }
