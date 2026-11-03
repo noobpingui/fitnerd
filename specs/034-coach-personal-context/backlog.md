@@ -29,3 +29,16 @@
 
 ## verify · verifier
 - [ ] Comprobación manual en navegador de AC-010.1, AC-010.2, AC-010.5 y AC-011.1 a AC-011.3 (ver §3 del verify-report.md), tras el PASS.
+
+## verify (iteración 2) · verifier
+- [ ] El commit f89091e renombra una función de test (test_with_the_personal_context_off_the_message_is_the_one_from_before… a …is_the_old_one…). No afecta a la trazabilidad ni a las aserciones; anotarlo solo para tenerlo presente.
+
+## review (iteración 1) · reviewer
+- [ ] F3 MENOR (implementer): `_TEXT_PATTERN` (progress_analysis_context.py:45) usa ^…$ y acepta un "\n" final («79,4 kg\n» pasa, comprobado), contra AC-006.2. Corrección: fullmatch o \Z, más un test con el salto al final. El defecto viene de la spec 010.
+- [ ] F4 MENOR (spec-writer): redact_name no anonimiza partes de un nombre compuesto («María» de «María José» llega a Langfuse). Decidir si se anonimiza cada parte o se documenta.
+- [ ] F5 MENOR (spec-writer): REQ-004 choca con REQ-010. Con el interruptor desactivado, Anthropic recibe en el historial respuestas anteriores con el nombre, las kcal o el peso. Aclararlo en la ayuda o en la política, o filtrar el historial.
+- [ ] F6 NIT (implementer): la sangría del dict del paso retrieval (coach_service.py:187-202) es incoherente.
+- [ ] F7 NIT (planner): un fallo del lector da 503 en lugar de responder sin contexto. No está en el plan; reflejarlo en ADR-0038 o en el plan.
+
+## plan (iteración 2) · planner
+- [ ] F4 (nombres compuestos en `redact_name`) y F5 (historial con el interruptor desactivado): decisiones de la spec para el gate de review.

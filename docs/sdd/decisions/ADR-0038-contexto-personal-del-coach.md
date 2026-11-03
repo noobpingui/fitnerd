@@ -32,11 +32,19 @@ problemas de diseño:
 - **Anonimización en la traza.** Antes de entregar cualquier valor al `Tracer` (entrada de la traza, entradas y salidas
   de los pasos y salida final), `CoachService` sustituye cada aparición del nombre como palabra completa, sin
   distinguir mayúsculas, por `[nombre]` (`redact_name`, recursivo sobre textos, listas y diccionarios). El usuario
-  recibe la respuesta sin cambios. El identificador interno sigue en la traza.
+  recibe la respuesta sin cambios. El identificador interno sigue en la traza. La anonimización se aplica **también
+  con el interruptor desactivado**: el historial que reenvía el cliente puede traer el nombre en respuestas de cuando
+  estaba activado («Hola, Carlos: …»), así que el servicio lee solo el nombre de la cuenta
+  (`CoachPersonalContextReader.read_first_name`) y lo usa únicamente para `redact_name`; no lo añade al mensaje del
+  modelo (revisión 1 de la review, F1).
 - **Interruptor sin estado en el servidor.** La preferencia vive en `localStorage` del navegador; la petición lleva
   `use_personal_context`. Si no viene (o es `null`), el contexto está activo (Q5); cualquier valor que no sea `true`
-  lo desactiva. Desactivado, el servidor no lee la cuenta ni el perfil y el mensaje al modelo es el de antes de la
-  feature.
+  lo desactiva. Desactivado, el servidor no lee el perfil ni los datos del cliente, solo el nombre para anonimizar la
+  traza, y el mensaje al modelo es el de antes de la feature.
+- **Fallo al leer la cuenta = 503.** Si el lector falla (por ejemplo, la base no responde), con el contexto activado o
+  desactivado, el coach responde el 503 de siempre («No se pudo generar una respuesta en este momento…»), sin abrir
+  traza y con el error en el log. No se responde sin contexto porque, sin el nombre, no se puede garantizar que la
+  traza salga anonimizada (revisión 1 de la review, F7).
 
 ## Consecuencias
 - (+) Una sola fuente de verdad para calorías e indicadores (las funciones que pintan las pantallas), sin portar las
@@ -48,3 +56,9 @@ problemas de diseño:
 - (−) La anonimización es por coincidencia de palabra completa: una variante del nombre (diminutivo, sin tilde) que el
   modelo invente no se sustituye. Las instrucciones le prohíben inventar nombres.
 - (−) La preferencia no se comparte entre navegadores (guardarla en la cuenta necesitaría migración).
+- (−) Con el interruptor desactivado, el coach hace una lectura de la cuenta por pregunta (solo el nombre) y depende de
+  la base para responder. El impacto es nulo en la práctica: la búsqueda en pgvector usa la misma base, así que con la
+  base caída la pregunta ya fallaba con 503.
+- (−) El historial que reenvía el cliente con el interruptor desactivado puede seguir llevando al modelo datos de
+  respuestas anteriores (nombre, cifras); esta ADR solo garantiza que no llegan a Langfuse. Qué hacer con el historial
+  es una decisión de la spec (hallazgo F5 de la review).

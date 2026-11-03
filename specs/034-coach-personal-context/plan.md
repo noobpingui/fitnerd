@@ -12,12 +12,15 @@ Se aplica al coach el mismo reparto que el análisis de progreso (ADR-0021), con
   usuario del token. También valida, con las reglas del análisis, las calorías, macros e indicadores que envía el
   cliente y los descarta en bloque si no son válidos, sin error. `CoachService` recibe el lector por constructor
   (Art. P2.2) y añade un bloque `<datos_del_usuario>` solo al mensaje de la pregunta nueva. Reescribe las
-  instrucciones sin voseo y sustituye el nombre por `[nombre]` en todo lo que entrega al `Tracer`. La ruta lee
-  `use_personal_context` y `personal_context` y no añade errores nuevos.
+  instrucciones sin voseo y sustituye el nombre por `[nombre]` en todo lo que entrega al `Tracer`, **también con el
+  interruptor desactivado**: en ese caso solo lee el nombre de la cuenta para anonimizar la traza (el historial puede
+  traerlo de respuestas anteriores) y no lo envía al modelo (revisión 1, F1). La ruta lee `use_personal_context` y
+  `personal_context` y no añade errores nuevos; un fallo al leer la cuenta da el 503 de siempre (F7).
 - **Frontend.** `/coach` lee el perfil y las mediciones con los hooks existentes. Al enviar, calcula
   `personal_context` con las mismas funciones que pintan `/home` y Métricas (`calculateMacros` y
   `buildAnalysisRequest`). Además muestra un interruptor (Switch de shadcn sobre `radix-ui`, ya instalado) recordado en
-  `localStorage`. Se actualiza la Política de privacidad.
+  `localStorage`. Se actualiza la Política de privacidad y, por ser un cambio importante, su fecha de última
+  actualización pasa a «3 de noviembre de 2026» (revisión 1, F2).
 - **Sin migraciones**, sin variables de entorno y sin dependencias nuevas.
 
 ## 2. Impacto en la arquitectura
@@ -31,7 +34,7 @@ Se aplica al coach el mismo reparto que el análisis de progreso (ADR-0021), con
 | backend | tests | `backend/tests/test_services/test_coach_personal_context.py` | `backend/tests/test_services/test_coach_service.py`, `backend/tests/test_services/test_coach_observability.py`, `backend/tests/test_routes/test_coach_routes.py` | Ver §5 |
 | frontend | ui | `frontend/src/components/ui/switch.tsx` | — | Switch de shadcn sobre `radix-ui` (paquete ya instalado; sin dependencia nueva) |
 | frontend | coach | `frontend/src/features/coach/personalContext.ts`, `frontend/src/features/coach/personalContextPreference.ts`, `frontend/src/features/coach/components/PersonalContextToggle.tsx` | `frontend/src/features/coach/types.ts`, `frontend/src/features/coach/hooks.ts`, `frontend/src/features/coach/pages/CoachPage.tsx` | Contexto de pantalla (REQ-007), interruptor (REQ-010), envío sin esperar (REQ-006) |
-| frontend | legal | — | `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx` | Textos nuevos de Anthropic y Langfuse (REQ-011) |
+| frontend | legal | — | `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx` | Textos nuevos de Anthropic y Langfuse y fecha de actualización «3 de noviembre de 2026» (REQ-011) |
 | frontend | tests | `frontend/src/features/coach/personalContext.test.ts`, `frontend/src/features/coach/personalContextPreference.test.ts`, `frontend/src/features/coach/pages/CoachPage.personalContext.test.tsx` | `frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx` | Ver §5 |
 
 ## 3. Diseño
@@ -143,6 +146,7 @@ def redact_name(value: Any, first_name: str | None) -> Any: ...
 class CoachPersonalContextReader:
     def __init__(self, user_repository, user_profile_repository, clock=utc_now): ...
     def read(self, user_id: Any, client_data: Any) -> PersonalContext: ...
+    def read_first_name(self, user_id: Any) -> str | None: ...   # solo para anonimizar la traza (F1)
 ```
 
 `backend/services/coach_service.py` (cambios de firma, compatibles con los tests existentes):
@@ -345,12 +349,32 @@ export function PersonalContextToggle(props: {
   6. Calcula la edad con `age_on(user.date_of_birth, client.today if client else server_today)` si hay perfil y fecha
      de nacimiento; si no, es `None`. Se usa la fecha del dispositivo, igual que el análisis y `/home` (AC-001.2).
   - No necesita `UnitOfWork`: solo lee.
+- **`CoachPersonalContextReader.read_first_name(user_id)`** (revisión 1, F1): solo se usa con el contexto desactivado
+  y solo para anonimizar la traza.
+  1. Si `user_id` no es un UUID válido, devuelve `None` sin tocar los repositorios (misma comprobación que `read`).
+  2. Lee `user = user_repository.get_by_id(user_id)`. **No** lee el perfil ni el `client_data`.
+  3. Devuelve `sanitize_first_name(user.first_name)` si hay usuario, y `None` si no.
+  - `read` y `read_first_name` comparten un helper privado para la comprobación del UUID y la lectura del usuario, de
+    modo que el nombre que se anonimiza es exactamente el mismo en los dos modos.
 
 #### `CoachService.ask_with_feedback` (orden de pasos)
 
 1. Comprueba el límite de uso (sin cambios, siempre lo primero; AC-012.2 y AC-005.4).
-2. Si `use_personal_context` y hay lector, lee `personal = reader.read(user_id, client_context)` y calcula
-   `name = personal.first_name`. Si no, `personal = None` y `name = None`.
+2. Obtiene el contexto y el nombre que se anonimiza:
+   - sin lector: `personal = None` y `name = None` (comportamiento de antes de la feature);
+   - con lector y `use_personal_context`: `personal = reader.read(user_id, client_context)` y
+     `name = personal.first_name`;
+   - con lector y el contexto **desactivado** (revisión 1, F1): `personal = None` y
+     `name = reader.read_first_name(user_id)`. El nombre solo se usa en `redact_name`; no entra en el mensaje al
+     modelo, que sigue siendo el de antes de la feature (AC-010.4), ni en ningún bloque. Motivo: el historial que
+     reenvía el cliente puede contener el nombre (por ejemplo, la respuesta «Hola, Carlos: …» de cuando el interruptor
+     estaba activado) y, sin esto, llegaría sin anonimizar a la entrada del paso `generation` y a la salida (NFR-003).
+   - Esto ocurre dentro de un `try` propio: si el lector lanza (por ejemplo, la base no responde), se registra en el
+     log y se lanza `ServiceUnavailableError` con el mensaje de siempre («No se pudo generar una respuesta en este
+     momento. Intenta de nuevo en unos minutos.»), sin abrir traza (F7). Se elige el 503 y no responder sin contexto
+     porque, sin el nombre, no se puede garantizar la anonimización de la traza; además, la búsqueda en pgvector usa
+     la misma base, así que con la base caída la pregunta fallaría igualmente con 503. No es un error nuevo: el
+     mensaje y el código son los de REQ-012.
 3. Abre la traza con `input=redact_name(question, name)`.
 4. Calcula el texto de búsqueda con `_build_retrieval_query` **sin cambios** (NFR-002). El paso `embedding` recibe
    `redact_name(retrieval_query, name)` como entrada, pero a Voyage se le envía `retrieval_query` sin tocar.
@@ -364,11 +388,13 @@ export function PersonalContextToggle(props: {
    - El paso `generation` recibe `redact_name(messages, name)`. Al modelo se le envía `messages` sin tocar.
    - El paso termina con `redact_name(result.text or "", name)`.
 8. `trace.finish(redact_name(answer, name))`. El usuario recibe `answer` sin cambios (AC-N003.1).
-9. El manejo de errores, el 503, los scores y el `feedback_id` no cambian (REQ-012).
+9. El manejo de errores de los proveedores, el 503, los scores y el `feedback_id` no cambian (REQ-012). La única
+   causa nueva de 503 es el fallo del lector del paso 2, con el mismo mensaje.
 
 `build_coach_user_message(context, question, None)` devuelve exactamente el texto de hoy:
 `"Fragmentos de contexto:\n{context}\n\nPregunta: {question}"`. Con bloque, antepone `"{personal_block}\n\n"`. Así,
-con el interruptor desactivado, el mensaje es idéntico al de antes de la feature (REQ-010).
+con el interruptor desactivado, el mensaje es idéntico al de antes de la feature (REQ-010), aunque el servidor haya
+leído el nombre para anonimizar la traza.
 
 **`SYSTEM_PROMPT` nuevo** (un único texto para todas las preguntas, sin voseo; AC-009.1 a AC-009.6):
 
@@ -460,6 +486,11 @@ Los saltos de línea dentro de cada viñeta son del plan. El implementer puede u
     se envían también tu perfil, tus macros y tu progreso, nunca tu nombre.». Se conserva «nunca con tu email ni tu
     nombre».
   - El punto de Voyage AI no cambia.
+  - `updatedAt` pasa de «27 de octubre de 2026» a «3 de noviembre de 2026» (revisión 1, F2). La propia página promete
+    en «Cambios a esta política» que un cambio importante llevará una fecha de actualización nueva, y este lo es
+    (Anthropic recibe ahora nombre, perfil, macros y progreso; Langfuse, perfil, macros y progreso). Se elige el día de
+    aprobación de la spec (2026-11-03 UTC), la fecha en que se fija el texto nuevo. No cambia la fecha de los Términos
+    de servicio.
 
 ## 4. Mapa REQ → diseño
 
@@ -474,12 +505,12 @@ Los saltos de línea dentro de cada viñeta son del plan. El implementer puede u
 | REQ-007 | `CoachPage.handleSubmit` + `buildCoachPersonalContext` |
 | REQ-008 | Rama sin fragmentos relevantes de `CoachService`, sin cambios; `DONT_KNOW_ANSWER` |
 | REQ-009 | `SYSTEM_PROMPT` nuevo |
-| REQ-010 | `parse_use_personal_context` + rama sin lector ni bloque en `CoachService` + `PersonalContextToggle`, `usePersonalContextPreference` y `personalContextPreference.ts` |
-| REQ-011 | `PrivacyPolicyPage.tsx` |
+| REQ-010 | `parse_use_personal_context` + rama sin bloque en `CoachService` (con el contexto desactivado no se llama a `read` y el mensaje es el de antes; solo `read_first_name` para la traza) + `PersonalContextToggle`, `usePersonalContextPreference` y `personalContextPreference.ts` |
+| REQ-011 | `PrivacyPolicyPage.tsx` (textos y fecha de actualización) |
 | REQ-012 | Ruta y servicio: validaciones, límite, 503 y `feedback_id` sin cambios |
 | NFR-001 | El lector solo lee `first_name`, `date_of_birth` (para la edad) y el perfil; el bloque no incluye nada más |
 | NFR-002 | `_build_retrieval_query` sin cambios; el bloque solo va al mensaje del modelo |
-| NFR-003 | `redact_name` aplicado a todo lo que va al `Tracer`; `user_id` en la traza como hoy |
+| NFR-003 | `redact_name` aplicado a todo lo que va al `Tracer`, con el contexto activado (`read`) y desactivado (`read_first_name`); `user_id` en la traza como hoy |
 | NFR-004 | El lector filtra por el `user_id` del token; los datos del cliente no identifican a nadie |
 | NFR-005 | Sin llamadas nuevas: una a Voyage (`embed`) y como mucho una a Anthropic (`generate_with_usage`) |
 
@@ -505,12 +536,18 @@ Los dobles son escritos a mano, sin `unittest.mock` ni `monkeypatch` (Art. P1.3)
 No hacen falta dobles nuevos compartidos. Si el test-author necesita un doble del lector para `CoachService`, puede
 crear un `FakePersonalContextReader` en el propio test que devuelva un `PersonalContext` fijo y guarde las llamadas.
 
+**Revisión 1 (F1), cambio en los dobles existentes:** los `FakePersonalContextReader` de `test_coach_service.py` y
+`test_coach_observability.py` añaden `read_first_name(user_id)`, que devuelve `self.context.first_name` y guarda el
+id en una lista **aparte** (`name_calls`), sin tocar `calls`. Así, las aserciones existentes `reader.calls == []`
+(contexto desactivado y límite agotado) siguen siendo ciertas sin cambiarlas: `calls` solo registra `read`. Añadir el
+método al doble no debilita ningún test.
+
 **Unitarios, `tests/test_services/test_coach_personal_context.py`**, sin Postgres:
 
 - `parse_use_personal_context`: `None` y `True` dan activo; `False`, `"no"` y `0` dan desactivado (AC-010.6,
   AC-010.4).
 - `parse_client_context`: un caso válido, y un caso por cada regla de AC-006.2 que devuelve `None`:
-  - texto con salto de línea;
+  - texto con salto de línea, en medio y **al final** (`"79,4 kg\n"`; revisión 1, F3);
   - texto de 33 caracteres;
   - `target_kcal` de 0 o de 20000;
   - gramos negativos;
@@ -530,13 +567,22 @@ crear un `FakePersonalContextReader` en el propio test que devuelva un `Personal
   - id que no es UUID: contexto vacío y sin llamadas a los repositorios;
   - dos usuarios en los fakes, solo los del id pedido (AC-N004.1);
   - el apellido, el correo y la fecha de nacimiento no aparecen en el bloque (AC-N001.1, parte unitaria).
+- `CoachPersonalContextReader.read_first_name` (revisión 1, F1; marcadores `NFR-003 AC-N003.1` y
+  `NFR-004 AC-N004.1`):
+  - devuelve el nombre saneado del usuario pedido (con dos usuarios en los fakes, solo el suyo);
+  - id que no es UUID: `None` sin llamadas a los repositorios;
+  - usuario inexistente o sin nombre: `None`;
+  - no consulta el repositorio de perfiles (el doble de perfiles registra cero llamadas).
 
 **Unitarios, `tests/test_services/test_coach_service.py`** (se añaden casos; ninguno existente se toca):
 
 - con lector, el último mensaje enviado a `FakeLLMClient` contiene el bloque y el historial llega idéntico, con el
   bloque una sola vez (AC-004.1);
 - `use_personal_context=False` hace que el mensaje sea idéntico a `build_coach_user_message(context, question)` y que
-  no se llame al lector (AC-010.4);
+  no se llame a `read` (AC-010.4); el test existente no cambia. Caso nuevo: con el contexto desactivado sí se llama a
+  `read_first_name` una vez con el `user_id`, y el mensaje sigue sin «Carlos» ni bloque (AC-010.4);
+- si `read` o `read_first_name` lanzan, `ServiceUnavailableError` con el mensaje de siempre y sin llamar a Voyage ni
+  al modelo (REQ-012 AC-012.3, revisión 1, F7);
 - el texto de búsqueda es exactamente la pregunta, o «previa + actual» (AC-N002.1 y AC-N002.2);
 - sin fragmentos, la respuesta es `DONT_KNOW_ANSWER` sin llamar al modelo, también con «¿Cuál es mi objetivo de
   calorías?» (AC-008.1 y AC-008.2);
@@ -551,6 +597,15 @@ crear un `FakePersonalContextReader` en el propio test que devuelva un `Personal
   - el `CoachAnswer.answer` contiene «Carlos»;
   - ningún texto de la traza (input, pasos y salida, serializados con `json.dumps`) contiene «Carlos»;
   - sí aparecen «[nombre]», «2200 kcal», «Perder peso» y «79,4 kg», y el `user_id` (AC-N003.1 y AC-N003.2).
+- **Revisión 1 (F1), contexto desactivado a mitad de conversación** (marcadores `NFR-003 AC-N003.1` y
+  `REQ-010 AC-010.4`): `use_personal_context=False`, un lector con nombre «Carlos», un historial
+  `[{"role": "user", "content": "¿Cuánta proteína necesito?"}, {"role": "assistant", "content": "Hola, Carlos: …"}]`
+  y un modelo que responde «Carlos, sigue con…»:
+  - el `CoachAnswer.answer` contiene «Carlos» (el usuario recibe la respuesta sin tocar);
+  - los mensajes enviados al `FakeLLMClient` son el historial tal cual más `build_coach_user_message(context,
+    question)`, sin bloque `<datos_del_usuario>` (el modelo no recibe nada nuevo de la cuenta);
+  - ningún texto de la traza serializada contiene «Carlos», y sí «[nombre]»;
+  - el lector no recibió ninguna llamada a `read`.
 
 **Integración, `tests/test_routes/test_coach_routes.py`** (Postgres de prueba):
 
@@ -607,6 +662,14 @@ La red se simula con `vi.mock` de las capas `api.ts` (Art. P1.4). `globals: fals
       `personal_context` y se pinta la respuesta (AC-006.3);
     - la tercera pregunta lleva un historial de cuatro turnos con el texto visible (AC-004.1, parte cliente).
   - `localStorage.clear()` en `beforeEach`.
+- **`PrivacyPolicyPage.test.tsx`, fecha (revisión 1, F2):** el test existente de las líneas 83-92
+  (`// SDD: 028 REQ-021 AC-021.1`, «la última actualización es la del 27 de octubre de 2026 y ya no la del 22») se
+  sustituye, igual que la 028 sustituyó al de la 025, por uno con el marcador `// SDD: 034 REQ-011` y el comentario
+  «(sustituye al de la 028, que fijaba el 27 de octubre: la 034 actualiza la política)», que comprueba:
+  - el texto contiene «Última actualización: 3 de noviembre de 2026»;
+  - no contiene «27 de octubre de 2026», «22 de octubre de 2026» ni «21 de octubre de 2026».
+  No es un debilitamiento: la fecha es la que cambia con la política. Lo hace el test-author; después el implementer
+  cambia `updatedAt`.
 - **`PrivacyPolicyPage.test.tsx`** (se añaden casos):
   - el punto de Anthropic menciona el nombre, el perfil, las macros y el progreso, y «Puedes desactivarlo en el propio
     coach» (AC-011.1);
@@ -657,6 +720,8 @@ La red se simula con `vi.mock` de las capas `api.ts` (Art. P1.4). `globals: fals
 |---|---|---|---|
 | Inyección de instrucciones a través del nombre (texto libre de la cuenta) | Media | Medio | `sanitize_first_name` (sin control, `<`, `>` ni saltos de línea), bloque delimitado e instrucción explícita de tratarlo como dato; los demás textos pasan la lista blanca de 32 caracteres |
 | El nombre se filtra a Langfuse por un camino no anonimizado (por ejemplo, un paso nuevo en el futuro) | Baja | Alto (la política dejaría de ser cierta) | `redact_name` en cada llamada al `Tracer` dentro de `CoachService`; test que serializa toda la traza y busca «Carlos» |
+| El nombre llega a Langfuse en el historial con el interruptor desactivado (revisión 1, F1) | Alta si se cambia el interruptor a mitad de conversación | Alto | Con el contexto desactivado se lee solo el nombre (`read_first_name`) para anonimizar; el mensaje al modelo no cambia; test con un historial que contiene «Carlos» |
+| Una caída de la base al leer la cuenta convierte en 503 una pregunta con el interruptor desactivado | Baja | Bajo | Con la base caída la búsqueda en pgvector falla igual; mismo 503 y mensaje de REQ-012, registrado en el log (F7) |
 | Romper el análisis de progreso al extraer `parse_indicators`, `profile_lines` e `indicator_lines` | Baja | Medio | Extracción sin cambios de comportamiento; los tests existentes de la 010 y la 011 deben seguir verdes sin tocarlos |
 | Tests existentes del coach con ids que no son UUID (`"user-1"`, `42`) | Media | Medio | Sin lector inyectado no hay contexto (unitarios), y el lector devuelve un contexto vacío ante un id que no es UUID (integración de la 030) |
 | Más tokens por pregunta (coste) | Alta | Bajo | El bloque ronda las 30 líneas; el límite de 20 preguntas por hora no cambia (Q10) |
@@ -698,4 +763,5 @@ No se incumple ningún «DEBERÍA».
 
 - [ADR-0038](../../docs/sdd/decisions/ADR-0038-contexto-personal-del-coach.md): contexto personal del coach (Propuesta).
   Extiende el criterio de ADR-0021 al coach, con descarte en bloque sin error, bloque delimitado en el turno nuevo,
-  nombre sustituido por `[nombre]` en las trazas e interruptor en `localStorage`.
+  nombre sustituido por `[nombre]` en las trazas (también con el interruptor desactivado, leyendo solo el nombre),
+  interruptor en `localStorage` y 503 si falla la lectura de la cuenta. Actualizada en la revisión 1 (F1 y F7).
