@@ -158,6 +158,22 @@ describe("PrivacyPolicyPage", () => {
     expect(text).toContain("Puedes desactivarlo en el propio coach.")
   })
 
+  // SDD: 034 REQ-011 AC-011.4
+  it("el punto de Anthropic avisa de que los mensajes anteriores se siguen enviando si se desactiva a mitad de una conversación", () => {
+    renderPage()
+    const section = sectionOf("Con quién se comparte")
+
+    const entry = within(section)
+      .getAllByRole("listitem")
+      .find((item) => /Anthropic \(Claude\):/.test(item.textContent ?? ""))
+
+    expect(entry).toBeDefined()
+    const text = (entry?.textContent ?? "").replace(/\s+/g, " ")
+    expect(text).toContain(
+      "Si lo desactivas a mitad de una conversación, los mensajes anteriores de esa conversación se siguen enviando a Anthropic como contexto y pueden incluir esos datos."
+    )
+  })
+
   // SDD: 034 REQ-011 AC-011.2
   it("el punto de Langfuse añade el perfil, las macros y el progreso y sigue diciendo que nunca se envían el email ni el nombre", () => {
     renderPage()

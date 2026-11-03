@@ -7,6 +7,7 @@ Redis.
 
 import dataclasses
 import json
+import re
 import time
 from datetime import date, datetime, timezone
 from types import SimpleNamespace
@@ -905,3 +906,151 @@ def test_a_destination_that_fails_instantly_does_not_delay_the_answer():
 
         assert answer == "Haz 3 series de 10."
         assert elapsed < 0.5
+
+
+# --- Revisión 2: nombres compuestos (F4) y nombres anteriores (F10) -----------
+
+QUESTION = "¿Cuánta proteína necesito?"
+SENTINEL_NAMES = ["Carlitos", "A", "B", "C", "D", "E"]
+
+
+def casefolded_dump(backend):
+    return dump_trace(backend.traces[0]).casefold()
+
+
+# SDD: 034 NFR-003 AC-N003.4
+def test_compound_name_is_anonymized_part_by_part_end_to_end():
+    """«María José»: el usuario recibe el texto sin cambios y la traza no contiene
+    «maría» ni «josé»; el nombre completo es un único «[nombre]»."""
+    answer_text = "Hola, María José. Como dice José en el vídeo… Gracias, maría"
+    service, backend, llm = make_personal_service(answer_text, "María José")
+
+    result = service.ask_with_feedback(QUESTION, user_id=42)
+
+    assert result.answer == answer_text
+    assert "Nombre: María José" in llm.calls[0][1][-1]["content"]
+    dumped = casefolded_dump(backend)
+    assert "maría" not in dumped
+    assert "josé" not in dumped
+    assert backend.traces[0].output.startswith("Hola, [nombre]. Como dice [nombre]")
+    assert "[nombre] [nombre]" not in dumped
+
+
+# SDD: 034 NFR-003 AC-N003.5
+def test_hyphenated_name_part_is_anonymized_in_the_trace():
+    """«José-Luis» con la respuesta «Hola, Luis»: la traza dice «Hola, [nombre]»."""
+    service, backend, _ = make_personal_service("Hola, Luis", "José-Luis")
+
+    result = service.ask_with_feedback(QUESTION, user_id=42)
+
+    assert result.answer == "Hola, Luis"
+    assert backend.traces[0].output == "Hola, [nombre]"
+    assert "luis" not in casefolded_dump(backend)
+
+
+# SDD: 034 REQ-010 AC-010.8
+# SDD: 034 NFR-003 AC-N003.4
+def test_with_the_context_off_a_compound_name_in_the_history_is_kept_out_of_the_trace():
+    """Desactivado y con «Carlos Alberto»: el modelo recibe el historial idéntico
+    y el mensaje sin bloque; la traza no contiene «Carlos» ni «Alberto»."""
+    service, backend, llm = make_personal_service("Sigue así, Alberto.", "Carlos Alberto")
+    reader = service.test_reader
+    history = [
+        {"role": "user", "content": QUESTION},
+        {"role": "assistant", "content": "Hola, Carlos: con tu objetivo de 2200 kcal…"},
+    ]
+
+    result = service.ask_with_feedback(
+        "¿Y la cena?", user_id=42, history=history, use_personal_context=False
+    )
+
+    assert result.answer == "Sigue así, Alberto."
+    sent = llm.calls[0][1]
+    assert sent[:2] == history
+    content = sent[2]["content"]
+    prefix, suffix = "Fragmentos de contexto:\n", "\n\nPregunta: ¿Y la cena?"
+    corpus = content[len(prefix) : -len(suffix)]
+    assert content == build_coach_user_message(corpus, "¿Y la cena?")
+    assert "Alberto" not in content
+    assert reader.calls == []
+    dumped = casefolded_dump(backend)
+    assert "carlos" not in dumped
+    assert "alberto" not in dumped
+    assert "[nombre]" in dumped
+    assert "2200 kcal" in dumped
+
+
+# SDD: 034 REQ-013 AC-013.3
+# SDD: 034 REQ-013 AC-013.4
+@pytest.mark.parametrize("context_on", [True, False])
+def test_a_previous_name_is_kept_out_of_the_trace_but_reaches_the_model(context_on):
+    """«Carlitos» (nombre anterior) y «Carlos» (actual) no salen en la traza, con
+    el contexto activado o desactivado; el modelo recibe el historial tal cual."""
+    service, backend, llm = make_personal_service("Carlos, sigue así", "Carlos")
+    reader = service.test_reader
+    history = [
+        {"role": "user", "content": QUESTION},
+        {"role": "assistant", "content": "Hola, Carlitos: reparte la proteína."},
+    ]
+
+    service.ask_with_feedback(
+        "¿Y la cena?",
+        user_id=42,
+        history=history,
+        use_personal_context=context_on,
+        previous_names=["Carlitos"],
+    )
+
+    assert llm.calls[0][1][:2] == history
+    assert "Carlitos" in llm.calls[0][1][1]["content"]
+    dumped = casefolded_dump(backend)
+    assert "carlitos" not in dumped
+    assert "carlos" not in dumped
+    assert "[nombre]" in dumped
+    if not context_on:
+        assert reader.calls == []
+
+
+# SDD: 034 REQ-013 AC-013.6
+@pytest.mark.parametrize(
+    "invalid",
+    [
+        SENTINEL_NAMES,
+        ["Carlitos", ""],
+        ["Carlitos", "x" * 101],
+        ["Carlitos", 5],
+    ],
+    ids=["seis", "vacio", "101-caracteres", "no-texto"],
+)
+def test_an_invalid_previous_names_list_is_ignored_entirely(invalid):
+    """Lista no válida: responde igual, la traza conserva «Carlitos» y anonimiza
+    «Carlos» (el nombre actual)."""
+    service, backend, _ = make_personal_service("Hola, Carlos", "Carlos")
+    history = [
+        {"role": "user", "content": QUESTION},
+        {"role": "assistant", "content": "Hola, Carlitos"},
+    ]
+
+    result = service.ask_with_feedback(
+        "¿Y la cena?", user_id=42, history=history, previous_names=invalid
+    )
+
+    assert result.answer == "Hola, Carlos"
+    dumped = dump_trace(backend.traces[0])
+    assert "Carlitos" in dumped
+    assert "[nombre]" in dumped
+    assert not re.search(r"(?<!\w)carlos(?!\w)", dumped, flags=re.IGNORECASE)
+
+
+# SDD: 034 REQ-013 AC-013.5
+def test_a_previous_name_in_the_question_is_anonymized_but_never_replaces_the_name():
+    """«Soy Ana» con `previous_names=["Ana"]`: el bloque dice «Nombre: Carlos» y la
+    entrada de la traza es «Soy [nombre]»."""
+    service, backend, llm = make_personal_service("Hola", "Carlos")
+
+    service.ask("Soy Ana", user_id=42, previous_names=["Ana"])
+
+    content = llm.calls[0][1][-1]["content"]
+    assert "Nombre: Carlos" in content
+    assert "Nombre: Ana" not in content
+    assert backend.traces[0].input == "Soy [nombre]"

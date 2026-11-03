@@ -32,6 +32,7 @@ export type AskCoachPayload = {
   history: ChatMessage[]
   use_personal_context: boolean
   personal_context?: CoachPersonalContext
+  previous_names?: string[]
 }
 
 export type CoachFeedbackRating = "up" | "down"

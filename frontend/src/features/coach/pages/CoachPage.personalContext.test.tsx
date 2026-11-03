@@ -39,7 +39,9 @@ const listMetricsMock = vi.mocked(listBodyMetrics)
 
 const TOGGLE_NAME = "Usar mis datos para personalizar las respuestas"
 const HELP_ON = "El coach tiene en cuenta tu nombre, tu perfil, tus macros y tu progreso."
-const HELP_OFF = "El coach no usa tus datos personales."
+// (revisión 2, F5: texto de ayuda nuevo)
+const HELP_OFF =
+  "El coach no usa tus datos personales. Los mensajes anteriores de esta conversación se siguen enviando al coach y pueden incluirlos."
 const TODAY = "2026-10-12"
 
 function m(recorded_at: string, weight: number): BodyMetric {
@@ -370,5 +372,83 @@ describe("CoachPage - datos personales", () => {
     const second = askMock.mock.calls[1][0].personal_context?.macros.target_kcal
     expect(first).toBe(2200)
     expect(second).toBe(2750)
+  })
+
+  // --- Revisión 2: ayuda con el historial (F5) y nombres anteriores (F10) ---
+
+  // SDD: 034 REQ-010 AC-010.7
+  it("al desactivarlo, el párrafo enlazado con aria-describedby tiene exactamente el texto nuevo", async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    await user.click(toggle())
+
+    const helpId = toggle().getAttribute("aria-describedby")
+    expect(helpId).toBeTruthy()
+    const help = document.getElementById(helpId!)
+    expect(help?.textContent).toBe(HELP_OFF)
+    expect(help?.tagName).toBe("P")
+  })
+
+  // SDD: 034 REQ-010 AC-010.8
+  // SDD: 034 REQ-010 AC-010.7
+  it("tras desactivarlo, el historial con el nombre y las cifras se reenvía idéntico y sin contexto", async () => {
+    const user = userEvent.setup()
+    await renderLoaded()
+    const reply = "Hola, Carlos: con tu objetivo de 2200 kcal…"
+    askMock.mockResolvedValueOnce({ answer: reply, feedback_id: null })
+    await ask(user, "¿Cuánta proteína necesito?", reply)
+
+    await user.click(toggle())
+    expect(document.getElementById(toggle().getAttribute("aria-describedby")!)?.textContent).toBe(
+      HELP_OFF
+    )
+    await ask(user, "¿Y la cena?", "Respuesta a ¿Y la cena?")
+
+    const payload = askMock.mock.calls[1][0]
+    expect(payload.use_personal_context).toBe(false)
+    expect(payload.personal_context).toBeUndefined()
+    expect(payload.history).toEqual([
+      { role: "user", content: "¿Cuánta proteína necesito?" },
+      { role: "assistant", content: reply },
+    ])
+  })
+
+  const CARLITOS = { ...PROFILE, first_name: "Carlitos" }
+
+  // SDD: 034 REQ-013 AC-013.1
+  // SDD: 034 REQ-013 AC-013.2
+  it("envía el nombre anterior solo cuando hay conversación y el nombre cambió", async () => {
+    const user = userEvent.setup()
+    getProfileMock.mockResolvedValue(CARLITOS)
+    const { queryClient } = await renderLoaded()
+
+    await ask(user, "Primera", "Respuesta a Primera")
+    await ask(user, "Segunda", "Respuesta a Segunda")
+
+    expect(askMock.mock.calls[0][0].previous_names).toBeUndefined()
+    expect(askMock.mock.calls[1][0].previous_names).toBeUndefined()
+
+    queryClient.setQueryData(profileKeys.detail, PROFILE)
+    await ask(user, "Tercera", "Respuesta a Tercera")
+
+    expect(askMock.mock.calls[2][0].previous_names).toEqual(["Carlitos"])
+  })
+
+  // SDD: 034 REQ-013 AC-013.1
+  it("envía el nombre anterior también con el interruptor desactivado", async () => {
+    const user = userEvent.setup()
+    getProfileMock.mockResolvedValue(CARLITOS)
+    const { queryClient } = await renderLoaded()
+    await user.click(toggle())
+    await ask(user, "Primera", "Respuesta a Primera")
+
+    queryClient.setQueryData(profileKeys.detail, PROFILE)
+    await ask(user, "Segunda", "Respuesta a Segunda")
+
+    const payload = askMock.mock.calls[1][0]
+    expect(payload.use_personal_context).toBe(false)
+    expect(payload.personal_context).toBeUndefined()
+    expect(payload.previous_names).toEqual(["Carlitos"])
   })
 })

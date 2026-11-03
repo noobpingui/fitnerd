@@ -62,3 +62,6 @@
 - [ ] Token firmado por respuesta con el nombre usado (alternativa (a) de Q12), si los nombres anteriores enviados por el cliente se quedan cortos.
 - [ ] Anonimizar diminutivos y variantes sin tildes del nombre en la traza (sigue fuera de alcance).
 - [ ] Unificar el estilo de comentarios `#Texto` → `# Texto` del resto de coach_service.py (F9 solo pide la línea 150).
+
+## tests (rev. 2) · verifier (red)
+- [ ] Revisar el CRLF de los cuatro archivos de test de la 034 en la copia de trabajo (Art. P5.1); `.gitattributes` los normaliza al commit.

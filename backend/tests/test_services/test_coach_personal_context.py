@@ -14,9 +14,12 @@ from services.coach_personal_context import (
     ClientCoachContext,
     CoachMacros,
     CoachPersonalContextReader,
+    NAME_PARTICLES,
     PersonalContext,
     build_personal_context_block,
+    name_redaction_terms,
     parse_client_context,
+    parse_previous_names,
     parse_use_personal_context,
     redact_name,
     sanitize_first_name,
@@ -874,3 +877,166 @@ def test_read_first_name_does_not_query_the_profile_repository():
 
     assert reader.read_first_name(USER_ID) == "Carlos"
     assert profile_repository.calls == []
+
+
+# --- Revision 2: redact_name por partes (F4) y nombres anteriores (F10) --------
+
+
+# SDD: 034 NFR-003 AC-N003.4
+def test_redact_name_anonymizes_the_full_name_once_and_each_part_apart():
+    """«María José» da un único «[nombre]» y sus partes sueltas también se anonimizan."""
+    text = "Hola, María José. Como dice José en el vídeo… Gracias, maría"
+
+    result = redact_name(text, "María José")
+
+    assert result == "Hola, [nombre]. Como dice [nombre] en el vídeo… Gracias, [nombre]"
+    assert "maría" not in result.casefold()
+    assert "josé" not in result.casefold()
+
+
+# SDD: 034 NFR-003 AC-N003.5
+def test_redact_name_splits_a_hyphenated_name_into_parts():
+    """Con «José-Luis», «Hola, Luis» pasa a «Hola, [nombre]» y el nombre entero es uno."""
+    assert redact_name("Hola, Luis", "José-Luis") == "Hola, [nombre]"
+    assert redact_name("José-Luis", "José-Luis") == "[nombre]"
+
+
+# SDD: 034 NFR-003 AC-N003.6
+def test_redact_name_keeps_particles_and_anonymizes_the_remaining_part():
+    """Con «María de la Paz», «la» y «de» no cambian y «paz» se anonimiza."""
+    text = "la proteína de la dieta y la paz mental"
+
+    assert redact_name(text, "María de la Paz") == (
+        "la proteína de la dieta y la [nombre] mental"
+    )
+
+
+# SDD: 034 NFR-003 AC-N003.6
+@pytest.mark.parametrize("particle", sorted(NAME_PARTICLES))
+def test_redact_name_never_anonymizes_a_particle_on_its_own(particle):
+    """Cada una de las 17 partículas solo se anonimiza dentro del nombre completo."""
+    name = f"María {particle} Paz"
+
+    assert redact_name(f"Hola Paz, {particle} palabra", name) == (
+        f"Hola [nombre], {particle} palabra"
+    )
+    assert redact_name(f"Hola {name}!", name) == "Hola [nombre]!"
+
+
+# SDD: 034 NFR-003 AC-N003.6
+def test_redact_name_particles_are_compared_ignoring_case():
+    """Con «María De La Paz», «de» y «la» sueltos tampoco cambian."""
+    assert redact_name("de la paz", "María De La Paz") == "de la [nombre]"
+
+
+# SDD: 034 NFR-003 AC-N003.7
+def test_redact_name_ignores_parts_of_less_than_three_letters():
+    """Con «Jo Ann», «Ann» se anonimiza; «Jo» y «Joan» no."""
+    assert redact_name("Jo, Ann y Joan", "Jo Ann") == "Jo, [nombre] y Joan"
+    assert redact_name("Mª, José y Mª José", "Mª José") == "Mª, [nombre] y [nombre]"
+
+
+# SDD: 034 NFR-003 AC-N003.8
+def test_redact_name_does_not_touch_words_that_only_contain_a_part():
+    """«Mariano» y «Josefina» no cambian con «María José»; «José» suelto sí."""
+    assert redact_name("Mariano, Josefina y José", "María José") == (
+        "Mariano, Josefina y [nombre]"
+    )
+
+
+# SDD: 034 NFR-003 AC-N003.4
+def test_redact_name_runs_in_a_single_pass_and_never_redacts_its_own_placeholder():
+    """El marcador «[nombre]» no se vuelve a anonimizar con un nombre como «Nombre»."""
+    assert redact_name("Hola, Nombre", "Nombre") == "Hola, [nombre]"
+    assert redact_name("Hola, Nombre Alto y Alto", "Nombre Alto") == (
+        "Hola, [nombre] y [nombre]"
+    )
+
+
+# SDD: 034 NFR-003 REQ-013 AC-013.3
+def test_redact_name_also_anonymizes_the_previous_names():
+    """Los nombres anteriores (y sus partes) se anonimizan igual que el actual."""
+    assert redact_name("Hola, Carlitos y Carlos", "Carlos", ("Carlitos",)) == (
+        "Hola, [nombre] y [nombre]"
+    )
+    assert redact_name("Hola, María", "Carlos", ("Ana María",)) == "Hola, [nombre]"
+    assert redact_name(["Carlitos", {"a": "Carlos"}], "Carlos", ["Carlitos"]) == [
+        "[nombre]",
+        {"a": "[nombre]"},
+    ]
+
+
+# SDD: 034 NFR-003 AC-N003.4
+@pytest.mark.parametrize(
+    "first_name, other_names, expected",
+    [
+        ("María José", (), ["María José", "María", "José"]),
+        ("María de la Paz", (), ["María de la Paz", "María", "Paz"]),
+        ("Jo Ann", (), ["Jo Ann", "Ann"]),
+        ("José-Luis", (), ["José-Luis", "José", "Luis"]),
+        ("Mª José", (), ["Mª José", "José"]),
+        ("Carlos", ["Carlitos"], ["Carlitos", "Carlos"]),
+        ("Ana", (), ["Ana"]),
+        ("Al", (), ["Al"]),
+    ],
+)
+def test_name_redaction_terms_lists_the_full_name_first_then_the_parts(
+    first_name, other_names, expected
+):
+    """Orden de más largo a más corto: el nombre completo va antes que sus partes."""
+    assert name_redaction_terms(first_name, other_names) == expected
+
+
+# SDD: 034 NFR-003 AC-N003.4
+def test_name_redaction_terms_removes_duplicates_ignoring_case_and_handles_empties():
+    """Sin duplicados (casefold) y sin términos si no hay nombres."""
+    assert name_redaction_terms("Carlos", ["carlos", "CARLOS"]) == ["Carlos"]
+    assert name_redaction_terms("Ana María", ["María"]) == ["Ana María", "María", "Ana"]
+    assert name_redaction_terms(None, ()) == []
+    assert name_redaction_terms("", []) == []
+    assert name_redaction_terms(None, ["Carlitos"]) == ["Carlitos"]
+
+
+# --- Revision 2: parse_previous_names (REQ-013) --------------------------------
+
+
+# SDD: 034 REQ-013 AC-013.3
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        (["Carlitos"], ("Carlitos",)),
+        (["  Carlitos  "], ("Carlitos",)),
+        (["A", "B", "C", "D", "E"], ("A", "B", "C", "D", "E")),
+        (["x" * 100], ("x" * 100,)),
+        (["<>", "Carlitos"], ("Carlitos",)),
+        (None, ()),
+    ],
+)
+def test_parse_previous_names_accepts_a_valid_list(value, expected):
+    """Lista válida: recortada y saneada; nada que anonimizar tras sanear se omite."""
+    assert parse_previous_names(value) == expected
+
+
+# SDD: 034 REQ-013 AC-013.6
+@pytest.mark.parametrize(
+    "value",
+    [
+        "Carlitos",
+        {},
+        [],
+        ["A", "B", "C", "D", "E", "F"],
+        [""],
+        ["   "],
+        ["x" * 101],
+        [5],
+        [None],
+        [{}],
+        [True],
+        ["Carlitos", ""],
+        ["Carlitos", 5],
+        ["Carlitos", "x" * 101],
+    ],
+)
+def test_parse_previous_names_ignores_an_invalid_list_entirely(value):
+    """Una lista no válida se ignora entera, sin lanzar."""
+    assert parse_previous_names(value) == ()

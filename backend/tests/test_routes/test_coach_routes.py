@@ -5,6 +5,7 @@ fixture autouse `no_real_coach_model` instala en `coach_llm.llm_client` un
 doble que falla si se le llama, para que ningún test llegue a la red.
 """
 
+import dataclasses
 import json
 from datetime import datetime
 
@@ -753,3 +754,94 @@ def test_the_model_never_receives_data_of_another_user(
     assert "Beatriz" in beatriz_text and "mujer" in beatriz_text
     for other in ("Carlos", "Pérez", "Perder peso", "180 cm", "nota privada", "carlos@example.com"):
         assert other not in beatriz_text
+
+
+# --- Revisión 2: nombres anteriores y nombres compuestos en la traza -----------
+
+
+def trace_dump(backend, index=0):
+    return json.dumps(dataclasses.asdict(backend.traces[index]), default=str, ensure_ascii=False)
+
+
+# SDD: 034 REQ-013 AC-013.3
+def test_previous_names_sent_over_http_are_kept_out_of_the_trace(client, carlos, coach_model):
+    """La ruta pasa `previous_names`: con «Hola, Carlitos» en el historial el modelo
+    lo recibe tal cual y la traza no contiene «Carlitos» ni «Carlos»."""
+    backend = FakeTraceBackend()
+    tracer.backend = backend
+    history = [
+        {"role": "user", "content": "¿Cuánta proteína necesito?"},
+        {"role": "assistant", "content": "Hola, Carlitos: reparte la proteína."},
+    ]
+
+    response = ask(client, carlos, history=history, previous_names=["Carlitos"])
+
+    assert response.status_code == 200
+    assert coach_model.calls[-1][1][:2] == history
+    assert len(backend.traces) == 1
+    dumped = trace_dump(backend).casefold()
+    assert "carlitos" not in dumped
+    assert "carlos" not in dumped
+    assert "[nombre]" in dumped
+
+
+# SDD: 034 REQ-013 AC-013.5
+def test_a_previous_name_never_replaces_the_account_name_over_http(client, carlos, coach_model):
+    """«Soy Ana» con `previous_names=["Ana"]`: el bloque lleva «Nombre: Carlos» y la
+    entrada de la traza no contiene «Ana»."""
+    backend = FakeTraceBackend()
+    tracer.backend = backend
+
+    response = client.post(
+        ASK_URL,
+        json={"question": "Soy Ana, ¿cuánta proteína necesito?", "previous_names": ["Ana"]},
+        headers=carlos,
+    )
+
+    assert response.status_code == 200
+    message = sent_message(coach_model)
+    assert "Nombre: Carlos" in message
+    assert "Nombre: Ana" not in message
+    assert backend.traces[0].input == "Soy [nombre], ¿cuánta proteína necesito?"
+
+
+# SDD: 034 REQ-013 AC-013.6
+def test_an_invalid_previous_names_list_is_ignored_and_a_valid_one_is_used(
+    client, carlos, coach_model
+):
+    """Lista de seis nombres: 200 y la traza conserva «Carlitos»; después, una
+    lista válida en el mismo test sí lo anonimiza."""
+    backend = FakeTraceBackend()
+    tracer.backend = backend
+    coach_model.answer = "Hola, Carlitos"
+
+    invalid = ["Carlitos", "A", "B", "C", "D", "E"]
+    first = ask(client, carlos, previous_names=invalid)
+    second = ask(client, carlos, previous_names=["Carlitos"])
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert first.get_json()["answer"] == "Hola, Carlitos"
+    assert "Carlitos" in trace_dump(backend, 0)
+    assert "Carlitos" not in trace_dump(backend, 1)
+
+
+# SDD: 034 NFR-003 AC-N003.4
+def test_a_compound_name_changed_in_the_profile_is_anonymized_by_parts(
+    client, carlos, coach_model
+):
+    """Con el nombre «María José» guardado en el perfil, la traza no contiene
+    «María» ni «José» sueltos y el usuario recibe la respuesta sin cambios."""
+    save_profile(client, carlos, first_name="María José")
+    backend = FakeTraceBackend()
+    tracer.backend = backend
+    coach_model.answer = "Hola, María José. Como dice José, gracias."
+
+    response = ask(client, carlos)
+
+    assert response.status_code == 200
+    assert response.get_json()["answer"] == "Hola, María José. Como dice José, gracias."
+    assert "Nombre: María José" in sent_message(coach_model)
+    dumped = trace_dump(backend).casefold()
+    assert "maría" not in dumped
+    assert "josé" not in dumped

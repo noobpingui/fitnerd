@@ -10,7 +10,7 @@
   "branch": "feat/034-coach-personal-context",
   "base_branch": "main",
   "created_at": "2026-11-03T03:04:33.745Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,7 +25,10 @@
       "at": "2026-11-03T05:01:38.967Z",
       "note": "auto (gate_mode=flow): 74 tareas, matriz actualizada"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-11-03T05:54:27.950Z",
+      "note": "auto (gate_mode=flow): red check PASS, T-058 excepción declarada"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -35,19 +38,19 @@
   "commits": {
     "spec": "ea96016",
     "plan": "266e254",
-    "tasks": "5c8d54e",
+    "tasks": "d3dbd53",
     "tests": "ec5e486",
     "implement": "56b4019"
   },
   "iterations": {
-    "tests": 4,
+    "tests": 5,
     "implement": 0,
     "review": 2
   },
   "max_iterations": 5,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-11-03T05:54:17.475Z"
   },
   "verify": {
     "result": null,
@@ -58,17 +61,18 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-11-03T04:27:31.052Z",
-    "reason": "test read_first_name corregido, autorizado por el usuario",
+    "at": "2026-11-03T05:54:27.783Z",
+    "reason": "tests 034 rev. 2",
     "sha256": {
-      "backend/tests/test_routes/test_coach_routes.py": "031c3a257cd7983b146fe95389ec63b0fd286754af1f6f9819971b44bd3273c7",
-      "backend/tests/test_services/test_coach_observability.py": "0b43002381d61859809cd81f77586c8cd0df3e60cd1bf96edf60c0be59d2b247",
-      "backend/tests/test_services/test_coach_personal_context.py": "6bdaf4d0840b09919b7120d8020e715e9eb2383bdcc4ca724f303f9ac271ee92",
-      "backend/tests/test_services/test_coach_service.py": "a12e58cc8157208c22d53587d3cc41c36a1554d230c842e210d6347ad95e2efa",
-      "frontend/src/features/coach/pages/CoachPage.personalContext.test.tsx": "7b9f0070706e6b182ed399527e4a008b5583273ca4f3e1bd120d696ee34ee848",
+      "backend/tests/test_routes/test_coach_routes.py": "19aa12f0f43ba6abb1a09f4d2733f9475f659f3c82b64b77b8997ee4ccdf9ca0",
+      "backend/tests/test_services/test_coach_observability.py": "04757c6ecd7080a2b11cbd006c575ccef159dcdb7913f010c08ea786f5bce5b7",
+      "backend/tests/test_services/test_coach_personal_context.py": "4c4f5b2e29a802d6706ce058875fb94e7377319371df9a6560d257e92357235b",
+      "backend/tests/test_services/test_coach_service.py": "abb9c0a519b2230203e2447e9f06406bab5fc0a524fb86156d077223fe0d0e3d",
+      "frontend/src/features/coach/pages/CoachPage.personalContext.test.tsx": "b637a61cefc33af433c66edf09ceb10cfdf24b1e31da5124dcf3596ff6e64572",
       "frontend/src/features/coach/personalContext.test.ts": "c757fdd74ff610832d6c52ba9e47338525a3f55cbe25f1da8f99109def9ef26f",
       "frontend/src/features/coach/personalContextPreference.test.ts": "9a68c77273b664adb4a167478184b7532830089466c4ef55c54ee3e72996d778",
-      "frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx": "9854851f4ed5f77a6434afafdf00180afb92cc406e666d842b0bfe82ab8bfc6f"
+      "frontend/src/features/coach/previousNames.test.ts": "d2f0cd678c849a59b484a960a110de3d9dceef6f8b536c4c29ca8512239cbcc7",
+      "frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx": "9ff9839339ccc6a6dd32a2016c8302aba05fad3eedf90f1a945ba9754fa616a6"
     }
   },
   "bypass": false,
@@ -642,6 +646,84 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): 74 tareas, matriz actualizada"
+    },
+    {
+      "at": "2026-11-03T05:01:39.271Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: d3dbd53"
+    },
+    {
+      "at": "2026-11-03T05:01:39.494Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests rev. 2: paso 1/3 scaffold (T-052 a T-054)"
+    },
+    {
+      "at": "2026-11-03T05:01:39.624Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (3 tareas)"
+    },
+    {
+      "at": "2026-11-03T05:02:18.287Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (T-055 a T-066); firmas de previousNames.ts supuestas por el scaffold, manda el plan"
+    },
+    {
+      "at": "2026-11-03T05:06:43.176Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (rev. 2); T-058 es la excepción declarada en plan §5"
+    },
+    {
+      "at": "2026-11-03T05:10:56.122Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: red FAIL (revision 2): 88 tests nuevos o endurecidos en rojo, 87 por comportamiento ausente; 1 con expectativa incorrecta en test_name_redaction_terms_removes_duplicates_ignoring_case_and_handles_empties (test_coach_personal_context.py:994, falta Ana en name_redaction_terms(Ana Maria, [Maria]) segun plan 3.3). T-058 pasa como excepcion declarada en plan 5; esqueletos T-052 a T-054 sin logica."
+    },
+    {
+      "at": "2026-11-03T05:11:06.216Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red check FAIL: expectativa incorrecta en test_name_redaction_terms_removes_duplicates... (L994): falta 'Ana' segun plan 3.3; ver verify-report.md · tests 5/5"
+    },
+    {
+      "at": "2026-11-03T05:51:31.508Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3 (iteración 5): red check tras corregir la expectativa de name_redaction_terms"
+    },
+    {
+      "at": "2026-11-03T05:54:09.160Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red check revision 2 (iteracion 5): 88 tests nuevos o endurecidos; 87 en rojo legitimo (backend 69: NotImplementedError, TypeError por previous_names/other_names, aserciones de comportamiento nuevo; frontend 19: not implemented, texto de ayuda F5, previous_names ausente, frase Anthropic); T-058 pasa como excepcion F8 declarada en plan 5; T-059 solo docstring; expectativa de name_redaction_terms(Ana Maria, [Maria]) corregida a [Ana Maria, Maria, Ana] y conforme al plan 3.3; ninguna otra expectativa contradice el plan 3.3; esqueletos sin logica"
+    },
+    {
+      "at": "2026-11-03T05:54:17.475Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red check revision 2 (iteracion 5): 88 tests nuevos o endurecidos en rojo legitimo (backend 69, frontend 19: not implemented, TypeError por previous_names/other_names, texto de ayuda F5, frase Anthropic, aserciones de comportamiento nuevo); 2 pasan: T-058 (excepcion F8 declarada en plan 5) y T-059 (solo docstring); expectativa de name_redaction_terms(Ana Maria, [Maria]) corregida a [Ana Maria, Maria, Ana], conforme al plan 3.3; ninguna otra expectativa contradice el plan 3.3; esqueletos sin logica"
+    },
+    {
+      "at": "2026-11-03T05:54:27.672Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS (iteración 5)"
+    },
+    {
+      "at": "2026-11-03T05:54:27.783Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "9 archivo(s) de test: tests 034 rev. 2"
+    },
+    {
+      "at": "2026-11-03T05:54:27.950Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, T-058 excepción declarada"
     }
   ]
 }

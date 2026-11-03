@@ -538,8 +538,10 @@ def test_with_the_context_off_only_the_first_name_is_read_for_the_trace():
 # SDD: 034 REQ-012 AC-012.3
 def test_a_failing_reader_gives_the_usual_503_without_calling_voyage_or_the_model():
     """Si `read_first_name` (contexto desactivado) lanza, 503 con el mensaje de
-    siempre y sin llamar a Voyage ni al modelo. El caso activado con `read`
-    fallando ya lo cubren otros tests de la feature."""
+    siempre y sin llamar a Voyage ni al modelo. El caso activado (`read` fallando)
+    lo cubre el test `test_a_failing_read_with_the_context_on_gives_the_usual_503...`
+    (el siguiente de regresión de F8, más abajo en este archivo).
+    """
     use_personal_context = False
     reader = FakePersonalContextReader(raise_error=ConnectionError("base caida"))
     service, retrieval, llm, _, _ = make_personal_service(reader=reader)
@@ -554,3 +556,48 @@ def test_a_failing_reader_gives_the_usual_503_without_calling_voyage_or_the_mode
     assert str(excinfo.value) == UNAVAILABLE_MESSAGE
     assert retrieval.calls == []
     assert llm.calls == []
+
+
+# SDD: 034 REQ-012 AC-012.3
+def test_a_failing_read_with_the_context_on_gives_the_usual_503_without_calling_voyage_or_the_model():  # noqa: E501
+    """Test de regresión (revisión 2, F8): pasa antes de implementar; protege que
+    `read` siga dentro del `try` del lector."""
+    reader = FakePersonalContextReader(raise_error=ConnectionError("base caida"))
+    service, retrieval, llm, _, _ = make_personal_service(reader=reader)
+
+    with pytest.raises(ServiceUnavailableError) as excinfo:
+        service.ask(
+            "¿Cuánta proteína necesito?",
+            user_id="u-1",
+            use_personal_context=True,
+        )
+
+    assert str(excinfo.value) == UNAVAILABLE_MESSAGE
+    assert len(reader.calls) == 1
+    assert reader.name_calls == []
+    assert retrieval.calls == []
+    assert llm.calls == []
+
+
+# --- Revisión 2: nombres anteriores (REQ-013) ----------------------------------
+
+
+# SDD: 034 REQ-013 AC-013.5
+def test_previous_names_never_reach_the_model_the_block_or_the_search_text():
+    """Con `previous_names=["Ana"]` el bloque sigue diciendo «Nombre: Carlos», el
+    modelo no recibe «Ana» y el texto de búsqueda no cambia (NFR-002)."""
+    service, retrieval, llm, _, _ = make_personal_service()
+
+    service.ask(
+        "¿Cuánta proteína necesito?",
+        user_id="u-1",
+        use_personal_context=True,
+        client_context={"today": "2026-10-12"},
+        previous_names=["Ana"],
+    )
+
+    messages = sent_messages(llm)
+    assert "Nombre: Carlos" in messages[-1]["content"]
+    assert all("Ana" not in message["content"] for message in messages)
+    assert "Ana" not in llm.calls[-1][0]
+    assert retrieval.calls == ["¿Cuánta proteína necesito?"]
