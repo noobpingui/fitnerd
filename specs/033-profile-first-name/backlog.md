@@ -25,3 +25,7 @@
 - [ ] Añadir el marcador SDD 033 a los tests existentes adaptados (14 de spec 014, router, lazyRoutes, ProfilePage «al cambiar solo la meta»).
 - [ ] Corregir el recuento de AC (37 en state.json frente a 36 en spec.md).
 - [ ] Corregir la casilla T-028 o adaptar PhysicalDataForm.refresh.test.tsx.
+
+## implement · implementer
+- [ ] Las 3 líneas largas (E501) de los tests de la 033 (`test_fixed_clock_routes.py` L191, `test_auth_service.py` L345 y L445) hay que ajustarlas en la etapa de tests o aceptarlas como deuda.
+- [ ] Los tests de router y lazyRoutes son intermitentes con la suite completa en paralelo (timeout de `findByRole`).

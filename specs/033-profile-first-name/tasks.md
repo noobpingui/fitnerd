@@ -50,16 +50,16 @@ El backend no tiene símbolos nuevos (el rojo llega por comportamiento), así qu
 ## Fase B — Implementación (implementer)
 
 ### Backend (datos → servicios → rutas)
-- [ ] T-040 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (impl) `AuthService.register` sin `date_of_birth` (se quita `parse_date_of_birth`, el `User` se crea sin fecha) y `register_from_body` deja de leerla — `backend/services/auth_service.py`
-- [ ] T-041 [REQ-005, REQ-006, AC-005.1, AC-005.2, AC-005.3, AC-005.4, AC-006.1, AC-006.2, AC-006.3, AC-006.4] (impl) `_validate` valida `first_name` primero solo si la clave está (con `validate_first_name`) y `save_profile` lo guarda en `user.first_name` antes del bucle del perfil — `backend/services/profile_service.py`
-- [ ] T-042 [REQ-004, AC-004.1, AC-004.2, AC-004.3] (impl) `_serialize` añade `first_name` a `GET` y `PUT /api/profile` — `backend/routes/profile_routes.py`
+- [x] T-040 [REQ-001, AC-001.1, AC-001.2, AC-001.3, AC-001.4] (impl) `AuthService.register` sin `date_of_birth` (se quita `parse_date_of_birth`, el `User` se crea sin fecha) y `register_from_body` deja de leerla — `backend/services/auth_service.py`
+- [x] T-041 [REQ-005, REQ-006, AC-005.1, AC-005.2, AC-005.3, AC-005.4, AC-006.1, AC-006.2, AC-006.3, AC-006.4] (impl) `_validate` valida `first_name` primero solo si la clave está (con `validate_first_name`) y `save_profile` lo guarda en `user.first_name` antes del bucle del perfil — `backend/services/profile_service.py`
+- [x] T-042 [REQ-004, AC-004.1, AC-004.2, AC-004.3] (impl) `_serialize` añade `first_name` a `GET` y `PUT /api/profile` — `backend/routes/profile_routes.py`
 
 ### Frontend (regla compartida → registro → perfil → home)
-- [ ] T-050 [REQ-008, REQ-002, AC-008.1, AC-008.2, AC-008.3, AC-008.4, AC-008.5, AC-008.6] (impl) Implementar `firstNameMessage` y `firstNameSchema` (recorte y cuenta por puntos de código); `registerSchema` sin `date_of_birth` y con `first_name: firstNameSchema` — `frontend/src/features/auth/schemas.ts`
-- [ ] T-051 [REQ-002, AC-002.1, AC-002.2] (impl) `RegisterPayload` sin `date_of_birth` y `RegisterForm` sin el campo «Fecha de nacimiento» ni su valor por defecto — `frontend/src/features/auth/types.ts`, `frontend/src/features/auth/components/RegisterForm.tsx`
-- [ ] T-052 [REQ-004, REQ-007, AC-004.1, AC-004.2, AC-007.4, AC-007.5, AC-007.6] (impl) `profileResponseSchema` con `first_name` por defecto `null`, `saveProfilePayloadSchema` con `first_name` opcional, `firstName` en `makeProfileFormSchema` y en `fieldMessages`, e implementar `payloadFromProfileForm` — `frontend/src/features/profile/schemas.ts`, `frontend/src/features/profile/mappers.ts`
-- [ ] T-053 [REQ-007, AC-007.1, AC-007.2, AC-007.3, AC-007.4, AC-007.5, AC-007.6, AC-007.7, AC-007.8] (impl) Campo «Nombre» primero en `PhysicalDataForm` (prop `initialFirstName`, recorte en `onSave`) y sección «Datos personales» con `initialFirstName={profile.first_name ?? ""}` en `ProfilePage` — `frontend/src/features/profile/components/PhysicalDataForm.tsx`, `frontend/src/features/profile/pages/ProfilePage.tsx`
-- [ ] T-054 [REQ-009, AC-009.1, AC-009.2, AC-009.3, AC-009.4] (impl) Implementar `homeGreeting` y usarlo en el `h1` de `HomePage` — `frontend/src/features/home/greeting.ts`, `frontend/src/features/home/pages/HomePage.tsx`
+- [x] T-050 [REQ-008, REQ-002, AC-008.1, AC-008.2, AC-008.3, AC-008.4, AC-008.5, AC-008.6] (impl) Implementar `firstNameMessage` y `firstNameSchema` (recorte y cuenta por puntos de código); `registerSchema` sin `date_of_birth` y con `first_name: firstNameSchema` — `frontend/src/features/auth/schemas.ts`
+- [x] T-051 [REQ-002, AC-002.1, AC-002.2] (impl) `RegisterPayload` sin `date_of_birth` y `RegisterForm` sin el campo «Fecha de nacimiento» ni su valor por defecto — `frontend/src/features/auth/types.ts`, `frontend/src/features/auth/components/RegisterForm.tsx`
+- [x] T-052 [REQ-004, REQ-007, AC-004.1, AC-004.2, AC-007.4, AC-007.5, AC-007.6] (impl) `profileResponseSchema` con `first_name` por defecto `null`, `saveProfilePayloadSchema` con `first_name` opcional, `firstName` en `makeProfileFormSchema` y en `fieldMessages`, e implementar `payloadFromProfileForm` — `frontend/src/features/profile/schemas.ts`, `frontend/src/features/profile/mappers.ts`
+- [x] T-053 [REQ-007, AC-007.1, AC-007.2, AC-007.3, AC-007.4, AC-007.5, AC-007.6, AC-007.7, AC-007.8] (impl) Campo «Nombre» primero en `PhysicalDataForm` (prop `initialFirstName`, recorte en `onSave`) y sección «Datos personales» con `initialFirstName={profile.first_name ?? ""}` en `ProfilePage` — `frontend/src/features/profile/components/PhysicalDataForm.tsx`, `frontend/src/features/profile/pages/ProfilePage.tsx`
+- [x] T-054 [REQ-009, AC-009.1, AC-009.2, AC-009.3, AC-009.4] (impl) Implementar `homeGreeting` y usarlo en el `h1` de `HomePage` — `frontend/src/features/home/greeting.ts`, `frontend/src/features/home/pages/HomePage.tsx`
 
 ## Matriz de cobertura
 

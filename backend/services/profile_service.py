@@ -3,6 +3,7 @@ from decimal import ROUND_HALF_UP, Decimal
 
 from exceptions.custom_exceptions import ResourceNotFoundError, ValidationError
 from models.user_profile import UserProfile
+from services.auth_input_rules import validate_first_name
 from services.date_of_birth_rules import (  # noqa: F401  (se reexportan: otros módulos las importan desde aquí)
     AGE_RANGE_MESSAGE,
     DOB_PATTERN,
@@ -46,6 +47,9 @@ def _validate(data, today):
     if not isinstance(data, dict):
         raise ValidationError(INVALID_BODY_MESSAGE)
 
+    has_first_name = "first_name" in data
+    first_name = validate_first_name(data["first_name"]) if has_first_name else None
+
     dob = parse_date_of_birth(data.get("date_of_birth"), today)
 
     gender = data.get("gender")
@@ -88,7 +92,7 @@ def _validate(data, today):
     if goal not in GOALS:
         raise ValidationError(INVALID_GOAL_MESSAGE)
 
-    return {
+    cleaned = {
         "date_of_birth": dob,
         "gender": gender,
         "height_unit": height_unit,
@@ -100,6 +104,9 @@ def _validate(data, today):
         "activity_level": activity_level,
         "goal": goal,
     }
+    if has_first_name:
+        cleaned["first_name"] = first_name
+    return cleaned
 
 
 @dataclass
@@ -132,6 +139,8 @@ class ProfileService:
                 raise ResourceNotFoundError(USER_NOT_FOUND_MESSAGE)
 
             user.date_of_birth = cleaned.pop("date_of_birth")
+            if "first_name" in cleaned:
+                user.first_name = cleaned.pop("first_name")
 
             profile = self.user_profile_repository.get_by_user_id(user.id)
             if profile is None:

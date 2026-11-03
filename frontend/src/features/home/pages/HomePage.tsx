@@ -2,6 +2,7 @@ import { useMemo } from "react"
 import { motion } from "motion/react"
 import { Quote } from "lucide-react"
 import { AddToHomeScreen } from "@/features/home/components/AddToHomeScreen"
+import { homeGreeting } from "@/features/home/greeting"
 import { useRandomQuote } from "@/features/home/useRandomQuote"
 import { useProfile } from "@/features/profile/hooks"
 import { answersFromProfile } from "@/features/profile/mappers"
@@ -40,7 +41,7 @@ export function HomePage() {
   return (
     <div className="mx-auto max-w-4xl p-4 sm:p-8">
       <motion.header {...fadeIn(0)} className="mb-6">
-        <h1 className="text-2xl font-bold">Hola de nuevo</h1>
+        <h1 className="text-2xl font-bold">{homeGreeting(profile?.first_name)}</h1>
         <p className="text-muted-foreground">Meta: {goalLabel}</p>
       </motion.header>
 

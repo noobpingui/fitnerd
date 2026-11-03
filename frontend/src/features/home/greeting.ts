@@ -1,3 +1,4 @@
-export function homeGreeting(_firstName: string | null | undefined): string {
-  throw new Error("not implemented")
+export function homeGreeting(firstName: string | null | undefined): string {
+  const name = firstName?.trim()
+  return name ? `Hola de nuevo, ${name}` : "Hola de nuevo"
 }

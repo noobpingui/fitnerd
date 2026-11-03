@@ -10,7 +10,7 @@
   "branch": "feat/033-profile-first-name",
   "base_branch": "main",
   "created_at": "2026-11-02T20:27:01.978Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,7 +29,10 @@
       "at": "2026-11-03T01:06:26.910Z",
       "note": "auto (gate_mode=flow): red check PASS"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-11-03T01:15:53.888Z",
+      "note": "auto (gate_mode=flow): implement DONE"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -38,7 +41,8 @@
   "commits": {
     "spec": "6c8285f",
     "plan": "c7ca9d4",
-    "tasks": "41af941"
+    "tasks": "41af941",
+    "tests": "e9db40a"
   },
   "iterations": {
     "tests": 1,
@@ -251,6 +255,30 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS"
+    },
+    {
+      "at": "2026-11-03T01:06:27.338Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: e9db40a"
+    },
+    {
+      "at": "2026-11-03T01:06:27.546Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Delegar en implementer"
+    },
+    {
+      "at": "2026-11-03T01:15:53.764Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-040 a T-054; backend 2899 passed, frontend verde salvo timeouts intermitentes"
+    },
+    {
+      "at": "2026-11-03T01:15:53.888Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): implement DONE"
     }
   ]
 }

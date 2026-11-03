@@ -11,6 +11,7 @@ import {
   weightUnitSchema,
   type PhysicalDataErrorKey,
 } from "@/features/onboarding/schemas"
+import { firstNameMessage } from "@/features/auth/schemas"
 import { inRange } from "@/lib/inRange"
 import type { PhysicalDataFormValues } from "@/features/profile/types"
 
@@ -25,8 +26,17 @@ export function makeProfileFormSchema(
   today?: Date
 ): z.ZodType<PhysicalDataFormValues, PhysicalDataFormValues> {
   return z
-    .object({ ...physicalDataShape, fat: z.string(), muscle: z.string() })
+    .object({
+      ...physicalDataShape,
+      fat: z.string(),
+      muscle: z.string(),
+      firstName: z.string(),
+    })
     .superRefine((values, ctx) => {
+      const nameMessage = firstNameMessage(values.firstName)
+      if (nameMessage) {
+        ctx.addIssue({ code: "custom", path: ["firstName"], message: nameMessage })
+      }
       addPhysicalDataIssues(values, ctx, today ?? new Date())
       if (!optionalInRange(values.fat, FAT_LIMITS)) {
         ctx.addIssue({
@@ -61,6 +71,7 @@ export const profileResponseSchema = z.object({
   onboarding_completed: z.boolean(),
   onboarding_completed_at: z.string().nullable(),
   date_of_birth: z.string().nullable(),
+  first_name: z.string().nullable().default(null),
   profile: serverProfileSchema.nullable(),
 })
 
@@ -68,6 +79,7 @@ export const profileResponseSchema = z.object({
 export const saveProfilePayloadSchema = z
   .object({
     date_of_birth: z.iso.date(),
+    first_name: z.string().optional(),
     gender: genderSchema,
     height_unit: heightUnitSchema,
     height_cm: z

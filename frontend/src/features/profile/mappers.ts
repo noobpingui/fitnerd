@@ -29,9 +29,12 @@ export function answersFromProfile(resp: ProfileResponse): OnboardingAnswers {
 }
 
 export function payloadFromProfileForm(
-  _values: PhysicalDataFormValues,
+  values: PhysicalDataFormValues,
 ): SaveProfilePayload {
-  throw new Error("not implemented")
+  return {
+    ...payloadFromAnswers(values),
+    first_name: values.firstName.trim(),
+  }
 }
 
 // Estado de los formularios -> cuerpo del PUT. Solo lleva los campos de la

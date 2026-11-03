@@ -18,7 +18,6 @@ from services.auth_input_rules import (
     validate_first_name,
     validate_last_name,
 )
-from services.date_of_birth_rules import parse_date_of_birth
 from utils.clock import utc_now
 
 WRONG_CREDENTIALS_MESSAGE = "Correo o contraseña incorrectos"
@@ -50,7 +49,6 @@ class AuthService():
             data.get("password"),
             data.get("first_name"),
             data.get("last_name"),
-            data.get("date_of_birth"),
         )
 
     def login_from_body(self, body: object) -> str:
@@ -59,13 +57,12 @@ class AuthService():
         return self.login(data.get("email"), data.get("password"))
 
     #To create/register a new user
-    def register(self, email, password, first_name, last_name, date_of_birth):
-        # Orden de validación: correo, contraseña, nombre, apellido, fecha y, al final, duplicado.
+    def register(self, email, password, first_name, last_name):
+        # Orden de validación: correo, contraseña, nombre, apellido y, al final, duplicado.
         email = validate_email(email)
         validate_new_password(password)
         first_name = validate_first_name(first_name)
         last_name = validate_last_name(last_name)
-        date_of_birth = parse_date_of_birth(date_of_birth, self.clock().date())
 
         try:
             #Validation to avoid duplicated users
@@ -84,8 +81,7 @@ class AuthService():
             user = User(email=email, 
                         password_hash=password_hash,
                         first_name=first_name, 
-                        last_name=last_name, 
-                        date_of_birth=date_of_birth)
+                        last_name=last_name)
 
             new_user = self.user_repository.create(user)
             self.unit_of_work.commit()

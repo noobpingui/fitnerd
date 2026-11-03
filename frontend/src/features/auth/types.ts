@@ -10,7 +10,6 @@ export type RegisterPayload = {
   password: string
   first_name: string
   last_name: string
-  date_of_birth: string // "YYYY-MM-DD"
 }
 
 export type AuthResponse = {

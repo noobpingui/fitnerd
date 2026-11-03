@@ -24,7 +24,6 @@ export function RegisterForm() {
       password: "",
       first_name: "",
       last_name: "",
-      date_of_birth: "",
     },
   })
   const { mutate, isPending, error } = useRegister()
@@ -87,20 +86,6 @@ export function RegisterForm() {
               <FormLabel>Password</FormLabel>
               <FormControl>
                 <Input type="password" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="date_of_birth"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Fecha de nacimiento</FormLabel>
-              <FormControl>
-                <Input type="date" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
