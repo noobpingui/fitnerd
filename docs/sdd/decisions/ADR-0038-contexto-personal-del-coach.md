@@ -1,7 +1,7 @@
 # ADR-0038: Contexto personal del coach: datos de la cuenta leídos en el servidor, datos de pantalla del cliente descartados en bloque y nombre anonimizado en las trazas
 
-- **Estado:** Propuesta · 2026-11-02 (plan de la feature `034-coach-personal-context`; ampliada en las revisiones 1 y
-  2 del plan)
+- **Estado:** Aceptada · 2026-11-03 (plan de la feature `034-coach-personal-context`; ampliada en las revisiones 1 a
+  3 del plan; aceptada por el usuario en el gate de review: «3. Aceptada»)
 - **Decidido por:** el planner lo propone; lo acepta o rechaza el usuario en el gate de review (Art. P5.2).
 
 ## Contexto
@@ -59,6 +59,13 @@ problemas de diseño:
   servidor los valida (si la lista no es válida, la ignora entera, sin error) y los usa **solo** en `redact_name`, con
   la misma regla por partes, con el interruptor activado o desactivado. Nunca llegan al modelo ni a Voyage, no cambian
   el nombre del bloque (que sigue saliendo de la cuenta) y no se guardan ni se registran.
+- **Nombres anteriores que son solo una partícula (revisión 3, F13, opción A; spec NFR-003, REQ-013 y AC-013.7).** En
+  una lista válida, `parse_previous_names` omite cada nombre que, ya saneado y sin distinguir mayúsculas, sea
+  exactamente una de las 17 partículas de la lista cerrada («de», «De», «LA»…): no aporta ni el nombre completo ni
+  partes, y el resto de la lista se sigue usando. Primero se valida la lista entera (si no es válida, se ignora toda,
+  como antes). Solo cuenta el nombre entero: «De la Fuente» o «Leo» se conservan. La regla vive en la frontera de
+  entrada del cliente; `name_redaction_terms` y `redact_name` no cambian, y el **nombre actual** de la cuenta no tiene
+  esta excepción. Motivo: que un cliente manipulado no borre de su traza palabras tan frecuentes como «de» o «la».
 - **Historial con el interruptor desactivado (revisión 2, F5).** El historial se sigue reenviando sin cambios (no se
   vacía ni se filtra). En su lugar, la ayuda del interruptor desactivado y el punto de Anthropic de la Política de
   privacidad avisan de que los mensajes anteriores de la conversación se siguen enviando y pueden incluir esos datos.
@@ -77,8 +84,12 @@ problemas de diseño:
   a cambio de que la Política («nunca tu nombre») siga siendo cierta con nombres compuestos.
 - (−) Los nombres anteriores dependen de lo que la pantalla ha leído: si el nombre cambia en otra pestaña y `/coach` no
   llega a leerlo, ese nombre anterior no se anonimiza. Un cliente manipulado puede enviar palabras que no son nombres,
-  pero solo afecta a su propia traza. La alternativa más fiable (un token firmado por respuesta con el nombre usado,
-  como `feedback_id`) complica el contrato y queda en el backlog.
+  pero solo afecta a su propia traza. Desde la revisión 3 (F13) no puede hacerlo con una partícula suelta («de», «la»);
+  sí con palabras comunes de 3 letras o más, sueltas o como partes de un nombre anterior largo, porque sin un
+  diccionario no se distinguen de un nombre. La alternativa más fiable (un token firmado por respuesta con el nombre
+  usado, como `feedback_id`) complica el contrato y queda en el backlog.
+- (−) Coste aceptado de F13: una cuenta que se llamara literalmente como una partícula («De», «Di», «Le», «Do») y
+  cambiara de nombre con la conversación en curso dejaría ese nombre anterior en su traza de Langfuse.
 - (−) La preferencia no se comparte entre navegadores (guardarla en la cuenta necesitaría migración).
 - (−) Con el interruptor desactivado, el coach hace una lectura de la cuenta por pregunta (solo el nombre) y depende de
   la base para responder. El impacto es nulo en la práctica: la búsqueda en pgvector usa la misma base, así que con la

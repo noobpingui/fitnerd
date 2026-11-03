@@ -81,3 +81,7 @@
 
 ## plan (iteración 4) · planner
 - [ ] Ninguna regla sin diccionario distingue un nombre de una palabra común en previous_names: si F13 vuelve a importar, valorar el token firmado por respuesta (alternativa (a) de Q12, ya en el backlog).
+
+## plan (iteración 5) · planner
+- [ ] Nombres anteriores manipulados con palabras comunes de 3 letras o más, o nombres anteriores largos de muchas partes: riesgo aceptado. La alternativa es el token firmado con el nombre usado, ya en el backlog de Q12.
+- [ ] Una frase hecha solo de partículas («de la») como nombre anterior se sigue anonimizando como frase completa (sus partes no). La spec solo excluye una partícula sola, así que queda como nit.

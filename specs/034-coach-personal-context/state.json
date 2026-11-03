@@ -10,14 +10,17 @@
   "branch": "feat/034-coach-personal-context",
   "base_branch": "main",
   "created_at": "2026-11-03T03:04:33.745Z",
-  "stage": "plan",
+  "stage": "tasks",
   "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-11-03T08:24:58.631Z",
       "note": "Aprobada la spec"
     },
-    "plan": null,
+    "plan": {
+      "at": "2026-11-03T08:28:19.408Z",
+      "note": "auto (gate_mode=flow): plan sin migración, variables ni dependencias; spec sin cambios"
+    },
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -27,7 +30,7 @@
     "close": null
   },
   "commits": {
-    "spec": "ea96016",
+    "spec": "c81b042",
     "plan": "266e254",
     "tasks": "d3dbd53",
     "tests": "092d472",
@@ -871,6 +874,36 @@
       "stage": "spec",
       "event": "approved",
       "note": "Aprobada la spec"
+    },
+    {
+      "at": "2026-11-03T08:24:58.991Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: c81b042"
+    },
+    {
+      "at": "2026-11-03T08:24:59.208Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Completar plan §9.3 (F13 opción A), F11 y F12"
+    },
+    {
+      "at": "2026-11-03T08:28:19.291Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan rev. 4: F13 opción A cerrada en §9.3, F11, F12; ADR-0038 aceptada"
+    },
+    {
+      "at": "2026-11-03T08:28:19.408Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan sin migración, variables ni dependencias; spec sin cambios"
+    },
+    {
+      "at": "2026-11-03T08:28:19.530Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Decisiones: la exclusión de partículas va en parse_previous_names sobre el nombre ya saneado; lista no válida sigue ignorándose entera; test existente :1009 cambia E por F; ADR-0038 pasa a Aceptada por el usuario (sesión principal)"
     }
   ]
 }
