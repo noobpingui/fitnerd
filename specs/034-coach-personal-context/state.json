@@ -10,7 +10,7 @@
   "branch": "feat/034-coach-personal-context",
   "base_branch": "main",
   "created_at": "2026-11-03T03:04:33.745Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -21,7 +21,10 @@
       "at": "2026-11-03T04:12:32.103Z",
       "note": "auto (gate_mode=flow): plan corregido, spec sin cambios"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-11-03T04:13:10.572Z",
+      "note": "auto (gate_mode=flow): 10 tareas nuevas, matriz actualizada"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -31,7 +34,7 @@
   },
   "commits": {
     "spec": "0b7db87",
-    "plan": "13d2389",
+    "plan": "5f741b1",
     "tasks": "f1cc059",
     "tests": "f89091e",
     "implement": "56b4019"
@@ -369,6 +372,30 @@
       "stage": "plan",
       "event": "note",
       "note": "Decisiones: read_first_name con el interruptor desactivado solo para redact_name; fallo de read/read_first_name -> 503 sin traza; fecha de la Política 3 de noviembre de 2026 y test de la 028 sustituido; caso 79,4 kg\\n de F3 añadido al plan"
+    },
+    {
+      "at": "2026-11-03T04:12:32.585Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 5f741b1"
+    },
+    {
+      "at": "2026-11-03T04:12:32.703Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Actualizar tasks.md con F1, F2 y F3 de la review"
+    },
+    {
+      "at": "2026-11-03T04:13:10.453Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "10 tareas nuevas T-042 a T-051"
+    },
+    {
+      "at": "2026-11-03T04:13:10.572Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 10 tareas nuevas, matriz actualizada"
     }
   ]
 }

@@ -66,6 +66,29 @@ No hacen falta esqueletos para `CoachService.__init__`, `ask` y `ask_with_feedba
 - [x] T-040 [REQ-007, REQ-006, REQ-004, REQ-010, AC-004.1, AC-006.3, AC-007.1, AC-007.2, AC-007.3, AC-010.3] (impl) `CoachPage`: interruptor bajo la descripción, `useProfile` y `useBodyMetrics`, payload con `use_personal_context` y `personal_context` solo si hay datos cargados, sin esperar — `frontend/src/features/coach/pages/CoachPage.tsx`
 - [x] T-041 [REQ-011, AC-011.1, AC-011.2, AC-011.3] (impl) Textos nuevos de Anthropic y Langfuse; Voyage sin cambios — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
 
+## Iteración 2 — Revisión 1 (F1, F2, F3, F7)
+
+Tareas nuevas tras la review. Las 41 anteriores siguen hechas. Los `FakePersonalContextReader` ganan `read_first_name` con `name_calls` aparte de `calls`, así que las aserciones `reader.calls == []` existentes no cambian.
+
+### Fase A0 — Esqueleto (iteración 2)
+
+- [ ] T-042 [REQ-010, NFR-003, NFR-004] (scaffold) `CoachPersonalContextReader.read_first_name(user_id)` con cuerpo `raise NotImplementedError("not implemented")` — `backend/services/coach_personal_context.py`
+
+### Fase A — Tests (rojo, iteración 2)
+
+- [ ] T-043 [NFR-003, NFR-004, AC-N003.1, AC-N004.1] (test) `CoachPersonalContextReader.read_first_name`: nombre saneado solo del usuario pedido con dos usuarios, id no UUID da `None` sin tocar repositorios, usuario inexistente o sin nombre da `None`, no consulta el repositorio de perfiles — `backend/tests/test_services/test_coach_personal_context.py`
+- [ ] T-044 [REQ-010, REQ-012, AC-010.4, AC-012.3] (test) Servicio: `FakePersonalContextReader` con `read_first_name` y `name_calls`; con `use_personal_context=False` se llama una vez a `read_first_name` con el `user_id`, no a `read`, y el mensaje sigue sin «Carlos» ni bloque; si `read` o `read_first_name` lanzan, `ServiceUnavailableError` con el mensaje de siempre sin llamar a Voyage ni al modelo — `backend/tests/test_services/test_coach_service.py`
+- [ ] T-045 [NFR-003, REQ-010, AC-N003.1, AC-010.4] (test) Observabilidad con el contexto desactivado y un historial que contiene «Carlos»: `CoachAnswer.answer` conserva «Carlos», el modelo recibe el historial más `build_coach_user_message(context, question)` sin bloque, la traza serializada no contiene «Carlos» y sí «[nombre]», y `read` no se llamó (el doble de `test_coach_observability.py` también gana `read_first_name`) — `backend/tests/test_services/test_coach_observability.py`
+- [ ] T-046 [REQ-006, REQ-003, AC-006.2] (test) `parse_client_context` devuelve `None` con un texto de indicador terminado en salto de línea (`"79,4 kg\n"`) — `backend/tests/test_services/test_coach_personal_context.py`
+- [ ] T-047 [REQ-011] (test) Sustituir el test de la 028 sobre la fecha por uno `SDD: 034 REQ-011`: contiene «Última actualización: 3 de noviembre de 2026» y no «27 de octubre de 2026», «22 de octubre de 2026» ni «21 de octubre de 2026» — `frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx`
+
+### Fase B — Implementación (iteración 2)
+
+- [ ] T-048 [REQ-010, NFR-003, NFR-004, AC-N003.1, AC-N004.1] (impl) `read_first_name` con helper privado compartido con `read` para la comprobación del UUID y la lectura del usuario; no lee el perfil — `backend/services/coach_personal_context.py`
+- [ ] T-049 [REQ-010, NFR-003, REQ-012, AC-N003.1, AC-010.4, AC-012.3] (impl) `CoachService`: con el contexto desactivado, `name = reader.read_first_name(user_id)` solo para `redact_name`; el fallo de `read` o `read_first_name` da `ServiceUnavailableError` sin abrir traza — `backend/services/coach_service.py`
+- [ ] T-050 [REQ-006, REQ-003, AC-006.2] (impl) `_TEXT_PATTERN` con `fullmatch` o `\Z` para rechazar el salto de línea final, sin cambiar el resto del análisis (tests de las specs 010 y 011 en verde) — `backend/services/progress_analysis_context.py`
+- [ ] T-051 [REQ-011] (impl) `updatedAt` pasa a «3 de noviembre de 2026» — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
+
 ## Matriz de cobertura
 
 | AC | Test | Impl |
@@ -90,7 +113,7 @@ No hacen falta esqueletos para `CoachService.__init__`, `ask` y `ask_with_feedba
 | AC-005.3 | T-010 | T-028 |
 | AC-005.4 | T-016, T-020 | T-032 |
 | AC-006.1 | T-010, T-020 | T-027, T-034 |
-| AC-006.2 | T-009, T-020 | T-026, T-027 |
+| AC-006.2 | T-009, T-020, T-046 | T-026, T-027, T-050 |
 | AC-006.3 | T-024 | T-040 |
 | AC-007.1 | T-021, T-024 | T-036, T-040 |
 | AC-007.2 | T-021, T-024 | T-036, T-040 |
@@ -106,22 +129,23 @@ No hacen falta esqueletos para `CoachService.__init__`, `ask` y `ask_with_feedba
 | AC-010.1 | T-023 | T-038, T-039 |
 | AC-010.2 | T-023 | T-038, T-039 |
 | AC-010.3 | T-024 | T-040 |
-| AC-010.4 | T-009, T-014, T-019 | T-027, T-032 |
+| AC-010.4 | T-009, T-014, T-019, T-044, T-045 | T-027, T-032, T-049 |
 | AC-010.5 | T-022, T-023 | T-037 |
 | AC-010.6 | T-009, T-019 | T-027, T-034 |
+| REQ-011 (fecha) | T-047 | T-051 |
 | AC-011.1 | T-025 | T-041 |
 | AC-011.2 | T-025 | T-041 |
 | AC-011.3 | T-025 | T-041 |
 | AC-012.1 | T-020 | T-034 |
 | AC-012.2 | T-016 | T-032 |
-| AC-012.3 | T-016 | T-032 |
+| AC-012.3 | T-016, T-044 | T-032, T-049 |
 | AC-012.4 | T-020 | T-034 |
 | AC-012.5 | T-020 | T-034 |
 | AC-N001.1 | T-013, T-020 | T-030 |
 | AC-N002.1 | T-015 | T-032 |
 | AC-N002.2 | T-015 | T-032 |
-| AC-N003.1 | T-018 | T-033 |
+| AC-N003.1 | T-018, T-043, T-045 | T-033, T-048, T-049 |
 | AC-N003.2 | T-018 | T-033 |
 | AC-N003.3 | T-012 | T-029 |
-| AC-N004.1 | T-013, T-020 | T-030 |
+| AC-N004.1 | T-013, T-020, T-043 | T-030, T-048 |
 | AC-N005.1 | T-015 | T-032 |
