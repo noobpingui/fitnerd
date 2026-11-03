@@ -11,7 +11,7 @@
     "language": "en",
     "style": "imperative, no conventional prefixes"
   },
-  "max_iterations": 5,
+  "max_iterations": 6,
   "gate_mode": "flow",
   "paths": {
     "specs": "specs",

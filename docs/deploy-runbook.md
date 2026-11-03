@@ -329,6 +329,17 @@ Amplía la respuesta de `POST /api/meals/portion-estimate` con `name` y `per_100
    - Con el diálogo en móvil, comprueba que se ve entero y que Cancelar devuelve el foco al botón.
 3. **Marcha atrás:** revertir el merge basta. No hay migración que deshacer.
 
+### Caso A (sin migraciones): 034, contexto personal del coach
+
+`POST /api/coach/ask` recibe el nombre y el perfil de la cuenta, y las calorías, macros e indicadores que envía el cliente (ADR-0038); `/coach` añade un interruptor para desactivarlo. No hay migración, ni variables nuevas, ni cambios en Caddy o AWS. Reutiliza `ANTHROPIC_API_KEY`, `SECRET_KEY` y las claves de Langfuse que ya hay.
+
+1. **Merge y CD** (paso 6). No requiere pasos manuales previos. Un frontend nuevo contra un backend antiguo ignora los campos nuevos y el coach responde como antes; espera al CD en verde y recarga las pestañas abiertas.
+2. **Comprobaciones manuales tras el CD**, con una cuenta real con perfil y mediciones:
+   - En `/coach`, pregunta algo que cubra el curso («¿cuánta proteína debería comer?»): la respuesta se adapta a tu meta y calorías. Una pregunta fuera del curso sigue dando «no lo sé».
+   - Desactiva el interruptor, recarga y comprueba que sigue desactivado; la ayuda avisa de que los mensajes anteriores se siguen enviando.
+   - En Langfuse, la traza de la pregunta lleva perfil, macros y progreso, pero no tu nombre (aparece como `[nombre]`).
+3. **Marcha atrás:** revertir el merge basta. No hay migración que deshacer.
+
 ### Caso C (destructiva): migración después del CD
 
 1. Backup completo (paso 3) **verificado**, con el recuento de filas de lo que se va a borrar.

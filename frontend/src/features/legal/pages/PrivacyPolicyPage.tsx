@@ -2,7 +2,7 @@ import { LegalPageLayout } from "@/features/legal/components/LegalPageLayout"
 
 export function PrivacyPolicyPage() {
   return (
-    <LegalPageLayout title="Política de privacidad" updatedAt="27 de octubre de 2026">
+    <LegalPageLayout title="Política de privacidad" updatedAt="3 de noviembre de 2026">
       <p>
         fitnerd es un proyecto personal, desarrollado y
         mantenido por una sola persona - no una empresa con un equipo
@@ -73,7 +73,13 @@ export function PrivacyPolicyPage() {
           <li>
             <strong>Anthropic (Claude):</strong> las preguntas que le
             haces al AI Coach se envían a Anthropic para generar la
-            respuesta.
+            respuesta, junto con tu nombre, tu perfil (sexo, edad, altura,
+            nivel de actividad y meta), tus calorías y macros y tus
+            indicadores de progreso, para personalizarla. Puedes
+            desactivarlo en el propio coach. Si lo desactivas a mitad de
+            una conversación, los mensajes anteriores de esa conversación
+            se siguen enviando a Anthropic como contexto y pueden incluir
+            esos datos.
           </li>
           <li>
             <strong>Amazon Web Services (Amazon Bedrock):</strong> Las
@@ -85,7 +91,9 @@ export function PrivacyPolicyPage() {
           <li>
             <strong>Langfuse:</strong> las preguntas, las respuestas, el
             contenido de los vídeos usado y las valoraciones 👍/👎 se
-            envían para revisar la calidad del coach. Se identifican solo
+            envían para revisar la calidad del coach. Con las preguntas al
+            coach se envían también tu perfil, tus macros y tu progreso,
+            nunca tu nombre. Se identifican solo
             con un identificador interno de la cuenta, nunca con tu email
             ni tu nombre. Del análisis de fotos solo se envían el formato,
             el tamaño y el número de alimentos reconocidos, nunca la foto.

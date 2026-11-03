@@ -4,8 +4,15 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { ApiError } from "@/lib/apiClient"
 import { ChatMessageBubble } from "@/features/coach/components/ChatMessageBubble"
-import { useAskCoach } from "@/features/coach/hooks"
-import type { ConversationMessage } from "@/features/coach/types"
+import { PersonalContextToggle } from "@/features/coach/components/PersonalContextToggle"
+import { useAskCoach, usePersonalContextPreference } from "@/features/coach/hooks"
+import { previousNamesFor, rememberName } from "@/features/coach/previousNames"
+import { buildCoachPersonalContext } from "@/features/coach/personalContext"
+import type { AskCoachPayload, ConversationMessage } from "@/features/coach/types"
+import { useBodyMetrics } from "@/features/body-metrics/hooks"
+import { useProfile } from "@/features/profile/hooks"
+import { answersFromProfile } from "@/features/profile/mappers"
+import { todayIsoDate } from "@/lib/dates"
 
 const MAX_QUESTION_LENGTH = 500
 
@@ -17,7 +24,21 @@ export function CoachPage() {
   const [messages, setMessages] = useState<ConversationMessage[]>([])
   const [question, setQuestion] = useState("")
   const askCoach = useAskCoach()
+  const [personalContextEnabled, setPersonalContextEnabled] = usePersonalContextPreference()
+  // Spec 034: el perfil y las mediciones salen de la caché de TanStack Query; si aún
+  // no han cargado (o fallaron), la pregunta se envía igual, sin esperar y sin contexto.
+  const profileQuery = useProfile()
+  const metricsQuery = useBodyMetrics()
   const bottomRef = useRef<HTMLDivElement>(null)
+  // Spec 034 (REQ-013): nombres vistos durante la conversación, para anonimizar la traza.
+  const seenNamesRef = useRef<string[]>([])
+  const currentName = profileQuery.data?.first_name ?? null
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      seenNamesRef.current = rememberName(seenNamesRef.current, currentName)
+    }
+  }, [currentName, messages.length])
 
   // Auto-scroll al ultimo mensaje (o al indicador de "escribiendo") cada
   // vez que la conversacion cambia - el mismo comportamiento de
@@ -35,11 +56,30 @@ export function CoachPage() {
     // mensaje que estamos por agregar.
     const history = messages.map(({ role, content }) => ({ role, content }))
 
+    const previousNames = history.length > 0 ? previousNamesFor(seenNamesRef.current, currentName) : []
+    seenNamesRef.current = rememberName(seenNamesRef.current, currentName)
+
     setMessages((prev) => [...prev, { role: "user", content: trimmed }])
     setQuestion("")
 
+    const payload: AskCoachPayload = {
+      question: trimmed,
+      history,
+      use_personal_context: personalContextEnabled,
+    }
+    if (previousNames.length > 0) {
+      payload.previous_names = previousNames
+    }
+    if (personalContextEnabled && profileQuery.data?.profile && metricsQuery.isSuccess) {
+      payload.personal_context = buildCoachPersonalContext(
+        metricsQuery.data,
+        answersFromProfile(profileQuery.data),
+        todayIsoDate()
+      )
+    }
+
     askCoach.mutate(
-      { question: trimmed, history },
+      payload,
       {
         onSuccess: (data) => {
           setMessages((prev) => [
@@ -75,6 +115,11 @@ export function CoachPage() {
         Resuelve tus dudas sobre alimentación, calorías y macros. Las respuestas salen de contenido real de nutrición, no de
         opiniones genéricas.
       </p>
+
+      <PersonalContextToggle
+        checked={personalContextEnabled}
+        onCheckedChange={setPersonalContextEnabled}
+      />
 
       {/* Altura fija (65dvh) en vez de calcular "resto de la pantalla
           menos el navbar" - mas simple y no se rompe si el navbar vuelve

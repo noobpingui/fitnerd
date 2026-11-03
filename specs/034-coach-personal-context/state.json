@@ -1,0 +1,1130 @@
+{
+  "schema_version": 1,
+  "feature": "034-coach-personal-context",
+  "title": "El coach conoce tu perfil, nombre, macros y progreso al responder",
+  "type": "feature",
+  "scope": [
+    "backend",
+    "frontend"
+  ],
+  "branch": "feat/034-coach-personal-context",
+  "base_branch": "main",
+  "created_at": "2026-11-03T03:04:33.745Z",
+  "stage": "done",
+  "status": "done",
+  "approvals": {
+    "spec": {
+      "at": "2026-11-03T08:24:58.631Z",
+      "note": "Aprobada la spec"
+    },
+    "plan": {
+      "at": "2026-11-03T08:28:19.408Z",
+      "note": "auto (gate_mode=flow): plan sin migración, variables ni dependencias; spec sin cambios"
+    },
+    "tasks": {
+      "at": "2026-11-03T08:29:22.755Z",
+      "note": "auto (gate_mode=flow): 80 tareas, matriz actualizada"
+    },
+    "tests": {
+      "at": "2026-11-03T08:33:14.126Z",
+      "note": "auto (gate_mode=flow): red check PASS"
+    },
+    "implement": {
+      "at": "2026-11-03T08:38:18.201Z",
+      "note": "auto (gate_mode=flow): implementación completa"
+    },
+    "verify": {
+      "at": "2026-11-03T08:45:38.974Z",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    "review": {
+      "at": "2026-11-03T17:35:33.615Z",
+      "note": "Si"
+    },
+    "docs": {
+      "at": "2026-11-03T17:36:47.947Z",
+      "note": "auto: docs sin gate en modo flow"
+    },
+    "close": {
+      "at": "2026-11-03T17:41:47.518Z",
+      "note": "Sí, apruebo el cierre"
+    }
+  },
+  "commits": {
+    "spec": "c81b042",
+    "plan": "11fd6ce",
+    "tasks": "8d003fa",
+    "tests": "ed84cf4",
+    "implement": "69ad615",
+    "review": "7946e1f",
+    "docs": "91818aa"
+  },
+  "iterations": {
+    "tests": 6,
+    "implement": 0,
+    "review": 4
+  },
+  "max_iterations": 6,
+  "red_check": {
+    "result": "PASS",
+    "at": "2026-11-03T08:32:59.514Z"
+  },
+  "verify": {
+    "result": "PASS",
+    "at": "2026-11-03T08:45:25.584Z"
+  },
+  "review": {
+    "verdict": "APPROVED",
+    "at": "2026-11-03T08:47:13.666Z"
+  },
+  "tests_snapshot": {
+    "at": "2026-11-03T08:33:13.962Z",
+    "reason": "tests 034 F13 opcion A, F12",
+    "sha256": {
+      "backend/tests/test_routes/test_coach_routes.py": "19aa12f0f43ba6abb1a09f4d2733f9475f659f3c82b64b77b8997ee4ccdf9ca0",
+      "backend/tests/test_services/test_coach_observability.py": "12cc12825024a4a44c0ef9658ba41caa9d2b7a3437264bb71f3457afbc498efa",
+      "backend/tests/test_services/test_coach_personal_context.py": "4ab6b5e9ed989ebe5839436543b0bf434f9bd34275f3ee7a9315e117830044cf",
+      "backend/tests/test_services/test_coach_service.py": "abb9c0a519b2230203e2447e9f06406bab5fc0a524fb86156d077223fe0d0e3d",
+      "frontend/src/features/coach/pages/CoachPage.personalContext.test.tsx": "b637a61cefc33af433c66edf09ceb10cfdf24b1e31da5124dcf3596ff6e64572",
+      "frontend/src/features/coach/personalContext.test.ts": "c757fdd74ff610832d6c52ba9e47338525a3f55cbe25f1da8f99109def9ef26f",
+      "frontend/src/features/coach/personalContextPreference.test.ts": "9a68c77273b664adb4a167478184b7532830089466c4ef55c54ee3e72996d778",
+      "frontend/src/features/coach/previousNames.test.ts": "d2f0cd678c849a59b484a960a110de3d9dceef6f8b536c4c29ca8512239cbcc7",
+      "frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx": "9ff9839339ccc6a6dd32a2016c8302aba05fad3eedf90f1a945ba9754fa616a6"
+    }
+  },
+  "bypass": false,
+  "history": [
+    {
+      "at": "2026-11-03T03:04:33.745Z",
+      "stage": "spec",
+      "event": "created",
+      "note": "rama feat/034-coach-personal-context desde main"
+    },
+    {
+      "at": "2026-11-03T03:18:22.440Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec 034: 12 REQ, 10 preguntas con propuesta"
+    },
+    {
+      "at": "2026-11-03T03:18:22.550Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Apruebo la spec"
+    },
+    {
+      "at": "2026-11-03T03:18:27.414Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: 0b7db87"
+    },
+    {
+      "at": "2026-11-03T03:18:27.619Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Diseñar el plan técnico de 034"
+    },
+    {
+      "at": "2026-11-03T03:25:28.435Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan 034 + ADR-0038 (Propuesta)"
+    },
+    {
+      "at": "2026-11-03T03:25:28.544Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan sin decisiones mayores (sin migración, variables ni dependencias nuevas)"
+    },
+    {
+      "at": "2026-11-03T03:25:28.656Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Decisiones: use_personal_context ausente/null/true activa; sin perfil se ignoran los datos del cliente; nombre saneado y anonimizado como [nombre] en Langfuse; extracción de funciones de progress_analysis_context; SYSTEM_PROMPT único sin voseo; ADR-0038 en Propuesta"
+    },
+    {
+      "at": "2026-11-03T03:25:28.990Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 13d2389"
+    },
+    {
+      "at": "2026-11-03T03:25:29.219Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Descomponer el plan de 034 en tareas"
+    },
+    {
+      "at": "2026-11-03T03:26:42.716Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "41 tareas"
+    },
+    {
+      "at": "2026-11-03T03:26:42.828Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 41 tareas, matriz completa"
+    },
+    {
+      "at": "2026-11-03T03:26:43.115Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: f1cc059"
+    },
+    {
+      "at": "2026-11-03T03:26:43.329Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests: paso 1/3 scaffold"
+    },
+    {
+      "at": "2026-11-03T03:26:43.438Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (8 tareas)"
+    },
+    {
+      "at": "2026-11-03T03:27:36.433Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (scaffold hecho, 8 tareas; tsc con 1 error esperado en CoachPage.tsx, lo resuelve T-040)"
+    },
+    {
+      "at": "2026-11-03T03:36:17.125Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (verifier)"
+    },
+    {
+      "at": "2026-11-03T03:40:06.845Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: 14 tests nuevos pasan sin implementacion (11 backend, 3 frontend); resto de fallos legitimos (NotImplementedError, kwarg ausente, not implemented, asercion)"
+    },
+    {
+      "at": "2026-11-03T03:40:25.201Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red check FAIL: 14 tests nuevos pasan sin implementación (11 backend, 3 frontend); ver verify-report.md · tests 1/5"
+    },
+    {
+      "at": "2026-11-03T03:42:15.818Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3 (iteración 2): red check de nuevo tras reformular 14 tests"
+    },
+    {
+      "at": "2026-11-03T03:45:57.065Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red check iteracion 2: 0 tests nuevos SDD 034 pasan; 149 fallos backend y 36 frontend, todos legitimos (NotImplementedError, not implemented, kwarg personal_context_reader ausente, aserciones de comportamiento nuevo); esqueletos sin logica; 55/55 AC con marcador"
+    },
+    {
+      "at": "2026-11-03T03:46:08.825Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS (iteración 2)"
+    },
+    {
+      "at": "2026-11-03T03:46:08.936Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "8 archivo(s) de test: tests 034 tras red check PASS"
+    },
+    {
+      "at": "2026-11-03T03:46:09.094Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 149+36 tests nuevos en rojo"
+    },
+    {
+      "at": "2026-11-03T03:46:09.207Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Iteración 1 del red check FAIL (14 tests en verde) corregida reformulando con aserción de contexto activo"
+    },
+    {
+      "at": "2026-11-03T03:46:13.253Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: d3dec58"
+    },
+    {
+      "at": "2026-11-03T03:46:13.475Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar las 16 tareas impl de 034"
+    },
+    {
+      "at": "2026-11-03T03:53:52.481Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "16 tareas impl; pytest 3048 y vitest 1946 en verde según implementer"
+    },
+    {
+      "at": "2026-11-03T03:53:52.609Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): implementación completa"
+    },
+    {
+      "at": "2026-11-03T03:53:52.728Z",
+      "stage": "implement",
+      "event": "note",
+      "note": "Decisiones: fallo del lector -> 503 tras el límite de uso, sin traza; sanitize_first_name quita <, > y categoría C*; líneas de SYSTEM_PROMPT a 100 columnas; fecha de la política intacta"
+    },
+    {
+      "at": "2026-11-03T03:53:59.166Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 56b4019"
+    },
+    {
+      "at": "2026-11-03T03:53:59.376Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa de 034"
+    },
+    {
+      "at": "2026-11-03T03:59:36.518Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify FAIL: full: pytest 3048 OK, vitest 1946 OK, oxlint OK, tsc OK, build OK; trazabilidad 55/55 AC, 17 REQ/NFR, 41/41 tareas [x], sin skip; lint-ratchet backend FAIL: 9 E501 nuevas en tests (test-author)"
+    },
+    {
+      "at": "2026-11-03T03:59:46.974Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "verify FAIL: 9 violaciones E501 nuevas en tests (test_coach_routes.py 6, test_coach_personal_context.py 1, test_coach_service.py 2); ver verify-report.md · tests 2/5"
+    },
+    {
+      "at": "2026-11-03T04:01:07.511Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "corrección E501 en tests (sin red check: los tests deben pasar)"
+    },
+    {
+      "at": "2026-11-03T04:01:07.639Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "8 archivo(s) de test: tests 034 tras acortar 9 líneas E501"
+    },
+    {
+      "at": "2026-11-03T04:01:07.821Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección de formato en tests tras verify FAIL"
+    },
+    {
+      "at": "2026-11-03T04:01:14.257Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: f89091e"
+    },
+    {
+      "at": "2026-11-03T04:01:14.366Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "sin cambios de código: el fallo era de formato en tests"
+    },
+    {
+      "at": "2026-11-03T04:01:14.485Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): sin cambios de producción tras la corrección de tests"
+    },
+    {
+      "at": "2026-11-03T04:01:14.606Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa, iteración 2"
+    },
+    {
+      "at": "2026-11-03T04:06:32.436Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: verify full PASS (iteración 2): pytest 3048 OK, vitest 1946 OK, ratchet backend sin violaciones nuevas, oxlint OK, tsc OK, build OK; trazabilidad 55/55 AC con marcador SDD: 034, 12 REQ y 5 NFR en tareas, 41/41 tareas [x], sin skip nuevos; manuales: AC-010.1, AC-010.2, AC-010.5, AC-011.1 a AC-011.3"
+    },
+    {
+      "at": "2026-11-03T04:06:45.345Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify full PASS: pytest 3048, vitest 1946, ratchet, lint, tsc, build"
+    },
+    {
+      "at": "2026-11-03T04:06:45.458Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-11-03T04:06:45.663Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review independiente de 034"
+    },
+    {
+      "at": "2026-11-03T04:10:12.431Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "CHANGES_REQUESTED"
+    },
+    {
+      "at": "2026-11-03T04:10:12.576Z",
+      "stage": "plan",
+      "event": "rework",
+      "note": "review CHANGES_REQUESTED: F1 MAYOR (nombre en el historial llega sin anonimizar a Langfuse con el contexto desactivado) y F2 MAYOR (fecha de la Política); ver review.md · review 1/5"
+    },
+    {
+      "at": "2026-11-03T04:12:31.996Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan 034 revisado: F1 read_first_name, F2 fecha de la política, F7 503"
+    },
+    {
+      "at": "2026-11-03T04:12:32.103Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan corregido, spec sin cambios"
+    },
+    {
+      "at": "2026-11-03T04:12:32.216Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Decisiones: read_first_name con el interruptor desactivado solo para redact_name; fallo de read/read_first_name -> 503 sin traza; fecha de la Política 3 de noviembre de 2026 y test de la 028 sustituido; caso 79,4 kg\\n de F3 añadido al plan"
+    },
+    {
+      "at": "2026-11-03T04:12:32.585Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 5f741b1"
+    },
+    {
+      "at": "2026-11-03T04:12:32.703Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Actualizar tasks.md con F1, F2 y F3 de la review"
+    },
+    {
+      "at": "2026-11-03T04:13:10.453Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "10 tareas nuevas T-042 a T-051"
+    },
+    {
+      "at": "2026-11-03T04:13:10.572Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 10 tareas nuevas, matriz actualizada"
+    },
+    {
+      "at": "2026-11-03T04:13:10.874Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 5c8d54e"
+    },
+    {
+      "at": "2026-11-03T04:13:11.082Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests de la corrección de review: paso 1/3 scaffold (T-042)"
+    },
+    {
+      "at": "2026-11-03T04:13:11.195Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (1 tarea: T-042)"
+    },
+    {
+      "at": "2026-11-03T04:13:29.876Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (T-043 a T-047)"
+    },
+    {
+      "at": "2026-11-03T04:15:29.462Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (iteración 3); el test-author avisa de 1 caso que pasa ya: test_a_failing_reader_gives_the_usual_503[True]"
+    },
+    {
+      "at": "2026-11-03T04:16:45.521Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: red check iteración 3 (T-043 a T-047): 19 tests backend y 1 frontend nuevos; 19 en rojo legítimo; 1 pasa sin implementación: test_a_failing_reader_gives_the_usual_503...[True] (test-author)"
+    },
+    {
+      "at": "2026-11-03T04:16:56.808Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red check FAIL: test_a_failing_reader_gives_the_usual_503...[True] pasa sin implementación; ver verify-report.md · tests 3/5"
+    },
+    {
+      "at": "2026-11-03T04:17:15.528Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3 (iteración 4): red check tras quitar el caso [True]"
+    },
+    {
+      "at": "2026-11-03T04:18:27.336Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red check iteración 4 (T-043 a T-047): 19 tests nuevos (18 backend, 1 frontend) en rojo legítimo; ninguno pasa sin implementación; caso [True] retirado; esqueleto read_first_name sin lógica"
+    },
+    {
+      "at": "2026-11-03T04:18:35.922Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS (iteración 4)"
+    },
+    {
+      "at": "2026-11-03T04:18:36.032Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "8 archivo(s) de test: tests 034 con la corrección de review"
+    },
+    {
+      "at": "2026-11-03T04:18:36.192Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 19 tests nuevos en rojo"
+    },
+    {
+      "at": "2026-11-03T04:18:42.173Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: b6d3583"
+    },
+    {
+      "at": "2026-11-03T04:18:42.372Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar T-048 a T-051 (F1, F2, F3)"
+    },
+    {
+      "at": "2026-11-03T04:27:07.485Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "implement NEEDS_INPUT: test_read_first_name_gives_the_sanitized_name... (L833) espera Carlos para '  Carlos\\n<x> ' pero sanitize_first_name da 'Carlos x'; usuario aprueba devolverlo al test-author · tests 4/5"
+    },
+    {
+      "at": "2026-11-03T04:27:30.936Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "corrección del test read_first_name (entrada '  Carlos  '), sin red check"
+    },
+    {
+      "at": "2026-11-03T04:27:31.052Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "8 archivo(s) de test: test read_first_name corregido, autorizado por el usuario"
+    },
+    {
+      "at": "2026-11-03T04:27:31.217Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección de test autorizada por el usuario ('Sí, devuélvelo al test-author')"
+    },
+    {
+      "at": "2026-11-03T04:27:31.593Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: ec5e486"
+    },
+    {
+      "at": "2026-11-03T04:27:31.709Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-048 a T-051 hechas; sin cambios de producción tras la corrección del test"
+    },
+    {
+      "at": "2026-11-03T04:27:31.831Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): implementación de la corrección completa"
+    },
+    {
+      "at": "2026-11-03T04:27:31.950Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa, iteración 3"
+    },
+    {
+      "at": "2026-11-03T04:33:26.804Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: verify full PASS (iteración 3): pytest 3066 OK, vitest 1946 OK, ratchet backend sin violaciones nuevas, oxlint OK, tsc OK, build OK; trazabilidad 55/55 AC con marcador SDD: 034, 17 REQ/NFR en tareas, 51/51 tareas [x], sin skip nuevos; manuales: AC-010.1, AC-010.2, AC-010.5, AC-011.1 a AC-011.3"
+    },
+    {
+      "at": "2026-11-03T04:33:41.290Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify full PASS: pytest 3066, vitest 1946, ratchet, lint, tsc, build, 55/55 AC, 51/51 tareas"
+    },
+    {
+      "at": "2026-11-03T04:33:41.401Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-11-03T04:33:41.625Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review iteración 2 tras las correcciones F1, F2, F3"
+    },
+    {
+      "at": "2026-11-03T04:35:36.945Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-11-03T04:35:37.088Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED (iteración 2): 0 bloqueantes, 0 mayores, 3 menores, 2 nits"
+    },
+    {
+      "at": "2026-11-03T04:46:30.877Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "gate de review: el usuario pide F4 (de acuerdo), F5 (aclararlo en ambos: ayuda y Política) y arreglar F8, F9 y F10; ver 'Comentarios del usuario' en review.md · review 2/5"
+    },
+    {
+      "at": "2026-11-03T04:49:13.122Z",
+      "stage": "spec",
+      "event": "needs_input",
+      "note": "Q11 (F4: regla para partes del nombre) y Q12 (F10: cómo conocer nombres anteriores)"
+    },
+    {
+      "at": "2026-11-03T04:52:32.883Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec 034 enmendada: 13 REQ, 66 AC, Q11 y Q12"
+    },
+    {
+      "at": "2026-11-03T04:52:32.996Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Q11: La propuesta , Q12: La propuesta , 3: Aprobada"
+    },
+    {
+      "at": "2026-11-03T04:52:33.350Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: ea96016"
+    },
+    {
+      "at": "2026-11-03T04:52:33.570Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Plan enmendado: F4, F5, F10, F8, F9"
+    },
+    {
+      "at": "2026-11-03T05:00:13.798Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan 034 rev. 2: partes del nombre, previous_names, textos F5, F8, F9"
+    },
+    {
+      "at": "2026-11-03T05:00:13.921Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan sin migración, variables ni dependencias; spec sin cambios"
+    },
+    {
+      "at": "2026-11-03T05:00:14.038Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Decisiones: redact_name por partes (>=3 letras, 17 particulas, separadores espacio/guion); previous_names 1-5 solo para traza, lista invalida se ignora; fecha de la Politica sin cambio (3 nov 2026); caso F8 declarado como excepcion de red en el plan; HELP_OFF del test pasa al texto completo"
+    },
+    {
+      "at": "2026-11-03T05:00:14.354Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 266e254"
+    },
+    {
+      "at": "2026-11-03T05:00:14.464Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Tareas de la rev. 2 del plan: F4, F5, F8, F9, F10"
+    },
+    {
+      "at": "2026-11-03T05:01:38.841Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "23 tareas nuevas T-052 a T-074"
+    },
+    {
+      "at": "2026-11-03T05:01:38.967Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 74 tareas, matriz actualizada"
+    },
+    {
+      "at": "2026-11-03T05:01:39.271Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: d3dbd53"
+    },
+    {
+      "at": "2026-11-03T05:01:39.494Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests rev. 2: paso 1/3 scaffold (T-052 a T-054)"
+    },
+    {
+      "at": "2026-11-03T05:01:39.624Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (3 tareas)"
+    },
+    {
+      "at": "2026-11-03T05:02:18.287Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (T-055 a T-066); firmas de previousNames.ts supuestas por el scaffold, manda el plan"
+    },
+    {
+      "at": "2026-11-03T05:06:43.176Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (rev. 2); T-058 es la excepción declarada en plan §5"
+    },
+    {
+      "at": "2026-11-03T05:10:56.122Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: red FAIL (revision 2): 88 tests nuevos o endurecidos en rojo, 87 por comportamiento ausente; 1 con expectativa incorrecta en test_name_redaction_terms_removes_duplicates_ignoring_case_and_handles_empties (test_coach_personal_context.py:994, falta Ana en name_redaction_terms(Ana Maria, [Maria]) segun plan 3.3). T-058 pasa como excepcion declarada en plan 5; esqueletos T-052 a T-054 sin logica."
+    },
+    {
+      "at": "2026-11-03T05:11:06.216Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red check FAIL: expectativa incorrecta en test_name_redaction_terms_removes_duplicates... (L994): falta 'Ana' segun plan 3.3; ver verify-report.md · tests 5/5"
+    },
+    {
+      "at": "2026-11-03T05:51:31.508Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3 (iteración 5): red check tras corregir la expectativa de name_redaction_terms"
+    },
+    {
+      "at": "2026-11-03T05:54:09.160Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red check revision 2 (iteracion 5): 88 tests nuevos o endurecidos; 87 en rojo legitimo (backend 69: NotImplementedError, TypeError por previous_names/other_names, aserciones de comportamiento nuevo; frontend 19: not implemented, texto de ayuda F5, previous_names ausente, frase Anthropic); T-058 pasa como excepcion F8 declarada en plan 5; T-059 solo docstring; expectativa de name_redaction_terms(Ana Maria, [Maria]) corregida a [Ana Maria, Maria, Ana] y conforme al plan 3.3; ninguna otra expectativa contradice el plan 3.3; esqueletos sin logica"
+    },
+    {
+      "at": "2026-11-03T05:54:17.475Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red check revision 2 (iteracion 5): 88 tests nuevos o endurecidos en rojo legitimo (backend 69, frontend 19: not implemented, TypeError por previous_names/other_names, texto de ayuda F5, frase Anthropic, aserciones de comportamiento nuevo); 2 pasan: T-058 (excepcion F8 declarada en plan 5) y T-059 (solo docstring); expectativa de name_redaction_terms(Ana Maria, [Maria]) corregida a [Ana Maria, Maria, Ana], conforme al plan 3.3; ninguna otra expectativa contradice el plan 3.3; esqueletos sin logica"
+    },
+    {
+      "at": "2026-11-03T05:54:27.672Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS (iteración 5)"
+    },
+    {
+      "at": "2026-11-03T05:54:27.783Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "9 archivo(s) de test: tests 034 rev. 2"
+    },
+    {
+      "at": "2026-11-03T05:54:27.950Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, T-058 excepción declarada"
+    },
+    {
+      "at": "2026-11-03T05:54:28.305Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 7e65b6b"
+    },
+    {
+      "at": "2026-11-03T05:54:28.515Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar T-067 a T-074 (F4, F5, F9, F10)"
+    },
+    {
+      "at": "2026-11-03T06:02:45.570Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-067 a T-074 y F9; pytest 3136, vitest 1963; queda 1 I001 en un test"
+    },
+    {
+      "at": "2026-11-03T06:02:45.683Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): implementación rev. 2 completa"
+    },
+    {
+      "at": "2026-11-03T06:02:46.036Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: f713f85"
+    },
+    {
+      "at": "2026-11-03T06:44:39.559Z",
+      "stage": "verify",
+      "event": "blocked",
+      "note": "límite de iteraciones alcanzado (tests: 5/5). verify pendiente: I001 (imports sin ordenar, L7) en test_coach_personal_context.py; usuario aprueba subir max_iterations a 6 (opcion A)"
+    },
+    {
+      "at": "2026-11-03T07:24:53.449Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "reanudado: usuario aprobó subir max_iterations a 6 (edición puntual de state.json autorizada, opción 1)"
+    },
+    {
+      "at": "2026-11-03T07:24:53.573Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "verify pendiente: I001 (imports sin ordenar, L7) en test_coach_personal_context.py · tests 6/6"
+    },
+    {
+      "at": "2026-11-03T07:25:27.236Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "orden de imports I001 en un test, sin red check"
+    },
+    {
+      "at": "2026-11-03T07:25:27.345Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "9 archivo(s) de test: test_coach_personal_context.py: imports ordenados (I001), autorizado por el usuario"
+    },
+    {
+      "at": "2026-11-03T07:25:27.501Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección de formato autorizada por el usuario (opción A y 1)"
+    },
+    {
+      "at": "2026-11-03T07:25:27.848Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 092d472"
+    },
+    {
+      "at": "2026-11-03T07:25:27.954Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "sin cambios de producción"
+    },
+    {
+      "at": "2026-11-03T07:25:28.084Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): sin cambios de producción tras la corrección de tests"
+    },
+    {
+      "at": "2026-11-03T07:25:28.208Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa, iteración 4"
+    },
+    {
+      "at": "2026-11-03T07:31:39.999Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: Full: backend 3136 passed, ratchet sin violaciones nuevas; frontend test 1963 passed, lint, tsc y build OK; 69 AC con test SDD y en verde; 19 REQ/NFR con tareas; 74/74 tareas [x]; sin skip nuevos. Manual: AC-010.1 posición visual del interruptor"
+    },
+    {
+      "at": "2026-11-03T07:31:56.316Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify full PASS: pytest 3136, vitest 1963, ratchet limpio, 69 AC, 74 tareas"
+    },
+    {
+      "at": "2026-11-03T07:31:56.430Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-11-03T07:31:56.640Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review iteración 3 tras la ronda de F4, F5, F8, F9 y F10"
+    },
+    {
+      "at": "2026-11-03T07:34:50.476Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-11-03T07:34:50.611Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED (iteración 3): 0 bloqueantes, 0 mayores, 1 menor, 2 nits"
+    },
+    {
+      "at": "2026-11-03T08:14:01.756Z",
+      "stage": "plan",
+      "event": "rework",
+      "note": "gate de review (3.ª): el usuario pide corregir F11, F12 y F13; max_iterations se queda en 6; ADR-0038 aceptada (la edita la sesión principal al terminar el plan); ver 'Comentarios del usuario' en review.md · review 3/6"
+    },
+    {
+      "at": "2026-11-03T08:16:30.778Z",
+      "stage": "plan",
+      "event": "needs_input",
+      "note": "F13: elegir opción A, B, C o D (plan.md §9.3); A, B y C exigen enmendar NFR-003 y añadir AC-013.7"
+    },
+    {
+      "at": "2026-11-03T08:23:50.678Z",
+      "stage": "spec",
+      "event": "rework",
+      "note": "F13: el usuario elige la opción A (ignorar un nombre anterior que, entero, sea una de las 17 partículas); enmendar NFR-003 y añadir AC-013.7; ver 'Comentarios del usuario' en review.md · review 4/6"
+    },
+    {
+      "at": "2026-11-03T08:24:30.191Z",
+      "stage": "spec",
+      "event": "done",
+      "note": "spec 034 enmendada por F13 (opción A): AC-013.7"
+    },
+    {
+      "at": "2026-11-03T08:24:58.631Z",
+      "stage": "spec",
+      "event": "approved",
+      "note": "Aprobada la spec"
+    },
+    {
+      "at": "2026-11-03T08:24:58.991Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: c81b042"
+    },
+    {
+      "at": "2026-11-03T08:24:59.208Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Completar plan §9.3 (F13 opción A), F11 y F12"
+    },
+    {
+      "at": "2026-11-03T08:28:19.291Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan rev. 4: F13 opción A cerrada en §9.3, F11, F12; ADR-0038 aceptada"
+    },
+    {
+      "at": "2026-11-03T08:28:19.408Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan sin migración, variables ni dependencias; spec sin cambios"
+    },
+    {
+      "at": "2026-11-03T08:28:19.530Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Decisiones: la exclusión de partículas va en parse_previous_names sobre el nombre ya saneado; lista no válida sigue ignorándose entera; test existente :1009 cambia E por F; ADR-0038 pasa a Aceptada por el usuario (sesión principal)"
+    },
+    {
+      "at": "2026-11-03T08:28:19.902Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 11fd6ce"
+    },
+    {
+      "at": "2026-11-03T08:28:20.035Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Tareas de F11, F12 y F13 (opción A)"
+    },
+    {
+      "at": "2026-11-03T08:29:22.637Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "6 tareas nuevas T-075 a T-080"
+    },
+    {
+      "at": "2026-11-03T08:29:22.755Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 80 tareas, matriz actualizada"
+    },
+    {
+      "at": "2026-11-03T08:29:23.065Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 8d003fa"
+    },
+    {
+      "at": "2026-11-03T08:29:23.285Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests F13/F12: paso 2/3 test-author (sin scaffold)"
+    },
+    {
+      "at": "2026-11-03T08:29:23.405Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: sin scaffold (no aplica); Paso 2/3: test-author T-075 a T-078"
+    },
+    {
+      "at": "2026-11-03T08:30:45.164Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (T-075, T-077; T-076 y T-078 son cambios autorizados que pasan)"
+    },
+    {
+      "at": "2026-11-03T08:32:59.514Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red check iteración 7 (T-075 y T-077): 94 tests nuevos (88 parse/redact/bloque en test_coach_personal_context.py, 6 en test_coach_observability.py) fallan todos por aserción de comportamiento ausente; 0 pasan sin implementación; T-076 (cambio E→F) y T-078 (comentarios) pasan; sin esqueletos ni skip/xfail nuevos; expectativas conformes al plan §9.3"
+    },
+    {
+      "at": "2026-11-03T08:33:13.855Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS (94 tests nuevos en rojo)"
+    },
+    {
+      "at": "2026-11-03T08:33:13.962Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "9 archivo(s) de test: tests 034 F13 opcion A, F12"
+    },
+    {
+      "at": "2026-11-03T08:33:14.126Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS"
+    },
+    {
+      "at": "2026-11-03T08:33:14.460Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: ed84cf4"
+    },
+    {
+      "at": "2026-11-03T08:33:14.665Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar T-079 (F13) y T-080 (F11)"
+    },
+    {
+      "at": "2026-11-03T08:38:18.089Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-079 y T-080; pytest 3230, vitest 1963"
+    },
+    {
+      "at": "2026-11-03T08:38:18.201Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): implementación completa"
+    },
+    {
+      "at": "2026-11-03T08:38:18.552Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 69ad615"
+    },
+    {
+      "at": "2026-11-03T08:38:18.770Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Verificación completa, iteración 5"
+    },
+    {
+      "at": "2026-11-03T08:45:25.584Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify PASS: verify iteración 5 (full): backend pytest 3230 passed; ratchet ruff backend sin violaciones nuevas; frontend vitest 1963 passed; lint OK; tsc -b OK; build OK; 70/70 AC con marcador SDD: 034 en verde; 18/18 REQ y NFR en tareas; 80/80 tareas [x]; sin skips nuevos; sin migraciones; T-058 excepción F8 en verde"
+    },
+    {
+      "at": "2026-11-03T08:45:38.857Z",
+      "stage": "verify",
+      "event": "done",
+      "note": "verify full PASS: pytest 3230, vitest 1963, ratchet limpio, 70/70 AC, 80/80 tareas"
+    },
+    {
+      "at": "2026-11-03T08:45:38.974Z",
+      "stage": "verify",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): verify PASS"
+    },
+    {
+      "at": "2026-11-03T08:45:39.186Z",
+      "stage": "review",
+      "event": "started",
+      "note": "Review iteración 4 tras F11, F12 y F13"
+    },
+    {
+      "at": "2026-11-03T08:47:13.666Z",
+      "stage": "review",
+      "event": "verdict",
+      "note": "APPROVED"
+    },
+    {
+      "at": "2026-11-03T08:47:13.745Z",
+      "stage": "review",
+      "event": "done",
+      "note": "review APPROVED (iteración 4): 0 hallazgos"
+    },
+    {
+      "at": "2026-11-03T17:35:33.615Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Si"
+    },
+    {
+      "at": "2026-11-03T17:35:33.848Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: 7946e1f"
+    },
+    {
+      "at": "2026-11-03T17:36:44.275Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "auto: docs completada"
+    },
+    {
+      "at": "2026-11-03T17:36:47.947Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto: docs sin gate en modo flow"
+    },
+    {
+      "at": "2026-11-03T17:36:48.165Z",
+      "stage": "close",
+      "event": "commit",
+      "note": "docs: 91818aa"
+    },
+    {
+      "at": "2026-11-03T17:37:01.116Z",
+      "stage": "close",
+      "event": "started",
+      "note": ""
+    },
+    {
+      "at": "2026-11-03T17:37:09.537Z",
+      "stage": "close",
+      "event": "done",
+      "note": "close pendiente de aprobación"
+    },
+    {
+      "at": "2026-11-03T17:41:47.518Z",
+      "stage": "close",
+      "event": "approved",
+      "note": "Sí, apruebo el cierre"
+    },
+    {
+      "at": "2026-11-03T17:41:47.518Z",
+      "stage": "done",
+      "event": "done",
+      "note": "feature cerrada"
+    }
+  ]
+}
