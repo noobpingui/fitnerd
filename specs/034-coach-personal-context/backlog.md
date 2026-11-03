@@ -42,3 +42,6 @@
 
 ## plan (iteración 2) · planner
 - [ ] F4 (nombres compuestos en `redact_name`) y F5 (historial con el interruptor desactivado): decisiones de la spec para el gate de review.
+
+## tests (iteración 3) · verifier (red)
+- [ ] T-047 usa el marcador «SDD: 034 REQ-011» sin AC; los AC-011.1 a AC-011.3 ya tienen cobertura en T-025. No bloquea.

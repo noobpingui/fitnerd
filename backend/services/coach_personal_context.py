@@ -194,6 +194,9 @@ class CoachPersonalContextReader:
         self.user_profile_repository = user_profile_repository
         self.clock = clock
 
+    def read_first_name(self, _user_id: Any) -> str | None:
+        raise NotImplementedError("not implemented")
+
     def read(self, user_id: Any, client_data: Any) -> PersonalContext:
         try:
             uuid.UUID(str(user_id))

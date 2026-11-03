@@ -72,15 +72,15 @@ Tareas nuevas tras la review. Las 41 anteriores siguen hechas. Los `FakePersonal
 
 ### Fase A0 — Esqueleto (iteración 2)
 
-- [ ] T-042 [REQ-010, NFR-003, NFR-004] (scaffold) `CoachPersonalContextReader.read_first_name(user_id)` con cuerpo `raise NotImplementedError("not implemented")` — `backend/services/coach_personal_context.py`
+- [x] T-042 [REQ-010, NFR-003, NFR-004] (scaffold) `CoachPersonalContextReader.read_first_name(user_id)` con cuerpo `raise NotImplementedError("not implemented")` — `backend/services/coach_personal_context.py`
 
 ### Fase A — Tests (rojo, iteración 2)
 
-- [ ] T-043 [NFR-003, NFR-004, AC-N003.1, AC-N004.1] (test) `CoachPersonalContextReader.read_first_name`: nombre saneado solo del usuario pedido con dos usuarios, id no UUID da `None` sin tocar repositorios, usuario inexistente o sin nombre da `None`, no consulta el repositorio de perfiles — `backend/tests/test_services/test_coach_personal_context.py`
-- [ ] T-044 [REQ-010, REQ-012, AC-010.4, AC-012.3] (test) Servicio: `FakePersonalContextReader` con `read_first_name` y `name_calls`; con `use_personal_context=False` se llama una vez a `read_first_name` con el `user_id`, no a `read`, y el mensaje sigue sin «Carlos» ni bloque; si `read` o `read_first_name` lanzan, `ServiceUnavailableError` con el mensaje de siempre sin llamar a Voyage ni al modelo — `backend/tests/test_services/test_coach_service.py`
-- [ ] T-045 [NFR-003, REQ-010, AC-N003.1, AC-010.4] (test) Observabilidad con el contexto desactivado y un historial que contiene «Carlos»: `CoachAnswer.answer` conserva «Carlos», el modelo recibe el historial más `build_coach_user_message(context, question)` sin bloque, la traza serializada no contiene «Carlos» y sí «[nombre]», y `read` no se llamó (el doble de `test_coach_observability.py` también gana `read_first_name`) — `backend/tests/test_services/test_coach_observability.py`
-- [ ] T-046 [REQ-006, REQ-003, AC-006.2] (test) `parse_client_context` devuelve `None` con un texto de indicador terminado en salto de línea (`"79,4 kg\n"`) — `backend/tests/test_services/test_coach_personal_context.py`
-- [ ] T-047 [REQ-011] (test) Sustituir el test de la 028 sobre la fecha por uno `SDD: 034 REQ-011`: contiene «Última actualización: 3 de noviembre de 2026» y no «27 de octubre de 2026», «22 de octubre de 2026» ni «21 de octubre de 2026» — `frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx`
+- [x] T-043 [NFR-003, NFR-004, AC-N003.1, AC-N004.1] (test) `CoachPersonalContextReader.read_first_name`: nombre saneado solo del usuario pedido con dos usuarios, id no UUID da `None` sin tocar repositorios, usuario inexistente o sin nombre da `None`, no consulta el repositorio de perfiles — `backend/tests/test_services/test_coach_personal_context.py`
+- [x] T-044 [REQ-010, REQ-012, AC-010.4, AC-012.3] (test) Servicio: `FakePersonalContextReader` con `read_first_name` y `name_calls`; con `use_personal_context=False` se llama una vez a `read_first_name` con el `user_id`, no a `read`, y el mensaje sigue sin «Carlos» ni bloque; si `read` o `read_first_name` lanzan, `ServiceUnavailableError` con el mensaje de siempre sin llamar a Voyage ni al modelo — `backend/tests/test_services/test_coach_service.py`
+- [x] T-045 [NFR-003, REQ-010, AC-N003.1, AC-010.4] (test) Observabilidad con el contexto desactivado y un historial que contiene «Carlos»: `CoachAnswer.answer` conserva «Carlos», el modelo recibe el historial más `build_coach_user_message(context, question)` sin bloque, la traza serializada no contiene «Carlos» y sí «[nombre]», y `read` no se llamó (el doble de `test_coach_observability.py` también gana `read_first_name`) — `backend/tests/test_services/test_coach_observability.py`
+- [x] T-046 [REQ-006, REQ-003, AC-006.2] (test) `parse_client_context` devuelve `None` con un texto de indicador terminado en salto de línea (`"79,4 kg\n"`) — `backend/tests/test_services/test_coach_personal_context.py`
+- [x] T-047 [REQ-011] (test) Sustituir el test de la 028 sobre la fecha por uno `SDD: 034 REQ-011`: contiene «Última actualización: 3 de noviembre de 2026» y no «27 de octubre de 2026», «22 de octubre de 2026» ni «21 de octubre de 2026» — `frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx`
 
 ### Fase B — Implementación (iteración 2)
 

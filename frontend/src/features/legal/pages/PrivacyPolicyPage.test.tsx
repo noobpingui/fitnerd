@@ -80,13 +80,14 @@ describe("PrivacyPolicyPage", () => {
     expect(entry?.textContent).toMatch(/coach/i)
   })
 
-  // SDD: 028 REQ-021 AC-021.1
-  // (sustituye al de la 025, que fijaba el 22 de octubre: la 028 actualiza la política)
-  it("la última actualización es la del 27 de octubre de 2026 y ya no la del 22", () => {
+  // SDD: 034 REQ-011
+  // (sustituye al de la 028, que fijaba el 27 de octubre: la 034 actualiza la política)
+  it("la última actualización es la del 3 de noviembre de 2026 y ya no la del 27 de octubre", () => {
     renderPage()
 
     const text = document.body.textContent ?? ""
-    expect(text).toContain("Última actualización: 27 de octubre de 2026")
+    expect(text).toContain("Última actualización: 3 de noviembre de 2026")
+    expect(text).not.toContain("27 de octubre de 2026")
     expect(text).not.toContain("22 de octubre de 2026")
     expect(text).not.toContain("21 de octubre de 2026")
   })

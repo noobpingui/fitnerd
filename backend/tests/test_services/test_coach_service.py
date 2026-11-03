@@ -167,13 +167,25 @@ class FakePersonalContextReader:
     """Doble del lector del contexto personal: devuelve un `PersonalContext`
     fijo y guarda en `calls` cada `(user_id, client_data)` que se le pide."""
 
-    def __init__(self, context=None):
+    def __init__(self, context=None, raise_error=None):
         self.context = context if context is not None else make_personal_context()
         self.calls = []
+        self.name_calls = []
+        self.raise_error = raise_error
 
     def read(self, user_id, client_data):
         self.calls.append((user_id, client_data))
+        if self.raise_error is not None:
+            raise self.raise_error
         return self.context
+
+    def read_first_name(self, user_id):
+        """Solo para anonimizar la traza: guarda el id en `name_calls`, aparte
+        de `calls` (que solo registra `read`)."""
+        self.name_calls.append(user_id)
+        if self.raise_error is not None:
+            raise self.raise_error
+        return self.context.first_name
 
 
 def make_personal_service(chunks=None, llm_client=None, rate_limiter_allowed=True, reader=None):
@@ -497,3 +509,48 @@ def test_prompt_asks_for_neutral_spanish_and_has_no_voseo():
     assert "español neutro, sin voseo ni regionalismos" in normalized_prompt()
     for form in ("sos", "respondés", "tenés", "decilo", "respondela", "podés", "querés"):
         assert not re.search(rf"\b{form}\b", SYSTEM_PROMPT, flags=re.IGNORECASE), form
+
+
+# --- Contexto desactivado y fallo del lector (revisión 1, F1 y F7) -------------
+
+
+# SDD: 034 REQ-010 AC-010.4
+def test_with_the_context_off_only_the_first_name_is_read_for_the_trace():
+    """Desactivado: una llamada a `read_first_name` con el `user_id`, ninguna a
+    `read`, y el mensaje sigue sin «Carlos» ni bloque."""
+    service, _, llm, _, reader = make_personal_service()
+
+    service.ask(
+        "¿Cuánta proteína necesito?",
+        user_id="u-1",
+        use_personal_context=False,
+        client_context={"today": "2026-10-12"},
+    )
+
+    assert reader.name_calls == ["u-1"]
+    assert reader.calls == []
+    content = sent_messages(llm)[-1]["content"]
+    assert content == build_coach_user_message(CHUNK_TEXT, "¿Cuánta proteína necesito?")
+    assert "Carlos" not in content
+    assert "<datos_del_usuario>" not in content
+
+
+# SDD: 034 REQ-012 AC-012.3
+def test_a_failing_reader_gives_the_usual_503_without_calling_voyage_or_the_model():
+    """Si `read_first_name` (contexto desactivado) lanza, 503 con el mensaje de
+    siempre y sin llamar a Voyage ni al modelo. El caso activado con `read`
+    fallando ya lo cubren otros tests de la feature."""
+    use_personal_context = False
+    reader = FakePersonalContextReader(raise_error=ConnectionError("base caida"))
+    service, retrieval, llm, _, _ = make_personal_service(reader=reader)
+
+    with pytest.raises(ServiceUnavailableError) as excinfo:
+        service.ask(
+            "¿Cuánta proteína necesito?",
+            user_id="u-1",
+            use_personal_context=use_personal_context,
+        )
+
+    assert str(excinfo.value) == UNAVAILABLE_MESSAGE
+    assert retrieval.calls == []
+    assert llm.calls == []

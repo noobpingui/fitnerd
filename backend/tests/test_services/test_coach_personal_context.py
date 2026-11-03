@@ -797,3 +797,80 @@ def test_block_from_the_reader_never_contains_surname_email_birth_date_or_id():
     assert "30 años" in text
     for private in ("Pérez", "carlos@example.com", "1996-10-12", "1996", USER_ID):
         assert private not in text
+
+
+# --- parse_client_context: salto de línea final (revisión 1, F3) --------------
+
+
+# SDD: 034 REQ-006 REQ-003 AC-006.2
+@pytest.mark.parametrize("field", ["weight", "weight_change_30d", "rate", "bmi"])
+def test_parse_client_context_discards_a_text_ending_in_a_line_break(field):
+    """Un texto de indicador con salto de línea al final (con "\\n") descarta
+    todo el contexto del cliente."""
+    data = raw_client_data()
+    data["indicators"][field] = "79,4 kg\n"
+
+    assert parse_client_context(data, SERVER_TODAY) is None
+
+
+# --- CoachPersonalContextReader.read_first_name (revisión 1, F1) --------------
+
+
+# SDD: 034 NFR-003 AC-N003.1
+def test_read_first_name_gives_the_sanitized_name_of_the_requested_user():
+    """Con dos usuarios, devuelve solo el nombre saneado (sin espacios sobrantes)
+    del pedido."""
+    reader, user_repository, _ = make_reader(
+        {
+            USER_ID: carlos(first_name="  Carlos\n<x> "),
+            OTHER_USER_ID: carlos(first_name="Beatriz"),
+        },
+        {},
+    )
+
+    name = reader.read_first_name(USER_ID)
+
+    assert name == "Carlos"
+    assert user_repository.calls == [USER_ID]
+
+
+# SDD: 034 NFR-004 AC-N004.1
+@pytest.mark.parametrize("user_id", ["user-1", "42", 42, "", None])
+def test_read_first_name_gives_none_for_an_id_that_is_not_a_uuid(user_id):
+    """Un id que no es UUID da None sin tocar ningún repositorio."""
+    reader, user_repository, profile_repository = make_reader(
+        {USER_ID: carlos()}, {USER_ID: BASE_PROFILE}
+    )
+
+    assert reader.read_first_name(user_id) is None
+    assert user_repository.calls == []
+    assert profile_repository.calls == []
+
+
+# SDD: 034 NFR-003 AC-N003.1
+def test_read_first_name_gives_none_for_a_missing_user():
+    """Un usuario inexistente da None."""
+    reader, user_repository, _ = make_reader({OTHER_USER_ID: carlos()}, {})
+
+    assert reader.read_first_name(USER_ID) is None
+    assert user_repository.calls == [USER_ID]
+
+
+# SDD: 034 NFR-003 AC-N003.1
+@pytest.mark.parametrize("first_name", [None, "", "  \n "])
+def test_read_first_name_gives_none_for_a_user_without_a_name(first_name):
+    """Sin nombre (nulo, vacío o solo espacios) da None."""
+    reader, _, _ = make_reader({USER_ID: carlos(first_name=first_name)}, {})
+
+    assert reader.read_first_name(USER_ID) is None
+
+
+# SDD: 034 NFR-004 AC-N004.1
+def test_read_first_name_does_not_query_the_profile_repository():
+    """Solo lee la cuenta: el repositorio de perfiles no recibe ninguna llamada."""
+    reader, _, profile_repository = make_reader(
+        {USER_ID: carlos()}, {USER_ID: BASE_PROFILE}
+    )
+
+    assert reader.read_first_name(USER_ID) == "Carlos"
+    assert profile_repository.calls == []

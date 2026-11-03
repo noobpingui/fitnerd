@@ -15,7 +15,7 @@ import pytest
 
 from exceptions.custom_exceptions import RateLimitError, ServiceUnavailableError
 from services.coach_personal_context import ClientCoachContext, CoachMacros, PersonalContext
-from services.coach_service import SYSTEM_PROMPT, CoachService
+from services.coach_service import SYSTEM_PROMPT, CoachService, build_coach_user_message
 from tests.fakes import FakeClock, FakeLLMClient, FakeLogger, FakeRateLimiter
 from tests.fakes_observability import (
     FakeApp,
@@ -709,21 +709,31 @@ class FakePersonalContextReader:
         self.context = PersonalContext(
             first_name=first_name, profile=profile, age=30, client=client
         )
+        self.calls = []
+        self.name_calls = []
 
     def read(self, user_id, client_data):
+        self.calls.append((user_id, client_data))
         return self.context
+
+    def read_first_name(self, user_id):
+        """Solo para anonimizar la traza; no toca `calls` (solo de `read`)."""
+        self.name_calls.append(user_id)
+        return self.context.first_name
 
 
 def make_personal_service(answer, first_name="Carlos"):
     backend = FakeTraceBackend(clock=make_clock())
     llm = FakeLLMClient(answer=answer, input_tokens=850, output_tokens=40, model="claude-sonnet-5")
+    reader = FakePersonalContextReader(first_name)
     service = CoachService(
         FakeObservableRetrievalService(candidates=GOOD_CANDIDATES),
         llm,
         FakeRateLimiter(allowed=True),
         Tracer(backend=backend, logger=FakeLogger()),
-        personal_context_reader=FakePersonalContextReader(first_name),
+        personal_context_reader=reader,
     )
+    service.test_reader = reader
     return service, backend, llm
 
 
@@ -797,6 +807,42 @@ def test_trace_does_not_touch_longer_words_that_contain_the_name():
     trace = backend.traces[0]
     assert trace.output == "Hola [nombre], dile a Anabel que descanse."
     assert "Anabel" in dump_trace(trace)
+
+
+# SDD: 034 NFR-003 AC-N003.1
+# SDD: 034 REQ-010 AC-010.4
+def test_with_the_context_off_the_history_name_is_still_kept_out_of_the_trace():
+    """Interruptor desactivado a mitad de conversación: el historial trae
+    «Carlos». El usuario recibe la respuesta tal cual, el modelo no recibe nada
+    nuevo de la cuenta y la traza no contiene «Carlos» (sí «[nombre]»)."""
+    service, backend, llm = make_personal_service("Carlos, sigue con tu plan.")
+    reader = service.test_reader
+    history = [
+        {"role": "user", "content": "¿Cuánta proteína necesito?"},
+        {"role": "assistant", "content": "Hola, Carlos: reparte la proteína en el día."},
+    ]
+
+    result = service.ask_with_feedback(
+        "¿Y los carbohidratos?", user_id=42, history=history, use_personal_context=False
+    )
+
+    assert result.answer == "Carlos, sigue con tu plan."
+    sent = llm.calls[0][1]
+    assert sent[:2] == history
+    assert len(sent) == 3
+    content = sent[2]["content"]
+    prefix = "Fragmentos de contexto:\n"
+    suffix = "\n\nPregunta: ¿Y los carbohidratos?"
+    assert content.startswith(prefix) and content.endswith(suffix)
+    corpus = content[len(prefix) : -len(suffix)]
+    assert content == build_coach_user_message(corpus, "¿Y los carbohidratos?")
+    assert "<datos_del_usuario>" not in content
+    dumped = dump_trace(backend.traces[0])
+    assert "Carlos" not in dumped
+    assert "carlos" not in dumped.lower()
+    assert "[nombre]" in dumped
+    assert reader.calls == []
+    assert reader.name_calls == [42]
 
 
 # SDD: 034 NFR-003 AC-N003.1
