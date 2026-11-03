@@ -37,7 +37,15 @@
 
 ## review · reviewer
 - [ ] F1: corregir la casilla de T-028 (no hizo falta adaptar PhysicalDataForm.refresh.test.tsx) (test-author)
-- [ ] F2: corregir el formato de spec.md:81 y el recuento de AC registrado (37 → 36) (spec-writer)
-- [ ] F3: el marcador de AC-009.4 solo está en ProfilePage.test.tsx; añadir una referencia en HomePage.test.tsx (test-author)
-- [ ] F4: AuthService guarda self.clock pero ya no lo usa; retirarlo en una limpieza (implementer)
-- [ ] F5: quitar date_of_birth de los helpers de registro de los tests (conftest.registered_user y otros), donde se ignora (test-author)
+- [x] F2: corregir el formato de spec.md:81 y el recuento de AC registrado (37 → 36) (spec-writer)
+- [x] F3: el marcador de AC-009.4 solo está en ProfilePage.test.tsx; añadir una referencia en HomePage.test.tsx (test-author)
+- [x] F4: AuthService guarda self.clock pero ya no lo usa; retirarlo en una limpieza (implementer)
+- [x] F5: quitar date_of_birth de los helpers de registro de los tests (conftest.registered_user y otros), donde se ignora (test-author)
+
+## verify (3.ª pasada) · verifier
+- [ ] T-028 sin marcar en tasks.md (decidir si se marca o se retira; su AC-007.3 ya está cubierto por T-024, T-026 y T-027).
+- [ ] Identificar el segundo test intermitente de la primera ejecución de `npm test` (router, lazyRoutes o accountSwitch) cuando se trabaje el backlog de tests intermitentes.
+
+## review (2.ª vuelta) · reviewer
+- [ ] F6: retirar T-028 o marcarla con «sin cambios necesarios» antes de close (Art. B7) (planner)
+- [x] F7: cerrar F3, F4 y F5 en el backlog de la feature antes de pasarlo al del proyecto (hecho por el orquestador, junto con F2)
