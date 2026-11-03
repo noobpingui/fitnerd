@@ -23,9 +23,10 @@ Como **usuario con el onboarding completado que pregunta al AI Coach**, quiero *
 - Que `/coach` calcule y envíe con cada pregunta las calorías, macros e indicadores con los mismos valores que muestran `/home` y Métricas (REQ-007).
 - Conservar la regla del corpus: sin contenido relevante, «no lo sé» y sin llamar al modelo (REQ-008).
 - Nuevas instrucciones al modelo sobre cómo usar (y cómo no usar) los datos personales (REQ-009).
-- Un interruptor en `/coach` para desactivar el uso de datos personales (REQ-010).
-- Actualizar la Política de privacidad (REQ-011).
+- Un interruptor en `/coach` para desactivar el uso de datos personales, con una ayuda que aclara que los mensajes anteriores de la conversación se siguen enviando (REQ-010).
+- Actualizar la Política de privacidad, también con esa aclaración (REQ-011).
 - Conservar el resto del comportamiento del coach: límite de uso, validaciones, errores y valoraciones 👍/👎 (REQ-012).
+- Anonimizar en la traza también cada parte de un nombre compuesto (F4, NFR-003) y los nombres anteriores de la cuenta que sigan en la conversación tras un cambio de nombre (F10, REQ-013).
 - Privacidad de los datos que llegan a Voyage AI, Anthropic y Langfuse (NFR-001 a NFR-003) y aislamiento entre usuarios (NFR-004).
 
 **Fuera de alcance:**
@@ -38,6 +39,9 @@ Como **usuario con el onboarding completado que pregunta al AI Coach**, quiero *
 - Cambiar el texto de «no lo sé» («No tengo informacion relacionada con ese tema en especifico.», sin tildes): queda para el backlog.
 - Responder preguntas sobre los propios datos que el corpus no cubre (por ejemplo, «¿cuál es mi objetivo de calorías?» cuando ningún contenido del curso es relevante): siguen recibiendo «no lo sé» (Q3).
 - Cambios en la base de datos (migraciones) y variables de entorno nuevas.
+- Anonimizar en la traza diminutivos, variantes sin tildes o partes de un nombre de menos de 3 letras o que sean partículas (NFR-003, Q11). Las partes de un nombre compuesto sí se anonimizan (F4, NFR-003).
+- Vaciar o filtrar el historial de la conversación al desactivar el interruptor: los mensajes anteriores se siguen enviando sin cambios y se avisa de ello en la ayuda y en la Política (F5, REQ-010 y REQ-011).
+- Anonimizar nombres que el propio usuario escriba en sus preguntas y que no sean el nombre actual de su cuenta ni uno anterior (REQ-013).
 
 ## 4. Requisitos funcionales
 
@@ -153,9 +157,9 @@ THE SYSTEM SHALL dar al modelo de IA instrucciones que:
 
 ### REQ-010 — Interruptor para no usar los datos personales
 
-THE SYSTEM SHALL mostrar en `/coach`, bajo la descripción de la pantalla, un interruptor «Usar mis datos para personalizar las respuestas», activado por defecto, con el texto de ayuda «El coach tiene en cuenta tu nombre, tu perfil, tus macros y tu progreso.» cuando está activado y «El coach no usa tus datos personales.» cuando está desactivado. La elección se recuerda en ese navegador.
+THE SYSTEM SHALL mostrar en `/coach`, bajo la descripción de la pantalla, un interruptor «Usar mis datos para personalizar las respuestas», activado por defecto, con el texto de ayuda «El coach tiene en cuenta tu nombre, tu perfil, tus macros y tu progreso.» cuando está activado y «El coach no usa tus datos personales. Los mensajes anteriores de esta conversación se siguen enviando al coach y pueden incluirlos.» cuando está desactivado (F5). La elección se recuerda en ese navegador.
 
-WHILE el interruptor está desactivado THE SYSTEM SHALL no enviar al modelo de IA ningún dato personal (ni nombre, ni perfil, ni calorías, ni macros, ni indicadores), de modo que la información que recibe es la misma que antes de esta feature.
+WHILE el interruptor está desactivado THE SYSTEM SHALL no añadir a la pregunta nueva ningún dato personal (ni nombre, ni perfil, ni calorías, ni macros, ni indicadores), de modo que la información que recibe el modelo de IA es la misma que antes de esta feature. Los turnos anteriores de la conversación se siguen enviando sin cambios (REQ-004), aunque alguna respuesta anterior mencione el nombre o las cifras del usuario.
 
 - **AC-010.1:** Given un usuario que nunca ha tocado el interruptor, When abre `/coach`, Then ve el interruptor «Usar mis datos para personalizar las respuestas» activado y el texto «El coach tiene en cuenta tu nombre, tu perfil, tus macros y tu progreso.».
 - **AC-010.2:** Given el interruptor activado, When el usuario lo desactiva, Then ve «El coach no usa tus datos personales.» y la conversación que ya estaba en pantalla no se borra.
@@ -163,18 +167,21 @@ WHILE el interruptor está desactivado THE SYSTEM SHALL no enviar al modelo de I
 - **AC-010.4:** Given la cuenta base con el perfil base, When pregunta al coach con una petición que indica el contexto personal desactivado (aunque traiga calorías, macros o indicadores), Then el modelo de IA no recibe «Carlos» ni ningún dato del perfil, las calorías, las macros o los indicadores.
 - **AC-010.5:** Given el interruptor desactivado, When el usuario recarga `/coach` en el mismo navegador, Then el interruptor sigue desactivado.
 - **AC-010.6:** Given la cuenta base con el perfil base, When pregunta al coach con una petición que no dice nada sobre el contexto personal, Then se trata como activado y el modelo de IA recibe el nombre y el perfil (Q5).
+- **AC-010.7:** Given el interruptor activado, When el usuario lo desactiva, Then el texto de ayuda es exactamente «El coach no usa tus datos personales. Los mensajes anteriores de esta conversación se siguen enviando al coach y pueden incluirlos.».
+- **AC-010.8:** Given la cuenta base con el perfil base y una conversación con la pregunta «¿Cuánta proteína necesito?» y la respuesta «Hola, Carlos: con tu objetivo de 2200 kcal…», When pregunta al coach con una petición que indica el contexto personal desactivado, Then el modelo de IA recibe esos dos turnos anteriores con el mismo texto (incluidos «Carlos» y «2200 kcal») y el mensaje de la pregunta nueva no lleva ningún dato personal.
 
 ### REQ-011 — Política de privacidad actualizada
 
 THE SYSTEM SHALL actualizar la sección «Con quién se comparte» de la Política de privacidad con los textos de la sección 6, de modo que:
 
-- el punto de Anthropic (Claude) diga que, además de las preguntas, recibe el nombre, el perfil, las calorías y macros y los indicadores de progreso, salvo que el usuario lo desactive en el coach;
+- el punto de Anthropic (Claude) diga que, además de las preguntas, recibe el nombre, el perfil, las calorías y macros y los indicadores de progreso, salvo que el usuario lo desactive en el coach, y que, si lo desactiva a mitad de una conversación, los mensajes anteriores de esa conversación se siguen enviando y pueden incluir esos datos (F5);
 - el punto de Langfuse diga que esos datos también se envían, sin el nombre;
 - el punto de Voyage AI siga diciendo que solo recibe el texto de las preguntas.
 
 - **AC-011.1:** Given la Política de privacidad, When se muestra, Then el punto de Anthropic (Claude) menciona el nombre, el perfil, las macros y el progreso, y que se puede desactivar en el coach.
 - **AC-011.2:** Given la Política de privacidad, When se muestra, Then el punto de Langfuse sigue diciendo que nunca se envían el email ni el nombre.
 - **AC-011.3:** Given la Política de privacidad, When se muestra, Then el punto de Voyage AI sigue diciendo que recibe el texto de las preguntas al coach y no menciona el perfil ni el progreso.
+- **AC-011.4:** Given la Política de privacidad, When se muestra, Then el punto de Anthropic (Claude) incluye «Si lo desactivas a mitad de una conversación, los mensajes anteriores de esa conversación se siguen enviando a Anthropic como contexto y pueden incluir esos datos.».
 
 ### REQ-012 — Comportamiento del coach que se conserva
 
@@ -191,6 +198,21 @@ THE SYSTEM SHALL conservar el resto del comportamiento del coach:
 - **AC-012.3:** Given la cuenta base con el perfil base y un fallo del modelo de IA, When pregunta al coach, Then recibe 503 con «No se pudo generar una respuesta en este momento. Intenta de nuevo en unos minutos.».
 - **AC-012.4:** Given la cuenta base con el perfil base, When pregunta al coach y recibe una respuesta, Then la respuesta trae un `feedback_id` que se puede valorar con 👍/👎 como hasta ahora.
 - **AC-012.5:** Given una pregunta vacía o de 501 caracteres, When pregunta al coach, Then recibe 400 con el mensaje actual, aunque la petición traiga datos personales válidos.
+
+### REQ-013 — Nombres anteriores de la cuenta en la traza (F10)
+
+WHEN el usuario envía una pregunta en `/coach` y, mientras esa conversación está en pantalla, la app ha leído para su cuenta un nombre distinto del actual (porque lo cambió, por ejemplo, en otra pestaña) THE SYSTEM SHALL incluir en la petición esos nombres anteriores, y el servidor los anonimizará en la traza igual que el nombre actual (NFR-003), con el interruptor activado o desactivado.
+
+Los nombres anteriores sirven solo para anonimizar la traza: nunca se envían al modelo de IA ni a Voyage AI, no cambian lo que reciben y no se guardan en el servidor. El nombre actual se sigue tomando siempre de la cuenta (REQ-001), nunca de esta lista.
+
+IF la lista de nombres anteriores no cumple el formato de la sección 6 THEN THE SYSTEM SHALL ignorarla entera, sin error, y anonimizar solo el nombre actual de la cuenta.
+
+- **AC-013.1:** Given la pantalla `/coach` con una conversación en curso y el perfil leído con el nombre «Carlitos», When el perfil se vuelve a leer con el nombre «Carlos» y el usuario envía otra pregunta, Then la petición incluye «Carlitos» como nombre anterior.
+- **AC-013.2:** Given la pantalla `/coach` sin conversación (o una conversación en la que el nombre leído no ha cambiado), When el usuario envía una pregunta, Then la petición no incluye nombres anteriores.
+- **AC-013.3:** Given la cuenta base (nombre actual «Carlos»), una conversación con la respuesta anterior «Hola, Carlitos: …» y una petición con «Carlitos» como nombre anterior, When pregunta al coach, Then ningún texto enviado a la traza contiene «Carlitos» ni «Carlos» (sí «[nombre]»), y el modelo de IA recibe la respuesta anterior sin cambios, con «Carlitos».
+- **AC-013.4:** Given el caso de AC-013.3 con el contexto personal desactivado, When pregunta al coach, Then ningún texto enviado a la traza contiene «Carlitos» ni «Carlos».
+- **AC-013.5:** Given la cuenta base y una petición con «Ana» como nombre anterior, When pregunta al coach, Then el modelo de IA recibe el nombre «Carlos» y no recibe «Ana» en ningún dato personal.
+- **AC-013.6:** Given la cuenta base y una petición con una lista de nombres anteriores no válida (seis nombres, un nombre vacío, uno de 101 caracteres o un valor que no es texto), When pregunta al coach, Then responde 200 y la traza anonimiza «Carlos» pero no ninguno de los nombres de esa lista.
 
 ## 5. Requisitos no funcionales
 
@@ -209,7 +231,15 @@ THE SYSTEM SHALL enviar a Voyage AI solo el texto de búsqueda que se usa hoy (l
 
 ### NFR-003 — Langfuse no recibe el nombre
 
-THE SYSTEM SHALL enviar a la traza de Langfuse el resto del contexto personal que recibe el modelo de IA, pero nunca el nombre del usuario: cada aparición del nombre como palabra completa (sin distinguir mayúsculas) en la entrada, los pasos y la salida de la traza se sustituye por «[nombre]» (Q1).
+THE SYSTEM SHALL enviar a la traza de Langfuse el resto del contexto personal que recibe el modelo de IA, pero nunca el nombre del usuario: cada aparición del nombre como palabra completa (sin distinguir mayúsculas) en la entrada, los pasos y la salida de la traza se sustituye por «[nombre]» (Q1). Lo mismo vale para los nombres anteriores de REQ-013.
+
+Si el nombre tiene varias partes (separadas por espacios o guiones), THE SYSTEM SHALL anonimizar además cada parte por separado, con la misma regla de palabra completa y sin distinguir mayúsculas, salvo las partes de menos de 3 letras y las partículas «de», «del», «la», «las», «los», «y», «e», «da», «das», «do», «dos», «di», «du», «van», «von», «der» y «le», que solo se anonimizan como parte del nombre completo (F4, Q11). El nombre completo se sustituye antes que sus partes, de modo que «María José» da un único «[nombre]». No se anonimizan diminutivos ni variantes sin tildes («Maria» con el nombre «María»).
+
+- **AC-N003.4:** Given el nombre «María José» y una respuesta del modelo «Hola, María José. Como dice José en el vídeo…» y después «Gracias, maría», When se envía la traza, Then ningún texto de la traza contiene «María» ni «José» (sin distinguir mayúsculas), el nombre completo aparece como un único «[nombre]» y el usuario recibe la respuesta sin cambios.
+- **AC-N003.5:** Given el nombre «José-Luis» y una respuesta con «Hola, Luis», When se envía la traza, Then la traza contiene «Hola, [nombre]» y no contiene «Luis».
+- **AC-N003.6:** Given el nombre «María de la Paz» y una respuesta con «la proteína de la dieta y la paz mental», When se envía la traza, Then «la» y «de» no se modifican y «paz» se sustituye por «[nombre]».
+- **AC-N003.7:** Given el nombre «Jo Ann» y una respuesta con «Jo, Ann y Joan», When se envía la traza, Then «Ann» se sustituye por «[nombre]», «Jo» y «Joan» no se modifican.
+- **AC-N003.8:** Given el nombre «María José» y una respuesta con «Mariano» y «Josefina», When se envía la traza, Then «Mariano» y «Josefina» no se modifican.
 
 - **AC-N003.1:** Given la cuenta base con el perfil base y un modelo de IA que responde «Hola, Carlos: con tu objetivo de 2200 kcal…», When pregunta al coach, Then el usuario recibe la respuesta con «Carlos», y ningún texto enviado a la traza contiene «Carlos» (sí «[nombre]» y «2200 kcal»).
 - **AC-N003.2:** Given la cuenta base con el perfil base, When pregunta al coach, Then la traza incluye el perfil y los indicadores enviados al modelo de IA (por ejemplo, «Perder peso» y «79,4 kg») y el identificador interno del usuario, como hoy.
@@ -235,6 +265,8 @@ THE SYSTEM SHALL atender cada pregunta con las mismas llamadas a proveedores de 
 - las calorías y macros del día: mantenimiento y objetivo en kcal (enteros de 1 a 10000) y gramos de proteína, carbohidratos y grasa (enteros de 0 a 2000);
 - los indicadores de progreso, con las mismas reglas que el análisis de progreso (spec 010): textos de 1 a 32 caracteres con dígitos, letras, signos numéricos, espacios, «%» y «/» (sin saltos de línea), el estado del ritmo como uno de los códigos de la spec 010 (incluido el de ritmo no realista de la spec 011), contadores enteros de 0 a 100000, fecha del último registro y fecha de hoy del dispositivo en formato `AAAA-MM-DD`, esta a un día como mucho de la fecha del servidor.
 
+- los nombres anteriores de la cuenta vistos en la conversación (REQ-013): una lista de 1 a 5 textos, cada uno de 1 a 100 caracteres (la regla del nombre de la spec 018); solo se usan para anonimizar la traza y, si la lista no es válida, se ignora entera sin error.
+
 El nombre, el perfil y la edad nunca se toman de la petición: salen de la cuenta del usuario de la sesión (REQ-001). Unos datos de cliente no válidos se descartan en bloque sin error (REQ-006). No se añaden mensajes de error nuevos.
 
 **Datos que recibe el modelo de IA** (con el contexto personal activo):
@@ -251,10 +283,10 @@ Un dato que falta se envía como «no disponible».
 **Textos visibles nuevos en `/coach`:**
 - Interruptor: «Usar mis datos para personalizar las respuestas».
 - Ayuda con el interruptor activado: «El coach tiene en cuenta tu nombre, tu perfil, tus macros y tu progreso.».
-- Ayuda con el interruptor desactivado: «El coach no usa tus datos personales.».
+- Ayuda con el interruptor desactivado: «El coach no usa tus datos personales. Los mensajes anteriores de esta conversación se siguen enviando al coach y pueden incluirlos.» (F5).
 
 **Política de privacidad, «Con quién se comparte» (textos nuevos):**
-- Anthropic (Claude): «las preguntas que le haces al AI Coach se envían a Anthropic para generar la respuesta, junto con tu nombre, tu perfil (sexo, edad, altura, nivel de actividad y meta), tus calorías y macros y tus indicadores de progreso, para personalizarla. Puedes desactivarlo en el propio coach.»
+- Anthropic (Claude): «las preguntas que le haces al AI Coach se envían a Anthropic para generar la respuesta, junto con tu nombre, tu perfil (sexo, edad, altura, nivel de actividad y meta), tus calorías y macros y tus indicadores de progreso, para personalizarla. Puedes desactivarlo en el propio coach. Si lo desactivas a mitad de una conversación, los mensajes anteriores de esa conversación se siguen enviando a Anthropic como contexto y pueden incluir esos datos.» (F5)
 - Langfuse: se añade «Con las preguntas al coach se envían también tu perfil, tus macros y tu progreso, nunca tu nombre.» Se conserva que se identifican solo con un identificador interno y nunca con el email ni el nombre.
 - Voyage AI: sin cambios («recibe el texto de tus preguntas al coach para buscar el contenido relacionado.»).
 
@@ -274,6 +306,8 @@ Un dato que falta se envía como «no disponible».
 | Q8 | Las instrucciones actuales del coach están escritas con voseo («Sos», «Respondes», «decilo») y no piden español neutro. ¿Se corrigen ahora? | Sí: como se reescriben para añadir las reglas de los datos personales, se escriben sin voseo y piden responder en español neutro (REQ-009, AC-009.6), como ya se hizo en el análisis de progreso (spec 010). Alternativa: solo añadir las reglas nuevas y dejar el resto igual. | Aprobada la propuesta por defecto («Apruebo la spec»). |
 | Q9 | ¿En qué unidades recibe el coach los datos? | Pesos y altura en las unidades del perfil (kg o lb; cm o ft/in), como los ve el usuario; calorías siempre en kcal aunque `/home` esté en kJ, y macros en gramos (REQ-001 a REQ-003). Alternativa: todo en kg y cm. | Aprobada la propuesta por defecto («Apruebo la spec»). |
 | Q10 | ¿Se mantiene el límite de 20 preguntas por hora, aunque cada pregunta lleve ahora más texto (y algo más de coste)? | Sí, sin cambios (REQ-012). | Aprobada la propuesta por defecto («Apruebo la spec»). |
+| Q11 | F4 (nombres compuestos en la traza): anonimizar cada parte por separado puede borrar palabras normales de la traza («Paz», «Luz», «Rosa», «Mar», «Sol») y las partes cortas o partículas son muy comunes («de», «la», «del»). ¿Qué regla se aplica? | Se anonimiza el nombre completo y, además, cada parte (separada por espacios o guiones) de **3 letras o más** que no sea una partícula de la lista cerrada de NFR-003 («de», «del», «la», «las», «los», «y», «e», «da», «das», «do», «dos», «di», «du», «van», «von», «der», «le»). Se acepta que un nombre que es también una palabra común («Paz», «Rosa») borre esa palabra de la traza: solo afecta a la traza de ese usuario, no a lo que ve ni a lo que recibe el modelo. Las partes de 1 o 2 letras («Jo», «Mª») no se anonimizan sueltas. Alternativas: (a) anonimizar todas las partes sin excepción, incluidas partículas (la traza pierde «de» y «la»); (b) mínimo de 4 letras (deja pasar «Ana», «Eva», «Luz» sueltos). | Q11: La propuesta (aprobada con «Aprobada»). |
+| Q12 | F10 (nombre anterior en la traza): el servidor no guarda los nombres anteriores. ¿Cómo sabe cuáles anonimizar sin guardar datos nuevos? | El frontend recuerda los nombres de la cuenta que ha leído mientras la conversación está en pantalla y envía los anteriores en la petición (REQ-013, hasta 5, con la regla del nombre de la spec 018); el servidor los usa solo para anonimizar la traza, nunca los envía al modelo y, si la lista no es válida, la ignora. Un cliente manipulado solo puede anonimizar palabras de su propia traza. En la práctica el caso solo se da si el nombre cambia en otra pestaña o dispositivo, porque salir de `/coach` borra la conversación. Alternativas: (a) que el servidor devuelva con cada respuesta un token firmado (como `feedback_id`) con el nombre usado y el cliente lo reenvíe (más fiable, contrato más complejo); (b) borrar la conversación en pantalla cuando cambia el nombre; (c) aceptar la limitación y dejarla en el backlog. | Q12: La propuesta (aprobada con «Aprobada»). |
 
 ## 8. Glosario
 

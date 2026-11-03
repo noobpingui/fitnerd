@@ -45,3 +45,15 @@
 
 ## tests (iteración 3) · verifier (red)
 - [ ] T-047 usa el marcador «SDD: 034 REQ-011» sin AC; los AC-011.1 a AC-011.3 ya tienen cobertura en T-025. No bloquea.
+
+## review (iteración 2) · reviewer
+- [ ] F4 (spec-writer): decidir si `redact_name` anonimiza cada parte de un nombre compuesto o si se documenta la limitación.
+- [ ] F5 (spec-writer): decidir qué hacer con el historial que llega a Anthropic con el interruptor desactivado (aclararlo en la ayuda o la Política, o filtrar el historial).
+- [ ] F8 (test-author): añadir un test de regresión del 503 cuando `read` falla con `use_personal_context=True` y corregir el docstring de `test_coach_service.py:539`.
+- [ ] F10 (planner): un nombre anterior de la cuenta que siga en el historial no se anonimiza en la traza.
+- [ ] F9 (implementer): falta el espacio tras `#` en `coach_service.py:150` (es el estilo del archivo; opcional).
+
+## spec (iteración 2) · spec-writer
+- [ ] Anonimizar diminutivos y variantes sin tildes del nombre en la traza.
+- [ ] Valorar un token firmado por respuesta para los nombres anteriores si Q12 se resuelve con la propuesta por defecto.
+- [ ] Revisar si el test existente de AC-010.2 compara el texto de ayuda exacto y ajustarlo al texto nuevo.
