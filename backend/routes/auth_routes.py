@@ -24,7 +24,6 @@ def _build_auth_service():
     unit_of_work = UnitOfWork(db.session)
     return AuthService(
         user_repository, unit_of_work, jwt_manager, current_app.config["GOOGLE_CLIENT_ID"],
-        clock=current_clock(),
     )
 
 

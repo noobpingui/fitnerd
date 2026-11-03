@@ -10,7 +10,7 @@
   "branch": "feat/033-profile-first-name",
   "base_branch": "main",
   "created_at": "2026-11-02T20:27:01.978Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,7 +29,10 @@
       "at": "2026-11-03T02:25:13.839Z",
       "note": "auto (gate_mode=flow): red check PASS citando e9db40a, autorizado por el usuario"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-11-03T02:28:57.311Z",
+      "note": "auto (gate_mode=flow): F4 implementado"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -39,7 +42,7 @@
     "spec": "2f1242d",
     "plan": "c7ca9d4",
     "tasks": "41af941",
-    "tests": "e9db40a",
+    "tests": "7ecf0fe",
     "implement": "896e37f"
   },
   "iterations": {
@@ -494,6 +497,30 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS citando e9db40a, autorizado por el usuario"
+    },
+    {
+      "at": "2026-11-03T02:25:14.199Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 7ecf0fe"
+    },
+    {
+      "at": "2026-11-03T02:25:14.429Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "F4: retirar clock de AuthService"
+    },
+    {
+      "at": "2026-11-03T02:28:57.194Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "F4: clock retirado de AuthService; backend 2899 passed"
+    },
+    {
+      "at": "2026-11-03T02:28:57.311Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): F4 implementado"
     }
   ]
 }

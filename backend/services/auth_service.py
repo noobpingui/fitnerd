@@ -18,7 +18,6 @@ from services.auth_input_rules import (
     validate_first_name,
     validate_last_name,
 )
-from utils.clock import utc_now
 
 WRONG_CREDENTIALS_MESSAGE = "Correo o contraseña incorrectos"
 EMAIL_TAKEN_MESSAGE = "Ya existe una cuenta con este correo"
@@ -33,8 +32,7 @@ def verify_google_id_token(id_token_str: str, client_id: str | None) -> dict:
 
 class AuthService():
     def __init__(self, user_repository: UserRepository, unit_of_work, jwt_manager: JWTManager, google_client_id: str = None,
-                 google_token_verifier=verify_google_id_token, clock=utc_now):
-        self.clock = clock
+                 google_token_verifier=verify_google_id_token):
         self.google_token_verifier = google_token_verifier
         self.user_repository = user_repository
         self.jwt_manager = jwt_manager
