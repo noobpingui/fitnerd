@@ -177,8 +177,9 @@ def build_personal_context_block(context: PersonalContext) -> str:
 
 
 def parse_previous_names(value: Any) -> tuple[str, ...]:
-    """Valida los nombres anteriores que envia el cliente. Nunca lanza: una lista no
-    valida se ignora entera."""
+    """Valida los nombres anteriores que envía el cliente. Nunca lanza: una lista no
+    válida se ignora entera. Tras sanear, se omite cada nombre que sea entero una
+    partícula de `NAME_PARTICLES`."""
     if not isinstance(value, list) or not 1 <= len(value) <= MAX_PREVIOUS_NAMES:
         return ()
     names = []
@@ -188,14 +189,14 @@ def parse_previous_names(value: Any) -> tuple[str, ...]:
         except ValidationError:
             return ()
         names.append(sanitize_first_name(item))
-    return tuple(name for name in names if name)
+    return tuple(name for name in names if name and name.casefold() not in NAME_PARTICLES)
 
 
 def name_redaction_terms(
     first_name: str | None, other_names: Iterable[str] = ()
 ) -> list[str]:
-    """Textos a buscar en la traza: nombre completo y partes de 3 letras o mas que
-    no sean particulas, sin duplicados, de mas largo a mas corto."""
+    """Textos a buscar en la traza: nombre completo y partes de 3 letras o más que
+    no sean partículas, sin duplicados, de más largo a más corto."""
     terms: list[str] = []
     seen: set[str] = set()
 
@@ -221,7 +222,7 @@ def name_redaction_terms(
 
 
 def redact_name(value: Any, first_name: str | None, other_names: Iterable[str] = ()) -> Any:
-    """Sustituye el nombre (palabra completa, sin distinguir mayusculas) por
+    """Sustituye el nombre (palabra completa, sin distinguir mayúsculas) por
     «[nombre]» en textos, listas, tuplas y valores de diccionarios."""
     terms = name_redaction_terms(first_name, other_names)
     if not terms:
@@ -250,7 +251,7 @@ class CoachPersonalContextReader:
         self.clock = clock
 
     def _load_user(self, user_id: Any) -> tuple[bool, Any]:
-        # Id no UUID: no se toca ningun repositorio. Solo se filtra por el id del token
+        # Id no UUID: no se toca ningún repositorio. Solo se filtra por el id del token
         # (NFR-004, Art. P3.1).
         try:
             uuid.UUID(str(user_id))

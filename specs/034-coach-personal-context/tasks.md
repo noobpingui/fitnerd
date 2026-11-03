@@ -154,8 +154,8 @@ No aplica.
 
 ### Fase B — Implementación (iteración 4)
 
-- [ ] T-079 [REQ-013, NFR-003, AC-013.7, AC-013.6] (impl) `parse_previous_names` descarta, tras validar la lista entera y sanear, los nombres cuyo `casefold()` sea una de `NAME_PARTICLES` (solo el nombre entero; orden conservado; `()` si todos lo eran); `name_redaction_terms` y `redact_name` sin cambios; docstring con la frase de la partícula — `backend/services/coach_personal_context.py`
-- [ ] T-080 [F11] (impl) **Cambio de forma:** tildes en los docstrings de `parse_previous_names`, `name_redaction_terms` y `redact_name` (envía, válida, más, partículas, mayúsculas) y revisión del resto de docstrings y comentarios nuevos del archivo, sin tocar código ni `DONT_KNOW_ANSWER`; líneas dentro de 100 columnas — `backend/services/coach_personal_context.py`
+- [x] T-079 [REQ-013, NFR-003, AC-013.7, AC-013.6] (impl) `parse_previous_names` descarta, tras validar la lista entera y sanear, los nombres cuyo `casefold()` sea una de `NAME_PARTICLES` (solo el nombre entero; orden conservado; `()` si todos lo eran); `name_redaction_terms` y `redact_name` sin cambios; docstring con la frase de la partícula — `backend/services/coach_personal_context.py`
+- [x] T-080 [F11] (impl) **Cambio de forma:** tildes en los docstrings de `parse_previous_names`, `name_redaction_terms` y `redact_name` (envía, válida, más, partículas, mayúsculas) y revisión del resto de docstrings y comentarios nuevos del archivo, sin tocar código ni `DONT_KNOW_ANSWER`; líneas dentro de 100 columnas — `backend/services/coach_personal_context.py`
 
 ## Matriz de cobertura
 
