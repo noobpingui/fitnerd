@@ -1054,3 +1054,41 @@ def test_a_previous_name_in_the_question_is_anonymized_but_never_replaces_the_na
     assert "Nombre: Carlos" in content
     assert "Nombre: Ana" not in content
     assert backend.traces[0].input == "Soy [nombre]"
+
+
+# SDD: 034 REQ-013 AC-013.7
+# SDD: 034 NFR-003 AC-N003.4
+@pytest.mark.parametrize("particle", ["de", "De", "LA"])
+@pytest.mark.parametrize("context_on", [True, False])
+def test_a_previous_name_that_is_only_a_particle_is_not_anonymized_in_the_trace(
+    context_on, particle
+):
+    """Una partícula como nombre anterior se conserva como palabra en la traza;
+    «Carlitos» y «Carlos» siguen anonimizados y el modelo recibe el historial tal cual."""
+    service, backend, llm = make_personal_service(
+        "Carlos, la proteína de la dieta ayuda", "Carlos"
+    )
+    reader = service.test_reader
+    history = [
+        {"role": "user", "content": QUESTION},
+        {"role": "assistant", "content": "Hola, Carlitos: la proteína de la dieta…"},
+    ]
+
+    service.ask_with_feedback(
+        "¿Y la cena?",
+        user_id=42,
+        history=history,
+        use_personal_context=context_on,
+        previous_names=[particle, "Carlitos"],
+    )
+
+    assert llm.calls[0][1][:2] == history
+    dumped = casefolded_dump(backend)
+    word = particle.casefold()
+    assert re.search(rf"(?<!\w){word}(?!\w)", dumped)
+    assert "la proteína de la dieta" in dumped
+    assert not re.search(r"(?<!\w)carlitos(?!\w)", dumped)
+    assert not re.search(r"(?<!\w)carlos(?!\w)", dumped)
+    assert "[nombre]" in dumped
+    if not context_on:
+        assert reader.calls == []

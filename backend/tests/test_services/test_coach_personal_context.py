@@ -879,7 +879,7 @@ def test_read_first_name_does_not_query_the_profile_repository():
     assert profile_repository.calls == []
 
 
-# --- Revision 2: redact_name por partes (F4) y nombres anteriores (F10) --------
+# --- Revisión 2: redact_name por partes (F4) y nombres anteriores (F10) --------
 
 
 # SDD: 034 NFR-003 AC-N003.4
@@ -997,7 +997,7 @@ def test_name_redaction_terms_removes_duplicates_ignoring_case_and_handles_empti
     assert name_redaction_terms(None, ["Carlitos"]) == ["Carlitos"]
 
 
-# --- Revision 2: parse_previous_names (REQ-013) --------------------------------
+# --- Revisión 2: parse_previous_names (REQ-013) --------------------------------
 
 
 # SDD: 034 REQ-013 AC-013.3
@@ -1006,7 +1006,8 @@ def test_name_redaction_terms_removes_duplicates_ignoring_case_and_handles_empti
     [
         (["Carlitos"], ("Carlitos",)),
         (["  Carlitos  "], ("Carlitos",)),
-        (["A", "B", "C", "D", "E"], ("A", "B", "C", "D", "E")),
+        # (revisión 3, F13: «E» es la partícula «e»)
+        (["A", "B", "C", "D", "F"], ("A", "B", "C", "D", "F")),
         (["x" * 100], ("x" * 100,)),
         (["<>", "Carlitos"], ("Carlitos",)),
         (None, ()),
@@ -1040,3 +1041,64 @@ def test_parse_previous_names_accepts_a_valid_list(value, expected):
 def test_parse_previous_names_ignores_an_invalid_list_entirely(value):
     """Una lista no válida se ignora entera, sin lanzar."""
     assert parse_previous_names(value) == ()
+
+
+# --- Revisión 3 (F13): un nombre anterior que es solo una partícula se omite ---
+
+PARTICLE_FORMS = [
+    pytest.param(lambda p: p, id="tal-cual"),
+    pytest.param(lambda p: p.upper(), id="mayusculas"),
+    pytest.param(lambda p: p.capitalize(), id="capitalizada"),
+    pytest.param(lambda p: f"  {p}  ", id="espacios"),
+]
+
+
+# SDD: 034 REQ-013 AC-013.7
+@pytest.mark.parametrize("form", PARTICLE_FORMS)
+@pytest.mark.parametrize("particle", sorted(NAME_PARTICLES))
+def test_parse_previous_names_skips_a_name_that_is_only_a_particle(particle, form):
+    """Cada una de las 17 partículas, en cuatro formas, se omite como nombre entero."""
+    name = form(particle)
+
+    assert parse_previous_names([name, "Carlitos"]) == ("Carlitos",)
+    assert parse_previous_names([name]) == ()
+
+
+# SDD: 034 REQ-013 AC-013.7
+def test_parse_previous_names_only_skips_whole_particles():
+    """Solo cuenta el nombre entero; se compara tras sanear."""
+    names = ["de", "De la Fuente", "Del Mar", "Leo", "Dee"]
+    assert parse_previous_names(names) == ("De la Fuente", "Del Mar", "Leo", "Dee")
+    assert parse_previous_names(["d<>e", "Carlitos"]) == ("Carlitos",)
+
+
+# SDD: 034 REQ-013 AC-013.6
+# SDD: 034 REQ-013 AC-013.7
+def test_parse_previous_names_still_ignores_an_invalid_list_with_a_particle():
+    """Primero se valida la lista entera; después se omiten las partículas."""
+    assert parse_previous_names(["de", "Carlitos", ""]) == ()
+    assert parse_previous_names(["de", "Carlitos"]) == ("Carlitos",)
+
+
+# SDD: 034 REQ-013 AC-013.7
+# SDD: 034 NFR-003 AC-N003.4
+def test_a_particle_previous_name_keeps_the_word_but_the_current_name_has_no_exception():
+    """«de» anterior se conserva como palabra; el nombre actual «de» se anonimiza."""
+    redacted = redact_name(
+        "Hola, Carlitos: la proteína de la dieta",
+        "Carlos",
+        parse_previous_names(["de", "Carlitos"]),
+    )
+    assert redacted == "Hola, [nombre]: la proteína de la dieta"
+
+    current = redact_name("la proteína de la dieta", "de", parse_previous_names(["De"]))
+    assert current == "la proteína [nombre] la dieta"
+
+
+# SDD: 034 REQ-013 AC-013.7
+@pytest.mark.parametrize("particle", sorted(NAME_PARTICLES))
+def test_a_lone_particle_stays_intact_as_a_word(particle):
+    """La partícula suelta, enviada en mayúsculas como nombre anterior, no se toca."""
+    previous = parse_previous_names([particle.upper()])
+
+    assert redact_name(f"x {particle} y", "Carlos", previous) == f"x {particle} y"
