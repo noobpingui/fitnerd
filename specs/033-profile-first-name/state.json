@@ -10,7 +10,7 @@
   "branch": "feat/033-profile-first-name",
   "base_branch": "main",
   "created_at": "2026-11-02T20:27:01.978Z",
-  "stage": "verify",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -26,13 +26,10 @@
       "note": "auto (gate_mode=flow): 33 tareas, cobertura completa"
     },
     "tests": {
-      "at": "2026-11-03T01:06:26.910Z",
-      "note": "auto (gate_mode=flow): red check PASS"
+      "at": "2026-11-03T01:22:06.266Z",
+      "note": "auto (gate_mode=flow): correccion de lint en tests"
     },
-    "implement": {
-      "at": "2026-11-03T01:15:53.888Z",
-      "note": "auto (gate_mode=flow): implement DONE"
-    },
+    "implement": null,
     "verify": null,
     "review": null,
     "docs": null,
@@ -42,10 +39,11 @@
     "spec": "6c8285f",
     "plan": "c7ca9d4",
     "tasks": "41af941",
-    "tests": "e9db40a"
+    "tests": "e9db40a",
+    "implement": "896e37f"
   },
   "iterations": {
-    "tests": 1,
+    "tests": 2,
     "implement": 0,
     "review": 0
   },
@@ -63,13 +61,13 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-11-03T01:06:26.735Z",
-    "reason": "tests 033 aprobados tras red check PASS",
+    "at": "2026-11-03T01:22:06.114Z",
+    "reason": "tests 033: E501 partidas tras verify FAIL",
     "sha256": {
       "backend/tests/test_routes/test_auth_routes.py": "7c1812e3ee22f66be749ca7d5ecb58f88fa77689a9710669493f116a3a0425bf",
-      "backend/tests/test_routes/test_fixed_clock_routes.py": "624501b37bf77a7f89121ca428b8ee746a8744ce309f08968ca33a7951184410",
+      "backend/tests/test_routes/test_fixed_clock_routes.py": "ccbacaef597b95832478af26d57a74f2d86cf3669d6ed0ab0536532509fd9c0a",
       "backend/tests/test_routes/test_profile_routes.py": "f6d8f787cf67542dcfa9799c2eb5cb3e5736ea16d9f62d1e77dfa2f718b15194",
-      "backend/tests/test_services/test_auth_service.py": "e4b5cd852b53ff986139ab847c96783964f584e18d55d5cfc1035cbe9ea5f750",
+      "backend/tests/test_services/test_auth_service.py": "f41e84d18426f9b0fd7d993e3fb0c76ce0d2513536f48889f493b407f584abb8",
       "backend/tests/test_services/test_profile_service.py": "4f0f74c0a1c099fe5703952bd394203f455c8ca77a7b4e0b78590c3f5d6dedd6",
       "frontend/src/app/diaryRoute.test.tsx": "f3be4d7b9f857486ab5f51115bc42af7bacbd2be3b5b0f93247e345880eeb9e8",
       "frontend/src/app/lazyRoutes.test.tsx": "560ac808c7f02e5d5d68b2d1cf86925bc9cc7e2a6374801b74843f84b32a7a5d",
@@ -279,6 +277,48 @@
       "stage": "implement",
       "event": "approved",
       "note": "auto (gate_mode=flow): implement DONE"
+    },
+    {
+      "at": "2026-11-03T01:15:54.209Z",
+      "stage": "verify",
+      "event": "commit",
+      "note": "implement: 896e37f"
+    },
+    {
+      "at": "2026-11-03T01:15:54.414Z",
+      "stage": "verify",
+      "event": "started",
+      "note": "Delegar en verifier (full)"
+    },
+    {
+      "at": "2026-11-03T01:21:19.443Z",
+      "stage": "verify",
+      "event": "result",
+      "note": "verify FAIL: full: backend pytest 2899 passed; backend ratchet FAIL (3 E501 nuevas en tests: test_fixed_clock_routes.py L191, test_auth_service.py L345 y L445); frontend test 1910 passed, lint, tsc y build OK; trazabilidad 36/36 AC, 9/9 REQ, 33/33 tareas [x], sin skips nuevos"
+    },
+    {
+      "at": "2026-11-03T01:21:34.010Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "verify FAIL: 3 E501 nuevas en tests (Art. B5.7) · tests 2/5"
+    },
+    {
+      "at": "2026-11-03T01:22:05.995Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "E501 corregidas en tests; sin red check (los tests deben pasar)"
+    },
+    {
+      "at": "2026-11-03T01:22:06.114Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "18 archivo(s) de test: tests 033: E501 partidas tras verify FAIL"
+    },
+    {
+      "at": "2026-11-03T01:22:06.266Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): correccion de lint en tests"
     }
   ]
 }

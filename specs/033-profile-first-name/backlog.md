@@ -29,3 +29,8 @@
 ## implement · implementer
 - [ ] Las 3 líneas largas (E501) de los tests de la 033 (`test_fixed_clock_routes.py` L191, `test_auth_service.py` L345 y L445) hay que ajustarlas en la etapa de tests o aceptarlas como deuda.
 - [ ] Los tests de router y lazyRoutes son intermitentes con la suite completa en paralelo (timeout de `findByRole`).
+
+## verify · verifier
+- [ ] state.json indica 37 AC y spec.md define 36; corregir el dato.
+- [ ] Marcador SDD: 033 de AC-009.4 está en ProfilePage.test.tsx; revisar en review.
+- [ ] tasks.md marca T-028 como hecha pero PhysicalDataForm.refresh.test.tsx no se modificó; revisar la casilla.

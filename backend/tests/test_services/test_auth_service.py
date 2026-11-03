@@ -342,7 +342,10 @@ def test_register_creates_the_account_without_a_date_of_birth():
 # SDD: 033 REQ-001 AC-001.2 AC-001.3
 @pytest.mark.parametrize(
     "value",
-    ["1995-05-20", "2001-02-30", "abc", 123, None, "", [], {}, "2026-10-19", "2012-10-19", "1925-10-18"],
+    [
+        "1995-05-20", "2001-02-30", "abc", 123, None, "", [], {},
+        "2026-10-19", "2012-10-19", "1925-10-18",
+    ],
 )
 def test_register_from_body_ignores_the_date_of_birth(value):
     """Cualquier date_of_birth del cuerpo se ignora: sin error y sin fecha guardada."""
@@ -442,7 +445,10 @@ def test_register_validates_the_first_name_before_last_name():
 
 # SDD: 033 REQ-001 AC-001.4
 def test_register_validates_the_last_name_before_the_duplicate_check():
-    """Con la cuenta ya existente y sin apellido, gana el error de apellido sin consultar duplicados."""
+    """Con la cuenta ya existente y sin apellido, gana el error de apellido.
+
+    No se consultan duplicados.
+    """
     service, repo, _, _ = make_service([make_user("ana@example.com")])
 
     assert_rejected(service, repo, LAST_NAME_REQUIRED, last_name=None)

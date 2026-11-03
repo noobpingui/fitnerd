@@ -188,7 +188,9 @@ def test_register_ignores_the_age_of_someone_who_turns_14_on_the_fixed_day(clien
 
 
 # SDD: 033 REQ-001 AC-001.3
-def test_register_ignores_the_age_of_someone_who_turns_14_the_day_after_the_fixed_day(client, app_clock):
+def test_register_ignores_the_age_of_someone_who_turns_14_the_day_after_the_fixed_day(
+    client, app_clock
+):
     app_clock.set(NOW)
 
     response = client.post(REGISTER_URL, json=register_payload(date_of_birth="2012-10-13"))
