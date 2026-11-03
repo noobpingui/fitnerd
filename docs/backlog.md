@@ -577,3 +577,20 @@ Detalle en [specs/033-profile-first-name/backlog.md](../specs/033-profile-first-
 - [ ] Alinear el recorte de espacios Unicode raros entre Python `strip()` y JS `trim()` (U+0085, U+FEFF); el servidor manda y el caso acaba en un 400.
 - [ ] Tests intermitentes de `router`, `lazyRoutes` y `accountSwitch` con la suite completa en paralelo (timeout de `findByRole`); identificar el segundo test que falló en una ejecución.
 - [ ] Añadir el marcador `SDD: 033` a los tests existentes adaptados al nuevo contrato (14 de la spec 014, `router`, `lazyRoutes` y el de «al cambiar solo la meta» en `ProfilePage`).
+
+## 034-coach-personal-context · El coach conoce tu perfil, nombre, macros y progreso al responder (2026-11-03)
+Detalle en [specs/034-coach-personal-context/backlog.md](../specs/034-coach-personal-context/backlog.md). Solo se pasan los puntos que siguen abiertos; los demás se resolvieron en la propia feature (F1 a F13 de la review).
+- [ ] Revisar en navegador (escritorio y móvil) el interruptor «Usar mis datos para personalizar las respuestas» de `/coach` (AC-010.1), su ayuda y el texto nuevo de la Política de privacidad.
+- [ ] El texto de «no lo sé» del coach («No tengo informacion relacionada con ese tema en especifico.») no lleva tildes.
+- [ ] Que el coach pueda responder preguntas sobre los propios datos aunque el corpus no tenga contenido relevante.
+- [ ] Dar al coach lo registrado en el diario de comidas, como los totales del día frente al objetivo.
+- [ ] Guardar la preferencia del interruptor en la cuenta en lugar del navegador (necesita una migración).
+- [ ] Que la traza de Langfuse indique si la pregunta llevó contexto personal.
+- [ ] Anonimizar también variantes del nombre (diminutivos, sin tildes) en la traza.
+- [ ] Token firmado por respuesta con el nombre usado (alternativa (a) de Q12) para los nombres anteriores: hoy un cliente manipulado puede anonimizar palabras comunes de 3 letras o más en su propia traza (riesgo aceptado, ADR-0038).
+- [ ] Una frase hecha solo de partículas («de la») como nombre anterior se sigue anonimizando como frase completa (nit).
+- [ ] Mockear perfil y mediciones en `CoachPage.test.tsx` para evitar ruido de red.
+- [ ] Que `POST /api/coach/ask` use `get_json(silent=True)` (hoy un cuerpo que no es JSON da 500); deuda previa.
+- [ ] Unificar el estilo de comentarios `#Texto` → `# Texto` en `coach_service.py`.
+- [ ] Normalizar a LF el CRLF de la copia de trabajo de los archivos de test de la 034 (`.gitattributes` ya lo normaliza al commit).
+- [ ] Copiar la plantilla `verify-report.md` del plugin a `.sdd/templates/` si se quiere propia del proyecto.
