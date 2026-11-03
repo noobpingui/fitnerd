@@ -22,3 +22,7 @@
 ## tests · verifier (red)
 - [ ] Los tests de conservación (401, 429, 503, 400, feedback_id y contexto desactivado) pasan su aserción de conservación y después fallan en la aserción de contexto personal; es rojo legítimo y se resolverá con la implementación, sin acción ahora.
 - [ ] No existe .sdd/templates/verify-report.md en el proyecto; se usó la plantilla del plugin (0.2.0). Valorar si conviene copiarla al proyecto.
+
+## implement · implementer
+- [ ] Corregir las 18 líneas E501 de los tests nuevos de la 034 (`test_coach_routes.py`, `test_coach_personal_context.py` y `test_coach_service.py`). Lo debe hacer quien pueda editar tests, el test-author, o relajar el ratchet.
+- [ ] Las ramas de `redact_name` en el paso `retrieval` de `coach_service.py` quedaron con una indentación poco elegante dentro del `dict`. Es solo estética.

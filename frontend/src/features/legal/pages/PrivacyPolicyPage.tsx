@@ -73,7 +73,10 @@ export function PrivacyPolicyPage() {
           <li>
             <strong>Anthropic (Claude):</strong> las preguntas que le
             haces al AI Coach se envían a Anthropic para generar la
-            respuesta.
+            respuesta, junto con tu nombre, tu perfil (sexo, edad, altura,
+            nivel de actividad y meta), tus calorías y macros y tus
+            indicadores de progreso, para personalizarla. Puedes
+            desactivarlo en el propio coach.
           </li>
           <li>
             <strong>Amazon Web Services (Amazon Bedrock):</strong> Las
@@ -85,7 +88,9 @@ export function PrivacyPolicyPage() {
           <li>
             <strong>Langfuse:</strong> las preguntas, las respuestas, el
             contenido de los vídeos usado y las valoraciones 👍/👎 se
-            envían para revisar la calidad del coach. Se identifican solo
+            envían para revisar la calidad del coach. Con las preguntas al
+            coach se envían también tu perfil, tus macros y tu progreso,
+            nunca tu nombre. Se identifican solo
             con un identificador interno de la cuenta, nunca con tu email
             ni tu nombre. Del análisis de fotos solo se envían el formato,
             el tamaño y el número de alimentos reconocidos, nunca la foto.

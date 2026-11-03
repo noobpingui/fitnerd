@@ -46,25 +46,25 @@ No hacen falta esqueletos para `CoachService.__init__`, `ask` y `ask_with_feedba
 
 ### backend (datos → lógica → interfaz)
 
-- [ ] T-026 [REQ-003, REQ-006, AC-003.1, AC-006.2] (impl) Extraer `parse_iso_date`, `parse_indicators`, `profile_lines` e `indicator_lines` de `progress_analysis_context` sin cambiar el comportamiento del análisis (los tests de las specs 010 y 011 siguen verdes) — `backend/services/progress_analysis_context.py`
-- [ ] T-027 [REQ-006, REQ-010, REQ-001, AC-006.1, AC-006.2, AC-010.4, AC-010.6, AC-001.4] (impl) `parse_use_personal_context`, `parse_client_context` (nunca lanza, descarta en bloque), `sanitize_first_name` — `backend/services/coach_personal_context.py`
-- [ ] T-028 [REQ-001, REQ-002, REQ-003, REQ-005, AC-001.1, AC-001.3, AC-002.1, AC-002.2, AC-003.2, AC-003.3, AC-003.5, AC-003.6, AC-005.1, AC-005.2, AC-005.3] (impl) `build_personal_context_block` con el formato exacto del plan §3.3 y los «no disponible(s)» — `backend/services/coach_personal_context.py`
-- [ ] T-029 [NFR-003, AC-N003.3] (impl) `redact_name` recursiva sobre `str`, `list`, `tuple` y valores de `dict` — `backend/services/coach_personal_context.py`
-- [ ] T-030 [REQ-001, REQ-005, REQ-004, NFR-001, NFR-004, AC-001.2, AC-001.5, AC-004.2, AC-005.1, AC-N001.1, AC-N004.1] (impl) `CoachPersonalContextReader.read` (UUID, nombre, perfil, edad con la fecha del dispositivo) — `backend/services/coach_personal_context.py`
-- [ ] T-031 [REQ-009, REQ-008, REQ-010, AC-009.1, AC-009.2, AC-009.3, AC-009.4, AC-009.5, AC-009.6, AC-008.1, AC-008.2] (impl) `SYSTEM_PROMPT` nuevo sin voseo y `build_coach_user_message` (idéntico al mensaje de hoy sin bloque) — `backend/services/coach_service.py`
-- [ ] T-032 [REQ-004, REQ-005, REQ-008, REQ-012, NFR-002, NFR-005, AC-004.1, AC-005.4, AC-010.4, AC-012.2, AC-012.3, AC-N002.1, AC-N002.2, AC-N005.1] (impl) `CoachService.__init__` con `personal_context_reader`, `ask` y `ask_with_feedback` con `use_personal_context` y `client_context`, bloque solo en el turno nuevo, límite antes del lector — `backend/services/coach_service.py`
-- [ ] T-033 [NFR-003, AC-N003.1, AC-N003.2] (impl) Pasar por `redact_name` todo lo que recibe el `Tracer` (entrada, pasos y salida) sin tocar lo enviado a Voyage, al modelo ni al usuario — `backend/services/coach_service.py`
-- [ ] T-034 [REQ-001, REQ-006, REQ-010, REQ-012, AC-001.4, AC-006.1, AC-010.6, AC-012.1, AC-012.4, AC-012.5] (impl) La ruta lee `use_personal_context` y `personal_context` tras validar la pregunta y el historial; `_build_coach_service()` construye el lector — `backend/routes/coach_routes.py`
+- [x] T-026 [REQ-003, REQ-006, AC-003.1, AC-006.2] (impl) Extraer `parse_iso_date`, `parse_indicators`, `profile_lines` e `indicator_lines` de `progress_analysis_context` sin cambiar el comportamiento del análisis (los tests de las specs 010 y 011 siguen verdes) — `backend/services/progress_analysis_context.py`
+- [x] T-027 [REQ-006, REQ-010, REQ-001, AC-006.1, AC-006.2, AC-010.4, AC-010.6, AC-001.4] (impl) `parse_use_personal_context`, `parse_client_context` (nunca lanza, descarta en bloque), `sanitize_first_name` — `backend/services/coach_personal_context.py`
+- [x] T-028 [REQ-001, REQ-002, REQ-003, REQ-005, AC-001.1, AC-001.3, AC-002.1, AC-002.2, AC-003.2, AC-003.3, AC-003.5, AC-003.6, AC-005.1, AC-005.2, AC-005.3] (impl) `build_personal_context_block` con el formato exacto del plan §3.3 y los «no disponible(s)» — `backend/services/coach_personal_context.py`
+- [x] T-029 [NFR-003, AC-N003.3] (impl) `redact_name` recursiva sobre `str`, `list`, `tuple` y valores de `dict` — `backend/services/coach_personal_context.py`
+- [x] T-030 [REQ-001, REQ-005, REQ-004, NFR-001, NFR-004, AC-001.2, AC-001.5, AC-004.2, AC-005.1, AC-N001.1, AC-N004.1] (impl) `CoachPersonalContextReader.read` (UUID, nombre, perfil, edad con la fecha del dispositivo) — `backend/services/coach_personal_context.py`
+- [x] T-031 [REQ-009, REQ-008, REQ-010, AC-009.1, AC-009.2, AC-009.3, AC-009.4, AC-009.5, AC-009.6, AC-008.1, AC-008.2] (impl) `SYSTEM_PROMPT` nuevo sin voseo y `build_coach_user_message` (idéntico al mensaje de hoy sin bloque) — `backend/services/coach_service.py`
+- [x] T-032 [REQ-004, REQ-005, REQ-008, REQ-012, NFR-002, NFR-005, AC-004.1, AC-005.4, AC-010.4, AC-012.2, AC-012.3, AC-N002.1, AC-N002.2, AC-N005.1] (impl) `CoachService.__init__` con `personal_context_reader`, `ask` y `ask_with_feedback` con `use_personal_context` y `client_context`, bloque solo en el turno nuevo, límite antes del lector — `backend/services/coach_service.py`
+- [x] T-033 [NFR-003, AC-N003.1, AC-N003.2] (impl) Pasar por `redact_name` todo lo que recibe el `Tracer` (entrada, pasos y salida) sin tocar lo enviado a Voyage, al modelo ni al usuario — `backend/services/coach_service.py`
+- [x] T-034 [REQ-001, REQ-006, REQ-010, REQ-012, AC-001.4, AC-006.1, AC-010.6, AC-012.1, AC-012.4, AC-012.5] (impl) La ruta lee `use_personal_context` y `personal_context` tras validar la pregunta y el historial; `_build_coach_service()` construye el lector — `backend/routes/coach_routes.py`
 
 ### frontend
 
-- [ ] T-035 [REQ-010] (impl) Implementar `Switch` de shadcn sobre `radix-ui` (`role="switch"`, `aria-checked`) — `frontend/src/components/ui/switch.tsx`
-- [ ] T-036 [REQ-007, REQ-002, REQ-003, AC-002.1, AC-002.2, AC-003.1, AC-003.4, AC-007.1, AC-007.2] (impl) `buildCoachPersonalContext` con `calculateMacros`, `parseLocalDate` y `buildAnalysisRequest(...).indicators` — `frontend/src/features/coach/personalContext.ts`
-- [ ] T-037 [REQ-010, AC-010.5] (impl) Preferencia en `localStorage` (`"off"` desactiva; ante fallo, activado) y `usePersonalContextPreference` — `frontend/src/features/coach/personalContextPreference.ts`
-- [ ] T-038 [REQ-010, AC-010.1, AC-010.2] (impl) `usePersonalContextPreference` en `hooks.ts` y `PersonalContextToggle` (Switch, Label y ayuda con `aria-describedby`) — `frontend/src/features/coach/hooks.ts`
-- [ ] T-039 [REQ-010, AC-010.1, AC-010.2] (impl) Componente del interruptor con los textos de la spec — `frontend/src/features/coach/components/PersonalContextToggle.tsx`
-- [ ] T-040 [REQ-007, REQ-006, REQ-004, REQ-010, AC-004.1, AC-006.3, AC-007.1, AC-007.2, AC-007.3, AC-010.3] (impl) `CoachPage`: interruptor bajo la descripción, `useProfile` y `useBodyMetrics`, payload con `use_personal_context` y `personal_context` solo si hay datos cargados, sin esperar — `frontend/src/features/coach/pages/CoachPage.tsx`
-- [ ] T-041 [REQ-011, AC-011.1, AC-011.2, AC-011.3] (impl) Textos nuevos de Anthropic y Langfuse; Voyage sin cambios — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
+- [x] T-035 [REQ-010] (impl) Implementar `Switch` de shadcn sobre `radix-ui` (`role="switch"`, `aria-checked`) — `frontend/src/components/ui/switch.tsx`
+- [x] T-036 [REQ-007, REQ-002, REQ-003, AC-002.1, AC-002.2, AC-003.1, AC-003.4, AC-007.1, AC-007.2] (impl) `buildCoachPersonalContext` con `calculateMacros`, `parseLocalDate` y `buildAnalysisRequest(...).indicators` — `frontend/src/features/coach/personalContext.ts`
+- [x] T-037 [REQ-010, AC-010.5] (impl) Preferencia en `localStorage` (`"off"` desactiva; ante fallo, activado) y `usePersonalContextPreference` — `frontend/src/features/coach/personalContextPreference.ts`
+- [x] T-038 [REQ-010, AC-010.1, AC-010.2] (impl) `usePersonalContextPreference` en `hooks.ts` y `PersonalContextToggle` (Switch, Label y ayuda con `aria-describedby`) — `frontend/src/features/coach/hooks.ts`
+- [x] T-039 [REQ-010, AC-010.1, AC-010.2] (impl) Componente del interruptor con los textos de la spec — `frontend/src/features/coach/components/PersonalContextToggle.tsx`
+- [x] T-040 [REQ-007, REQ-006, REQ-004, REQ-010, AC-004.1, AC-006.3, AC-007.1, AC-007.2, AC-007.3, AC-010.3] (impl) `CoachPage`: interruptor bajo la descripción, `useProfile` y `useBodyMetrics`, payload con `use_personal_context` y `personal_context` solo si hay datos cargados, sin esperar — `frontend/src/features/coach/pages/CoachPage.tsx`
+- [x] T-041 [REQ-011, AC-011.1, AC-011.2, AC-011.3] (impl) Textos nuevos de Anthropic y Langfuse; Voyage sin cambios — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
 
 ## Matriz de cobertura
 

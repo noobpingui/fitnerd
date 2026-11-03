@@ -2,9 +2,16 @@ from flask import Blueprint, request, jsonify, current_app, g
 
 from extensions import coach_llm, db, embedding_client, rate_limiter, tracer
 from repositories.transcript_chunk_repository import TranscriptChunkRepository
+from repositories.user_profile_repository import UserProfileRepository
+from repositories.user_repository import UserRepository
 from services.retrieval_service import RetrievalService
+from services.coach_personal_context import (
+    CoachPersonalContextReader,
+    parse_use_personal_context,
+)
 from services.coach_service import CoachService
 from services.coach_feedback_service import CoachFeedbackService
+from utils.clock import current_clock
 from utils.feedback_token import FeedbackTokenSigner
 from decorators import require_auth
 from exceptions.custom_exceptions import ValidationError
@@ -52,7 +59,20 @@ def _build_coach_service():
 
     feedback_signer = FeedbackTokenSigner(current_app.config["SECRET_KEY"])
 
-    return CoachService(retrieval_service, coach_llm, rate_limiter, tracer, feedback_signer)
+    personal_context_reader = CoachPersonalContextReader(
+        UserRepository(db.session),
+        UserProfileRepository(db.session),
+        clock=current_clock(),
+    )
+
+    return CoachService(
+        retrieval_service,
+        coach_llm,
+        rate_limiter,
+        tracer,
+        feedback_signer,
+        personal_context_reader,
+    )
 
 
 def _build_coach_feedback_service():
@@ -77,7 +97,14 @@ def ask():
     user_id = g.decoded_token["id"]
 
     coach_service = _build_coach_service()
-    result = coach_service.ask_with_feedback(question, user_id, history)
+    #Spec 034: el servicio valida lo que calcula la pantalla y lo descarta sin error si no vale.
+    result = coach_service.ask_with_feedback(
+        question,
+        user_id,
+        history,
+        use_personal_context=parse_use_personal_context(data.get("use_personal_context")),
+        client_context=data.get("personal_context"),
+    )
 
     return jsonify(answer=result.answer, feedback_id=result.feedback_id), 200
 

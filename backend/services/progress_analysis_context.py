@@ -108,7 +108,7 @@ def _invalid() -> ValidationError:
     return ValidationError(INVALID_ANALYSIS_REQUEST_MESSAGE)
 
 
-def _parse_date(value: Any) -> date:
+def parse_iso_date(value: Any) -> date:
     if not isinstance(value, str) or not _DATE_PATTERN.match(value):
         raise _invalid()
     try:
@@ -117,16 +117,9 @@ def _parse_date(value: Any) -> date:
         raise _invalid()
 
 
-def parse_analysis_request(data: Any, server_today: date) -> AnalysisRequest:
-    if not isinstance(data, dict):
-        raise _invalid()
-    indicators = data.get("indicators")
-    calories = data.get("calories")
-    if not isinstance(indicators, dict) or not isinstance(calories, dict):
-        raise _invalid()
-
-    today = _parse_date(data.get("today"))
-    if abs(today - server_today) > timedelta(days=1):
+def parse_indicators(indicators: Any) -> tuple[dict, str]:
+    """Valida los indicadores del cliente; devuelve (indicadores limpios, pace_status)."""
+    if not isinstance(indicators, dict):
         raise _invalid()
 
     clean: dict = {}
@@ -145,6 +138,34 @@ def parse_analysis_request(data: Any, server_today: date) -> AnalysisRequest:
     if pace_status not in PACE_STATUSES:
         raise _invalid()
 
+    for key in _COUNTER_INDICATORS:
+        value = indicators.get(key)
+        if not is_int(value) or not 0 <= value <= MAX_COUNTER:
+            raise _invalid()
+        clean[key] = value
+
+    last_record = indicators.get("last_record_date")
+    if last_record is not None:
+        parse_iso_date(last_record)
+    clean["last_record_date"] = last_record
+
+    return clean, pace_status
+
+
+def parse_analysis_request(data: Any, server_today: date) -> AnalysisRequest:
+    if not isinstance(data, dict):
+        raise _invalid()
+    indicators = data.get("indicators")
+    calories = data.get("calories")
+    if not isinstance(indicators, dict) or not isinstance(calories, dict):
+        raise _invalid()
+
+    today = parse_iso_date(data.get("today"))
+    if abs(today - server_today) > timedelta(days=1):
+        raise _invalid()
+
+    clean, pace_status = parse_indicators(indicators)
+
     rate = data.get("rate_kg_per_week")
     latest = data.get("latest_weight_kg")
     if pace_status == UNREALISTIC:
@@ -159,17 +180,6 @@ def parse_analysis_request(data: Any, server_today: date) -> AnalysisRequest:
             pace_status = UNREALISTIC
     elif rate is not None or latest is not None:
         raise _invalid()
-
-    for key in _COUNTER_INDICATORS:
-        value = indicators.get(key)
-        if not is_int(value) or not 0 <= value <= MAX_COUNTER:
-            raise _invalid()
-        clean[key] = value
-
-    last_record = indicators.get("last_record_date")
-    if last_record is not None:
-        _parse_date(last_record)
-    clean["last_record_date"] = last_record
 
     kcal = {}
     for key in ("maintenance_kcal", "target_kcal"):
@@ -215,6 +225,45 @@ def _or_unavailable(value: str | None) -> str:
 
 def _plural(count: int, singular: str, plural: str) -> str:
     return f"{count} {singular if count == 1 else plural}"
+
+
+def profile_lines(profile: Any, age: int | None) -> list[str]:
+    age_text = f"{age} años" if age is not None else UNAVAILABLE
+    return [
+        f"Sexo: {GENDER_LABELS[profile.gender]}",
+        f"Edad: {age_text}",
+        f"Altura: {format_height(profile)}",
+        f"Nivel de actividad: {ACTIVITY_LABELS[profile.activity_level]}",
+        f"Meta: {GOAL_LABELS[profile.goal]}",
+    ]
+
+
+def indicator_lines(ind: dict, pace_status: str) -> list[str]:
+    if pace_status in PACE_STATUSES_WITH_RATE or pace_status == UNREALISTIC:
+        rate_text = _or_unavailable(ind["rate"])
+    else:
+        rate_text = UNAVAILABLE
+    rate_line = f"Ritmo semanal: {rate_text} ({PACE_LABELS[pace_status]})"
+
+    body_fat = _or_unavailable(ind["body_fat"])
+    if ind["body_fat"] is not None and ind["body_fat_change_30d"] is not None:
+        body_fat += f" (cambio en 30 días: {ind['body_fat_change_30d']})"
+
+    return [
+        f"Peso actual: {_or_unavailable(ind['weight'])} "
+        f"(cambio en 30 días: {_or_unavailable(ind['weight_change_30d'])})",
+        f"% de grasa: {body_fat}",
+        rate_line,
+        f"Masa grasa: {_or_unavailable(ind['fat_mass'])}",
+        f"Masa magra: {_or_unavailable(ind['lean_mass'])}",
+        f"IMC: {_or_unavailable(ind['bmi'])}",
+        f"FFMI: {_or_unavailable(ind['ffmi'])}",
+        f"Racha: {_plural(ind['streak_weeks'], 'semana', 'semanas')}",
+        "Registros en los últimos 30 días: "
+        f"{_plural(ind['records_last_30_days'], 'registro', 'registros')}",
+        f"Total de registros: {ind['total_records']} en total",
+        f"Último registro: {_or_unavailable(ind['last_record_date'])}",
+    ]
 
 
 def _suggestion_block(suggestion: CalorieSuggestion | None, pace_status: str) -> str:
@@ -266,41 +315,11 @@ def build_user_message(
     months: int,
 ) -> str:
     ind = request.indicators
-    age_text = f"{age} años" if age is not None else UNAVAILABLE
 
-    if request.pace_status in PACE_STATUSES_WITH_RATE or request.pace_status == UNREALISTIC:
-        rate_text = _or_unavailable(ind["rate"])
-    else:
-        rate_text = UNAVAILABLE
-    rate_line = f"Ritmo semanal: {rate_text} ({PACE_LABELS[request.pace_status]})"
-
-    body_fat = _or_unavailable(ind["body_fat"])
-    if ind["body_fat"] is not None and ind["body_fat_change_30d"] is not None:
-        body_fat += f" (cambio en 30 días: {ind['body_fat_change_30d']})"
-
-    profile_block = [
-        "Perfil del usuario:",
-        f"Sexo: {GENDER_LABELS[profile.gender]}",
-        f"Edad: {age_text}",
-        f"Altura: {format_height(profile)}",
-        f"Nivel de actividad: {ACTIVITY_LABELS[profile.activity_level]}",
-        f"Meta: {GOAL_LABELS[profile.goal]}",
-    ]
+    profile_block = ["Perfil del usuario:", *profile_lines(profile, age)]
     indicators_block = [
         "Indicadores de progreso (tal como los ve el usuario en Métricas):",
-        f"Peso actual: {_or_unavailable(ind['weight'])} "
-        f"(cambio en 30 días: {_or_unavailable(ind['weight_change_30d'])})",
-        f"% de grasa: {body_fat}",
-        rate_line,
-        f"Masa grasa: {_or_unavailable(ind['fat_mass'])}",
-        f"Masa magra: {_or_unavailable(ind['lean_mass'])}",
-        f"IMC: {_or_unavailable(ind['bmi'])}",
-        f"FFMI: {_or_unavailable(ind['ffmi'])}",
-        f"Racha: {_plural(ind['streak_weeks'], 'semana', 'semanas')}",
-        "Registros en los últimos 30 días: "
-        f"{_plural(ind['records_last_30_days'], 'registro', 'registros')}",
-        f"Total de registros: {ind['total_records']} en total",
-        f"Último registro: {_or_unavailable(ind['last_record_date'])}",
+        *indicator_lines(ind, request.pace_status),
     ]
     calories_block = [
         "Calorías (Macros):",

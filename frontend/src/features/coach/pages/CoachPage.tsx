@@ -4,8 +4,14 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { ApiError } from "@/lib/apiClient"
 import { ChatMessageBubble } from "@/features/coach/components/ChatMessageBubble"
-import { useAskCoach } from "@/features/coach/hooks"
-import type { ConversationMessage } from "@/features/coach/types"
+import { PersonalContextToggle } from "@/features/coach/components/PersonalContextToggle"
+import { useAskCoach, usePersonalContextPreference } from "@/features/coach/hooks"
+import { buildCoachPersonalContext } from "@/features/coach/personalContext"
+import type { AskCoachPayload, ConversationMessage } from "@/features/coach/types"
+import { useBodyMetrics } from "@/features/body-metrics/hooks"
+import { useProfile } from "@/features/profile/hooks"
+import { answersFromProfile } from "@/features/profile/mappers"
+import { todayIsoDate } from "@/lib/dates"
 
 const MAX_QUESTION_LENGTH = 500
 
@@ -17,6 +23,11 @@ export function CoachPage() {
   const [messages, setMessages] = useState<ConversationMessage[]>([])
   const [question, setQuestion] = useState("")
   const askCoach = useAskCoach()
+  const [personalContextEnabled, setPersonalContextEnabled] = usePersonalContextPreference()
+  // Spec 034: el perfil y las mediciones salen de la caché de TanStack Query; si aún
+  // no han cargado (o fallaron), la pregunta se envía igual, sin esperar y sin contexto.
+  const profileQuery = useProfile()
+  const metricsQuery = useBodyMetrics()
   const bottomRef = useRef<HTMLDivElement>(null)
 
   // Auto-scroll al ultimo mensaje (o al indicador de "escribiendo") cada
@@ -38,8 +49,21 @@ export function CoachPage() {
     setMessages((prev) => [...prev, { role: "user", content: trimmed }])
     setQuestion("")
 
+    const payload: AskCoachPayload = {
+      question: trimmed,
+      history,
+      use_personal_context: personalContextEnabled,
+    }
+    if (personalContextEnabled && profileQuery.data?.profile && metricsQuery.isSuccess) {
+      payload.personal_context = buildCoachPersonalContext(
+        metricsQuery.data,
+        answersFromProfile(profileQuery.data),
+        todayIsoDate()
+      )
+    }
+
     askCoach.mutate(
-      { question: trimmed, history },
+      payload,
       {
         onSuccess: (data) => {
           setMessages((prev) => [
@@ -75,6 +99,11 @@ export function CoachPage() {
         Resuelve tus dudas sobre alimentación, calorías y macros. Las respuestas salen de contenido real de nutrición, no de
         opiniones genéricas.
       </p>
+
+      <PersonalContextToggle
+        checked={personalContextEnabled}
+        onCheckedChange={setPersonalContextEnabled}
+      />
 
       {/* Altura fija (65dvh) en vez de calcular "resto de la pantalla
           menos el navbar" - mas simple y no se rompe si el navbar vuelve
