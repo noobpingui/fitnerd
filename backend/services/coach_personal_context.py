@@ -1,12 +1,13 @@
 import re
 import unicodedata
 import uuid
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date, timedelta
-from collections.abc import Iterable
 from typing import Any
 
 from exceptions.custom_exceptions import ValidationError
+from services.auth_input_rules import validate_first_name
 from services.date_of_birth_rules import age_on
 from services.number_validation import is_int
 from services.progress_analysis_context import (
@@ -175,22 +176,58 @@ def build_personal_context_block(context: PersonalContext) -> str:
     )
 
 
-def parse_previous_names(_value: Any) -> tuple[str, ...]:
-    raise NotImplementedError("not implemented")
+def parse_previous_names(value: Any) -> tuple[str, ...]:
+    """Valida los nombres anteriores que envia el cliente. Nunca lanza: una lista no
+    valida se ignora entera."""
+    if not isinstance(value, list) or not 1 <= len(value) <= MAX_PREVIOUS_NAMES:
+        return ()
+    names = []
+    for item in value:
+        try:
+            validate_first_name(item)
+        except ValidationError:
+            return ()
+        names.append(sanitize_first_name(item))
+    return tuple(name for name in names if name)
 
 
 def name_redaction_terms(
-    _first_name: str | None, _other_names: Iterable[str] = ()
+    first_name: str | None, other_names: Iterable[str] = ()
 ) -> list[str]:
-    raise NotImplementedError("not implemented")
+    """Textos a buscar en la traza: nombre completo y partes de 3 letras o mas que
+    no sean particulas, sin duplicados, de mas largo a mas corto."""
+    terms: list[str] = []
+    seen: set[str] = set()
+
+    def add(text: str) -> None:
+        key = text.casefold()
+        if key not in seen:
+            seen.add(key)
+            terms.append(text)
+
+    for name in [first_name, *other_names]:
+        if not name:
+            continue
+        add(name)
+        parts = [part for part in re.split(r"[\s\-‐‑]+", name) if part]
+        if len(parts) >= 2:
+            for part in parts:
+                if (
+                    sum(ch.isalpha() for ch in part) >= MIN_NAME_PART_LETTERS
+                    and part.casefold() not in NAME_PARTICLES
+                ):
+                    add(part)
+    return sorted(terms, key=len, reverse=True)
 
 
-def redact_name(value: Any, first_name: str | None) -> Any:
-    """Sustituye el nombre (palabra completa, sin distinguir mayúsculas) por
+def redact_name(value: Any, first_name: str | None, other_names: Iterable[str] = ()) -> Any:
+    """Sustituye el nombre (palabra completa, sin distinguir mayusculas) por
     «[nombre]» en textos, listas, tuplas y valores de diccionarios."""
-    if not first_name:
+    terms = name_redaction_terms(first_name, other_names)
+    if not terms:
         return value
-    pattern = re.compile(rf"(?<!\w){re.escape(first_name)}(?!\w)", re.IGNORECASE)
+    alternatives = "|".join(re.escape(term) for term in terms)
+    pattern = re.compile(rf"(?<!\w)(?:{alternatives})(?!\w)", re.IGNORECASE)
     return _redact(value, pattern)
 
 

@@ -104,6 +104,7 @@ def ask():
         history,
         use_personal_context=parse_use_personal_context(data.get("use_personal_context")),
         client_context=data.get("personal_context"),
+        previous_names=data.get("previous_names"),
     )
 
     return jsonify(answer=result.answer, feedback_id=result.feedback_id), 200

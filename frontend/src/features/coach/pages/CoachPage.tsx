@@ -6,6 +6,7 @@ import { ApiError } from "@/lib/apiClient"
 import { ChatMessageBubble } from "@/features/coach/components/ChatMessageBubble"
 import { PersonalContextToggle } from "@/features/coach/components/PersonalContextToggle"
 import { useAskCoach, usePersonalContextPreference } from "@/features/coach/hooks"
+import { previousNamesFor, rememberName } from "@/features/coach/previousNames"
 import { buildCoachPersonalContext } from "@/features/coach/personalContext"
 import type { AskCoachPayload, ConversationMessage } from "@/features/coach/types"
 import { useBodyMetrics } from "@/features/body-metrics/hooks"
@@ -29,6 +30,15 @@ export function CoachPage() {
   const profileQuery = useProfile()
   const metricsQuery = useBodyMetrics()
   const bottomRef = useRef<HTMLDivElement>(null)
+  // Spec 034 (REQ-013): nombres vistos durante la conversación, para anonimizar la traza.
+  const seenNamesRef = useRef<string[]>([])
+  const currentName = profileQuery.data?.first_name ?? null
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      seenNamesRef.current = rememberName(seenNamesRef.current, currentName)
+    }
+  }, [currentName, messages.length])
 
   // Auto-scroll al ultimo mensaje (o al indicador de "escribiendo") cada
   // vez que la conversacion cambia - el mismo comportamiento de
@@ -46,6 +56,9 @@ export function CoachPage() {
     // mensaje que estamos por agregar.
     const history = messages.map(({ role, content }) => ({ role, content }))
 
+    const previousNames = history.length > 0 ? previousNamesFor(seenNamesRef.current, currentName) : []
+    seenNamesRef.current = rememberName(seenNamesRef.current, currentName)
+
     setMessages((prev) => [...prev, { role: "user", content: trimmed }])
     setQuestion("")
 
@@ -53,6 +66,9 @@ export function CoachPage() {
       question: trimmed,
       history,
       use_personal_context: personalContextEnabled,
+    }
+    if (previousNames.length > 0) {
+      payload.previous_names = previousNames
     }
     if (personalContextEnabled && profileQuery.data?.profile && metricsQuery.isSuccess) {
       payload.personal_context = buildCoachPersonalContext(

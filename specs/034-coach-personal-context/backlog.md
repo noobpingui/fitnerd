@@ -65,3 +65,6 @@
 
 ## tests (rev. 2) · verifier (red)
 - [ ] Revisar el CRLF de los cuatro archivos de test de la 034 en la copia de trabajo (Art. P5.1); `.gitattributes` los normaliza al commit.
+
+## implement (rev. 2) · implementer
+- [ ] Ordenar los imports (I001, L7) de `backend/tests/test_services/test_coach_personal_context.py`. Es un archivo de tests y el ratchet lo cuenta como violación nueva, así que debe corregirlo quien pueda editar tests (etapa tests) antes de que el ratchet pase limpio.

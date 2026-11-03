@@ -10,7 +10,7 @@
   "branch": "feat/034-coach-personal-context",
   "base_branch": "main",
   "created_at": "2026-11-03T03:04:33.745Z",
-  "stage": "implement",
+  "stage": "verify",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -29,7 +29,10 @@
       "at": "2026-11-03T05:54:27.950Z",
       "note": "auto (gate_mode=flow): red check PASS, T-058 excepción declarada"
     },
-    "implement": null,
+    "implement": {
+      "at": "2026-11-03T06:02:45.683Z",
+      "note": "auto (gate_mode=flow): implementación rev. 2 completa"
+    },
     "verify": null,
     "review": null,
     "docs": null,
@@ -39,7 +42,7 @@
     "spec": "ea96016",
     "plan": "266e254",
     "tasks": "d3dbd53",
-    "tests": "ec5e486",
+    "tests": "7e65b6b",
     "implement": "56b4019"
   },
   "iterations": {
@@ -724,6 +727,30 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS, T-058 excepción declarada"
+    },
+    {
+      "at": "2026-11-03T05:54:28.305Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: 7e65b6b"
+    },
+    {
+      "at": "2026-11-03T05:54:28.515Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar T-067 a T-074 (F4, F5, F9, F10)"
+    },
+    {
+      "at": "2026-11-03T06:02:45.570Z",
+      "stage": "implement",
+      "event": "done",
+      "note": "T-067 a T-074 y F9; pytest 3136, vitest 1963; queda 1 I001 en un test"
+    },
+    {
+      "at": "2026-11-03T06:02:45.683Z",
+      "stage": "implement",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): implementación rev. 2 completa"
     }
   ]
 }

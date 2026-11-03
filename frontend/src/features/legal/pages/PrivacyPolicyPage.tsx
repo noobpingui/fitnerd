@@ -76,7 +76,10 @@ export function PrivacyPolicyPage() {
             respuesta, junto con tu nombre, tu perfil (sexo, edad, altura,
             nivel de actividad y meta), tus calorías y macros y tus
             indicadores de progreso, para personalizarla. Puedes
-            desactivarlo en el propio coach.
+            desactivarlo en el propio coach. Si lo desactivas a mitad de
+            una conversación, los mensajes anteriores de esa conversación
+            se siguen enviando a Anthropic como contexto y pueden incluir
+            esos datos.
           </li>
           <li>
             <strong>Amazon Web Services (Amazon Bedrock):</strong> Las

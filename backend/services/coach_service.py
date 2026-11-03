@@ -2,7 +2,11 @@ import logging
 from dataclasses import dataclass
 from typing import Any
 
-from services.coach_personal_context import build_personal_context_block, redact_name
+from services.coach_personal_context import (
+    build_personal_context_block,
+    parse_previous_names,
+    redact_name,
+)
 from services.retrieval_service import DEFAULT_TOP_K, RetrievalService
 from utils.feedback_token import FeedbackTokenSigner
 from utils.tracing import Tracer
@@ -103,6 +107,7 @@ class CoachService:
         *,
         use_personal_context: bool = True,
         client_context: Any = None,
+        previous_names: Any = None,
     ) -> str:
         return self.ask_with_feedback(
             question,
@@ -110,6 +115,7 @@ class CoachService:
             history,
             use_personal_context=use_personal_context,
             client_context=client_context,
+            previous_names=previous_names,
         ).answer
 
     def ask_with_feedback(
@@ -120,6 +126,7 @@ class CoachService:
         *,
         use_personal_context: bool = True,
         client_context: Any = None,
+        previous_names: Any = None,
     ) -> CoachAnswer:
         #Chequeo de limite ANTES de gastar nada (retrieval + Claude) - a diferencia de
         #ProgressAnalysisService, aca no hay un caso "gratis" que se pueda resolver sin
@@ -147,7 +154,7 @@ class CoachService:
                     personal = self.personal_context_reader.read(user_id, client_context)
                     name = personal.first_name
                 else:
-                    #Solo para anonimizar la traza; el nombre no llega al modelo (F1).
+                    # Solo para anonimizar la traza; el nombre no llega al modelo (F1).
                     name = self.personal_context_reader.read_first_name(user_id)
         except Exception:
             logger.exception("No se pudo leer el contexto personal del coach")
@@ -155,11 +162,17 @@ class CoachService:
                 "No se pudo generar una respuesta en este momento. Intenta de nuevo en unos minutos."
             )
 
+        # Nombres anteriores del cliente: solo para anonimizar la traza, nunca al modelo.
+        previous = parse_previous_names(previous_names)
+
+        def redact(value: Any) -> Any:
+            return redact_name(value, name, previous)
+
         #La traza se abre después del límite de uso: un 429 no genera traza. El nombre del
         #usuario nunca llega a Langfuse (NFR-003): todo lo que recibe el tracer pasa por
         #redact_name; a Voyage, al modelo y al usuario les llega el texto sin tocar.
         trace = self.tracer.start_trace(
-            "coach-ask", user_id=str(user_id), input=redact_name(question, name)
+            "coach-ask", user_id=str(user_id), input=redact(question)
         )
 
         try:
@@ -168,7 +181,7 @@ class CoachService:
             step = trace.start_step(
                 "embedding",
                 "generation",
-                redact_name(retrieval_query, name),
+                redact(retrieval_query),
                 self.retrieval_service.embedding_model,
             )
             try:
@@ -189,7 +202,7 @@ class CoachService:
                 raise
             relevant_chunks = [c for c in candidates if self.retrieval_service.is_relevant(c)]
             step.end(
-                redact_name(
+                redact(
                     {
                         "candidates": [
                             {
@@ -201,8 +214,7 @@ class CoachService:
                             for c in candidates
                         ],
                         "passed_count": len(relevant_chunks),
-                    },
-                    name,
+                    }
                 ),
                 None,
             )
@@ -232,7 +244,7 @@ class CoachService:
                 messages = [*(history or []), {"role": "user", "content": user_message}]
 
                 step = trace.start_step(
-                    "generation", "generation", redact_name(messages, name), self.llm_client.model
+                    "generation", "generation", redact(messages), self.llm_client.model
                 )
                 try:
                     result = self.llm_client.generate_with_usage(SYSTEM_PROMPT, messages)
@@ -240,7 +252,7 @@ class CoachService:
                     step.fail(exc)
                     raise
                 step.end(
-                    redact_name(result.text or "", name),
+                    redact(result.text or ""),
                     {"input": result.input_tokens, "output": result.output_tokens},
                 )
 
@@ -266,7 +278,7 @@ class CoachService:
 
         #Fuera del try de proveedores: un fallo de instrumentación nunca debe ser un 503.
         trace.add_score("outcome", outcome, "CATEGORICAL")
-        trace.finish(redact_name(answer, name))
+        trace.finish(redact(answer))
 
         feedback_id = None
         if self.feedback_signer is not None and trace.trace_id is not None:

@@ -125,17 +125,17 @@ Tareas nuevas tras el gate de review y la spec enmendada (REQ-013, AC-N003.4 a A
 
 #### backend (lógica → interfaz)
 
-- [ ] T-067 [NFR-003, REQ-013, AC-N003.4, AC-N003.5, AC-N003.6, AC-N003.7, AC-N003.8, AC-013.3] (impl) `name_redaction_terms` (nombre completo y partes de 3 letras o más que no son partículas, separadas por espacio o guion, sin duplicados, de más largo a más corto) y `redact_name(value, first_name, other_names=())` con un único patrón en una sola pasada, recursivo — `backend/services/coach_personal_context.py`
-- [ ] T-068 [REQ-013, AC-013.6] (impl) `parse_previous_names` con `validate_first_name` y `sanitize_first_name`; nunca lanza, lista no válida ignorada entera — `backend/services/coach_personal_context.py`
-- [ ] T-069 [REQ-013, NFR-003, NFR-002, REQ-010, AC-013.3, AC-013.4, AC-013.5, AC-010.8, AC-N003.4] (impl) `CoachService.ask` y `ask_with_feedback` aceptan `previous_names`, lo validan con `parse_previous_names`, lo pasan a `redact_name` en cada paso de la traza (helper local) y nunca al mensaje, a Voyage ni al bloque; F9: espacio tras `#` en el comentario de la línea ~150 — `backend/services/coach_service.py`
-- [ ] T-070 [REQ-013, AC-013.3, AC-013.5, AC-013.6] (impl) La ruta lee `previous_names` del cuerpo y lo pasa como argumento con nombre, sin validarlo — `backend/routes/coach_routes.py`
+- [x] T-067 [NFR-003, REQ-013, AC-N003.4, AC-N003.5, AC-N003.6, AC-N003.7, AC-N003.8, AC-013.3] (impl) `name_redaction_terms` (nombre completo y partes de 3 letras o más que no son partículas, separadas por espacio o guion, sin duplicados, de más largo a más corto) y `redact_name(value, first_name, other_names=())` con un único patrón en una sola pasada, recursivo — `backend/services/coach_personal_context.py`
+- [x] T-068 [REQ-013, AC-013.6] (impl) `parse_previous_names` con `validate_first_name` y `sanitize_first_name`; nunca lanza, lista no válida ignorada entera — `backend/services/coach_personal_context.py`
+- [x] T-069 [REQ-013, NFR-003, NFR-002, REQ-010, AC-013.3, AC-013.4, AC-013.5, AC-010.8, AC-N003.4] (impl) `CoachService.ask` y `ask_with_feedback` aceptan `previous_names`, lo validan con `parse_previous_names`, lo pasan a `redact_name` en cada paso de la traza (helper local) y nunca al mensaje, a Voyage ni al bloque; F9: espacio tras `#` en el comentario de la línea ~150 — `backend/services/coach_service.py`
+- [x] T-070 [REQ-013, AC-013.3, AC-013.5, AC-013.6] (impl) La ruta lee `previous_names` del cuerpo y lo pasa como argumento con nombre, sin validarlo — `backend/routes/coach_routes.py`
 
 #### frontend
 
-- [ ] T-071 [REQ-013, AC-013.1, AC-013.2] (impl) `rememberName` y `previousNamesFor` según el plan §3.4 — `frontend/src/features/coach/previousNames.ts`
-- [ ] T-072 [REQ-010, AC-010.7] (impl) `PERSONAL_CONTEXT_HELP_OFF` pasa al texto completo, en el mismo `<p>` enlazado con `aria-describedby` — `frontend/src/features/coach/components/PersonalContextToggle.tsx`
-- [ ] T-073 [REQ-013, REQ-010, AC-013.1, AC-013.2, AC-010.8] (impl) `CoachPage`: ref de nombres vistos, `useEffect` con `rememberName` y `previous_names` en el payload solo si hay conversación y cambió el nombre, con el interruptor activado o desactivado; el historial se reenvía tal cual — `frontend/src/features/coach/pages/CoachPage.tsx`
-- [ ] T-074 [REQ-011, AC-011.4] (impl) Frase nueva del punto de Anthropic; `updatedAt` sin cambios — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
+- [x] T-071 [REQ-013, AC-013.1, AC-013.2] (impl) `rememberName` y `previousNamesFor` según el plan §3.4 — `frontend/src/features/coach/previousNames.ts`
+- [x] T-072 [REQ-010, AC-010.7] (impl) `PERSONAL_CONTEXT_HELP_OFF` pasa al texto completo, en el mismo `<p>` enlazado con `aria-describedby` — `frontend/src/features/coach/components/PersonalContextToggle.tsx`
+- [x] T-073 [REQ-013, REQ-010, AC-013.1, AC-013.2, AC-010.8] (impl) `CoachPage`: ref de nombres vistos, `useEffect` con `rememberName` y `previous_names` en el payload solo si hay conversación y cambió el nombre, con el interruptor activado o desactivado; el historial se reenvía tal cual — `frontend/src/features/coach/pages/CoachPage.tsx`
+- [x] T-074 [REQ-011, AC-011.4] (impl) Frase nueva del punto de Anthropic; `updatedAt` sin cambios — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
 
 ## Matriz de cobertura
 
