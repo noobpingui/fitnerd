@@ -10,8 +10,8 @@
   "branch": "feat/033-profile-first-name",
   "base_branch": "main",
   "created_at": "2026-11-02T20:27:01.978Z",
-  "stage": "review",
-  "status": "awaiting_approval",
+  "stage": "close",
+  "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-11-03T01:44:37.075Z",
@@ -37,8 +37,14 @@
       "at": "2026-11-03T02:36:06.259Z",
       "note": "auto (gate_mode=flow): verify PASS"
     },
-    "review": null,
-    "docs": null,
+    "review": {
+      "at": "2026-11-03T02:41:41.571Z",
+      "note": "Aprobado y si para F6"
+    },
+    "docs": {
+      "at": "2026-11-03T02:42:34.650Z",
+      "note": "auto (gate_mode=flow): docs DONE"
+    },
     "close": null
   },
   "commits": {
@@ -46,7 +52,8 @@
     "plan": "c7ca9d4",
     "tasks": "41af941",
     "tests": "7ecf0fe",
-    "implement": "1324074"
+    "implement": "1324074",
+    "review": "49c4971"
   },
   "iterations": {
     "tests": 2,
@@ -572,6 +579,36 @@
       "stage": "review",
       "event": "done",
       "note": "APPROVED 2.ª vuelta: 0 bloqueantes, 0 mayores, 1 menor (T-028), 1 NIT"
+    },
+    {
+      "at": "2026-11-03T02:41:41.571Z",
+      "stage": "review",
+      "event": "approved",
+      "note": "Aprobado y si para F6"
+    },
+    {
+      "at": "2026-11-03T02:41:41.701Z",
+      "stage": "docs",
+      "event": "commit",
+      "note": "review: 49c4971"
+    },
+    {
+      "at": "2026-11-03T02:41:58.869Z",
+      "stage": "docs",
+      "event": "started",
+      "note": "Delegar en doc-keeper"
+    },
+    {
+      "at": "2026-11-03T02:42:34.530Z",
+      "stage": "docs",
+      "event": "done",
+      "note": "CLAUDE.md y README.md actualizados"
+    },
+    {
+      "at": "2026-11-03T02:42:34.650Z",
+      "stage": "docs",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): docs DONE"
     }
   ]
 }
