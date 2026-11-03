@@ -580,7 +580,7 @@ Detalle en [specs/033-profile-first-name/backlog.md](../specs/033-profile-first-
 
 ## 034-coach-personal-context · El coach conoce tu perfil, nombre, macros y progreso al responder (2026-11-03)
 Detalle en [specs/034-coach-personal-context/backlog.md](../specs/034-coach-personal-context/backlog.md). Solo se pasan los puntos que siguen abiertos; los demás se resolvieron en la propia feature (F1 a F13 de la review).
-- [ ] Revisar en navegador (escritorio y móvil) el interruptor «Usar mis datos para personalizar las respuestas» de `/coach` (AC-010.1), su ayuda y el texto nuevo de la Política de privacidad.
+- [x] Revisar en navegador (escritorio y móvil) el interruptor «Usar mis datos para personalizar las respuestas» de `/coach` (AC-010.1), su ayuda y el texto nuevo de la Política de privacidad (comprobado por el usuario el 2026-11-03).
 - [ ] El texto de «no lo sé» del coach («No tengo informacion relacionada con ese tema en especifico.») no lleva tildes.
 - [ ] Que el coach pueda responder preguntas sobre los propios datos aunque el corpus no tenga contenido relevante.
 - [ ] Dar al coach lo registrado en el diario de comidas, como los totales del día frente al objetivo.
