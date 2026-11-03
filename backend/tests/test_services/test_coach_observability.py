@@ -8,11 +8,13 @@ Redis.
 import dataclasses
 import json
 import time
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
+from types import SimpleNamespace
 
 import pytest
 
 from exceptions.custom_exceptions import RateLimitError, ServiceUnavailableError
+from services.coach_personal_context import ClientCoachContext, CoachMacros, PersonalContext
 from services.coach_service import SYSTEM_PROMPT, CoachService
 from tests.fakes import FakeClock, FakeLLMClient, FakeLogger, FakeRateLimiter
 from tests.fakes_observability import (
@@ -665,6 +667,148 @@ def test_trace_never_contains_provider_or_langfuse_credentials(fails):
 
 
 # --- NFR-002 -----------------------------------------------------------------
+
+
+# --- Spec 034: el nombre nunca llega a la traza ------------------------------
+
+
+class FakePersonalContextReader:
+    """Doble del lector del contexto personal: devuelve un `PersonalContext` fijo."""
+
+    def __init__(self, first_name="Carlos"):
+        profile = SimpleNamespace(
+            gender="male",
+            height_unit="cm",
+            height_cm=180,
+            height_ft=None,
+            height_in=None,
+            weight_unit="kg",
+            activity_level="high",
+            goal="lose",
+        )
+        client = ClientCoachContext(
+            today=date(2026, 10, 12),
+            macros=CoachMacros(2750, 2200, 160, 245, 61),
+            indicators={
+                "weight": "79,4 kg",
+                "weight_change_30d": "-0,6 kg",
+                "body_fat": None,
+                "body_fat_change_30d": None,
+                "rate": "-0,2 kg/sem",
+                "fat_mass": None,
+                "lean_mass": None,
+                "bmi": "24,5",
+                "ffmi": None,
+                "streak_weeks": 4,
+                "records_last_30_days": 4,
+                "total_records": 4,
+                "last_record_date": "2026-10-11",
+            },
+            pace_status="too_slow",
+        )
+        self.context = PersonalContext(
+            first_name=first_name, profile=profile, age=30, client=client
+        )
+
+    def read(self, user_id, client_data):
+        return self.context
+
+
+def make_personal_service(answer, first_name="Carlos"):
+    backend = FakeTraceBackend(clock=make_clock())
+    llm = FakeLLMClient(answer=answer, input_tokens=850, output_tokens=40, model="claude-sonnet-5")
+    service = CoachService(
+        FakeObservableRetrievalService(candidates=GOOD_CANDIDATES),
+        llm,
+        FakeRateLimiter(allowed=True),
+        Tracer(backend=backend, logger=FakeLogger()),
+        personal_context_reader=FakePersonalContextReader(first_name),
+    )
+    return service, backend, llm
+
+
+def dump_trace(trace):
+    return json.dumps(dataclasses.asdict(trace), default=str, ensure_ascii=False)
+
+
+# SDD: 034 NFR-003 AC-N003.1
+def test_trace_never_contains_the_name_but_the_user_still_gets_it_in_the_answer():
+    """El usuario recibe la respuesta con «Carlos»; ningún texto de la traza
+    (entrada, pasos y salida) lo contiene y en su lugar va «[nombre]»."""
+    answer_text = "Hola, Carlos: con tu objetivo de 2200 kcal, reparte la proteína."
+    service, backend, llm = make_personal_service(answer_text)
+
+    result = service.ask_with_feedback(
+        "Soy Carlos, ¿cuánta proteína necesito, Carlos?", user_id=42
+    )
+
+    assert result.answer == answer_text
+    assert "Carlos" in llm.calls[0][1][-1]["content"]
+    trace = backend.traces[0]
+    dumped = dump_trace(trace)
+    assert "Carlos" not in dumped
+    assert "carlos" not in dumped.lower()
+    assert "[nombre]" in dumped
+    assert "2200 kcal" in dumped
+    assert trace.input == "Soy [nombre], ¿cuánta proteína necesito, [nombre]?"
+    assert trace.output == "Hola, [nombre]: con tu objetivo de 2200 kcal, reparte la proteína."
+    assert "Nombre: [nombre]" in dumped
+    for step in trace.steps:
+        assert "Carlos" not in json.dumps(dataclasses.asdict(step), default=str, ensure_ascii=False)
+
+
+# SDD: 034 NFR-003 AC-N003.1
+def test_the_model_and_the_embedding_still_receive_the_real_name_and_question():
+    """Solo la traza se anonimiza: lo enviado a Voyage y al modelo no cambia."""
+    service, backend, llm = make_personal_service("Hola, Carlos.")
+
+    service.ask("Soy Carlos, ¿cuánta proteína necesito?", user_id=42)
+
+    assert "Soy Carlos, ¿cuánta proteína necesito?" in llm.calls[0][1][-1]["content"]
+    assert "Nombre: Carlos" in llm.calls[0][1][-1]["content"]
+    embedding = step_named(backend.traces[0], "embedding")
+    assert "Carlos" not in str(embedding.input)
+
+
+# SDD: 034 NFR-003 AC-N003.2
+def test_trace_includes_the_profile_the_indicators_and_the_internal_user_id():
+    """La traza lleva el perfil y los indicadores enviados al modelo y el
+    identificador interno del usuario."""
+    service, backend, _ = make_personal_service("Haz 3 series de 10.")
+
+    service.ask("¿Cuántas series hago?", user_id=42)
+
+    trace = backend.traces[0]
+    dumped = dump_trace(trace)
+    assert trace.user_id == "42"
+    assert "Perder peso" in dumped
+    assert "79,4 kg" in dumped
+    assert "2200 kcal" in dumped
+
+
+# SDD: 034 NFR-003 AC-N003.3
+def test_trace_does_not_touch_longer_words_that_contain_the_name():
+    """Con el nombre «Ana», «Anabel» no se modifica en la traza."""
+    service, backend, _ = make_personal_service("Hola Ana, dile a Anabel que descanse.", "Ana")
+
+    result = service.ask_with_feedback("¿Cuántas series hago?", user_id=42)
+
+    assert result.answer == "Hola Ana, dile a Anabel que descanse."
+    trace = backend.traces[0]
+    assert trace.output == "Hola [nombre], dile a Anabel que descanse."
+    assert "Anabel" in dump_trace(trace)
+
+
+# SDD: 034 NFR-003 AC-N003.1
+def test_a_user_without_a_name_leaves_the_trace_unchanged():
+    """Sin nombre no se sustituye nada en la traza."""
+    service, backend, _ = make_personal_service("Hola Carlos.", first_name=None)
+
+    service.ask("Soy Carlos", user_id=42)
+
+    trace = backend.traces[0]
+    assert trace.input == "Soy Carlos"
+    assert trace.output == "Hola Carlos."
 
 
 def make_langfuse_tracer(fake):

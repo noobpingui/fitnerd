@@ -13,3 +13,12 @@
 - [ ] Guardar la preferencia del interruptor en la cuenta (necesita migración).
 - [ ] Mockear perfil y mediciones en el `CoachPage.test.tsx` existente para evitar ruido de red en los tests.
 - [ ] Que `POST /api/coach/ask` use `get_json(silent=True)` (hoy un cuerpo que no es JSON da 500); deuda previa, fuera de alcance.
+
+## tests · test-author
+- [ ] El test existente de la 028 sobre la fecha de la política («27 de octubre de 2026») se romperá si el implementer cambia esa fecha. Spec y plan no piden cambiarla: conviene no tocarla, o actualizar ese test en el mismo cambio.
+- [ ] Los tests de página `CoachPage.personalContext` tardan unos 20 s en rojo por los timeouts de `findByText`. En verde serán rápidos.
+- [ ] `CoachPage.test.tsx` existente no mockea `profile/api` ni `body-metrics/api`. Sus consultas fallan contra la red y la pregunta se envía sin contexto, como prevé el plan. Se podría añadir el mock para evitar ruido (opcional).
+
+## tests · verifier (red)
+- [ ] Los tests de conservación (401, 429, 503, 400, feedback_id y contexto desactivado) pasan su aserción de conservación y después fallan en la aserción de contexto personal; es rojo legítimo y se resolverá con la implementación, sin acción ahora.
+- [ ] No existe .sdd/templates/verify-report.md en el proyecto; se usó la plantilla del plugin (0.2.0). Valorar si conviene copiarla al proyecto.

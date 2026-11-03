@@ -10,6 +10,10 @@ export function useAskCoach() {
   })
 }
 
+export function usePersonalContextPreference(): [boolean, (enabled: boolean) => void] {
+  throw new Error("not implemented")
+}
+
 // Igual que useAskCoach: el voto es una accion puntual, no hay datos que cachear.
 export function useSendCoachFeedback() {
   return useMutation({

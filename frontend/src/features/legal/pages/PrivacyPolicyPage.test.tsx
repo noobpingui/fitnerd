@@ -139,6 +139,81 @@ describe("PrivacyPolicyPage", () => {
     )
   })
 
+  // SDD: 034 REQ-011 AC-011.1
+  it("el punto de Anthropic menciona el nombre, el perfil, las macros y el progreso, y que se puede desactivar en el coach", () => {
+    renderPage()
+    const section = sectionOf("Con quién se comparte")
+
+    const entry = within(section)
+      .getAllByRole("listitem")
+      .find((item) => /Anthropic \(Claude\):/.test(item.textContent ?? ""))
+
+    expect(entry).toBeDefined()
+    const text = (entry?.textContent ?? "").replace(/\s+/g, " ")
+    expect(text).toContain("las preguntas que le haces al AI Coach se envían a Anthropic para generar la respuesta")
+    expect(text).toContain(
+      "junto con tu nombre, tu perfil (sexo, edad, altura, nivel de actividad y meta), tus calorías y macros y tus indicadores de progreso, para personalizarla."
+    )
+    expect(text).toContain("Puedes desactivarlo en el propio coach.")
+  })
+
+  // SDD: 034 REQ-011 AC-011.2
+  it("el punto de Langfuse añade el perfil, las macros y el progreso y sigue diciendo que nunca se envían el email ni el nombre", () => {
+    renderPage()
+    const section = sectionOf("Con quién se comparte")
+
+    const entry = within(section)
+      .getAllByRole("listitem")
+      .find((item) => /Langfuse/.test(item.textContent ?? ""))
+
+    expect(entry).toBeDefined()
+    const text = (entry?.textContent ?? "").replace(/\s+/g, " ")
+    expect(text).toContain(
+      "Con las preguntas al coach se envían también tu perfil, tus macros y tu progreso, nunca tu nombre."
+    )
+    expect(text).toMatch(/nunca con tu email ni tu nombre/)
+    // Lo anterior se conserva.
+    expect(text).toMatch(/valoraciones/i)
+    expect(text).toContain("para revisar la calidad del coach.")
+  })
+
+  // SDD: 034 REQ-011 AC-011.3
+  it("el punto de Voyage AI sigue diciendo que recibe el texto de las preguntas y no menciona el perfil ni el progreso", () => {
+    renderPage()
+    const section = sectionOf("Con quién se comparte")
+
+    const entry = within(section)
+      .getAllByRole("listitem")
+      .find((item) => /Voyage AI/.test(item.textContent ?? ""))
+
+    expect(entry).toBeDefined()
+    const text = (entry?.textContent ?? "").replace(/\s+/g, " ")
+    expect(text).toContain(
+      "recibe el texto de tus preguntas al coach para buscar el contenido relacionado."
+    )
+    expect(text).not.toMatch(/perfil/i)
+    expect(text).not.toMatch(/progreso/i)
+    expect(text).not.toMatch(/macros/i)
+    expect(text).not.toMatch(/nombre/i)
+    // El perfil y el progreso sí se declaran, pero en el punto de Anthropic.
+    const anthropic = within(section)
+      .getAllByRole("listitem")
+      .find((item) => /Anthropic \(Claude\):/.test(item.textContent ?? ""))
+    expect(anthropic?.textContent ?? "").toMatch(/indicadores de progreso/i)
+  })
+
+  // SDD: 034 REQ-011 AC-011.1
+  it("sigue sin formas de voseo tras añadir el texto del contexto personal", () => {
+    renderPage()
+    const text = document.body.textContent ?? ""
+
+    // El texto nuevo está presente (y es el que se revisa) y sin voseo.
+    expect(text).toContain("Puedes desactivarlo en el propio coach.")
+    for (const form of ["desactivalo", "activalo", "podés", "tenés", "usás"]) {
+      expect(text).not.toContain(form)
+    }
+  })
+
   // SDD: 005 REQ-012 AC-012.3
   it("menciona a Langfuse en 'Tus derechos'", () => {
     renderPage()

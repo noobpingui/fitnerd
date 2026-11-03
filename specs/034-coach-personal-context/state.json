@@ -10,7 +10,7 @@
   "branch": "feat/034-coach-personal-context",
   "base_branch": "main",
   "created_at": "2026-11-03T03:04:33.745Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,7 +25,10 @@
       "at": "2026-11-03T03:26:42.828Z",
       "note": "auto (gate_mode=flow): 41 tareas, matriz completa"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-11-03T03:46:09.094Z",
+      "note": "auto (gate_mode=flow): red check PASS, 149+36 tests nuevos en rojo"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -34,17 +37,18 @@
   },
   "commits": {
     "spec": "0b7db87",
-    "plan": "13d2389"
+    "plan": "13d2389",
+    "tasks": "f1cc059"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 1,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 5,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-11-03T03:45:57.065Z"
   },
   "verify": {
     "result": null,
@@ -54,7 +58,20 @@
     "verdict": null,
     "at": null
   },
-  "tests_snapshot": null,
+  "tests_snapshot": {
+    "at": "2026-11-03T03:46:08.936Z",
+    "reason": "tests 034 tras red check PASS",
+    "sha256": {
+      "backend/tests/test_routes/test_coach_routes.py": "577fcf4ac2d4780fb6b1c5d86c955f6f8fe8ac5e7a4d3bbcd723e224893651b9",
+      "backend/tests/test_services/test_coach_observability.py": "32ca6f7db6bf3e182af5fc60fc8dd8bd9d7c4d81d08b966116ebd6ea1d128186",
+      "backend/tests/test_services/test_coach_personal_context.py": "4a341f99e9b4418ebf2c143aefc91f6fae6ce6fa1eb16bee4a2047ee44979bb2",
+      "backend/tests/test_services/test_coach_service.py": "05ee27a1c59c43b8c78a79bbe2f090c02721fac908bd466e790612bfbf40fa16",
+      "frontend/src/features/coach/pages/CoachPage.personalContext.test.tsx": "7b9f0070706e6b182ed399527e4a008b5583273ca4f3e1bd120d696ee34ee848",
+      "frontend/src/features/coach/personalContext.test.ts": "c757fdd74ff610832d6c52ba9e47338525a3f55cbe25f1da8f99109def9ef26f",
+      "frontend/src/features/coach/personalContextPreference.test.ts": "9a68c77273b664adb4a167478184b7532830089466c4ef55c54ee3e72996d778",
+      "frontend/src/features/legal/pages/PrivacyPolicyPage.test.tsx": "9ee0ec1b8277c6ca934bde6118617c8f7ab4c0d0f41907860b92ca53d4176302"
+    }
+  },
   "bypass": false,
   "history": [
     {
@@ -128,6 +145,84 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): 41 tareas, matriz completa"
+    },
+    {
+      "at": "2026-11-03T03:26:43.115Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: f1cc059"
+    },
+    {
+      "at": "2026-11-03T03:26:43.329Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Tests: paso 1/3 scaffold"
+    },
+    {
+      "at": "2026-11-03T03:26:43.438Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (8 tareas)"
+    },
+    {
+      "at": "2026-11-03T03:27:36.433Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author (scaffold hecho, 8 tareas; tsc con 1 error esperado en CoachPage.tsx, lo resuelve T-040)"
+    },
+    {
+      "at": "2026-11-03T03:36:17.125Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (verifier)"
+    },
+    {
+      "at": "2026-11-03T03:40:06.845Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: 14 tests nuevos pasan sin implementacion (11 backend, 3 frontend); resto de fallos legitimos (NotImplementedError, kwarg ausente, not implemented, asercion)"
+    },
+    {
+      "at": "2026-11-03T03:40:25.201Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red check FAIL: 14 tests nuevos pasan sin implementación (11 backend, 3 frontend); ver verify-report.md · tests 1/5"
+    },
+    {
+      "at": "2026-11-03T03:42:15.818Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3 (iteración 2): red check de nuevo tras reformular 14 tests"
+    },
+    {
+      "at": "2026-11-03T03:45:57.065Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red check iteracion 2: 0 tests nuevos SDD 034 pasan; 149 fallos backend y 36 frontend, todos legitimos (NotImplementedError, not implemented, kwarg personal_context_reader ausente, aserciones de comportamiento nuevo); esqueletos sin logica; 55/55 AC con marcador"
+    },
+    {
+      "at": "2026-11-03T03:46:08.825Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS (iteración 2)"
+    },
+    {
+      "at": "2026-11-03T03:46:08.936Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "8 archivo(s) de test: tests 034 tras red check PASS"
+    },
+    {
+      "at": "2026-11-03T03:46:09.094Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS, 149+36 tests nuevos en rojo"
+    },
+    {
+      "at": "2026-11-03T03:46:09.207Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Iteración 1 del red check FAIL (14 tests en verde) corregida reformulando con aserción de contexto activo"
     }
   ]
 }

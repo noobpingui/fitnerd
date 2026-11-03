@@ -42,6 +42,15 @@ Reglas de estilo:
   proporcionada dice"."""
 
 
+DONT_KNOW_ANSWER = "No tengo informacion relacionada con ese tema en especifico."
+
+
+def build_coach_user_message(
+    _context: str, _question: str, _personal_block: str | None = None
+) -> str:
+    raise NotImplementedError("not implemented")
+
+
 @dataclass
 class CoachAnswer:
     answer: str

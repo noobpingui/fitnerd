@@ -2,6 +2,8 @@
 // la conversacion completa ANTERIOR a la pregunta nueva, la mantiene el frontend en
 // memoria (useState en CoachPage), no hay persistencia del lado del servidor todavia.
 
+import type { AnalysisRequest } from "@/features/body-metrics/types"
+
 export type ChatRole = "user" | "assistant"
 
 export type ChatMessage = {
@@ -9,9 +11,27 @@ export type ChatMessage = {
   content: string
 }
 
+export type CoachMacros = {
+  maintenance_kcal: number
+  target_kcal: number
+  protein_g: number
+  carbs_g: number
+  fat_g: number
+}
+
+export type CoachIndicators = AnalysisRequest["indicators"]
+
+export type CoachPersonalContext = {
+  today: string // "YYYY-MM-DD"
+  macros: CoachMacros
+  indicators: CoachIndicators | null
+}
+
 export type AskCoachPayload = {
   question: string
   history: ChatMessage[]
+  use_personal_context: boolean
+  personal_context?: CoachPersonalContext
 }
 
 export type CoachFeedbackRating = "up" | "down"
