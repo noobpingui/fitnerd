@@ -147,7 +147,6 @@ def registered_user(client):
             "password": "testpassword123",
             "first_name": "Test",
             "last_name": "User",
-            "date_of_birth": "2000-01-01",
         },
     )
     token = response.get_json()["token"]

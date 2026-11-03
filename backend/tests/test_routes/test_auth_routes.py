@@ -7,7 +7,7 @@ las capas realmente se conectan bien entre si, tal como lo haria un
 request real del frontend.
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 
 import bcrypt
 import pytest
@@ -25,7 +25,6 @@ def test_register_creates_a_user_and_returns_a_token(client):
             "password": "password123",
             "first_name": "Nueva",
             "last_name": "Usuaria",
-            "date_of_birth": "1995-05-20",
         },
     )
 
@@ -39,7 +38,6 @@ def test_register_rejects_a_duplicate_email(client):
         "password": "password123",
         "first_name": "Una",
         "last_name": "Persona",
-        "date_of_birth": "1990-01-01",
     }
 
     first_attempt = client.post("/api/auth/register", json=payload)
@@ -57,7 +55,6 @@ def test_login_with_the_wrong_password_fails(client):
             "password": "correcta123",
             "first_name": "Login",
             "last_name": "Test",
-            "date_of_birth": "1990-01-01",
         },
     )
 
@@ -77,7 +74,6 @@ def test_login_with_the_right_credentials_returns_a_token(client):
             "password": "correcta123",
             "first_name": "Login",
             "last_name": "Test",
-            "date_of_birth": "1990-01-01",
         },
     )
 
@@ -118,7 +114,6 @@ def register_payload(**overrides):
         "password": "Clave123",
         "first_name": "Ana",
         "last_name": "Pérez",
-        "date_of_birth": "1990-01-01",
     }
     payload.update(overrides)
     return payload
@@ -424,28 +419,12 @@ FIRST_NAME_REQUIRED = {"error": "El nombre es obligatorio"}
 FIRST_NAME_TOO_LONG = {"error": "El nombre no puede superar los 100 caracteres"}
 LAST_NAME_REQUIRED = {"error": "El apellido es obligatorio"}
 LAST_NAME_TOO_LONG = {"error": "El apellido no puede superar los 100 caracteres"}
-INVALID_DOB = {"error": "La fecha de nacimiento no es válida"}
-FUTURE_DOB = {"error": "La fecha de nacimiento no puede ser futura"}
-AGE_RANGE = {"error": "Debes tener entre 14 y 100 años"}
 
 REGISTER_URL = "/api/auth/register"
 LOGIN_URL = "/api/auth/login"
 
 # Spec 020: instante fijado para los tests con fechas absolutas.
 FIXED_NOW = datetime(2026, 10, 12, 12, 0, 0)
-
-
-def years_ago(years, days=0):
-    """Fecha ISO de hace `years` años contados desde hoy (UTC), más `days` días.
-    El 29 de febrero cae en 28 de febrero si el año de destino no es bisiesto:
-    con `days=0` da una edad de `years` años cumplidos y con `days=1` (cumple
-    mañana) una edad de `years - 1`."""
-    today = datetime.now(timezone.utc).date()
-    try:
-        anniversary = today.replace(year=today.year - years)
-    except ValueError:
-        anniversary = today.replace(year=today.year - years, day=28)
-    return (anniversary + timedelta(days=days)).isoformat()
 
 
 def stored_user(app, email="ana@example.com"):
@@ -686,98 +665,78 @@ def test_register_stores_the_last_name_trimmed(client, app):
     assert stored_user(app)[1] == "Pérez"
 
 
-# SDD: 018 REQ-005 AC-005.1
-def test_register_rejects_a_missing_date_of_birth(client, app):
-    """Sin date_of_birth: 400 'La fecha de nacimiento no es válida' y sin cuenta."""
+def profile_after_register(client, response):
+    """GET /api/profile con el token devuelto por un registro."""
+    headers = {"Authorization": f"Bearer {response.get_json()['token']}"}
+    profile = client.get("/api/profile", headers=headers)
+    assert profile.status_code == 200
+    return profile.get_json()
+
+
+# SDD: 033 REQ-001 AC-001.1
+def test_register_without_a_date_of_birth_creates_the_account(client):
+    """Sin date_of_birth: 201, token y el perfil lo devuelve null y sin onboarding."""
     payload = register_payload()
-    del payload["date_of_birth"]
+    assert "date_of_birth" not in payload
 
     response = client.post(REGISTER_URL, json=payload)
 
-    assert response.status_code == 400
-    assert response.get_json() == INVALID_DOB
-    assert count_users(app) == 0
+    assert response.status_code == 201
+    assert "token" in response.get_json()
+    body = profile_after_register(client, response)
+    assert body["date_of_birth"] is None
+    assert body["onboarding_completed"] is False
 
 
-# SDD: 018 REQ-005 AC-005.2
-@pytest.mark.parametrize("value", [None, "", 19900101, "1990/01/01", "no-es-fecha"])
-def test_register_rejects_a_malformed_date_of_birth(client, value):
-    """null, '', numérica o con formato erróneo: 400 'no es válida', nunca 5xx."""
+# SDD: 033 REQ-001 AC-001.2
+def test_register_ignores_a_valid_date_of_birth(client, app):
+    """Con date_of_birth '1995-05-20': 201 y no se guarda."""
+    response = post_register(client, date_of_birth="1995-05-20")
+
+    assert response.status_code == 201
+    assert profile_after_register(client, response)["date_of_birth"] is None
+    assert stored_user(app)[2] is None
+
+
+# SDD: 033 REQ-001 AC-001.3
+@pytest.mark.parametrize(
+    "value", ["2001-02-30", "abc", 123, None, "", "1990/01/01", "1925-10-12", "2012-10-13"]
+)
+def test_register_ignores_an_invalid_date_of_birth(client, app, value):
+    """Fecha no válida o fuera de rango: 201 (no 400) y la cuenta queda sin fecha."""
     response = post_register(client, date_of_birth=value)
 
-    assert response.status_code == 400
-    assert response.get_json() == INVALID_DOB
+    assert response.status_code == 201
+    assert stored_user(app)[2] is None
 
 
-# SDD: 018 REQ-005 AC-005.3
-def test_register_rejects_a_date_of_birth_that_does_not_exist(client):
-    """'2001-02-30': 400 'La fecha de nacimiento no es válida'."""
-    response = post_register(client, date_of_birth="2001-02-30")
-
-    assert response.status_code == 400
-    assert response.get_json() == INVALID_DOB
-
-
-# SDD: 018 REQ-005 AC-005.4
-def test_register_rejects_a_date_of_birth_tomorrow(client, app_clock):
-    """Mañana (UTC): 400 'La fecha de nacimiento no puede ser futura'.
-    Instante fijado: 2026-10-12 12:00 UTC (spec 020)."""
+# SDD: 033 REQ-001 AC-001.3
+def test_register_ignores_a_date_of_birth_tomorrow(client, app, app_clock):
+    """Mañana (UTC): 201 y sin fecha. Instante fijado: 2026-10-12 12:00 UTC."""
     app_clock.set(FIXED_NOW)
 
     response = post_register(client, date_of_birth="2026-10-13")
 
-    assert response.status_code == 400
-    assert response.get_json() == FUTURE_DOB
-
-
-# SDD: 018 REQ-005 AC-005.5
-def test_register_rejects_someone_who_turns_14_tomorrow(client, app_clock):
-    """13 años cumplidos hoy: 400 'Debes tener entre 14 y 100 años'.
-    Instante fijado: 2026-10-12 12:00 UTC (spec 020)."""
-    app_clock.set(FIXED_NOW)
-
-    response = post_register(client, date_of_birth="2012-10-13")
-
-    assert response.status_code == 400
-    assert response.get_json() == AGE_RANGE
-
-
-# SDD: 018 REQ-005 AC-005.6
-def test_register_accepts_someone_who_turns_14_today(client, app_clock):
-    """Cumple 14 hoy: 201. Instante fijado: 2026-10-12 12:00 UTC (spec 020)."""
-    app_clock.set(FIXED_NOW)
-
-    response = post_register(client, date_of_birth="2012-10-12")
-
     assert response.status_code == 201
+    assert profile_after_register(client, response)["date_of_birth"] is None
 
 
-# SDD: 018 REQ-005 AC-005.7
-def test_register_rejects_someone_of_101_years(client, app_clock):
-    """101 años cumplidos hoy: 400 'Debes tener entre 14 y 100 años'.
-    Instante fijado: 2026-10-12 12:00 UTC (spec 020)."""
-    app_clock.set(FIXED_NOW)
+# SDD: 033 REQ-001 AC-001.4
+def test_register_without_first_name_and_date_of_birth_is_rejected(client, app):
+    """Sin nombre ni fecha: 400 'El nombre es obligatorio' y sin cuenta."""
+    payload = register_payload()
+    del payload["first_name"]
 
-    response = post_register(client, date_of_birth="1925-10-12")
+    response = client.post(REGISTER_URL, json=payload)
 
     assert response.status_code == 400
-    assert response.get_json() == AGE_RANGE
+    assert response.get_json() == FIRST_NAME_REQUIRED
+    assert count_users(app) == 0
 
-
-# SDD: 018 REQ-005 AC-005.8
-def test_register_accepts_100_years_and_the_profile_returns_the_date(client, app_clock):
-    """100 años cumplidos hoy (cumple 101 mañana): 201 y /api/profile devuelve la fecha.
-    Instante fijado: 2026-10-12 12:00 UTC (spec 020)."""
-    app_clock.set(FIXED_NOW)
-    dob = "1925-10-13"
-
-    response = post_register(client, date_of_birth=dob)
-
-    assert response.status_code == 201
-    headers = {"Authorization": f"Bearer {response.get_json()['token']}"}
-    profile = client.get("/api/profile", headers=headers)
-    assert profile.status_code == 200
-    assert profile.get_json()["date_of_birth"] == dob
+    # Contraste: con nombre y sin fecha, la misma petición sí crea la cuenta.
+    created = client.post(REGISTER_URL, json=register_payload())
+    assert created.status_code == 201
+    assert count_users(app) == 1
 
 
 # SDD: 018 REQ-006 AC-006.1
@@ -827,11 +786,11 @@ def test_register_validates_the_first_name_before_the_rest(client):
     assert response.get_json() == FIRST_NAME_REQUIRED
 
 
-# SDD: 018 REQ-006 AC-006.4
-def test_register_validates_the_last_name_before_the_date_of_birth(client):
-    """Sin apellido y con fecha futura: gana 'El apellido es obligatorio'."""
-    tomorrow = (datetime.now(timezone.utc).date() + timedelta(days=2)).isoformat()
-    payload = register_payload(date_of_birth=tomorrow)
+# SDD: 033 REQ-001 AC-001.4
+def test_register_validates_the_last_name_before_the_duplicate_check(client):
+    """Cuenta existente y registro sin apellido: 400 de apellido, no 409."""
+    assert post_register(client).status_code == 201
+    payload = register_payload()
     del payload["last_name"]
 
     response = client.post(REGISTER_URL, json=payload)
@@ -840,17 +799,16 @@ def test_register_validates_the_last_name_before_the_date_of_birth(client):
     assert response.get_json() == LAST_NAME_REQUIRED
 
 
-# SDD: 018 REQ-006 AC-006.5
-def test_register_validates_the_date_of_birth_before_the_duplicate_check(client):
-    """Cuenta existente y registro sin fecha: 400 de fecha, no 409."""
+# SDD: 033 REQ-001 AC-001.4
+def test_register_a_duplicate_email_without_a_date_of_birth_is_a_conflict(client):
+    """Cuenta existente y registro sin fecha: 409, la fecha ya no se valida."""
     assert post_register(client).status_code == 201
     payload = register_payload()
-    del payload["date_of_birth"]
 
     response = client.post(REGISTER_URL, json=payload)
 
-    assert response.status_code == 400
-    assert response.get_json() == INVALID_DOB
+    assert response.status_code == 409
+    assert response.get_json() == DUPLICATE
 
 
 # SDD: 018 REQ-007 AC-007.1
@@ -935,7 +893,6 @@ REGISTER_FIELD_ERRORS = {
     "password": TOO_SHORT,
     "first_name": FIRST_NAME_REQUIRED,
     "last_name": LAST_NAME_REQUIRED,
-    "date_of_birth": INVALID_DOB,
 }
 
 

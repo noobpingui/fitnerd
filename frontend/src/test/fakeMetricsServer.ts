@@ -110,12 +110,15 @@ export function createFakeMetricsServer(initial: {
     },
 
     async saveProfile(payload) {
-      const { date_of_birth, ...serverProfile } = payload
+      // first_name es opcional: si no llega, el nombre guardado no se toca, y
+      // nunca se mete dentro de `profile` (spec 033).
+      const { date_of_birth, first_name, ...serverProfile } = payload
       profile = {
         onboarding_completed: true,
         onboarding_completed_at:
           profile.onboarding_completed_at ?? "2026-10-12T12:00:00+00:00",
         date_of_birth,
+        first_name: first_name !== undefined ? first_name : profile.first_name,
         profile: serverProfile,
       }
       return clone(profile)

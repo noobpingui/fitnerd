@@ -53,18 +53,24 @@ import type {
 import type { ProfileFormErrorKey } from "@/features/profile/schemas"
 import { todayIsoDate } from "@/lib/dates"
 import { profileKeys, useSaveProfile } from "@/features/profile/hooks"
-import { answersFromProfile, payloadFromAnswers } from "@/features/profile/mappers"
+import { answersFromProfile, payloadFromProfileForm } from "@/features/profile/mappers"
 
 // Los mismos datos del onboarding, pero todos a la vista en un formulario:
 // aquí el usuario ya sabe qué es cada cosa y solo quiere cambiar una o dos.
 export function PhysicalDataForm({
   initial,
   initialBody,
+  initialFirstName,
 }: {
   initial: OnboardingAnswers
   initialBody: BodyComposition
+  initialFirstName: string
 }) {
-  const defaultValues: PhysicalDataFormValues = { ...initial, ...initialBody }
+  const defaultValues: PhysicalDataFormValues = {
+    ...initial,
+    ...initialBody,
+    firstName: initialFirstName,
+  }
   const [saved, setSaved] = useState<PhysicalDataFormValues>(defaultValues)
   const [justSaved, setJustSaved] = useState(false)
   const [laterDate, setLaterDate] = useState<string | null>(null)
@@ -124,8 +130,9 @@ export function PhysicalDataForm({
       (key) => draft[key] !== saved[key]
     ) || measurementChanged
 
-  async function onSave(values: PhysicalDataFormValues) {
+  async function onSave(rawValues: PhysicalDataFormValues) {
     if (!dirty || !allValid) return
+    const values = { ...rawValues, firstName: rawValues.firstName.trim() }
     createMetric.reset()
     saveProfile.reset()
     // Sin perfil en la caché al empezar no se sabe qué peso tiene el perfil:
@@ -135,7 +142,7 @@ export function PhysicalDataForm({
     )?.profile
     // 1. Perfil completo (PUT, idempotente). Si falla, no se toca `saved`.
     try {
-      await saveProfile.mutateAsync(payloadFromAnswers(values))
+      await saveProfile.mutateAsync(payloadFromProfileForm(values))
     } catch {
       return
     }
@@ -238,6 +245,20 @@ export function PhysicalDataForm({
   return (
     <form autoComplete="off" onSubmit={form.handleSubmit(onSave)} className="flex flex-col gap-5">
       <div className="grid gap-5 sm:grid-cols-2">
+        <Field
+          label="Nombre"
+          htmlFor="profile-first-name"
+          error={errors.firstName}
+        >
+          <Input
+            id="profile-first-name"
+            type="text"
+            value={draft.firstName}
+            onChange={(e) => update({ firstName: e.target.value })}
+            aria-invalid={!!errors.firstName || undefined}
+          />
+        </Field>
+
         <Field label="Género">
           <UnitToggle
             units={GENDER_OPTIONS}

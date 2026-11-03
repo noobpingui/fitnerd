@@ -124,7 +124,8 @@ describe("AppRouter - pantallas bajo demanda con sesión", () => {
 
   // SDD: 017 REQ-002 AC-002.3
   it.each([
-    ["/home", "Hola de nuevo"],
+    // SDD: 033 REQ-009 AC-009.1
+    ["/home", "Hola de nuevo, Ana"],
     ["/body-metrics", "Métricas"],
     ["/coach", "AI Coach Nutricional"],
     ["/store", "Visita las diferentes tiendas"],

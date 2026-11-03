@@ -123,7 +123,7 @@ describe("AppRouter - secciones retiradas y secciones activas (spec 012)", () =>
       renderRouter()
 
       expect(
-        await screen.findByRole("heading", { level: 1, name: "Hola de nuevo" })
+        await screen.findByRole("heading", { level: 1, name: "Hola de nuevo, Ana" })
       ).toBeInTheDocument()
       expect(window.location.pathname).toBe("/home")
       expect(screen.queryByText(/Catálogo/)).not.toBeInTheDocument()
@@ -141,6 +141,7 @@ describe("AppRouter - secciones retiradas y secciones activas (spec 012)", () =>
     await waitFor(() => expect(window.location.pathname).toBe("/login"))
   })
 
+  // SDD: 033 REQ-009 AC-009.1
   it("con sesion, /macros redirige a /home", async () => {
     setToken("token")
     window.history.pushState({}, "", "/macros")
@@ -148,7 +149,7 @@ describe("AppRouter - secciones retiradas y secciones activas (spec 012)", () =>
     renderRouter()
 
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Hola de nuevo" })
+      await screen.findByRole("heading", { level: 1, name: "Hola de nuevo, Ana" })
     ).toBeInTheDocument()
     expect(window.location.pathname).toBe("/home")
   })

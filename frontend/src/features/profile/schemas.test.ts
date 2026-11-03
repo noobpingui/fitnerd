@@ -3,10 +3,16 @@ import { describe, expect, it } from "vitest"
 import { fieldMessages } from "@/features/onboarding/schemas"
 import {
   makeProfileFormSchema,
+  profileResponseSchema,
+  saveProfilePayloadSchema,
   type ProfileFormErrorKey,
 } from "@/features/profile/schemas"
 import type { PhysicalDataFormValues } from "@/features/profile/types"
-import { makeAnswers } from "@/test/profileFixtures"
+import {
+  makeAnswers,
+  makePendingResponse,
+  makeProfileResponse,
+} from "@/test/profileFixtures"
 
 // Hoy fijo: 11 de octubre de 2026.
 const TODAY = new Date(2026, 9, 11)
@@ -14,7 +20,13 @@ const TODAY = new Date(2026, 9, 11)
 function values(
   overrides: Record<string, string | null> = {}
 ): PhysicalDataFormValues {
-  return { ...makeAnswers(), fat: "", muscle: "", ...overrides } as PhysicalDataFormValues
+  return {
+    ...makeAnswers(),
+    fat: "",
+    muscle: "",
+    firstName: "Ana",
+    ...overrides,
+  } as PhysicalDataFormValues
 }
 
 const messages = (overrides: Record<string, string | null> = {}) =>
@@ -96,5 +108,84 @@ describe("esquema del perfil - reglas compartidas heredadas", () => {
   // SDD: 015 REQ-004 AC-004.2
   it("el peso fuera de rango da 'Entre 30 y 300 kg'", () => {
     expect(messages({ weight: "500" }).weight).toBe("Entre 30 y 300 kg")
+  })
+})
+
+describe("esquema del perfil - nombre (spec 033)", () => {
+  // SDD: 033 REQ-007 AC-007.5
+  it("un nombre vacío o de solo espacios da 'El nombre es obligatorio'", () => {
+    for (const firstName of ["", "   "]) {
+      expect(messages({ firstName }).firstName).toBe("El nombre es obligatorio")
+      expect(isValid({ firstName })).toBe(false)
+    }
+  })
+
+  // SDD: 033 REQ-007 AC-007.6
+  it("un nombre de 101 caracteres da el mensaje de longitud", () => {
+    const firstName = "a".repeat(101)
+    expect(messages({ firstName }).firstName).toBe(
+      "El nombre no puede superar los 100 caracteres"
+    )
+    expect(isValid({ firstName })).toBe(false)
+  })
+
+  // SDD: 033 REQ-008 AC-008.3
+  it("un nombre de 100 caracteres rodeado de espacios es válido", () => {
+    const firstName = "  " + "a".repeat(100) + "  "
+    expect(messages({ firstName }).firstName).toBeUndefined()
+    expect(isValid({ firstName })).toBe(true)
+    // Y 101 caracteres no lo son, con el mensaje de la regla.
+    const tooLong = "a".repeat(101)
+    expect(messages({ firstName: tooLong }).firstName).toBe(
+      "El nombre no puede superar los 100 caracteres"
+    )
+    expect(isValid({ firstName: tooLong })).toBe(false)
+  })
+
+  // SDD: 033 REQ-007 AC-007.5
+  it("un nombre no válido no impide calcular el resto de mensajes", () => {
+    const result = messages({ firstName: "", weight: "500" })
+    expect(result.firstName).toBe("El nombre es obligatorio")
+    expect(result.weight).toBe("Entre 30 y 300 kg")
+  })
+})
+
+describe("respuesta y cuerpo del perfil - nombre (spec 033)", () => {
+  // SDD: 033 REQ-004 AC-004.1
+  it("la respuesta conserva first_name", () => {
+    const parsed = profileResponseSchema.parse(makeProfileResponse())
+    expect(parsed.first_name).toBe("Ana")
+  })
+
+  // SDD: 033 REQ-004 AC-004.2
+  it("la respuesta con first_name null lo conserva como null", () => {
+    expect(profileResponseSchema.parse(makePendingResponse()).first_name).toBeNull()
+  })
+
+  // SDD: 033 REQ-004 AC-004.2
+  it("la respuesta sin la clave first_name la deja en null", () => {
+    const { first_name: _omitted, ...withoutName } = makeProfileResponse()
+    expect(profileResponseSchema.parse(withoutName).first_name).toBeNull()
+  })
+
+  const payload = {
+    date_of_birth: "1998-04-03",
+    gender: "male",
+    height_unit: "cm",
+    height_cm: 175,
+    height_ft: null,
+    height_in: null,
+    weight_unit: "kg",
+    weight: 72.5,
+    activity_level: "moderate",
+    goal: "maintain",
+  }
+
+  // SDD: 033 REQ-007 AC-007.3
+  it("el cuerpo del PUT acepta first_name y también su ausencia", () => {
+    expect(
+      saveProfilePayloadSchema.parse({ ...payload, first_name: "Beatriz" }).first_name
+    ).toBe("Beatriz")
+    expect(saveProfilePayloadSchema.safeParse(payload).success).toBe(true)
   })
 })

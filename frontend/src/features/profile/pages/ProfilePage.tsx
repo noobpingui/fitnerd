@@ -55,7 +55,7 @@ export function ProfilePage() {
 
       <div className="flex flex-col gap-4">
         <ProfileSection
-          title="Datos físicos"
+          title="Datos personales"
           description="Se usan para calcular tus calorías y macros. Cada cambio de peso o composición se guarda como la medición de hoy en tu progreso; si ya hay una de hoy, se actualiza."
         >
           {/* Se espera al historial para precargar la última grasa y
@@ -65,7 +65,11 @@ export function ProfilePage() {
             <ProfileLoadError className="min-h-40" onRetry={() => refetch()} />
           )}
           {answers && !metricsLoading && (
-            <PhysicalDataForm initial={answers} initialBody={latestBody} />
+            <PhysicalDataForm
+              initial={answers}
+              initialBody={latestBody}
+              initialFirstName={profile?.first_name ?? ""}
+            />
           )}
         </ProfileSection>
 

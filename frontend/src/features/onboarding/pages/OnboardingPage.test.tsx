@@ -223,6 +223,29 @@ describe("OnboardingPage - pregunta de la fecha de nacimiento", () => {
     expect(screen.getByRole("button", { name: "Siguiente" })).toBeEnabled()
   })
 
+  // SDD: 033 REQ-003 AC-003.1
+  it("una cuenta nueva (sin fecha ni nombre) ve la fecha vacía y no avanza hasta una fecha válida", async () => {
+    const user = userEvent.setup()
+    getProfileMock.mockResolvedValue({
+      ...makePendingResponse(null),
+      first_name: "Ana",
+    })
+    renderOnboarding()
+
+    await toDateStep(user)
+
+    expect(screen.getByLabelText("Fecha de nacimiento")).toHaveValue("")
+    expect(screen.getByRole("button", { name: "Siguiente" })).toBeDisabled()
+    fireEvent.change(screen.getByLabelText("Fecha de nacimiento"), {
+      target: { value: "2999-01-01" },
+    })
+    expect(screen.getByRole("button", { name: "Siguiente" })).toBeDisabled()
+    fireEvent.change(screen.getByLabelText("Fecha de nacimiento"), {
+      target: { value: "1996-03-01" },
+    })
+    expect(screen.getByRole("button", { name: "Siguiente" })).toBeEnabled()
+  })
+
   // SDD: REQ-009 AC-009.3
   it("una fecha futura muestra el aviso y deshabilita 'Siguiente'", async () => {
     const user = userEvent.setup()

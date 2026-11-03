@@ -1,6 +1,10 @@
 import { EMPTY_ANSWERS } from "@/features/onboarding/constants"
 import type { OnboardingAnswers } from "@/features/onboarding/types"
-import type { ProfileResponse, SaveProfilePayload } from "@/features/profile/types"
+import type {
+  PhysicalDataFormValues,
+  ProfileResponse,
+  SaveProfilePayload,
+} from "@/features/profile/types"
 
 const text = (value: number | null) => (value === null ? "" : String(value))
 
@@ -21,6 +25,15 @@ export function answersFromProfile(resp: ProfileResponse): OnboardingAnswers {
     weight: String(p.weight),
     activityLevel: p.activity_level,
     goal: p.goal,
+  }
+}
+
+export function payloadFromProfileForm(
+  values: PhysicalDataFormValues,
+): SaveProfilePayload {
+  return {
+    ...payloadFromAnswers(values),
+    first_name: values.firstName.trim(),
   }
 }
 

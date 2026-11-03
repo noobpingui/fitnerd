@@ -36,6 +36,7 @@ def _serialize(state):
             if completed_at is not None else None
         ),
         "date_of_birth": user.date_of_birth.isoformat() if user.date_of_birth else None,
+        "first_name": user.first_name,
         "profile": None if profile is None else {
             "gender": profile.gender,
             "height_unit": profile.height_unit,

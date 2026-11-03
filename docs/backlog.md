@@ -568,3 +568,12 @@ Detalle en [specs/032-diary-portion-chat-macros/backlog.md](../specs/032-diary-p
 - [ ] F4 (NIT, implementer, deuda de la 030): parse_grams no captura InvalidOperation; un entero como 10**30 en grams daría 500 en lugar de unknown.
 - [ ] Revisión visual en el navegador de la posición del botón «Añadir alimento» (AC-006.2) y del diálogo en móvil.
 - [x] Corregir en ADR-0037 el límite de tokens (150 a 250) cuando el usuario apruebe editarla.
+
+## 033-profile-first-name · Nombre editable en el perfil, saludo en Home y registro sin fecha de nacimiento (2026-11-03)
+Detalle en [specs/033-profile-first-name/backlog.md](../specs/033-profile-first-name/backlog.md). Solo se pasan los puntos que siguen abiertos; los demás se resolvieron en la propia feature (F1 a F7 de la review).
+- [ ] Editar el apellido (`last_name`) en el perfil.
+- [ ] Saludo «Hola de nuevo» especial en la primera visita tras registrarse.
+- [ ] Renombrar `PhysicalDataForm` y `PhysicalDataFormValues` a «PersonalData…» ahora que incluyen el nombre.
+- [ ] Alinear el recorte de espacios Unicode raros entre Python `strip()` y JS `trim()` (U+0085, U+FEFF); el servidor manda y el caso acaba en un 400.
+- [ ] Tests intermitentes de `router`, `lazyRoutes` y `accountSwitch` con la suite completa en paralelo (timeout de `findByRole`); identificar el segundo test que falló en una ejecución.
+- [ ] Añadir el marcador `SDD: 033` a los tests existentes adaptados al nuevo contrato (14 de la spec 014, `router`, `lazyRoutes` y el de «al cambiar solo la meta» en `ProfilePage`).

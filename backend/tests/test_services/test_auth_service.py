@@ -4,7 +4,7 @@ inyectados por constructor: no hay Postgres ni llamadas a Google.
 """
 
 import uuid
-from datetime import date, datetime, timedelta
+from datetime import date
 
 import bcrypt
 import pytest
@@ -16,7 +16,7 @@ from exceptions.custom_exceptions import (
 )
 from models.user import User, UserRoles
 from services.auth_service import AuthService
-from tests.fakes import FakeClock, FakeUnitOfWork
+from tests.fakes import FakeUnitOfWork
 
 PASSWORD = "Clave123"
 INVALID_EMAIL = "Email inválido"
@@ -26,11 +26,6 @@ EMAIL_TAKEN = "Ya existe una cuenta con este correo"
 INVALID_REQUEST = "La petición no es válida"
 FIRST_NAME_REQUIRED = "El nombre es obligatorio"
 LAST_NAME_REQUIRED = "El apellido es obligatorio"
-INVALID_DOB = "La fecha de nacimiento no es válida"
-FUTURE_DOB = "La fecha de nacimiento no puede ser futura"
-AGE_RANGE = "Debes tener entre 14 y 100 años"
-NOW = datetime(2026, 10, 18, 12, 0)
-TODAY = NOW.date()
 
 
 class FakeUserRepository:
@@ -112,7 +107,6 @@ def make_service(users=None, verifier=None):
         jwt,
         "client-id",
         google_token_verifier=verifier or FakeGoogleVerifier(),
-        clock=FakeClock(NOW),
     )
     return service, repo, uow, jwt
 
@@ -123,16 +117,8 @@ def register(
     password=PASSWORD,
     first_name="Ana",
     last_name="Pérez",
-    date_of_birth="1990-01-01",
 ):
-    return service.register(email, password, first_name, last_name, date_of_birth)
-
-
-def years_before_today(years, extra_days=0):
-    """Fecha ISO de quien cumple `years` años exactos hoy (más `extra_days` días
-    de nacido después: positivo la acerca al siguiente cumpleaños)."""
-    born = date(TODAY.year - years, TODAY.month, TODAY.day) + timedelta(days=extra_days)
-    return born.isoformat()
+    return service.register(email, password, first_name, last_name)
 
 
 # ---------------------------------------------------------------- registro
@@ -339,76 +325,42 @@ def assert_rejected(service, repo, message, **register_kwargs):
     assert repo.created == []
 
 
-# SDD: 018 REQ-005 AC-005.1
-def test_register_rejects_a_missing_date_of_birth():
-    """Fecha de nacimiento ausente (None): 'La fecha de nacimiento no es válida'."""
-    service, repo, _, _ = make_service()
-
-    assert_rejected(service, repo, INVALID_DOB, date_of_birth=None)
-
-
-# SDD: 018 REQ-005 AC-005.2
-@pytest.mark.parametrize("value", ["", 19900101, "1990/01/01", "no-es-fecha", [], {}])
-def test_register_rejects_a_date_of_birth_with_a_wrong_format_or_type(value):
-    """Vacía, numérica o con formato erróneo: 'no es válida', sin cuenta."""
-    service, repo, _, _ = make_service()
-
-    assert_rejected(service, repo, INVALID_DOB, date_of_birth=value)
-
-
-# SDD: 018 REQ-005 AC-005.3
-def test_register_rejects_a_date_of_birth_that_does_not_exist():
-    """'2001-02-30' no existe: 'La fecha de nacimiento no es válida'."""
-    service, repo, _, _ = make_service()
-
-    assert_rejected(service, repo, INVALID_DOB, date_of_birth="2001-02-30")
-
-
-# SDD: 018 REQ-005 AC-005.4
-def test_register_rejects_a_future_date_of_birth():
-    """Mañana (según el reloj inyectado): 'no puede ser futura'."""
-    service, repo, _, _ = make_service()
-
-    assert_rejected(service, repo, FUTURE_DOB, date_of_birth="2026-10-19")
-
-
-# SDD: 018 REQ-005 AC-005.5
-def test_register_rejects_someone_who_turns_14_tomorrow():
-    """13 años cumplidos hoy (cumple 14 mañana): 'Debes tener entre 14 y 100 años'."""
-    service, repo, _, _ = make_service()
-
-    assert_rejected(service, repo, AGE_RANGE, date_of_birth=years_before_today(14, 1))
-
-
-# SDD: 018 REQ-005 AC-005.7
-def test_register_rejects_someone_of_101_years():
-    """101 años cumplidos hoy: 'Debes tener entre 14 y 100 años'."""
-    service, repo, _, _ = make_service()
-
-    assert_rejected(service, repo, AGE_RANGE, date_of_birth=years_before_today(101))
-
-
-# SDD: 018 REQ-005 AC-005.6
-def test_register_accepts_exactly_14_years_and_stores_a_date():
-    """Cumple 14 hoy: se acepta y la fecha se guarda como `date`."""
+# SDD: 033 REQ-001 AC-001.1
+def test_register_creates_the_account_without_a_date_of_birth():
+    """register con 4 argumentos: cuenta creada, sin fecha y con commit."""
     service, repo, uow, _ = make_service()
 
-    token = register(service, date_of_birth=years_before_today(14))
+    token = register(service)
 
     assert token == "token-de-mentira"
-    assert repo.created[0].date_of_birth == date(2012, 10, 18)
-    assert isinstance(repo.created[0].date_of_birth, date)
+    assert repo.created[0].date_of_birth is None
     assert uow.committed is True
 
 
-# SDD: 018 REQ-005 AC-005.8
-def test_register_accepts_100_years_that_turn_101_tomorrow():
-    """100 años cumplidos hoy (cumple 101 mañana): se acepta."""
+# SDD: 033 REQ-001 AC-001.2 AC-001.3
+@pytest.mark.parametrize(
+    "value",
+    [
+        "1995-05-20", "2001-02-30", "abc", 123, None, "", [], {},
+        "2026-10-19", "2012-10-19", "1925-10-18",
+    ],
+)
+def test_register_from_body_ignores_the_date_of_birth(value):
+    """Cualquier date_of_birth del cuerpo se ignora: sin error y sin fecha guardada."""
     service, repo, _, _ = make_service()
 
-    register(service, date_of_birth=years_before_today(101, 1))
+    token = service.register_from_body(
+        {
+            "email": "ana@example.com",
+            "password": PASSWORD,
+            "first_name": "Ana",
+            "last_name": "Pérez",
+            "date_of_birth": value,
+        }
+    )
 
-    assert repo.created[0].date_of_birth == date(1925, 10, 19)
+    assert token == "token-de-mentira"
+    assert repo.created[0].date_of_birth is None
 
 
 # SDD: 018 REQ-003 AC-003.5 AC-003.6 REQ-004 AC-004.5
@@ -482,31 +434,22 @@ def test_register_validates_the_password_before_the_first_name():
 
 
 # SDD: 018 REQ-006 AC-006.3
-def test_register_validates_the_first_name_before_last_name_and_date():
-    """Sin nombre, apellido ni fecha: gana 'El nombre es obligatorio'."""
+def test_register_validates_the_first_name_before_last_name():
+    """Sin nombre ni apellido: gana 'El nombre es obligatorio'."""
     service, repo, _, _ = make_service()
 
-    assert_rejected(
-        service, repo, FIRST_NAME_REQUIRED, first_name=None, last_name=None, date_of_birth=None
-    )
+    assert_rejected(service, repo, FIRST_NAME_REQUIRED, first_name=None, last_name=None)
 
 
-# SDD: 018 REQ-006 AC-006.4
-def test_register_validates_the_last_name_before_the_date_of_birth():
-    """Sin apellido y con fecha futura: gana 'El apellido es obligatorio'."""
-    service, repo, _, _ = make_service()
+# SDD: 033 REQ-001 AC-001.4
+def test_register_validates_the_last_name_before_the_duplicate_check():
+    """Con la cuenta ya existente y sin apellido, gana el error de apellido.
 
-    assert_rejected(
-        service, repo, LAST_NAME_REQUIRED, last_name=None, date_of_birth="2026-10-19"
-    )
-
-
-# SDD: 018 REQ-006 AC-006.5
-def test_register_validates_the_date_of_birth_before_the_duplicate_check():
-    """Con la cuenta ya existente y sin fecha, gana el error de fecha sin consultar duplicados."""
+    No se consultan duplicados.
+    """
     service, repo, _, _ = make_service([make_user("ana@example.com")])
 
-    assert_rejected(service, repo, INVALID_DOB, date_of_birth=None)
+    assert_rejected(service, repo, LAST_NAME_REQUIRED, last_name=None)
 
 
 # SDD: 018 REQ-001 AC-001.3 AC-001.4
@@ -534,7 +477,6 @@ def test_register_from_body_registers_with_the_fields_of_the_object():
             "password": PASSWORD,
             "first_name": " Ana ",
             "last_name": "Pérez",
-            "date_of_birth": "1990-01-01",
         }
     )
 

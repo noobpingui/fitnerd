@@ -32,6 +32,7 @@ export function makeProfileResponse(
     onboarding_completed: true,
     onboarding_completed_at: "2026-10-11T18:30:00+00:00",
     date_of_birth: "1998-04-03",
+    first_name: "Ana",
     profile: makeServerProfile(profile),
     ...overrides,
   }
@@ -45,6 +46,7 @@ export function makePendingResponse(
     onboarding_completed: false,
     onboarding_completed_at: null,
     date_of_birth: dateOfBirth,
+    first_name: null,
     profile: null,
   }
 }

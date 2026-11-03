@@ -58,7 +58,6 @@ def register(client, email="ana@example.com"):
             "password": "ClaveVieja123",
             "first_name": "Ana",
             "last_name": "Pérez",
-            "date_of_birth": "2000-01-01",
         },
     )
     assert response.status_code == 201

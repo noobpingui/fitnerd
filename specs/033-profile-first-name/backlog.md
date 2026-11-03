@@ -1,0 +1,51 @@
+# Backlog · 033-profile-first-name
+
+## spec · spec-writer
+- [ ] Editar el apellido en el perfil.
+- [ ] El saludo «Hola de nuevo» en la primera visita tras registrarse.
+
+## plan · planner
+- [ ] Renombrar `PhysicalDataForm` y `PhysicalDataFormValues` a «PersonalData…» ahora que incluyen el nombre.
+- [ ] Alinear el recorte de espacios Unicode raros entre Python `strip()` y JS `trim()` (p. ej. U+0085 y U+FEFF), si llega a importar.
+- [ ] El `doc-keeper` debe actualizar `CLAUDE.md` y `README.md`, que describen la validación de la fecha de nacimiento en el registro (spec 018).
+
+## tasks · task-breaker
+- [ ] Diferencias entre `str.strip()` de Python y `String.prototype.trim()` de JS con espacios Unicode raros (riesgo del plan, sección 6). El servidor manda y el caso acaba en un 400.
+
+## tests · test-author
+- [ ] Diferencia entre `str.strip()` de Python y `String.prototype.trim()` de JS con espacios Unicode raros (U+0085, U+FEFF): no hay test, ya está anotada en el riesgo 6 del plan.
+- [ ] Se podría quitar `date_of_birth` de `registered_user` en `conftest` cuando se limpie la deuda de fixtures (hoy es inocuo).
+
+## tests (red check) · verifier
+- [ ] Reformular las guardas F-B2, F-5, F-3 y F-4 (y F-B1, F-1, F-2) para que fallen hoy, o decidir una excepción explícita al Art. B5.2.
+- [ ] Dos tests de 014 (`RegisterForm` «envía el registro con 36 eñes» y «envía el correo recortado…») y uno de `schemas.test.ts` («el registro recorta el correo…») fallan hoy solo porque el registro exige fecha; pasarán con T-040 y T-051, sin cambios en el test.
+- [ ] `services/date_of_birth_rules.py:28` lanza `ValueError` con `"2001-02-30"` en `register_from_body`; T-040 debe ignorar la fecha antes de parsearla.
+
+## tests (red check, 2.ª pasada) · verifier
+- [ ] Añadir el marcador SDD 033 a los tests existentes adaptados (14 de spec 014, router, lazyRoutes, ProfilePage «al cambiar solo la meta»).
+- [ ] Corregir el recuento de AC (37 en state.json frente a 36 en spec.md).
+- [ ] Corregir la casilla T-028 o adaptar PhysicalDataForm.refresh.test.tsx.
+
+## implement · implementer
+- [ ] Las 3 líneas largas (E501) de los tests de la 033 (`test_fixed_clock_routes.py` L191, `test_auth_service.py` L345 y L445) hay que ajustarlas en la etapa de tests o aceptarlas como deuda.
+- [ ] Los tests de router y lazyRoutes son intermitentes con la suite completa en paralelo (timeout de `findByRole`).
+
+## verify · verifier
+- [ ] state.json indica 37 AC y spec.md define 36; corregir el dato.
+- [ ] Marcador SDD: 033 de AC-009.4 está en ProfilePage.test.tsx; revisar en review.
+- [ ] tasks.md marca T-028 como hecha pero PhysicalDataForm.refresh.test.tsx no se modificó; revisar la casilla.
+
+## review · reviewer
+- [ ] F1: corregir la casilla de T-028 (no hizo falta adaptar PhysicalDataForm.refresh.test.tsx) (test-author)
+- [x] F2: corregir el formato de spec.md:81 y el recuento de AC registrado (37 → 36) (spec-writer)
+- [x] F3: el marcador de AC-009.4 solo está en ProfilePage.test.tsx; añadir una referencia en HomePage.test.tsx (test-author)
+- [x] F4: AuthService guarda self.clock pero ya no lo usa; retirarlo en una limpieza (implementer)
+- [x] F5: quitar date_of_birth de los helpers de registro de los tests (conftest.registered_user y otros), donde se ignora (test-author)
+
+## verify (3.ª pasada) · verifier
+- [ ] T-028 sin marcar en tasks.md (decidir si se marca o se retira; su AC-007.3 ya está cubierto por T-024, T-026 y T-027).
+- [ ] Identificar el segundo test intermitente de la primera ejecución de `npm test` (router, lazyRoutes o accountSwitch) cuando se trabaje el backlog de tests intermitentes.
+
+## review (2.ª vuelta) · reviewer
+- [ ] F6: retirar T-028 o marcarla con «sin cambios necesarios» antes de close (Art. B7) (planner)
+- [x] F7: cerrar F3, F4 y F5 en el backlog de la feature antes de pasarlo al del proyecto (hecho por el orquestador, junto con F2)

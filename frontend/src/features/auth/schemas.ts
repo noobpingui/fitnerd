@@ -26,12 +26,33 @@ export const loginSchema = z.object({
 })
 export type LoginFormValues = z.infer<typeof loginSchema>
 
+export const MAX_FIRST_NAME_CHARS = 100
+export const FIRST_NAME_REQUIRED_MESSAGE = "El nombre es obligatorio"
+export const FIRST_NAME_TOO_LONG_MESSAGE =
+  "El nombre no puede superar los 100 caracteres"
+
+export function firstNameMessage(value: string): string | null {
+  const trimmed = value.trim()
+  if (trimmed === "") return FIRST_NAME_REQUIRED_MESSAGE
+  if (Array.from(trimmed).length > MAX_FIRST_NAME_CHARS) {
+    return FIRST_NAME_TOO_LONG_MESSAGE
+  }
+  return null
+}
+
+export const firstNameSchema = z
+  .string()
+  .trim()
+  .superRefine((value, ctx) => {
+    const message = firstNameMessage(value)
+    if (message) ctx.addIssue({ code: "custom", message })
+  })
+
 export const registerSchema = z.object({
   email: emailSchema,
   password: newPasswordSchema,
-  first_name: z.string().min(1, "Campo obligatorio"),
+  first_name: firstNameSchema,
   last_name: z.string().min(1, "Campo obligatorio"),
-  date_of_birth: z.iso.date("Fecha inválida"),
 })
 export type RegisterFormValues = z.infer<typeof registerSchema>
 
