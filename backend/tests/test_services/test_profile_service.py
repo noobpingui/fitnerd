@@ -60,9 +60,12 @@ class FakeUserProfileRepository:
         return profile
 
 
-def make_user(user_id="user-1", date_of_birth=None, onboarding_completed_at=None):
+def make_user(
+    user_id="user-1", date_of_birth=None, onboarding_completed_at=None, first_name="Ana"
+):
     return SimpleNamespace(
         id=user_id,
+        first_name=first_name,
         date_of_birth=date_of_birth,
         onboarding_completed_at=onboarding_completed_at,
     )
@@ -406,6 +409,68 @@ def test_invalid_save_keeps_previous_profile_and_birth_date():
     assert state.profile.goal == "maintain"
     assert state.profile.weight == 72.5
     assert len(profile_repository.created) == 1
+
+
+# --------------------------------------------------------------------------
+# Nombre (spec 033)
+# --------------------------------------------------------------------------
+
+NAME_REQUIRED = "El nombre es obligatorio"
+NAME_TOO_LONG = "El nombre no puede superar los 100 caracteres"
+
+
+# SDD: 033 REQ-005 AC-005.2
+def test_save_profile_without_first_name_does_not_touch_the_stored_name():
+    """Sin la clave first_name el nombre guardado queda igual y el resto se guarda."""
+    service, *_ = make_service([make_user(first_name="Ana")])
+
+    state = service.save_profile("user-1", valid_data())
+
+    assert state.user.first_name == "Ana"
+    assert state.profile.goal == "maintain"
+
+    # Tras guardar un nombre nuevo, una petición sin la clave lo conserva.
+    service.save_profile("user-1", valid_data(first_name="Beatriz"))
+    state = service.save_profile("user-1", valid_data())
+
+    assert state.user.first_name == "Beatriz"
+
+
+# SDD: 033 REQ-005 AC-005.1
+def test_save_profile_stores_the_first_name_trimmed():
+    """Con la clave presente, el nombre se guarda sin espacios en los extremos."""
+    service, *_ = make_service([make_user(first_name="Ana")])
+
+    state = service.save_profile("user-1", valid_data(first_name="  María José "))
+
+    assert state.user.first_name == "María José"
+    assert not hasattr(state.profile, "first_name")
+
+
+# SDD: 033 REQ-006 AC-006.1
+@pytest.mark.parametrize(
+    "value, message",
+    [
+        ("", NAME_REQUIRED),
+        ("   ", NAME_REQUIRED),
+        (None, NAME_REQUIRED),
+        (123, NAME_REQUIRED),
+        ("a" * 101, NAME_TOO_LONG),
+    ],
+)
+def test_rejects_an_invalid_first_name_without_commit(value, message):
+    """Un nombre no válido da 400, no hay commit y el nombre no cambia."""
+    user = make_user(first_name="Ana")
+
+    assert_rejected(valid_data(first_name=value), message, users=[user])
+
+    assert user.first_name == "Ana"
+
+
+# SDD: 033 REQ-006 AC-006.3
+def test_validates_the_first_name_before_the_birth_date():
+    """Nombre vacío y fecha no válida a la vez: gana el mensaje del nombre."""
+    assert_rejected(valid_data(first_name="  ", date_of_birth="2001-02-30"), NAME_REQUIRED)
 
 
 # --------------------------------------------------------------------------

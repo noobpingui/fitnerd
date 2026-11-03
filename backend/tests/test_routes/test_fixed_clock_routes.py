@@ -18,7 +18,6 @@ PASSWORD = "ClaveSegura123"
 
 DATE_TOO_OLD = {"error": "La fecha de la medición no puede tener más de un año de antigüedad"}
 DATE_FUTURE = {"error": "La fecha de la medición no puede ser futura"}
-AGE_RANGE = {"error": "Debes tener entre 14 y 100 años"}
 INVALID_LINK = {"error": "El enlace no es válido o ha caducado. Solicita uno nuevo."}
 PROD_URL = "https://fitnerd.betofallas.dev"
 
@@ -177,23 +176,26 @@ def test_two_posts_without_a_date_with_the_same_instant_update_a_single_metric(c
 # --------------------------------------------------------------------------
 
 
-# SDD: 020 REQ-005 AC-005.4
-def test_register_accepts_someone_who_turns_14_on_the_fixed_day(client, app_clock):
+# SDD: 033 REQ-001 AC-001.3
+def test_register_ignores_the_age_of_someone_who_turns_14_on_the_fixed_day(client, app_clock):
     app_clock.set(NOW)
 
     response = client.post(REGISTER_URL, json=register_payload(date_of_birth="2012-10-12"))
 
     assert response.status_code == 201
+    headers = {"Authorization": f"Bearer {response.get_json()['token']}"}
+    assert client.get("/api/profile", headers=headers).get_json()["date_of_birth"] is None
 
 
-# SDD: 020 REQ-005 AC-005.4
-def test_register_rejects_someone_who_turns_14_the_day_after_the_fixed_day(client, app_clock):
+# SDD: 033 REQ-001 AC-001.3
+def test_register_ignores_the_age_of_someone_who_turns_14_the_day_after_the_fixed_day(client, app_clock):
     app_clock.set(NOW)
 
     response = client.post(REGISTER_URL, json=register_payload(date_of_birth="2012-10-13"))
 
-    assert response.status_code == 400
-    assert response.get_json() == AGE_RANGE
+    assert response.status_code == 201
+    headers = {"Authorization": f"Bearer {response.get_json()['token']}"}
+    assert client.get("/api/profile", headers=headers).get_json()["date_of_birth"] is None
 
 
 # SDD: 020 REQ-005 AC-005.7

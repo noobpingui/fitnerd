@@ -30,7 +30,7 @@ function renderForm() {
 }
 
 // fireEvent.change en vez de user.type: escribir 73 caracteres uno a uno
-// sería lentísimo, y la fecha de un <input type="date"> no se teclea bien.
+// sería lentísimo.
 async function fillAndSubmit(password: string) {
   fireEvent.change(screen.getByLabelText("Nombre"), { target: { value: "Ana" } })
   fireEvent.change(screen.getByLabelText("Apellido"), {
@@ -41,9 +41,6 @@ async function fillAndSubmit(password: string) {
   })
   fireEvent.change(screen.getByLabelText("Password"), {
     target: { value: password },
-  })
-  fireEvent.change(screen.getByLabelText("Fecha de nacimiento"), {
-    target: { value: "1990-01-01" },
   })
   await userEvent.setup().click(
     screen.getByRole("button", { name: "Crear cuenta" })
@@ -59,9 +56,6 @@ async function fillAndSubmitWithEmail(email: string) {
   fireEvent.change(screen.getByLabelText("Email"), { target: { value: email } })
   fireEvent.change(screen.getByLabelText("Password"), {
     target: { value: "Clave1234" },
-  })
-  fireEvent.change(screen.getByLabelText("Fecha de nacimiento"), {
-    target: { value: "1990-01-01" },
   })
   // Se envía el formulario directamente: jsdom aplica la validación nativa de
   // type="email" al hacer clic y no dejaría llegar al esquema de zod.
@@ -188,6 +182,89 @@ describe("RegisterForm - correo con espacios (spec 014)", () => {
     await fillAndSubmitWithEmail(" no-es-un-correo ")
 
     expect(await screen.findByText("Email inválido")).toBeInTheDocument()
+    expect(registerMock).not.toHaveBeenCalled()
+  })
+})
+
+// Envía el formulario con el nombre y el apellido dados (el resto es válido).
+function fillNames(firstName: string, lastName: string) {
+  fireEvent.change(screen.getByLabelText("Nombre"), { target: { value: firstName } })
+  fireEvent.change(screen.getByLabelText("Apellido"), { target: { value: lastName } })
+  fireEvent.change(screen.getByLabelText("Email"), {
+    target: { value: "ana@example.com" },
+  })
+  fireEvent.change(screen.getByLabelText("Password"), {
+    target: { value: "Clave1234" },
+  })
+  const form = screen.getByRole("button", { name: "Crear cuenta" }).closest("form")!
+  fireEvent.submit(form)
+}
+
+describe("RegisterForm - sin fecha de nacimiento y regla del nombre (spec 033)", () => {
+  beforeEach(() => {
+    vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "")
+    registerMock.mockReset()
+  })
+
+  // SDD: 033 REQ-002 AC-002.1
+  it("no muestra «Fecha de nacimiento» y sí Nombre, Apellido, Email y Password", () => {
+    renderForm()
+
+    expect(screen.queryByLabelText("Fecha de nacimiento")).not.toBeInTheDocument()
+    expect(screen.queryByText("Fecha de nacimiento")).not.toBeInTheDocument()
+    for (const label of ["Nombre", "Apellido", "Email", "Password"]) {
+      expect(screen.getByLabelText(label)).toBeInTheDocument()
+    }
+  })
+
+  // SDD: 033 REQ-002 AC-002.2
+  it("envía una sola petición con email, password, first_name y last_name y sin date_of_birth", async () => {
+    registerMock.mockResolvedValue({ token: "un-jwt-de-mentira" })
+    renderForm()
+
+    await fillAndSubmit("Clave1234")
+
+    await waitFor(() => expect(registerMock).toHaveBeenCalledTimes(1))
+    const payload = registerMock.mock.calls[0][0]
+    expect(payload).toEqual({
+      email: "ana@example.com",
+      password: "Clave1234",
+      first_name: "Ana",
+      last_name: "Pérez",
+    })
+    expect(payload).not.toHaveProperty("date_of_birth")
+  })
+
+  // SDD: 033 REQ-008 AC-008.5
+  it("un nombre «   » muestra «El nombre es obligatorio» y no envía la petición", async () => {
+    renderForm()
+
+    fillNames("   ", "Pérez")
+
+    expect(await screen.findByText("El nombre es obligatorio")).toBeInTheDocument()
+    expect(registerMock).not.toHaveBeenCalled()
+  })
+
+  // SDD: 033 REQ-008 AC-008.5
+  it("un nombre de 101 caracteres muestra el mensaje de longitud y no envía la petición", async () => {
+    renderForm()
+
+    fillNames("a".repeat(101), "Pérez")
+
+    expect(
+      await screen.findByText("El nombre no puede superar los 100 caracteres")
+    ).toBeInTheDocument()
+    expect(registerMock).not.toHaveBeenCalled()
+  })
+
+  // SDD: 033 REQ-008 AC-008.6
+  it("con nombre y apellido vacíos muestra cada mensaje y no envía la petición", async () => {
+    renderForm()
+
+    fillNames("", "")
+
+    expect(await screen.findByText("El nombre es obligatorio")).toBeInTheDocument()
+    expect(screen.getByText("Campo obligatorio")).toBeInTheDocument()
     expect(registerMock).not.toHaveBeenCalled()
   })
 })

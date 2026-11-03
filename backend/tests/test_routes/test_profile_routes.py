@@ -5,7 +5,7 @@ prueban en los unitarios con un reloj fijo).
 """
 
 import json
-from datetime import datetime
+from datetime import date, datetime
 
 import pytest
 
@@ -37,8 +37,11 @@ NO_PROFILE = {
     "onboarding_completed": False,
     "onboarding_completed_at": None,
     "date_of_birth": None,
+    "first_name": None,
     "profile": None,
 }
+NAME_REQUIRED = {"error": "El nombre es obligatorio"}
+NAME_TOO_LONG = {"error": "El nombre no puede superar los 100 caracteres"}
 
 
 def body(**overrides):
@@ -47,11 +50,11 @@ def body(**overrides):
     return data
 
 
-def create_user(app, email, date_of_birth=None):
+def create_user(app, email, date_of_birth=None, first_name=None):
     """Crea un usuario directamente (sin pasar por el registro), como una
     cuenta de Google sin fecha de nacimiento, y devuelve sus cabeceras."""
     with app.app_context():
-        user = User(email=email, date_of_birth=date_of_birth)
+        user = User(email=email, date_of_birth=date_of_birth, first_name=first_name)
         db.session.add(user)
         db.session.commit()
         token = jwt_manager.generate_token({"id": str(user.id), "user_role": "user"}, 30)
@@ -125,22 +128,12 @@ def test_get_for_a_user_without_profile_is_pending(client, registered_user):
 
 
 # SDD: REQ-001 AC-001.4
-def test_get_returns_the_registration_birth_date_without_profile(client):
-    """Un usuario registrado con 1995-05-20 recibe esa fecha aunque no tenga perfil."""
-    response = client.post(
-        "/api/auth/register",
-        json={
-            "email": "dob@example.com",
-            "password": "testpassword123",
-            "first_name": "Dob",
-            "last_name": "User",
-            "date_of_birth": "1995-05-20",
-        },
-    )
-    assert response.status_code == 201
-    headers = {"Authorization": f"Bearer {response.get_json()['token']}"}
+def test_get_returns_the_stored_birth_date_without_profile(client, app):
+    """Una cuenta con fecha 1995-05-20 la recibe aunque no tenga perfil.
+    El registro ya no la guarda (spec 033), así que la cuenta se crea directa."""
+    user = create_user(app, "dob@example.com", date_of_birth=date(1995, 5, 20))
 
-    response = get_profile(client, headers)
+    response = get_profile(client, user["headers"])
 
     assert response.status_code == 200
     data = response.get_json()
@@ -213,9 +206,9 @@ def test_put_keeps_centimeters_with_one_decimal(client, registered_user):
 
 
 # SDD: REQ-002 AC-002.7
-def test_put_changes_the_birth_date_of_an_email_account(client, registered_user):
-    """Una cuenta de email con 2000-01-01 pasa a la fecha guardada."""
-    headers = registered_user["headers"]
+def test_put_changes_the_birth_date_of_an_account_that_has_one(client, app):
+    """Una cuenta con 2000-01-01 pasa a la fecha guardada."""
+    headers = create_user(app, "dob@example.com", date_of_birth=date(2000, 1, 1))["headers"]
     assert read_profile(client, headers)["date_of_birth"] == "2000-01-01"
 
     put_profile(client, headers, body(date_of_birth="1996-03-01"))
@@ -492,3 +485,146 @@ def test_put_with_a_5000_digit_weight_returns_400_and_never_500(client, register
 
     assert response.status_code == 400
     assert response.get_json() == {"error": "Los datos del perfil no son válidos"}
+
+
+# --------------------------------------------------------------------------
+# Nombre en el perfil (spec 033)
+# --------------------------------------------------------------------------
+
+
+# SDD: 033 REQ-004 AC-004.1
+def test_get_returns_the_saved_first_name(client, app):
+    """GET devuelve el nombre guardado junto con los campos de siempre."""
+    user = create_user(app, "ana@example.com", first_name="Ana")
+
+    data = read_profile(client, user["headers"])
+
+    assert data["first_name"] == "Ana"
+    assert data["onboarding_completed"] is False
+    assert data["date_of_birth"] is None
+    assert data["profile"] is None
+
+
+# SDD: 033 REQ-004 AC-004.2
+def test_get_returns_a_null_first_name_for_an_account_without_one(client, app):
+    """Una cuenta sin nombre recibe first_name null."""
+    user = create_user(app, "google@example.com")
+
+    assert read_profile(client, user["headers"])["first_name"] is None
+
+
+# SDD: 033 REQ-004 AC-004.3
+def test_put_response_includes_the_stored_first_name(client, app):
+    """El PUT válido devuelve first_name con lo que queda guardado."""
+    user = create_user(app, "ana@example.com", first_name="Ana")
+
+    response = put_profile(client, user["headers"], PROFILE_BODY)
+
+    assert response.status_code == 200
+    assert response.get_json()["first_name"] == "Ana"
+
+
+# SDD: 033 REQ-005 AC-005.1
+def test_put_saves_the_first_name_trimmed(client, app):
+    """'  María José ' se guarda como 'María José' y el GET lo confirma."""
+    user = create_user(app, "ana@example.com", first_name="Ana")
+
+    response = put_profile(client, user["headers"], body(first_name="  María José "))
+
+    assert response.status_code == 200
+    assert response.get_json()["first_name"] == "María José"
+    assert read_profile(client, user["headers"])["first_name"] == "María José"
+
+
+# SDD: 033 REQ-005 AC-005.2
+def test_put_without_first_name_keeps_the_stored_one(client, app):
+    """Sin la clave first_name, el perfil se guarda y el nombre sigue siendo 'Ana'."""
+    user = create_user(app, "ana@example.com", first_name="Ana")
+
+    response = put_profile(client, user["headers"], PROFILE_BODY)
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["first_name"] == "Ana"
+    assert data["profile"]["gender"] == "male"
+    assert read_profile(client, user["headers"])["first_name"] == "Ana"
+
+
+# SDD: 033 REQ-005 AC-005.3
+def test_put_without_first_name_keeps_an_account_without_name_nameless(client, app):
+    """Sin nombre guardado y sin la clave: 200 y first_name sigue null."""
+    user = create_user(app, "google@example.com")
+
+    response = put_profile(client, user["headers"], PROFILE_BODY)
+
+    assert response.status_code == 200
+    assert response.get_json()["first_name"] is None
+    assert read_profile(client, user["headers"])["first_name"] is None
+
+
+# SDD: 033 REQ-005 AC-005.4
+def test_put_accepts_a_first_name_of_100_characters_surrounded_by_spaces(client, app):
+    """100 caracteres entre espacios: 200 y se guardan los 100 sin espacios."""
+    user = create_user(app, "ana@example.com", first_name="Ana")
+
+    response = put_profile(client, user["headers"], body(first_name="  " + "a" * 100 + "  "))
+
+    assert response.status_code == 200
+    assert response.get_json()["first_name"] == "a" * 100
+    assert read_profile(client, user["headers"])["first_name"] == "a" * 100
+
+
+def saved_profile_for_ana(client, app):
+    """Usuario 'Ana' con un perfil ya guardado; devuelve (usuario, GET previo)."""
+    user = create_user(app, "ana@example.com", first_name="Ana")
+    assert put_profile(client, user["headers"], PROFILE_BODY).status_code == 200
+    return user, read_profile(client, user["headers"])
+
+
+# SDD: 033 REQ-006 AC-006.1
+@pytest.mark.parametrize("value", ["", "   ", None, 123])
+def test_put_rejects_an_empty_or_non_text_first_name(client, app, value):
+    """'', '   ', null o 123: 400 'El nombre es obligatorio' y no cambia nada."""
+    user, before = saved_profile_for_ana(client, app)
+
+    response = put_profile(client, user["headers"], FT_LB_BODY | {"first_name": value})
+
+    assert response.status_code == 400
+    assert response.get_json() == NAME_REQUIRED
+    assert read_profile(client, user["headers"]) == before
+    assert before["first_name"] == "Ana"
+
+
+# SDD: 033 REQ-006 AC-006.2
+def test_put_rejects_a_first_name_of_101_characters(client, app):
+    """101 caracteres: 400 con el mensaje de longitud y no cambia nada."""
+    user, before = saved_profile_for_ana(client, app)
+
+    response = put_profile(client, user["headers"], FT_LB_BODY | {"first_name": "a" * 101})
+
+    assert response.status_code == 400
+    assert response.get_json() == NAME_TOO_LONG
+    assert read_profile(client, user["headers"]) == before
+
+
+# SDD: 033 REQ-006 AC-006.3
+def test_put_validates_the_first_name_before_the_physical_data(client, app):
+    """Nombre no válido y peso fuera de rango: gana el mensaje del nombre."""
+    user, before = saved_profile_for_ana(client, app)
+
+    response = put_profile(client, user["headers"], body(first_name="   ", weight=29))
+
+    assert response.status_code == 400
+    assert response.get_json() == NAME_REQUIRED
+    assert read_profile(client, user["headers"]) == before
+
+
+# SDD: 033 REQ-006 AC-006.4
+def test_put_rejects_a_first_name_of_300_characters_without_a_server_error(client, app):
+    """300 caracteres: 400 de longitud, nunca un 5xx."""
+    user = create_user(app, "ana@example.com", first_name="Ana")
+
+    response = put_profile(client, user["headers"], body(first_name="a" * 300))
+
+    assert response.status_code == 400
+    assert response.get_json() == NAME_TOO_LONG

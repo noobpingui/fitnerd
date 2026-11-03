@@ -10,7 +10,8 @@ import type {
 // Composición corporal opcional (texto mientras se edita, "" = sin dato).
 export type BodyComposition = { fat: string; muscle: string }
 // Valores del formulario Datos físicos.
-export type PhysicalDataFormValues = OnboardingAnswers & BodyComposition
+export type PhysicalDataFormValues = OnboardingAnswers &
+  BodyComposition & { firstName: string }
 
 export type ServerProfile = {
   gender: Gender
@@ -28,7 +29,11 @@ export type ProfileResponse = {
   onboarding_completed: boolean
   onboarding_completed_at: string | null
   date_of_birth: string | null
+  first_name: string | null
   profile: ServerProfile | null
 }
 
-export type SaveProfilePayload = { date_of_birth: string } & ServerProfile
+export type SaveProfilePayload = {
+  date_of_birth: string
+  first_name?: string
+} & ServerProfile

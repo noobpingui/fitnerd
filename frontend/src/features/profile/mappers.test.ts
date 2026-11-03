@@ -3,7 +3,9 @@ import { EMPTY_ANSWERS } from "@/features/onboarding/constants"
 import {
   answersFromProfile,
   payloadFromAnswers,
+  payloadFromProfileForm,
 } from "@/features/profile/mappers"
+import type { PhysicalDataFormValues } from "@/features/profile/types"
 import {
   makeAnswers,
   makePendingResponse,
@@ -72,6 +74,30 @@ describe("payloadFromAnswers", () => {
 
     expect(payload).not.toHaveProperty("age")
     expect(payload.date_of_birth).toBe("1998-04-03")
+  })
+})
+
+describe("payloadFromProfileForm (spec 033)", () => {
+  const formValues = (firstName: string) =>
+    ({ ...makeAnswers(), fat: "", muscle: "", firstName }) as PhysicalDataFormValues
+
+  // SDD: 033 REQ-007 AC-007.4
+  it("recorta first_name y conserva el resto del cuerpo de payloadFromAnswers", () => {
+    const values = formValues("  Beatriz  ")
+
+    const payload = payloadFromProfileForm(values)
+
+    expect(payload.first_name).toBe("Beatriz")
+    expect(payload).toEqual({ ...payloadFromAnswers(values), first_name: "Beatriz" })
+  })
+
+  // SDD: 033 REQ-007 AC-007.3
+  it("payloadFromAnswers (el del onboarding) no lleva first_name", () => {
+    const values = formValues("Beatriz")
+
+    expect(payloadFromAnswers(values)).not.toHaveProperty("first_name")
+    // Y el del perfil sí lo lleva, con el resto del cuerpo intacto.
+    expect(payloadFromProfileForm(values)).toHaveProperty("first_name", "Beatriz")
   })
 })
 

@@ -10,7 +10,7 @@
   "branch": "feat/033-profile-first-name",
   "base_branch": "main",
   "created_at": "2026-11-02T20:27:01.978Z",
-  "stage": "tests",
+  "stage": "implement",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -25,7 +25,10 @@
       "at": "2026-11-02T21:21:22.060Z",
       "note": "auto (gate_mode=flow): 33 tareas, cobertura completa"
     },
-    "tests": null,
+    "tests": {
+      "at": "2026-11-03T01:06:26.910Z",
+      "note": "auto (gate_mode=flow): red check PASS"
+    },
     "implement": null,
     "verify": null,
     "review": null,
@@ -34,17 +37,18 @@
   },
   "commits": {
     "spec": "6c8285f",
-    "plan": "c7ca9d4"
+    "plan": "c7ca9d4",
+    "tasks": "41af941"
   },
   "iterations": {
-    "tests": 0,
+    "tests": 1,
     "implement": 0,
     "review": 0
   },
   "max_iterations": 5,
   "red_check": {
-    "result": null,
-    "at": null
+    "result": "PASS",
+    "at": "2026-11-03T01:06:14.723Z"
   },
   "verify": {
     "result": null,
@@ -54,7 +58,30 @@
     "verdict": null,
     "at": null
   },
-  "tests_snapshot": null,
+  "tests_snapshot": {
+    "at": "2026-11-03T01:06:26.735Z",
+    "reason": "tests 033 aprobados tras red check PASS",
+    "sha256": {
+      "backend/tests/test_routes/test_auth_routes.py": "7c1812e3ee22f66be749ca7d5ecb58f88fa77689a9710669493f116a3a0425bf",
+      "backend/tests/test_routes/test_fixed_clock_routes.py": "624501b37bf77a7f89121ca428b8ee746a8744ce309f08968ca33a7951184410",
+      "backend/tests/test_routes/test_profile_routes.py": "f6d8f787cf67542dcfa9799c2eb5cb3e5736ea16d9f62d1e77dfa2f718b15194",
+      "backend/tests/test_services/test_auth_service.py": "e4b5cd852b53ff986139ab847c96783964f584e18d55d5cfc1035cbe9ea5f750",
+      "backend/tests/test_services/test_profile_service.py": "4f0f74c0a1c099fe5703952bd394203f455c8ca77a7b4e0b78590c3f5d6dedd6",
+      "frontend/src/app/diaryRoute.test.tsx": "f3be4d7b9f857486ab5f51115bc42af7bacbd2be3b5b0f93247e345880eeb9e8",
+      "frontend/src/app/lazyRoutes.test.tsx": "560ac808c7f02e5d5d68b2d1cf86925bc9cc7e2a6374801b74843f84b32a7a5d",
+      "frontend/src/app/router.test.tsx": "b248b3f3775c870550e95b0baa6a53ef2e75730f149f407a833ce788e5d898cb",
+      "frontend/src/features/auth/components/RegisterForm.test.tsx": "700926facf63e357283a2fc5ab8df51ee2ef1e86671e7bfdc43b2afc44048578",
+      "frontend/src/features/auth/schemas.test.ts": "241d16fd87a590262c523150f099652e6aa61eba6d45ef88ddd627319b86f094",
+      "frontend/src/features/home/greeting.test.ts": "059d5425bb5eb0567775995959f49a57c8f052ef7fb897af0de551f21d1eec2c",
+      "frontend/src/features/home/pages/HomePage.test.tsx": "99fc220d536b21e886807c8b4f443bc3bf718c41e19063dc0dc29bb08defec47",
+      "frontend/src/features/onboarding/pages/OnboardingPage.test.tsx": "15518beffb250e1860f171397f224a995de986bf6182c000cf81b3796f46c1ad",
+      "frontend/src/features/profile/mappers.test.ts": "0b6559d7151291b8ca3141af9c9e0d03eb205b8f1e34e6edcedccf98fc4d1a35",
+      "frontend/src/features/profile/pages/ProfilePage.test.tsx": "a7ccd0043141cfb9d4bfc346a3b3ab107e754dd1726ee2771abad7cb7de83d10",
+      "frontend/src/features/profile/schemas.test.ts": "2bb0329cc77a55840266d443f74020cf96d9361a1d6dc29377128e85ed47a017",
+      "frontend/src/test/fakeMetricsServer.ts": "15f49deb8b5f49736f5e08b1851a358004cc68cf0bc2920dc88278ef15f669f2",
+      "frontend/src/test/profileFixtures.ts": "bacf6f37cd04748852feb699333fe5882ac1354baf99aa6629dc801cfec3dc2d"
+    }
+  },
   "bypass": false,
   "history": [
     {
@@ -146,6 +173,84 @@
       "stage": "tasks",
       "event": "approved",
       "note": "auto (gate_mode=flow): 33 tareas, cobertura completa"
+    },
+    {
+      "at": "2026-11-02T21:21:22.281Z",
+      "stage": "tests",
+      "event": "commit",
+      "note": "tasks: 41af941"
+    },
+    {
+      "at": "2026-11-02T21:21:22.459Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 1/3: scaffold (implementer)"
+    },
+    {
+      "at": "2026-11-02T21:21:55.700Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 2/3: test-author"
+    },
+    {
+      "at": "2026-11-02T21:31:20.783Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Paso 3/3: red check (verifier)"
+    },
+    {
+      "at": "2026-11-02T21:36:54.788Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red FAIL: 7 tests con SDD 033 pasan sin implementar (B: test_save_profile_without_first_name_does_not_touch_the_stored_name, test_register_without_first_name_and_date_of_birth_is_rejected; F: profile/schemas 100 chars, mappers payloadFromAnswers sin first_name, HomePage null y espacios, OnboardingPage cuenta nueva). Resto de fallos rojos legitimos: backend 88, frontend 47."
+    },
+    {
+      "at": "2026-11-02T21:37:20.110Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "red check FAIL: 7 tests 033 pasan sin implementacion (F-B1, F-B2, F-1 a F-5) · tests 1/5"
+    },
+    {
+      "at": "2026-11-02T21:43:13.778Z",
+      "stage": "tests",
+      "event": "needs_input",
+      "note": "F-5 (AC-003.1, OnboardingPage.test.tsx) es guarda de regresion que ya pasa; requiere excepcion al Art. B5.2 o quitar el test"
+    },
+    {
+      "at": "2026-11-03T00:57:51.500Z",
+      "stage": "tests",
+      "event": "started",
+      "note": "Excepcion B5.2 para F-5 aprobada por el usuario; repetir red check"
+    },
+    {
+      "at": "2026-11-03T01:06:14.723Z",
+      "stage": "tests",
+      "event": "result",
+      "note": "red PASS: red: backend 27/27 marcados fallan por comportamiento ausente (90 failed, 272 passed en los 5 archivos); frontend 41/42 marcados fallan (51 failed, 175 passed en 11 archivos); AC-003.1 pasa por la excepcion B5.2 aprobada por el usuario"
+    },
+    {
+      "at": "2026-11-03T01:06:26.495Z",
+      "stage": "tests",
+      "event": "note",
+      "note": "Red PASS con excepcion B5.2 aprobada por el usuario para AC-003.1 (guarda de regresion)"
+    },
+    {
+      "at": "2026-11-03T01:06:26.621Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "red check PASS: 90 backend y 51 frontend en rojo legitimo; AC-003.1 guarda aprobada"
+    },
+    {
+      "at": "2026-11-03T01:06:26.735Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "18 archivo(s) de test: tests 033 aprobados tras red check PASS"
+    },
+    {
+      "at": "2026-11-03T01:06:26.910Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): red check PASS"
     }
   ]
 }

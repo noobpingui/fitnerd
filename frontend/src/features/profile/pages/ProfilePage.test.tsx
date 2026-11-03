@@ -180,6 +180,7 @@ describe("ProfilePage - datos del servidor", () => {
     expect(saveMock).toHaveBeenCalledTimes(1)
     expect(saveMock.mock.calls[0][0]).toEqual({
       date_of_birth: "1998-04-03",
+      first_name: "Ana",
       gender: "male",
       height_unit: "cm",
       height_cm: 175,
@@ -1138,6 +1139,7 @@ describe("ProfilePage - medición posterior a hoy y relectura (spec 016)", () =>
         <PhysicalDataForm
           initial={makeAnswers({ weight: "80" })}
           initialBody={{ fat: "", muscle: "" }}
+          initialFirstName="Ana"
         />
       </QueryClientProvider>
     )
@@ -1151,5 +1153,152 @@ describe("ProfilePage - medición posterior a hoy y relectura (spec 016)", () =>
     expect(screen.queryByText(/Guardamos tu medición de hoy/)).not.toBeInTheDocument()
     expect(createMetricMock).toHaveBeenCalledTimes(1)
     expect(spinbuttons()[1]).toHaveValue(79)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Spec 033: campo «Nombre» en «Datos personales».
+// ---------------------------------------------------------------------------
+
+const firstNameInput = () => screen.findByLabelText("Nombre")
+const NAME_REQUIRED = "El nombre es obligatorio"
+const NAME_TOO_LONG = "El nombre no puede superar los 100 caracteres"
+const DESCRIPTION =
+  "Se usan para calcular tus calorías y macros. Cada cambio de peso o composición se guarda como la medición de hoy en tu progreso; si ya hay una de hoy, se actualiza."
+
+describe("ProfilePage - nombre (spec 033)", () => {
+  beforeEach(() => {
+    setupMocks()
+    getProfileMock.mockResolvedValue(makeProfileResponse({ first_name: "Ana" }))
+    saveMock.mockResolvedValue(makeProfileResponse({ first_name: "Beatriz" }))
+  })
+
+  // SDD: 033 REQ-007 AC-007.1
+  it("muestra el campo «Nombre» con el nombre de la cuenta", async () => {
+    renderPage()
+
+    expect(await firstNameInput()).toHaveValue("Ana")
+  })
+
+  // SDD: 033 REQ-007 AC-007.2
+  it("sin nombre el campo está vacío, con el aviso «El nombre es obligatorio», y el resto se puede usar", async () => {
+    getProfileMock.mockResolvedValue(makeProfileResponse({ first_name: null }))
+    renderPage()
+
+    expect(await firstNameInput()).toHaveValue("")
+    expect(screen.getByText(NAME_REQUIRED)).toBeInTheDocument()
+    expect(await dobInput()).toBeEnabled()
+    expect(spinbuttons()[0]).toBeEnabled()
+    expect(screen.getAllByRole("combobox")[1]).toBeEnabled()
+  })
+
+  // SDD: 033 REQ-007 AC-007.3
+  it("al cambiar solo el nombre a «Beatriz» envía el perfil con first_name y no registra medición", async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    await typeInto(user, await firstNameInput(), "Beatriz")
+    await user.click(saveButton())
+
+    expect(await screen.findByText("Cambios guardados")).toBeInTheDocument()
+    expect(saveMock).toHaveBeenCalledTimes(1)
+    expect(saveMock.mock.calls[0][0]).toEqual({
+      date_of_birth: "1998-04-03",
+      first_name: "Beatriz",
+      gender: "male",
+      height_unit: "cm",
+      height_cm: 175,
+      height_ft: null,
+      height_in: null,
+      weight_unit: "kg",
+      weight: 72.5,
+      activity_level: "moderate",
+      goal: "maintain",
+    })
+    expect(createMetricMock).not.toHaveBeenCalled()
+  })
+
+  // SDD: 033 REQ-007 AC-007.4
+  it("«  Beatriz  » se envía como «Beatriz»", async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    await typeInto(user, await firstNameInput(), "  Beatriz  ")
+    await user.click(saveButton())
+
+    expect(await screen.findByText("Cambios guardados")).toBeInTheDocument()
+    expect(saveMock.mock.calls[0][0]).toMatchObject({ first_name: "Beatriz" })
+  })
+
+  // SDD: 033 REQ-007 AC-007.5
+  it.each(["", "   "])(
+    "con el nombre %j aparece «El nombre es obligatorio» y «Guardar cambios» está desactivado",
+    async (value) => {
+      renderPage()
+
+      setValue(await firstNameInput(), value)
+
+      expect(screen.getByText(NAME_REQUIRED)).toBeInTheDocument()
+      expect(saveButton()).toBeDisabled()
+    }
+  )
+
+  // SDD: 033 REQ-007 AC-007.6
+  it("con 101 caracteres aparece el aviso de longitud y «Guardar cambios» está desactivado", async () => {
+    renderPage()
+
+    setValue(await firstNameInput(), "a".repeat(101))
+
+    expect(screen.getByText(NAME_TOO_LONG)).toBeInTheDocument()
+    expect(saveButton()).toBeDisabled()
+  })
+
+  // SDD: 033 REQ-007 AC-007.7
+  it("«Descartar» devuelve el nombre a «Ana»", async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    setValue(await firstNameInput(), "Beatriz")
+    await user.click(screen.getByRole("button", { name: "Descartar" }))
+
+    expect(screen.getByLabelText("Nombre")).toHaveValue("Ana")
+  })
+
+  // SDD: 033 REQ-007 AC-007.8
+  it("la sección se titula «Datos personales», conserva su descripción y «Nombre» va antes que «Género»", async () => {
+    renderPage()
+    const name = await firstNameInput()
+
+    expect(screen.getByRole("heading", { name: "Datos personales" })).toBeInTheDocument()
+    expect(screen.queryByRole("heading", { name: "Datos físicos" })).not.toBeInTheDocument()
+    expect(screen.getByText(DESCRIPTION)).toBeInTheDocument()
+    const gender = screen.getByText("Género")
+    expect(
+      name.compareDocumentPosition(gender) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy()
+    const dob = screen.getByLabelText("Fecha de nacimiento")
+    expect(
+      name.compareDocumentPosition(dob) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy()
+  })
+
+  // SDD: 033 REQ-009 AC-009.4
+  it("tras guardar «Beatriz», /home saluda «Hola de nuevo, Beatriz» sin otra lectura del perfil", async () => {
+    const user = userEvent.setup()
+    renderPage(
+      <nav>
+        <Link to="/home">Ir a Home</Link>
+      </nav>
+    )
+
+    await typeInto(user, await firstNameInput(), "Beatriz")
+    await user.click(saveButton())
+    await screen.findByText("Cambios guardados")
+    await user.click(screen.getByRole("link", { name: "Ir a Home" }))
+
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Hola de nuevo, Beatriz" })
+    ).toBeInTheDocument()
+    expect(getProfileMock).toHaveBeenCalledTimes(1)
   })
 })

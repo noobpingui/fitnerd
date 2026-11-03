@@ -89,6 +89,7 @@ describe("AppRouter - rutas /diary y /foods", () => {
   // Debe ir antes que la visita a /diary: la carga bajo demanda se guarda en la
   // primera visita y después ya no se puede comprobar que no se descargó.
   // SDD: 022 NFR-001 AC-N001.1
+  // SDD: 033 REQ-009 AC-009.1
   it("visitar /home no descarga el código de la pantalla «Diario»", async () => {
     window.history.pushState({}, "", "/home")
     // Precondición: la ruta /diary existe (sin ella el test pasaría sin implementar nada).
@@ -97,7 +98,7 @@ describe("AppRouter - rutas /diary y /foods", () => {
     renderRouter()
 
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Hola de nuevo" })
+      await screen.findByRole("heading", { level: 1, name: "Hola de nuevo, Ana" })
     ).toBeInTheDocument()
     expect(diaryPageModule.evaluated).toBe(false)
   })

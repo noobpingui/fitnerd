@@ -99,6 +99,56 @@ describe("HomePage - perfil del servidor", () => {
   })
 })
 
+describe("HomePage - saludo con el nombre (spec 033)", () => {
+  beforeEach(() => {
+    getProfileMock.mockReset()
+  })
+
+  // SDD: 033 REQ-009 AC-009.1
+  it("el encabezado principal dice «Hola de nuevo, Ana» con first_name «Ana»", async () => {
+    getProfileMock.mockResolvedValue(makeProfileResponse({ first_name: "Ana" }))
+    renderPage()
+
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Hola de nuevo, Ana" })
+    ).toBeInTheDocument()
+  })
+
+  // SDD: 033 REQ-009 AC-009.2
+  it("con first_name null dice «Hola de nuevo» sin coma ni nombre", async () => {
+    getProfileMock.mockResolvedValue(makeProfileResponse({ first_name: null }))
+    const first = renderPage()
+
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Hola de nuevo" })
+    ).toBeInTheDocument()
+    // Contraste: el mismo home con nombre sí lo añade tras la coma.
+    first.unmount()
+    getProfileMock.mockResolvedValue(makeProfileResponse({ first_name: "Ana" }))
+    renderPage()
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Hola de nuevo, Ana" })
+    ).toBeInTheDocument()
+  })
+
+  // SDD: 033 REQ-009 AC-009.3
+  it("con first_name de solo espacios dice «Hola de nuevo»", async () => {
+    getProfileMock.mockResolvedValue(makeProfileResponse({ first_name: "   " }))
+    const first = renderPage()
+
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Hola de nuevo" })
+    ).toBeInTheDocument()
+    // Contraste: con espacios alrededor de un nombre real, saluda con el nombre recortado.
+    first.unmount()
+    getProfileMock.mockResolvedValue(makeProfileResponse({ first_name: "  Beatriz  " }))
+    renderPage()
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Hola de nuevo, Beatriz" })
+    ).toBeInTheDocument()
+  })
+})
+
 // ---------------------------------------------------------------------------
 // Lo que antes era la pantalla /macros (feature 006, specs 007 y 009), ahora
 // parte del home.

@@ -14,7 +14,7 @@ import {
 import { inRange } from "@/lib/inRange"
 import type { PhysicalDataFormValues } from "@/features/profile/types"
 
-export type ProfileFormErrorKey = PhysicalDataErrorKey | "fat" | "muscle"
+export type ProfileFormErrorKey = PhysicalDataErrorKey | "fat" | "muscle" | "firstName"
 
 // Opcional: vacío es válido; si hay algo escrito, debe estar en rango.
 function optionalInRange(value: string, { min, max }: { min: number; max: number }) {
