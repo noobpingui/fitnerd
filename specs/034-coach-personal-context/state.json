@@ -10,14 +10,17 @@
   "branch": "feat/034-coach-personal-context",
   "base_branch": "main",
   "created_at": "2026-11-03T03:04:33.745Z",
-  "stage": "plan",
+  "stage": "tasks",
   "status": "in_progress",
   "approvals": {
     "spec": {
       "at": "2026-11-03T04:52:32.996Z",
       "note": "Q11: La propuesta , Q12: La propuesta , 3: Aprobada"
     },
-    "plan": null,
+    "plan": {
+      "at": "2026-11-03T05:00:13.921Z",
+      "note": "auto (gate_mode=flow): plan sin migración, variables ni dependencias; spec sin cambios"
+    },
     "tasks": null,
     "tests": null,
     "implement": null,
@@ -27,7 +30,7 @@
     "close": null
   },
   "commits": {
-    "spec": "0b7db87",
+    "spec": "ea96016",
     "plan": "5f741b1",
     "tasks": "5c8d54e",
     "tests": "ec5e486",
@@ -582,6 +585,36 @@
       "stage": "spec",
       "event": "approved",
       "note": "Q11: La propuesta , Q12: La propuesta , 3: Aprobada"
+    },
+    {
+      "at": "2026-11-03T04:52:33.350Z",
+      "stage": "plan",
+      "event": "commit",
+      "note": "spec: ea96016"
+    },
+    {
+      "at": "2026-11-03T04:52:33.570Z",
+      "stage": "plan",
+      "event": "started",
+      "note": "Plan enmendado: F4, F5, F10, F8, F9"
+    },
+    {
+      "at": "2026-11-03T05:00:13.798Z",
+      "stage": "plan",
+      "event": "done",
+      "note": "plan 034 rev. 2: partes del nombre, previous_names, textos F5, F8, F9"
+    },
+    {
+      "at": "2026-11-03T05:00:13.921Z",
+      "stage": "plan",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): plan sin migración, variables ni dependencias; spec sin cambios"
+    },
+    {
+      "at": "2026-11-03T05:00:14.038Z",
+      "stage": "plan",
+      "event": "note",
+      "note": "Decisiones: redact_name por partes (>=3 letras, 17 particulas, separadores espacio/guion); previous_names 1-5 solo para traza, lista invalida se ignora; fecha de la Politica sin cambio (3 nov 2026); caso F8 declarado como excepcion de red en el plan; HELP_OFF del test pasa al texto completo"
     }
   ]
 }

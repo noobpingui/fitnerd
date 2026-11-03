@@ -1,6 +1,7 @@
 # ADR-0038: Contexto personal del coach: datos de la cuenta leídos en el servidor, datos de pantalla del cliente descartados en bloque y nombre anonimizado en las trazas
 
-- **Estado:** Propuesta · 2026-11-02 (plan de la feature `034-coach-personal-context`)
+- **Estado:** Propuesta · 2026-11-02 (plan de la feature `034-coach-personal-context`; ampliada en las revisiones 1 y
+  2 del plan)
 - **Decidido por:** el planner lo propone; lo acepta o rechaza el usuario en el gate de review (Art. P5.2).
 
 ## Contexto
@@ -45,6 +46,22 @@ problemas de diseño:
   desactivado, el coach responde el 503 de siempre («No se pudo generar una respuesta en este momento…»), sin abrir
   traza y con el error en el log. No se responde sin contexto porque, sin el nombre, no se puede garantizar que la
   traza salga anonimizada (revisión 1 de la review, F7).
+- **Anonimización por partes del nombre (revisión 2, F4, spec Q11).** Además del nombre completo, se anonimiza cada
+  parte de un nombre compuesto (separada por espacios o guiones) que tenga 3 letras o más y no sea una partícula de una
+  lista cerrada: «de», «del», «la», «las», «los», «y», «e», «da», «das», «do», «dos», «di», «du», «van», «von», «der»
+  y «le» (sin distinguir mayúsculas). Las partículas y las partes cortas («Jo», «Mª») solo se anonimizan dentro del
+  nombre completo. Todos los términos se buscan con **un único patrón** de palabra completa, ordenados de más largo a
+  más corto y aplicado en una sola pasada: el nombre completo da un único `[nombre]` y nunca se anonimiza dentro de un
+  `[nombre]` ya puesto. No se anonimizan diminutivos ni variantes sin tildes.
+- **Nombres anteriores enviados por el cliente (revisión 2, F10, spec Q12).** El servidor no guarda nombres
+  anteriores. `/coach` recuerda en memoria los nombres de la cuenta que ha leído mientras hay conversación en pantalla
+  y envía los distintos del actual en `previous_names` (de 1 a 5 textos con la regla del nombre de la spec 018). El
+  servidor los valida (si la lista no es válida, la ignora entera, sin error) y los usa **solo** en `redact_name`, con
+  la misma regla por partes, con el interruptor activado o desactivado. Nunca llegan al modelo ni a Voyage, no cambian
+  el nombre del bloque (que sigue saliendo de la cuenta) y no se guardan ni se registran.
+- **Historial con el interruptor desactivado (revisión 2, F5).** El historial se sigue reenviando sin cambios (no se
+  vacía ni se filtra). En su lugar, la ayuda del interruptor desactivado y el punto de Anthropic de la Política de
+  privacidad avisan de que los mensajes anteriores de la conversación se siguen enviando y pueden incluir esos datos.
 
 ## Consecuencias
 - (+) Una sola fuente de verdad para calorías e indicadores (las funciones que pintan las pantallas), sin portar las
@@ -55,10 +72,17 @@ problemas de diseño:
   la validación de formato y rangos y no afecta a otros usuarios.
 - (−) La anonimización es por coincidencia de palabra completa: una variante del nombre (diminutivo, sin tilde) que el
   modelo invente no se sustituye. Las instrucciones le prohíben inventar nombres.
+- (−) Una parte del nombre que también es palabra común («Paz», «Rosa», «Mar») desaparece de la traza de ese usuario
+  allí donde aparezca. Solo afecta a la traza, nunca a lo que ve el usuario ni a lo que recibe el modelo, y se acepta
+  a cambio de que la Política («nunca tu nombre») siga siendo cierta con nombres compuestos.
+- (−) Los nombres anteriores dependen de lo que la pantalla ha leído: si el nombre cambia en otra pestaña y `/coach` no
+  llega a leerlo, ese nombre anterior no se anonimiza. Un cliente manipulado puede enviar palabras que no son nombres,
+  pero solo afecta a su propia traza. La alternativa más fiable (un token firmado por respuesta con el nombre usado,
+  como `feedback_id`) complica el contrato y queda en el backlog.
 - (−) La preferencia no se comparte entre navegadores (guardarla en la cuenta necesitaría migración).
 - (−) Con el interruptor desactivado, el coach hace una lectura de la cuenta por pregunta (solo el nombre) y depende de
   la base para responder. El impacto es nulo en la práctica: la búsqueda en pgvector usa la misma base, así que con la
   base caída la pregunta ya fallaba con 503.
 - (−) El historial que reenvía el cliente con el interruptor desactivado puede seguir llevando al modelo datos de
-  respuestas anteriores (nombre, cifras); esta ADR solo garantiza que no llegan a Langfuse. Qué hacer con el historial
-  es una decisión de la spec (hallazgo F5 de la review).
+  respuestas anteriores (nombre, cifras); esta ADR solo garantiza que no llegan a Langfuse. La spec lo resuelve
+  avisándolo en la ayuda del interruptor y en la Política (revisión 2, F5), no filtrando el historial.

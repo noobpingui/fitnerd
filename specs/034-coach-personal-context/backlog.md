@@ -57,3 +57,8 @@
 - [ ] Anonimizar diminutivos y variantes sin tildes del nombre en la traza.
 - [ ] Valorar un token firmado por respuesta para los nombres anteriores si Q12 se resuelve con la propuesta por defecto.
 - [ ] Revisar si el test existente de AC-010.2 compara el texto de ayuda exacto y ajustarlo al texto nuevo.
+
+## plan (iteración 3) · planner
+- [ ] Token firmado por respuesta con el nombre usado (alternativa (a) de Q12), si los nombres anteriores enviados por el cliente se quedan cortos.
+- [ ] Anonimizar diminutivos y variantes sin tildes del nombre en la traza (sigue fuera de alcance).
+- [ ] Unificar el estilo de comentarios `#Texto` → `# Texto` del resto de coach_service.py (F9 solo pide la línea 150).
