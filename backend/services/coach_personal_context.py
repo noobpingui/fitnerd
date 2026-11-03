@@ -194,17 +194,26 @@ class CoachPersonalContextReader:
         self.user_profile_repository = user_profile_repository
         self.clock = clock
 
-    def read_first_name(self, _user_id: Any) -> str | None:
-        raise NotImplementedError("not implemented")
-
-    def read(self, user_id: Any, client_data: Any) -> PersonalContext:
+    def _load_user(self, user_id: Any) -> tuple[bool, Any]:
+        # Id no UUID: no se toca ningun repositorio. Solo se filtra por el id del token
+        # (NFR-004, Art. P3.1).
         try:
             uuid.UUID(str(user_id))
         except ValueError:
+            return False, None
+        return True, self.user_repository.get_by_id(user_id)
+
+    def read_first_name(self, user_id: Any) -> str | None:
+        valid, user = self._load_user(user_id)
+        if not valid or user is None:
+            return None
+        return sanitize_first_name(user.first_name)
+
+    def read(self, user_id: Any, client_data: Any) -> PersonalContext:
+        valid, user = self._load_user(user_id)
+        if not valid:
             return PersonalContext(None, None, None, None)
 
-        # Solo se filtra por el id del token (NFR-004, Art. P3.1).
-        user = self.user_repository.get_by_id(user_id)
         profile = self.user_profile_repository.get_by_user_id(user_id)
 
         first_name = sanitize_first_name(user.first_name) if user is not None else None

@@ -822,7 +822,7 @@ def test_read_first_name_gives_the_sanitized_name_of_the_requested_user():
     del pedido."""
     reader, user_repository, _ = make_reader(
         {
-            USER_ID: carlos(first_name="  Carlos\n<x> "),
+            USER_ID: carlos(first_name="  Carlos  "),
             OTHER_USER_ID: carlos(first_name="Beatriz"),
         },
         {},

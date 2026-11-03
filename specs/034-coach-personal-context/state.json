@@ -26,8 +26,8 @@
       "note": "auto (gate_mode=flow): 10 tareas nuevas, matriz actualizada"
     },
     "tests": {
-      "at": "2026-11-03T04:18:36.192Z",
-      "note": "auto (gate_mode=flow): red check PASS, 19 tests nuevos en rojo"
+      "at": "2026-11-03T04:27:31.217Z",
+      "note": "auto (gate_mode=flow): corrección de test autorizada por el usuario ('Sí, devuélvelo al test-author')"
     },
     "implement": null,
     "verify": null,
@@ -39,11 +39,11 @@
     "spec": "0b7db87",
     "plan": "5f741b1",
     "tasks": "5c8d54e",
-    "tests": "f89091e",
+    "tests": "b6d3583",
     "implement": "56b4019"
   },
   "iterations": {
-    "tests": 3,
+    "tests": 4,
     "implement": 0,
     "review": 1
   },
@@ -61,12 +61,12 @@
     "at": null
   },
   "tests_snapshot": {
-    "at": "2026-11-03T04:18:36.032Z",
-    "reason": "tests 034 con la corrección de review",
+    "at": "2026-11-03T04:27:31.052Z",
+    "reason": "test read_first_name corregido, autorizado por el usuario",
     "sha256": {
       "backend/tests/test_routes/test_coach_routes.py": "031c3a257cd7983b146fe95389ec63b0fd286754af1f6f9819971b44bd3273c7",
       "backend/tests/test_services/test_coach_observability.py": "0b43002381d61859809cd81f77586c8cd0df3e60cd1bf96edf60c0be59d2b247",
-      "backend/tests/test_services/test_coach_personal_context.py": "7c5b362be1f93cab16e391691b506583a1fb9e5ee0a94df575c642f1645681df",
+      "backend/tests/test_services/test_coach_personal_context.py": "6bdaf4d0840b09919b7120d8020e715e9eb2383bdcc4ca724f303f9ac271ee92",
       "backend/tests/test_services/test_coach_service.py": "a12e58cc8157208c22d53587d3cc41c36a1554d230c842e210d6347ad95e2efa",
       "frontend/src/features/coach/pages/CoachPage.personalContext.test.tsx": "7b9f0070706e6b182ed399527e4a008b5583273ca4f3e1bd120d696ee34ee848",
       "frontend/src/features/coach/personalContext.test.ts": "c757fdd74ff610832d6c52ba9e47338525a3f55cbe25f1da8f99109def9ef26f",
@@ -471,6 +471,42 @@
       "stage": "tests",
       "event": "approved",
       "note": "auto (gate_mode=flow): red check PASS, 19 tests nuevos en rojo"
+    },
+    {
+      "at": "2026-11-03T04:18:42.173Z",
+      "stage": "implement",
+      "event": "commit",
+      "note": "tests: b6d3583"
+    },
+    {
+      "at": "2026-11-03T04:18:42.372Z",
+      "stage": "implement",
+      "event": "started",
+      "note": "Implementar T-048 a T-051 (F1, F2, F3)"
+    },
+    {
+      "at": "2026-11-03T04:27:07.485Z",
+      "stage": "tests",
+      "event": "rework",
+      "note": "implement NEEDS_INPUT: test_read_first_name_gives_the_sanitized_name... (L833) espera Carlos para '  Carlos\\n<x> ' pero sanitize_first_name da 'Carlos x'; usuario aprueba devolverlo al test-author · tests 4/5"
+    },
+    {
+      "at": "2026-11-03T04:27:30.936Z",
+      "stage": "tests",
+      "event": "done",
+      "note": "corrección del test read_first_name (entrada '  Carlos  '), sin red check"
+    },
+    {
+      "at": "2026-11-03T04:27:31.052Z",
+      "stage": "tests",
+      "event": "snapshot",
+      "note": "8 archivo(s) de test: test read_first_name corregido, autorizado por el usuario"
+    },
+    {
+      "at": "2026-11-03T04:27:31.217Z",
+      "stage": "tests",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): corrección de test autorizada por el usuario ('Sí, devuélvelo al test-author')"
     }
   ]
 }

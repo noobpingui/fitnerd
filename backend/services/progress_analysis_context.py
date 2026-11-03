@@ -129,7 +129,7 @@ def parse_indicators(indicators: Any) -> tuple[dict, str]:
             if (
                 not isinstance(value, str)
                 or not 1 <= len(value) <= MAX_TEXT_LENGTH
-                or not _TEXT_PATTERN.match(value)
+                or not _TEXT_PATTERN.fullmatch(value)
             ):
                 raise _invalid()
         clean[key] = value

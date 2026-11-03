@@ -142,9 +142,13 @@ class CoachService:
         personal = None
         name = None
         try:
-            if use_personal_context and self.personal_context_reader is not None:
-                personal = self.personal_context_reader.read(user_id, client_context)
-                name = personal.first_name
+            if self.personal_context_reader is not None:
+                if use_personal_context:
+                    personal = self.personal_context_reader.read(user_id, client_context)
+                    name = personal.first_name
+                else:
+                    #Solo para anonimizar la traza; el nombre no llega al modelo (F1).
+                    name = self.personal_context_reader.read_first_name(user_id)
         except Exception:
             logger.exception("No se pudo leer el contexto personal del coach")
             raise ServiceUnavailableError(
@@ -187,16 +191,16 @@ class CoachService:
             step.end(
                 redact_name(
                     {
-                    "candidates": [
-                        {
-                            "video_title": c["video_title"],
-                            "chunk_text": c["chunk_text"],
-                            "distance": c["distance"],
-                            "passed_threshold": self.retrieval_service.is_relevant(c),
-                        }
-                        for c in candidates
-                    ],
-                    "passed_count": len(relevant_chunks),
+                        "candidates": [
+                            {
+                                "video_title": c["video_title"],
+                                "chunk_text": c["chunk_text"],
+                                "distance": c["distance"],
+                                "passed_threshold": self.retrieval_service.is_relevant(c),
+                            }
+                            for c in candidates
+                        ],
+                        "passed_count": len(relevant_chunks),
                     },
                     name,
                 ),

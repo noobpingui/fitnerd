@@ -84,10 +84,10 @@ Tareas nuevas tras la review. Las 41 anteriores siguen hechas. Los `FakePersonal
 
 ### Fase B — Implementación (iteración 2)
 
-- [ ] T-048 [REQ-010, NFR-003, NFR-004, AC-N003.1, AC-N004.1] (impl) `read_first_name` con helper privado compartido con `read` para la comprobación del UUID y la lectura del usuario; no lee el perfil — `backend/services/coach_personal_context.py`
-- [ ] T-049 [REQ-010, NFR-003, REQ-012, AC-N003.1, AC-010.4, AC-012.3] (impl) `CoachService`: con el contexto desactivado, `name = reader.read_first_name(user_id)` solo para `redact_name`; el fallo de `read` o `read_first_name` da `ServiceUnavailableError` sin abrir traza — `backend/services/coach_service.py`
-- [ ] T-050 [REQ-006, REQ-003, AC-006.2] (impl) `_TEXT_PATTERN` con `fullmatch` o `\Z` para rechazar el salto de línea final, sin cambiar el resto del análisis (tests de las specs 010 y 011 en verde) — `backend/services/progress_analysis_context.py`
-- [ ] T-051 [REQ-011] (impl) `updatedAt` pasa a «3 de noviembre de 2026» — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
+- [x] T-048 [REQ-010, NFR-003, NFR-004, AC-N003.1, AC-N004.1] (impl) `read_first_name` con helper privado compartido con `read` para la comprobación del UUID y la lectura del usuario; no lee el perfil — `backend/services/coach_personal_context.py`
+- [x] T-049 [REQ-010, NFR-003, REQ-012, AC-N003.1, AC-010.4, AC-012.3] (impl) `CoachService`: con el contexto desactivado, `name = reader.read_first_name(user_id)` solo para `redact_name`; el fallo de `read` o `read_first_name` da `ServiceUnavailableError` sin abrir traza — `backend/services/coach_service.py`
+- [x] T-050 [REQ-006, REQ-003, AC-006.2] (impl) `_TEXT_PATTERN` con `fullmatch` o `\Z` para rechazar el salto de línea final, sin cambiar el resto del análisis (tests de las specs 010 y 011 en verde) — `backend/services/progress_analysis_context.py`
+- [x] T-051 [REQ-011] (impl) `updatedAt` pasa a «3 de noviembre de 2026» — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
 
 ## Matriz de cobertura
 
