@@ -137,6 +137,26 @@ Tareas nuevas tras el gate de review y la spec enmendada (REQ-013, AC-N003.4 a A
 - [x] T-073 [REQ-013, REQ-010, AC-013.1, AC-013.2, AC-010.8] (impl) `CoachPage`: ref de nombres vistos, `useEffect` con `rememberName` y `previous_names` en el payload solo si hay conversación y cambió el nombre, con el interruptor activado o desactivado; el historial se reenvía tal cual — `frontend/src/features/coach/pages/CoachPage.tsx`
 - [x] T-074 [REQ-011, AC-011.4] (impl) Frase nueva del punto de Anthropic; `updatedAt` sin cambios — `frontend/src/features/legal/pages/PrivacyPolicyPage.tsx`
 
+## Iteración 4 — Revisión 3 (F11, F12, F13 opción A)
+
+Tareas nuevas tras el gate de review y la spec enmendada (AC-013.7 y la cláusula de las partículas en NFR-003 y REQ-013). Las 74 anteriores siguen hechas. Orden: test, impl. No hacen falta esqueletos: `parse_previous_names` ya existe y los tests nuevos fallan por comportamiento ausente (hoy `parse_previous_names(["de"])` devuelve `("de",)`). Solo cambia un test existente, el caso de `test_parse_previous_names_accepts_a_valid_list` (plan §9.3). No hay tareas de frontend: `previousNames.ts` no cambia.
+
+### Fase A0 — Esqueletos (iteración 4)
+
+No aplica.
+
+### Fase A — Tests (rojo, iteración 4)
+
+- [ ] T-075 [REQ-013, NFR-003, AC-013.7, AC-013.6] (test) `parse_previous_names` omite un nombre que sea solo una partícula: parametrizado sobre las 17 partículas × cuatro formas (tal cual, mayúsculas, capitalizada, con espacios) con `[forma, "Carlitos"] == ("Carlitos",)` y `[forma] == ()`; solo cuenta el nombre entero («De la Fuente», «Del Mar», «Leo», «Dee» se conservan; `"d<>e"` se omite tras sanear); lista no válida con partícula (`["de", "Carlitos", ""]`) sigue dando `()`; `redact_name` conserva «de» como palabra con `["de", "Carlitos"]`, el nombre actual «de» se sigue anonimizando y las 17 partículas sueltas quedan intactas — `backend/tests/test_services/test_coach_personal_context.py`
+- [ ] T-076 [REQ-013, AC-013.3] (test) Cambio del test existente `test_parse_previous_names_accepts_a_valid_list`: el caso de 5 nombres pasa de `["A", "B", "C", "D", "E"]` a `["A", "B", "C", "D", "F"]` con el mismo resultado, con el comentario «(revisión 3, F13: «E» es la partícula «e»)»; sin tocar el resto del test — `backend/tests/test_services/test_coach_personal_context.py`
+- [ ] T-077 [REQ-013, NFR-003, AC-013.7, AC-N003.4] (test) Observabilidad: `test_a_previous_name_that_is_only_a_particle_is_not_anonymized_in_the_trace`, con contexto activado y desactivado y `particle` en «de», «De», «LA»: historial «Hola, Carlitos: la proteína de la dieta…» idéntico al modelo, la traza conserva la partícula como palabra y «la proteína de la dieta», no contiene «carlitos» ni «carlos» y sí «[nombre]», y con el contexto desactivado `read` no se llama — `backend/tests/test_services/test_coach_observability.py`
+- [ ] T-078 [F12] (test) **Cambio de forma sin red check, según el plan §9.2:** dos comentarios de sección pasan de «Revision 2» a «Revisión 2» (L882 y L1000) y se corrigen otras palabras sin tilde en comentarios y docstrings nuevos de los cuatro archivos de test backend de la 034; ninguna aserción, nombre de test ni marcador `SDD:` cambia, y los tests siguen en verde. La sesión principal registra `rework` y toma `snapshot` nuevo — `backend/tests/test_services/test_coach_personal_context.py`
+
+### Fase B — Implementación (iteración 4)
+
+- [ ] T-079 [REQ-013, NFR-003, AC-013.7, AC-013.6] (impl) `parse_previous_names` descarta, tras validar la lista entera y sanear, los nombres cuyo `casefold()` sea una de `NAME_PARTICLES` (solo el nombre entero; orden conservado; `()` si todos lo eran); `name_redaction_terms` y `redact_name` sin cambios; docstring con la frase de la partícula — `backend/services/coach_personal_context.py`
+- [ ] T-080 [F11] (impl) **Cambio de forma:** tildes en los docstrings de `parse_previous_names`, `name_redaction_terms` y `redact_name` (envía, válida, más, partículas, mayúsculas) y revisión del resto de docstrings y comentarios nuevos del archivo, sin tocar código ni `DONT_KNOW_ANSWER`; líneas dentro de 100 columnas — `backend/services/coach_personal_context.py`
+
 ## Matriz de cobertura
 
 | AC | Test | Impl |
@@ -194,17 +214,20 @@ Tareas nuevas tras el gate de review y la spec enmendada (REQ-013, AC-N003.4 a A
 | AC-012.5 | T-020 | T-034 |
 | AC-013.1 | T-062, T-065 | T-071, T-073 |
 | AC-013.2 | T-062, T-065 | T-071, T-073 |
-| AC-013.3 | T-055, T-056, T-060, T-061 | T-067, T-068, T-069, T-070 |
+| AC-013.3 | T-055, T-056, T-060, T-061, T-076 | T-067, T-068, T-069, T-070 |
 | AC-013.4 | T-060 | T-067, T-069 |
 | AC-013.5 | T-057, T-060, T-061 | T-069, T-070 |
-| AC-013.6 | T-056, T-060, T-061 | T-068, T-069, T-070 |
+| AC-013.6 | T-056, T-060, T-061, T-075 | T-068, T-069, T-070, T-079 |
+| AC-013.7 | T-075, T-077 | T-079 |
 | AC-N001.1 | T-013, T-020 | T-030 |
 | AC-N002.1 | T-015 | T-032 |
 | AC-N002.2 | T-015 | T-032 |
 | AC-N003.1 | T-018, T-043, T-045 | T-033, T-048, T-049 |
 | AC-N003.2 | T-018 | T-033 |
 | AC-N003.3 | T-012 | T-029 |
-| AC-N003.4 | T-055, T-060, T-061 | T-067, T-069 |
+| AC-N003.4 | T-055, T-060, T-061, T-077 | T-067, T-069 |
+| NFR-003 (cláusula de partículas en nombres anteriores, F13) | T-075, T-077 | T-079 |
+| F11 / F12 (forma, sin AC) | T-078 | T-080 |
 | AC-N003.5 | T-055, T-060 | T-067 |
 | AC-N003.6 | T-055 | T-067 |
 | AC-N003.7 | T-055 | T-067 |

@@ -10,7 +10,7 @@
   "branch": "feat/034-coach-personal-context",
   "base_branch": "main",
   "created_at": "2026-11-03T03:04:33.745Z",
-  "stage": "tasks",
+  "stage": "tests",
   "status": "in_progress",
   "approvals": {
     "spec": {
@@ -21,7 +21,10 @@
       "at": "2026-11-03T08:28:19.408Z",
       "note": "auto (gate_mode=flow): plan sin migración, variables ni dependencias; spec sin cambios"
     },
-    "tasks": null,
+    "tasks": {
+      "at": "2026-11-03T08:29:22.755Z",
+      "note": "auto (gate_mode=flow): 80 tareas, matriz actualizada"
+    },
     "tests": null,
     "implement": null,
     "verify": null,
@@ -31,7 +34,7 @@
   },
   "commits": {
     "spec": "c81b042",
-    "plan": "266e254",
+    "plan": "11fd6ce",
     "tasks": "d3dbd53",
     "tests": "092d472",
     "implement": "f713f85"
@@ -904,6 +907,30 @@
       "stage": "plan",
       "event": "note",
       "note": "Decisiones: la exclusión de partículas va en parse_previous_names sobre el nombre ya saneado; lista no válida sigue ignorándose entera; test existente :1009 cambia E por F; ADR-0038 pasa a Aceptada por el usuario (sesión principal)"
+    },
+    {
+      "at": "2026-11-03T08:28:19.902Z",
+      "stage": "tasks",
+      "event": "commit",
+      "note": "plan: 11fd6ce"
+    },
+    {
+      "at": "2026-11-03T08:28:20.035Z",
+      "stage": "tasks",
+      "event": "started",
+      "note": "Tareas de F11, F12 y F13 (opción A)"
+    },
+    {
+      "at": "2026-11-03T08:29:22.637Z",
+      "stage": "tasks",
+      "event": "done",
+      "note": "6 tareas nuevas T-075 a T-080"
+    },
+    {
+      "at": "2026-11-03T08:29:22.755Z",
+      "stage": "tasks",
+      "event": "approved",
+      "note": "auto (gate_mode=flow): 80 tareas, matriz actualizada"
     }
   ]
 }
