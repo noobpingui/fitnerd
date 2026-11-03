@@ -11,10 +11,10 @@ from types import SimpleNamespace
 import pytest
 
 from services.coach_personal_context import (
+    NAME_PARTICLES,
     ClientCoachContext,
     CoachMacros,
     CoachPersonalContextReader,
-    NAME_PARTICLES,
     PersonalContext,
     build_personal_context_block,
     name_redaction_terms,
